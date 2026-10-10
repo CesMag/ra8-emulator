@@ -35,11 +35,22 @@ pub const Frame = struct {
     }
 };
 
+/// The gray a panel pixel shows as: its ARGB word's luma, alpha ignored.
+pub fn grayscale(argb: u32) u8 {
+    const red = (argb >> 16) & 0xFF;
+    const green = (argb >> 8) & 0xFF;
+    const blue = argb & 0xFF;
+    return @intCast((red * 299 + green * 587 + blue * 114 + 500) / 1000);
+}
+
 /// Board-specific code supplies virtual-time progress and panel capture.
 pub const Display = struct {
     context: *anyopaque,
     waitSettledFn: *const fn (*anyopaque, timeout_ns: u64) anyerror!void,
     frameFn: *const fn (*anyopaque, allocator: std.mem.Allocator) anyerror!Frame,
+    /// Starts or stops watching the panel for a viewer that wants every
+    /// frame it shows. Null for a display with nothing to arm.
+    watchFn: ?*const fn (*anyopaque, on: bool) void = null,
 
     pub fn waitSettled(self: Display, timeout_ns: u64) anyerror!void {
         return self.waitSettledFn(self.context, timeout_ns);
@@ -47,5 +58,12 @@ pub const Display = struct {
 
     pub fn frame(self: Display, allocator: std.mem.Allocator) anyerror!Frame {
         return self.frameFn(self.context, allocator);
+    }
+
+    /// A viewer wants every frame the panel shows from now on (`on`), or
+    /// one that did no longer does.
+    pub fn watch(self: Display, on: bool) void {
+        const set = self.watchFn orelse return;
+        set(self.context, on);
     }
 };

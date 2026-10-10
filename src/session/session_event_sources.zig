@@ -150,6 +150,13 @@ pub const Sources = struct {
         } } });
     }
 
+    /// A watched GLCDC panel shows a new picture, and `dirty` is what
+    /// changed in it (panel_watch.zig).
+    pub fn panelChanged(self: *Sources, width: u32, height: u32, generation: u64, dirty: Event.Rect) void {
+        if (self.eink_active) return;
+        self.publish(.{ .core = self.active_core, .kind = .lcd_frame, .payload = .{ .frame = .{ .width = width, .height = height, .generation = generation, .dirty = dirty } } });
+    }
+
     fn glcdcFrame(context: *anyopaque, display: *glcdc.Glcdc) void {
         const self: *Sources = @ptrCast(@alignCast(context));
         if (self.eink_active) return;

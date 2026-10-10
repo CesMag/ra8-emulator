@@ -11,6 +11,9 @@
 //! file it reads comes through the `std.Io` its caller hands in.
 pub const board_boundary = @import("board_boundary.zig");
 pub const board_display = @import("board_display.zig");
+pub const session_display = @import("session_display.zig");
+pub const panel_watch = @import("panel_watch.zig");
+pub const panel_diff = @import("panel_diff.zig");
 pub const board_events = @import("board_events.zig");
 pub const board_faults = @import("board_faults.zig");
 pub const board_leds = @import("board_leds.zig");

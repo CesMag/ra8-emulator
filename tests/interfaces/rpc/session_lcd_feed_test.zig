@@ -42,13 +42,20 @@ const Panel = struct {
     width: u32,
     height: u32,
     captures: usize = 0,
+    /// Viewers the served connection has asked the display to watch for.
+    watchers: i32 = 0,
 
     fn shade(self: Panel, x: usize, y: usize) u8 {
         return @truncate(y * self.width + x);
     }
 
     fn display(self: *Panel) api.Display {
-        return .{ .context = self, .waitSettledFn = settled, .frameFn = frame };
+        return .{ .context = self, .waitSettledFn = settled, .frameFn = frame, .watchFn = watch };
+    }
+
+    fn watch(context: *anyopaque, on: bool) void {
+        const self: *Panel = @ptrCast(@alignCast(context));
+        self.watchers += if (on) 1 else -1;
     }
 
     fn settled(context: *anyopaque, timeout_ns: u64) anyerror!void {
@@ -233,6 +240,30 @@ test "a rectangle bigger than one event's cap is split by rows" {
         .{ .x = 0, .y = 0, .width = 600, .height = rows, .virtual_ns = 7 },
         .{ .x = 0, .y = rows, .width = 600, .height = 500 - rows, .virtual_ns = 7 },
     }, wire.got.slice());
+}
+
+test "a subscriber makes the display watch its panel, once, until the last topic or the connection goes" {
+    var panel: Panel = .{ .width = 4, .height = 4 };
+    var rig: Rig = .{};
+    try rig.init(&panel, std.testing.allocator);
+    const wire = try Wire.init(std.testing.allocator);
+    defer wire.deinit();
+    try wire.open(&rig.context, &panel);
+    try std.testing.expectEqual(@as(i32, 0), panel.watchers);
+    try accepted(try wire.call(proto.Subscription, .subscribe, subscribe));
+    try accepted(try wire.call(proto.Subscription, .subscribe, subscribe));
+    try std.testing.expectEqual(@as(i32, 1), panel.watchers);
+    try accepted(try wire.call(proto.Subscription, .unsubscribe, subscribe));
+    try accepted(try wire.call(proto.Subscription, .unsubscribe, subscribe));
+    try std.testing.expectEqual(@as(i32, 0), panel.watchers);
+
+    // A connection that goes without unsubscribing is cleaned up by the next.
+    try accepted(try wire.call(proto.Subscription, .subscribe, subscribe));
+    try std.testing.expectEqual(@as(i32, 1), panel.watchers);
+    const again = try Wire.init(std.testing.allocator);
+    defer again.deinit();
+    try again.open(&rig.context, &panel);
+    try std.testing.expectEqual(@as(i32, 0), panel.watchers);
 }
 
 test "lcd_dirty is refused without a display or an allocator" {

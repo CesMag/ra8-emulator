@@ -259,6 +259,7 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     state.display = session_display.Host.init(allocator, &state.board, .{ .context = state, .advanceFn = State.advance });
     errdefer state.display.deinit();
     state.display.settled.window_ns = options.settle_window_ns;
+    state.display.watch.events = &state.session.event_sources;
     state.session.attachDisplay(state.display.interface());
     try state.session.load(.cpu0, state.bytes);
     return .{ .state = state };

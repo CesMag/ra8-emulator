@@ -5,6 +5,7 @@ const display_settled = @import("ra8_board").display_settled;
 const FrameCapture = @import("ra8_board").frame_capture.FrameCapture;
 const eink = @import("ra8_components").eink;
 const session_display = @import("session_display.zig");
+const panel_watch = @import("panel_watch.zig");
 
 pub const Error = error{ Timeout, NoVirtualProgress, NoFrame };
 
@@ -20,6 +21,8 @@ pub const Host = struct {
     advance: Advance,
     quantum_ns: u64 = 16_666_667,
     settled: display_settled.Detector,
+    /// The GLCDC panel as a subscribed viewer sees it (RA8EMU-1126).
+    watch: panel_watch.Watch,
 
     pub fn init(allocator: std.mem.Allocator, board: *Board, advance: Advance) Host {
         const panel = einkPanel(board);
@@ -31,10 +34,12 @@ pub const Host = struct {
                 .allocator = allocator,
                 .eink_settled = if (panel) |found| found.film.settled else 0,
             },
+            .watch = .{ .allocator = allocator, .board = board },
         };
     }
 
     pub fn deinit(self: *Host) void {
+        self.watch.deinit();
         self.settled.deinit();
     }
 
@@ -43,7 +48,13 @@ pub const Host = struct {
             .context = self,
             .waitSettledFn = waitSettledThunk,
             .frameFn = frameThunk,
+            .watchFn = watchThunk,
         };
+    }
+
+    fn watchThunk(context: *anyopaque, on: bool) void {
+        const self: *Host = @ptrCast(@alignCast(context));
+        self.watch.set(on);
     }
 
     fn waitSettledThunk(context: *anyopaque, timeout_ns: u64) anyerror!void {
@@ -113,12 +124,15 @@ pub const Host = struct {
                 .virtual_ns = self.board.time.base.now(),
             };
         }
+        // A watched panel is scanned at its frame boundaries: hand out that
+        // picture, since a scan here would be one more frame for the firmware.
+        if (try self.watch.picture(allocator)) |kept| return kept;
         var capture = (try FrameCapture.init(self.allocator, self.board)) orelse return Error.NoFrame;
         defer capture.deinit(self.board);
         if (self.board.display.scanOut() == null) return Error.NoFrame;
         const pixels = try allocator.alloc(u8, capture.pixels.len);
         errdefer allocator.free(pixels);
-        for (capture.pixels, pixels) |argb, *gray| gray.* = grayscale(argb);
+        for (capture.pixels, pixels) |argb, *gray| gray.* = session_display.grayscale(argb);
         return .{
             .width = capture.width,
             .height = capture.height,
@@ -132,11 +146,4 @@ fn einkPanel(board: *Board) ?*eink.Panel {
     if (board.asks.attached_eink) |panel| return panel;
     if (board.panel.planes.image.pixels.len != 0) return &board.panel;
     return null;
-}
-
-fn grayscale(argb: u32) u8 {
-    const red = (argb >> 16) & 0xFF;
-    const green = (argb >> 8) & 0xFF;
-    const blue = argb & 0xFF;
-    return @intCast((red * 299 + green * 587 + blue * 114 + 500) / 1000);
 }

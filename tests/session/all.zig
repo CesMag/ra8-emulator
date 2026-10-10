@@ -29,6 +29,8 @@ test {
     _ = @import("session_api_test.zig");
     _ = @import("session_tap_part_test.zig");
     _ = @import("session_display_test.zig");
+    _ = @import("panel_diff_test.zig");
+    _ = @import("panel_watch_test.zig");
     _ = @import("session_speed_test.zig");
     _ = @import("zig_script_test.zig");
     _ = @import("watch_bus_test.zig");

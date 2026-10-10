@@ -198,8 +198,11 @@ pub fn subscribe(context: *Context, args: proto.Subscription) Ack {
         context.session_feed = context.session.subscribe() catch |err| return refuse(proto.Ack, err);
     }
     if (args.topic == .lcd_dirty and context.lcd_feed == null) {
-        if (context.gpa == null or context.session.display == null) return .{ .err = code(app_codes.refused) };
+        const display = context.session.display orelse return .{ .err = code(app_codes.refused) };
+        if (context.gpa == null) return .{ .err = code(app_codes.refused) };
         context.lcd_feed = context.session.subscribe() catch |err| return refuse(proto.Ack, err);
+        // A GLCDC panel is scanned only for a viewer: this client is one now.
+        display.watch(true);
     }
     context.topics[@backingInt(args.core)] |= bit(args.topic);
     return ack;
@@ -208,7 +211,7 @@ pub fn subscribe(context: *Context, args: proto.Subscription) Ack {
 pub fn unsubscribe(context: *Context, args: proto.Subscription) Ack {
     context.topics[@backingInt(args.core)] &= ~bit(args.topic);
     if (!context.wants(.cpu0, .uart) and !context.wants(.cpu1, .uart)) release(context, &context.uart_feed);
-    if (!context.wants(.cpu0, .lcd_dirty) and !context.wants(.cpu1, .lcd_dirty)) release(context, &context.lcd_feed);
+    if (!context.wants(.cpu0, .lcd_dirty) and !context.wants(.cpu1, .lcd_dirty)) unwatch(context);
     if (!context.wants(.cpu0, .session) and !context.wants(.cpu1, .session)) release(context, &context.session_feed);
     return ack;
 }
@@ -218,8 +221,15 @@ pub fn forget(context: *Context) void {
     context.topics = .{ 0, 0 };
     context.pending = null;
     release(context, &context.uart_feed);
-    release(context, &context.lcd_feed);
+    unwatch(context);
     release(context, &context.session_feed);
+}
+
+/// Give up the panel feed, and the watch on the panel that came with it.
+fn unwatch(context: *Context) void {
+    if (context.lcd_feed == null) return;
+    release(context, &context.lcd_feed);
+    if (context.session.display) |display| display.watch(false);
 }
 
 fn release(context: *Context, feed: *?usize) void {
