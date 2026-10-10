@@ -3,8 +3,8 @@
 //! Live host sockets are runtime resources: successful load closes and clears
 //! them, while a failed load leaves the target bridge untouched.
 const std = @import("std");
-const file = @import("../../snapshot/file.zig");
-const fields = @import("../../snapshot/fields.zig");
+const file = @import("ra8_snapshot").file;
+const fields = @import("ra8_snapshot").fields;
 
 pub const Error = file.Error || fields.Error || error{Missing};
 

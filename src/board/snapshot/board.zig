@@ -8,8 +8,8 @@
 //! same rule as cpu_snapshot.zig. A file from another part is refused before any
 //! section is touched.
 const std = @import("std");
-const file = @import("../../snapshot/file.zig");
-const fields = @import("../../snapshot/fields.zig");
+const file = @import("ra8_snapshot").file;
+const fields = @import("ra8_snapshot").fields;
 const time = @import("../../chip/snapshot/time.zig");
 const Part = @import("../../chip/core/part.zig").Part;
 

@@ -8,8 +8,8 @@
 //! section can read every half before it changes anything: `read` gives a
 //! `Staged` unit, and `install` puts it in place once its cells are built.
 const std = @import("std");
-const fields = @import("../../../snapshot/fields.zig");
-const sparse = @import("../../../snapshot/sparse.zig");
+const fields = @import("ra8_snapshot").fields;
+const sparse = @import("ra8_snapshot").sparse;
 const Mram = @import("mram.zig").Mram;
 const otp = @import("mram_otp.zig");
 

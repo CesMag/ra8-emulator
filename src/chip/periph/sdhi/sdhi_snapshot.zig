@@ -3,7 +3,7 @@
 //!
 //! Not saved, because it is wiring: `card`, the line to the card in the
 //! slot. A load keeps the target's.
-const fields = @import("../../../snapshot/fields.zig");
+const fields = @import("ra8_snapshot").fields;
 const Sdhi = @import("sdhi.zig").Sdhi;
 const xfer = @import("sdhi_xfer.zig");
 

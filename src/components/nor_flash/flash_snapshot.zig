@@ -6,8 +6,8 @@
 //! capacity is refused. A load is two steps, so the board's section can read
 //! every half before it changes anything: `read` gives a `Staged` part, and
 //! `install` puts the flash built from it in place.
-const fields = @import("../../snapshot/fields.zig");
-const sparse = @import("../../snapshot/sparse.zig");
+const fields = @import("ra8_snapshot").fields;
+const sparse = @import("ra8_snapshot").sparse;
 const flash = @import("flash.zig");
 const Flash = flash.Flash;
 

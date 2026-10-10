@@ -103,7 +103,9 @@ pub fn build(b: *std.Build) void {
 /// What is not carved out yet is still part of `emu`.
 fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module) void {
     const host = library(b, target, optimize, "ra8_host", "src/host/root.zig");
+    const snapshot = library(b, target, optimize, "ra8_snapshot", "src/snapshot/root.zig");
     emu.addImport("ra8_host", host);
+    emu.addImport("ra8_snapshot", snapshot);
 }
 
 /// One library module, importable by its name from this build and from a

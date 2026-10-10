@@ -6,7 +6,7 @@
 //! attached board. A file from another part is refused before anything
 //! changes; any later error leaves the run partly loaded, so drop it, the
 //! same rule as cpu_snapshot.zig and board.zig.
-const file = @import("../../snapshot/file.zig");
+const file = @import("ra8_snapshot").file;
 const memory = @import("memory.zig");
 const cpu = @import("../../chip/core/cpu/cpu_snapshot.zig");
 const board_snap = @import("board.zig");

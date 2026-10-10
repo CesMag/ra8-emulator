@@ -8,7 +8,7 @@
 //! behaviour it was saved under. An old four-byte section is unscaled and has
 //! no fraction; an old twelve-byte section has no saved boundary rate.
 const std = @import("std");
-const file = @import("../../snapshot/file.zig");
+const file = @import("ra8_snapshot").file;
 
 pub const Error = file.Error || error{BadValue};
 

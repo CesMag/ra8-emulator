@@ -7,7 +7,7 @@
 //! (a host attachment, like an SD image). A load is two steps, so the
 //! board's section can read every half before it changes anything: `read`
 //! gives a `Staged` target, and `install` puts it in place.
-const fields = @import("../../snapshot/fields.zig");
+const fields = @import("ra8_snapshot").fields;
 const stick = @import("stick.zig");
 const Target = stick.Target;
 

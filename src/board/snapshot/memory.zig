@@ -15,8 +15,8 @@ const memmap = @import("../../chip/core/memmap.zig");
 const store_mod = @import("../../chip/core/cpu/memory/store.zig");
 const external = @import("../external_memory.zig");
 const external_backing = @import("../external_backing.zig");
-const file = @import("../../snapshot/file.zig");
-const fields = @import("../../snapshot/fields.zig");
+const file = @import("ra8_snapshot").file;
+const fields = @import("ra8_snapshot").fields;
 
 pub const Store = store_mod.Store;
 pub const page: u32 = 0x1000;

@@ -9,8 +9,8 @@
 //! armed-flag pointers, and the MPU guard's unit pointer, engine hooks and
 //! live hook count. A load keeps the target's.
 const std = @import("std");
-const file = @import("../../snapshot/file.zig");
-const fields = @import("../../snapshot/fields.zig");
+const file = @import("ra8_snapshot").file;
+const fields = @import("ra8_snapshot").fields;
 
 pub const Error = file.Error || fields.Error || error{Missing};
 

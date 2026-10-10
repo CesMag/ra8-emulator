@@ -7,8 +7,8 @@
 //! components/nor_flash/flash_snapshot.zig, RA8EMU-1104). The controller is
 //! plain state apart from its wiring to the part and the OCTACLK watch.
 const std = @import("std");
-const file = @import("../../snapshot/file.zig");
-const fields = @import("../../snapshot/fields.zig");
+const file = @import("ra8_snapshot").file;
+const fields = @import("ra8_snapshot").fields;
 const options_half = @import("../../chip/periph/mram/mram_snapshot.zig");
 const nor_half = @import("../../components/nor_flash/flash_snapshot.zig");
 

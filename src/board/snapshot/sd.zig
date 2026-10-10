@@ -7,9 +7,9 @@
 //! RA8EMU-1104). Not saved: the card's line on SCI0 (a pointer to the card,
 //! wiring) and the volume `--sd-new` formatted (run report only).
 const std = @import("std");
-const file = @import("../../snapshot/file.zig");
-const fields = @import("../../snapshot/fields.zig");
-const blocks = @import("../../snapshot/blocks.zig");
+const file = @import("ra8_snapshot").file;
+const fields = @import("ra8_snapshot").fields;
+const blocks = @import("ra8_snapshot").blocks;
 const cards = @import("../../components/sd_card/card_snapshot.zig");
 const host = @import("../../chip/periph/sdhi/sdhi_snapshot.zig");
 

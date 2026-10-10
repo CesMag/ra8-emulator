@@ -8,8 +8,8 @@
 //! outside guest memory is RA8EMU-564's. Load into a freshly built board, so
 //! no decode or block cache holds code from before the load.
 const std = @import("std");
-const file = @import("../../../snapshot/file.zig");
-const fields = @import("../../../snapshot/fields.zig");
+const file = @import("ra8_snapshot").file;
+const fields = @import("ra8_snapshot").fields;
 const Cpu = @import("cpu.zig").Cpu;
 const Entry = @import("exception/active.zig").Entry;
 
