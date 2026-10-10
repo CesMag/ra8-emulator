@@ -10,7 +10,7 @@
 //! it lives until the process ends.
 const std = @import("std");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const second_core = @import("ra8_chip").core.second_core;
 const rtos_hook = @import("rtos_hook.zig");
 

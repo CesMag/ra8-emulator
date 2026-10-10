@@ -138,11 +138,11 @@ pub const render = struct {
     pub const board_view = @import("interfaces/render/board_view.zig");
 };
 pub const image = struct {
-    pub const elf = @import("image/elf.zig");
-    pub const pages = @import("image/pages.zig");
-    pub const load = @import("image/load.zig");
-    pub const ra8app = @import("image/ra8app.zig");
-    pub const file = @import("image/file.zig");
+    pub const elf = @import("board/image/elf.zig");
+    pub const pages = @import("board/image/pages.zig");
+    pub const load = @import("board/image/load.zig");
+    pub const ra8app = @import("board/image/ra8app.zig");
+    pub const file = @import("interfaces/cli/image_file.zig");
 };
 pub const board = struct {
     pub const external_memory = @import("board/external_memory.zig");

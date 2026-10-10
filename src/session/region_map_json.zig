@@ -8,7 +8,7 @@
 //!  "lma","size","kind","copy"}]}],"stack":{"base","size","region"}|null,
 //!  "outside":{"count","bytes","sections":[...]}}
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const sections = @import("sections.zig");
 const region_map = @import("region_map.zig");
 

@@ -1,8 +1,8 @@
-//! An ELF file read off disk and parsed (RA8EMU-1087): the one place both
-//! executables, ra8_emulator and ra8_gui, open the image they run. A failure
-//! is printed with the path and which half failed, reading or parsing.
+//! An ELF file read off disk and parsed (RA8EMU-1087): where ra8_emulator
+//! opens the image it runs. A failure is printed with the path and which
+//! half failed, reading or parsing.
 const std = @import("std");
-const elf = @import("elf.zig");
+const elf = @import("../../board/image/elf.zig");
 
 /// Read the image off disk and parse it, saying which of the two failed.
 pub fn open(io: std.Io, allocator: std.mem.Allocator, path: []const u8) !elf.Image {

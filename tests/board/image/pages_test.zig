@@ -1,4 +1,4 @@
-//! Tests for src/image/pages.zig.
+//! Tests for src/board/image/pages.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const pages = ra8.image.pages;

@@ -1,4 +1,4 @@
-//! Tests for src/image/elf.zig.
+//! Tests for src/board/image/elf.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const memmap = ra8.core.memmap;

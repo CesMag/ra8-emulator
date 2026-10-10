@@ -5,7 +5,7 @@
 //! opening line reads SP and the reset vector off that store, option memory
 //! is read from it, and src/interfaces/cli/zig_run.zig gets no engine.
 const std = @import("std");
-const elf = @import("../../image/elf.zig");
+const elf = @import("../../board/image/elf.zig");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const Reboot = @import("ra8_chip").core.reboot.Reboot;
 const Board = @import("../../board/board.zig").Board;

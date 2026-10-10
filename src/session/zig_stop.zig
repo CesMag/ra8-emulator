@@ -3,7 +3,7 @@
 //! Resolved against the image's symbol table. The
 //! counter is read at each boundary by the run clock's done check.
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const symbols = @import("symbols.zig");
 const Stop = @import("ra8_chip").core.stop.Stop;
 const Deadline = @import("ra8_chip").core.deadline.Deadline;

@@ -86,7 +86,7 @@ test {
     _ = @import("chip/core/cadence_test.zig");
     _ = @import("session/all.zig");
     _ = @import("interfaces/gdb/all.zig");
-    _ = @import("image/elf_test.zig");
+    _ = @import("board/image/elf_test.zig");
     _ = @import("chip/core/idle_test.zig");
     _ = @import("chip/core/pend_clear_test.zig");
     _ = @import("chip/core/sleep_pace_test.zig");
@@ -104,12 +104,12 @@ test {
     _ = @import("chip/core/long_shift_test.zig");
     _ = @import("chip/core/memmap_test.zig");
     _ = @import("board/sizing/sweep_test.zig");
-    _ = @import("image/pages_test.zig");
+    _ = @import("board/image/pages_test.zig");
     _ = @import("chip/core/part_test.zig");
     _ = @import("chip/core/part_map_test.zig");
     _ = @import("chip/core/part_clock_test.zig");
     _ = @import("chip/core/core_rate_test.zig");
-    _ = @import("image/ra8app_test.zig");
+    _ = @import("board/image/ra8app_test.zig");
     _ = @import("chip/core/module_place_test.zig");
     _ = @import("chip/core/core_event_test.zig");
     _ = @import("chip/core/second_wait_test.zig");

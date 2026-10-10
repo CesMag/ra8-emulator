@@ -12,8 +12,8 @@
 //! A run with a second core goes on the store too: CPU1 gets a store of its
 //! own that borrows this one's shared SRAM (RA8EMU-588). Since RA8EMU-607
 //! there is no engine arm left here: every run is on the store.
-const elf = @import("../image/elf.zig");
-const read_image = @import("../image/load.zig");
+const elf = @import("image/elf.zig");
+const read_image = @import("image/load.zig");
 const Store = @import("ra8_chip").core.cpu.memory.store.Store;
 const external = @import("external_memory.zig");
 const backing = @import("external_backing.zig");

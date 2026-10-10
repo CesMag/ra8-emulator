@@ -1,6 +1,6 @@
 //! Per-function execution counts collected by the optional instruction hook.
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const symbols = @import("symbols.zig");
 const stack_samples = @import("stack_samples.zig");
 

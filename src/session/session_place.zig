@@ -2,7 +2,7 @@
 //! from the line table, or a symbol or literal, one optional dereference,
 //! then its offset. The session resolves
 //! through this, so `break`, `x` and `print` take the same places.
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const core_view = @import("core_view.zig");
 const place = @import("place.zig");
 const session_source = @import("session_source.zig");

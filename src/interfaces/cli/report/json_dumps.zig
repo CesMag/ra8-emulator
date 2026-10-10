@@ -6,7 +6,7 @@
 //! (RA8EMU-391, json_sd.zig and json_watched.zig).
 const std = @import("std");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
-const elf = @import("../../../image/elf.zig");
+const elf = @import("../../../board/image/elf.zig");
 const cli = @import("../cli.zig");
 const symbols = @import("../../../session/symbols.zig");
 const registers = @import("../../../session/registers.zig");

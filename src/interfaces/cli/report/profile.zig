@@ -1,6 +1,6 @@
 //! Sorted per-function instruction and cycle counts.
 const std = @import("std");
-const elf = @import("../../../image/elf.zig");
+const elf = @import("../../../board/image/elf.zig");
 const profile = @import("../../../session/profile.zig");
 const symbols = @import("../../../session/symbols.zig");
 const stack_samples = @import("../../../session/stack_samples.zig");

@@ -4,7 +4,7 @@
 //! reservation, then any section that fits no region. The numbers are
 //! region_map.zig's; this file only lays them out.
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const sections = @import("sections.zig");
 const region_map = @import("region_map.zig");
 

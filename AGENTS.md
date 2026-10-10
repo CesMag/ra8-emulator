@@ -37,10 +37,8 @@ socket), and the application fills it from `ra8_host`. `src/root.zig` is the
 no file paths, no CLI, no GUI. Scaffolding (hello windows, spikes) does not
 stay in the tree or the build.
 
-The tree moves to this layout in the order ADR 0004 gives (epic RA8EMU-985),
-so during the migration some files still sit at their old paths (`src/image`). New code goes where the ADR puts it.
-A directory is renamed only after everything leaving it has left, so no file
-moves twice.
+The tree moved to this layout in the order ADR 0004 gives (epic RA8EMU-985).
+New code goes where the ADR puts it.
 
 Inside a module, relative imports down or sideways in the same subtree are
 fine. A `../` that leaves the subtree goes through the module root instead.
@@ -89,7 +87,7 @@ A `test` block at the bottom of a source file is wrong here. Tests live in
 
 ```
 src/chip/periph/crc.zig   ->  tests/chip/periph/crc_test.zig
-src/image/elf.zig  ->  tests/image/elf_test.zig
+src/board/image/elf.zig  ->  tests/board/image/elf_test.zig
 ```
 
 `tests/all.zig` is the test root and lists every test file, so `zig build test`

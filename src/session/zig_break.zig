@@ -5,7 +5,7 @@
 //! boundary after the wanted one, and the verdict names that arrival's own
 //! address.
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const breakpoint = @import("breakpoint.zig");
 const profile = @import("profile.zig");
 const cpu = @import("ra8_chip").core.cpu.cpu;

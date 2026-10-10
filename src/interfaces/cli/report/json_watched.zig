@@ -2,7 +2,7 @@
 //! store log, the same facts debug/watchpoint.zig print() writes: the
 //! opening and closing stores, how many fell between, how they spaced out
 //! over periods, and who wrote what. Every tally row is listed (no top-N).
-const elf = @import("../../../image/elf.zig");
+const elf = @import("../../../board/image/elf.zig");
 const symbols = @import("../../../session/symbols.zig");
 const watchpoint = @import("../../../session/watchpoint.zig");
 const tally_mod = @import("../../../session/tally.zig");

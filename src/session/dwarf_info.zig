@@ -11,7 +11,7 @@
 //! goes through .debug_addr (DW_FORM_addrx) or that only has DW_AT_ranges
 //! is left out.
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const dwarf_cursor = @import("dwarf_cursor.zig");
 const dwarf_line = @import("dwarf_line.zig");
 

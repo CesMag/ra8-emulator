@@ -2,7 +2,7 @@
 //! run spent itself, then the site lines. `--report json` carries all of it
 //! in the one JSON line (RA8EMU-391), so main.zig calls this only for text.
 const std = @import("std");
-const elf = @import("../../../image/elf.zig");
+const elf = @import("../../../board/image/elf.zig");
 const cli = @import("../cli.zig");
 const Parts = @import("../parts.zig").Parts;
 const taken_in = @import("../../../session/taken_in.zig");

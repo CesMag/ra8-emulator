@@ -5,9 +5,9 @@
 //! The core asks a fetch guard (src/chip/core/cpu/fetch_guard.zig) before every
 //! instruction. The guard is only installed when the flag asks for it,
 //! because it turns off the trip skipping a plain run relies on.
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const undefined_ops = @import("ra8_chip").core.undefined_ops;
-const read_image = @import("../image/load.zig");
+const read_image = @import("../board/image/load.zig");
 const cpu = @import("ra8_chip").core.cpu.cpu;
 
 pub const Found = undefined_ops.Found;

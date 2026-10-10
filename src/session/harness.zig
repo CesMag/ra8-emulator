@@ -1,6 +1,6 @@
 //! Public owner for a firmware image, its Zig core, board, and debug session.
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const part = @import("ra8_chip").core.part;
 const BoardBus = @import("ra8_chip").core.cpu.board_bus.BoardBus;
 const cpu_mod = @import("ra8_chip").core.cpu.cpu;
@@ -8,7 +8,7 @@ const NvicSource = @import("ra8_chip").core.cpu.exception.nvic_source.NvicSource
 const QuietSource = @import("ra8_chip").core.cpu.exception.quiet_source.QuietSource;
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const memory_load = @import("ra8_chip").core.cpu.memory.load;
-const read_image = @import("../image/load.zig");
+const read_image = @import("../board/image/load.zig");
 const Board = @import("../board/board.zig").Board;
 const option_memory = @import("ra8_chip").periph.iwdt_option_memory;
 const Reboot = @import("ra8_chip").core.reboot.Reboot;

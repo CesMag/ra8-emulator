@@ -20,7 +20,7 @@
 //! Like symbols.zig, nothing here allocates and every read is bounds-checked,
 //! so a truncated or hostile image gives fewer sections, never a bad slice.
 const std = @import("std");
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const symbols = @import("symbols.zig");
 
 /// The section header fields this table reads.

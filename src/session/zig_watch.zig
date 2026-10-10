@@ -12,7 +12,7 @@ const std = @import("std");
 const bus = @import("ra8_chip").core.cpu.bus;
 const boot = @import("ra8_chip").core.cpu.boot;
 const cpu = @import("ra8_chip").core.cpu.cpu;
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const Source = @import("ra8_chip").core.cpu.exception.source.Source;
 const watchpoint = @import("watchpoint.zig");
 

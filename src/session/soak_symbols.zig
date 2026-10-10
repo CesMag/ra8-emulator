@@ -1,7 +1,7 @@
 //! The ThreadX symbols a `--run-for` soak finds threads through
 //! (RA8EMU-619): src/board/run/soak_threads.zig walks them. An image
 //! without ThreadX names neither, and its soak watches no canaries.
-const elf = @import("../image/elf.zig");
+const elf = @import("../board/image/elf.zig");
 const symbols = @import("symbols.zig");
 const soak_threads = @import("../board/run/soak_threads.zig");
 
