@@ -7,5 +7,4 @@ test {
     _ = @import("example_budgets_test.zig");
     _ = @import("example_options_test.zig");
     _ = @import("example_expect_test.zig");
-    _ = @import("handoff_bench_test.zig");
 }

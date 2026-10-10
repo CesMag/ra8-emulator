@@ -1,7 +1,7 @@
 //! Draws the camera panel and turns clicks on it into picks and answers
-//! (RA8EMU-500). It only reads and changes a `camera_panel.Panel`; the run
-//! loop opens the source and swaps it between steps (camera_open.zig,
-//! camera_switch.zig).
+//! (RA8EMU-500). It only reads and changes a `camera_panel.Panel`; the
+//! shell sends each pick to the session, which opens the source
+//! (shell_camera.zig).
 //!
 //! A row of one button per source, the active one ringed; a dot that is
 //! red while the webcam is the source; and, while the webcam permission is

@@ -1,19 +1,15 @@
 //! Covers src/interfaces/gui/camera_open.zig: the panel's pick and its argument make
-//! the same spec `--camera-source` would, and open the source it names.
+//! the same spec `--camera-source` would.
 const std = @import("std");
 const ra8 = @import("ra8");
 const camera_open = ra8.gui.camera_open;
 const Panel = ra8.gui.camera_panel.Panel;
 
-test "the gradient needs no argument and opens" {
+test "the gradient needs no argument" {
     const panel = Panel{};
     const spec = try camera_open.spec(panel, .{});
     try std.testing.expectEqual(.gradient, spec.kind);
     try std.testing.expectEqualStrings("", spec.arg);
-    const format: u8 = 0;
-    const source = try camera_open.open(std.testing.allocator, std.testing.io, panel, .{}, &format);
-    defer source.close();
-    try std.testing.expectEqualStrings("synthetic gradient", source.label);
 }
 
 test "each kind takes its own argument" {
@@ -44,14 +40,4 @@ test "only an accepted webcam yields a webcam spec, carrying the consent" {
     try std.testing.expectEqual(.webcam, spec.kind);
     try std.testing.expectEqualStrings("1", spec.arg);
     try std.testing.expect(spec.allow_webcam);
-}
-
-test "a picture that cannot be read refuses to open" {
-    var panel = Panel{};
-    panel.pick(.image);
-    const format: u8 = 0;
-    try std.testing.expectError(
-        error.FileNotFound,
-        camera_open.open(std.testing.allocator, std.testing.io, panel, .{ .image = "/nonexistent/ra8-panel.png" }, &format),
-    );
 }

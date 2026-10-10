@@ -79,12 +79,11 @@ pub fn build(b: *std.Build) void {
     b.step("examples", "Print the example pass table: -- EMULATOR DIR [INSTRUCTIONS]").dependOn(&table.step);
 
     usbipAttach(b, target, optimize);
-    const bench_mod = handoffBench(b, target, optimize, emu);
     const sdl_mod = sdlModule(b, target, optimize, emu, gui);
     const gui_exe = if (sdl_mod) |mod| guiExe(b, target, optimize, emu, mod) else null;
     guiTest(b, target, optimize, emu, gui, sdl_mod, gui_exe);
 
-    const imports: TestImports = .{ .emu = emu, .widget = firmware.module("ra8_widget"), .gate = gate_mod, .terms = terms_mod, .table = table_mod, .bench = bench_mod };
+    const imports: TestImports = .{ .emu = emu, .widget = firmware.module("ra8_widget"), .gate = gate_mod, .terms = terms_mod, .table = table_mod };
     // Two roots, compiled one after the other under -j1, so the peak memory of
     // a test build is the larger half's (RA8EMU-785).
     const tests = [_]*std.Build.Step.Compile{
@@ -160,7 +159,6 @@ const TestImports = struct {
     gate: *std.Build.Module,
     terms: *std.Build.Module,
     table: *std.Build.Module,
-    bench: *std.Build.Module,
 };
 
 /// One unit test binary over `root`, with every module the tests import.
@@ -171,7 +169,6 @@ fn testBinary(b: *std.Build, name: []const u8, root: []const u8, target: std.Bui
     tests.root_module.addImport("gate", imports.gate);
     tests.root_module.addImport("terms", imports.terms);
     tests.root_module.addImport("example_table", imports.table);
-    tests.root_module.addImport("handoff_bench", imports.bench);
     testPaths(b, tests, exe);
     return tests;
 }
@@ -266,21 +263,6 @@ fn usbipAttach(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.bu
     const usbip = b.addRunArtifact(b.addExecutable(.{ .name = "usbip_attach", .root_module = usbip_mod }));
     usbip.addPassthruArgs();
     b.step("usbip-attach", "Attach --usbip PORT and check it end to end: -- PORT").dependOn(&usbip.step);
-}
-
-/// tools/handoff_bench.zig times the board snapshot handoff with and
-/// without a 240 Hz reader (RA8EMU-227); the tests drive the same module.
-fn handoffBench(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module) *std.Build.Module {
-    const bench_mod = b.createModule(.{
-        .root_source_file = b.path("tools/handoff_bench.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    bench_mod.addImport("ra8", emu);
-    const bench = b.addRunArtifact(b.addExecutable(.{ .name = "handoff_bench", .root_module = bench_mod }));
-    bench.has_side_effects = true;
-    b.step("bench-handoff", "Time the UI snapshot handoff against a 240 Hz reader (use -Doptimize=ReleaseFast)").dependOn(&bench.step);
-    return bench_mod;
 }
 
 /// The SDL3 backend module (src/interfaces/gui/sdl.zig, RA8EMU-616, ADR 0001 in the

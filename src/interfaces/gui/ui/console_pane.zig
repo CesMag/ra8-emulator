@@ -1,9 +1,9 @@
 //! The console pane (RA8EMU-206): one channel's log drawn as the newest
 //! lines that fit, oldest at the top, each stamped with the virtual time it
-//! ended at, and the line still being printed last without a stamp. It sits
-//! under the board view; when the window leaves no room for a row there it
-//! draws nothing. Scrolled `back` lines from the newest (console_scroll.zig)
-//! it shows the finished lines ending there and hides the unfinished one.
+//! ended at, and the line still being printed last without a stamp. When its
+//! area leaves no room for a row it draws nothing. Scrolled `back` lines
+//! from the newest it shows the finished lines ending there and hides the
+//! unfinished one.
 //! Read-only: it draws what console_log.Log holds.
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;

@@ -1,7 +1,6 @@
 //! The board's side of a session speed change when the session and the
 //! engine share one thread, as in the debugger (RA8EMU-184): the change
-//! lands on the board's pacing at once, between commands. A shown run,
-//! whose engine has a thread of its own, goes through gui/speed_post.zig.
+//! lands on the board's pacing at once, between commands.
 const session_api = @import("session_api.zig");
 const clocks = @import("ra8_chip").periph.clocks;
 const pacer = @import("ra8_board").run.pacer;

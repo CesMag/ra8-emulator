@@ -1,6 +1,5 @@
 //! A small hex-entry field (RA8EMU-742), shared by the registers and memory
-//! panes: type hex digits over a value, Enter commits, Escape cancels. It
-//! reads the same key codes console_keys.zig does.
+//! panes: type hex digits over a value, Enter commits, Escape cancels.
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
