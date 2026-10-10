@@ -8,10 +8,6 @@ const std = @import("std");
 const served_setup = @import("../rpc/served_setup.zig");
 const loop = @import("serve_loop.zig");
 const listen = @import("serve_listen.zig");
-const camera_install = @import("ra8_board").camera_install;
-const source_spec = @import("ra8_host").camera.source_spec;
-const camera_source = @import("camera_source.zig");
-const Board = @import("ra8_board").board.Board;
 
 pub const usage =
     \\usage: ra8_emulator serve --stdio <firmware.elf>
@@ -43,8 +39,6 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
     };
     defer setup.deinit();
     const buffers: loop.Buffers = .{ .rx = setup.rx, .tx = setup.tx };
-    var camera: Camera = .{ .board = setup.owner.board(), .allocator = allocator, .io = io };
-    setup.context.camera = .{ .context = &camera, .setFn = Camera.set };
     const context = &setup.context;
     const done = switch (asked.where) {
         .stdio => loop.answerStdio(context, buffers),
@@ -56,16 +50,3 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
     };
     return 0;
 }
-
-/// The board, allocator and io set_camera_source opens sources with.
-const Camera = struct {
-    board: *Board,
-    allocator: std.mem.Allocator,
-    io: std.Io,
-
-    fn set(context: *anyopaque, spec: source_spec.Spec) anyerror!void {
-        const self: *Camera = @ptrCast(@alignCast(context));
-        const next = try camera_source.open(self.allocator, self.io, spec, &self.board.wire.sensor.format);
-        camera_install.install(self.board, next);
-    }
-};

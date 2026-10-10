@@ -86,3 +86,4 @@ pub const zig_snapshot = @import("zig_snapshot.zig");
 pub const zig_stop = @import("zig_stop.zig");
 pub const zig_undefined = @import("zig_undefined.zig");
 pub const zig_watch = @import("zig_watch.zig");
+pub const board_camera = @import("board_camera.zig");

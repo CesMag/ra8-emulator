@@ -67,6 +67,7 @@ test {
     _ = @import("session/board_faults_test.zig");
     _ = @import("session/board_faults_lines_test.zig");
     _ = @import("session/board_plug_test.zig");
+    _ = @import("session/board_camera_test.zig");
     _ = @import("session/board_plug_list_test.zig");
     _ = @import("board/camera_install_test.zig");
     _ = @import("board/gauge_replug_test.zig");

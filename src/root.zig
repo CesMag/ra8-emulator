@@ -164,6 +164,7 @@ pub const board = struct {
     pub const board_leds = @import("ra8_session").board_leds;
     pub const session_plug = @import("ra8_session").board_plug;
     pub const camera_install = @import("ra8_board").camera_install;
+    pub const board_camera = @import("ra8_session").board_camera;
     pub const board_speed = @import("ra8_session").board_speed;
     pub const run_policy = @import("ra8_board").run_policy;
     /// What a run asked for on top of the machine: real-time pacing, the

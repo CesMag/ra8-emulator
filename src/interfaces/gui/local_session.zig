@@ -8,18 +8,12 @@ const rpc = @import("ra8_rpc");
 const served = @import("../rpc/session_server.zig");
 const served_setup = @import("../rpc/served_setup.zig");
 const proto = @import("../rpc/session_rpc.zig");
-const source_spec = @import("ra8_host").camera.source_spec;
-const source_open = @import("ra8_host").camera.source_open;
-const hosted = @import("ra8_components").camera.hosted;
-const camera_install = @import("ra8_board").camera_install;
-const Board = @import("ra8_board").board.Board;
 
 pub const LocalSession = struct {
     setup: served_setup.Served,
     pipes: [2][]u8,
     loop: rpc.Loopback,
     host: served.Host,
-    camera: Camera,
 
     /// Open `elf_path` and serve it. The host and the context point into
     /// `self`, so it stays put until `deinit`.
@@ -32,8 +26,6 @@ pub const LocalSession = struct {
         const to_shell = try allocator.alloc(u8, size);
         self.pipes = .{ to_server, to_shell };
         self.loop = rpc.Loopback.init(to_server, to_shell);
-        self.camera = .{ .board = self.setup.owner.board(), .allocator = allocator, .io = io };
-        self.setup.context.camera = .{ .context = &self.camera, .setFn = Camera.set };
         self.host = served.Host.init(self.loop.b(), self.setup.rx, &self.setup.context);
     }
 
@@ -51,19 +43,5 @@ pub const LocalSession = struct {
         const gpa = self.setup.gpa;
         for (self.pipes) |pipe| gpa.free(pipe);
         self.setup.deinit();
-    }
-};
-
-/// Opens a camera source for set_camera_source, as `serve` does.
-const Camera = struct {
-    board: *Board,
-    allocator: std.mem.Allocator,
-    io: std.Io,
-
-    fn set(context: *anyopaque, spec: source_spec.Spec) anyerror!void {
-        const self: *Camera = @ptrCast(@alignCast(context));
-        const opened = try source_open.open(self.allocator, self.io, spec);
-        const next = try hosted.wrap(self.allocator, opened, &self.board.wire.sensor.format);
-        camera_install.install(self.board, next);
     }
 };
