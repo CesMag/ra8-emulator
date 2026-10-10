@@ -38,7 +38,7 @@ no file paths, no CLI, no GUI. Scaffolding (hello windows, spikes) does not
 stay in the tree or the build.
 
 The tree moves to this layout in the order ADR 0004 gives (epic RA8EMU-985),
-so during the migration some files still sit at their old paths (`src/periph/time`). New code goes where the ADR puts it.
+so during the migration some files still sit at their old paths (`src/image`). New code goes where the ADR puts it.
 A directory is renamed only after everything leaving it has left, so no file
 moves twice.
 

@@ -11,7 +11,7 @@ const store_board = @import("store_board.zig");
 
 const zig_run = ra8.board.zig_run;
 const cpu_boot = ra8.core.cpu.boot;
-const soak = ra8.periph.time_policy.soak;
+const soak = ra8.board.run.soak;
 
 const soaker = @import("soaker.zig");
 const hz: u64 = 1_000_000;

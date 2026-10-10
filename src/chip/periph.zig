@@ -31,15 +31,6 @@ pub const canfd_tx_status = @import("periph/canfd/canfd_tx_status.zig");
 pub const canfd_regs = @import("periph/canfd/canfd_regs.zig");
 pub const ceu = @import("periph/ceu.zig");
 pub const clocks = @import("periph/clocks.zig");
-/// Run policy still filed under src/chip/periph/time but off the chip's Time
-/// (RA8EMU-1046); it leaves for the session (RA8EMU-1047).
-pub const time_policy = struct {
-    pub const pacer = @import("../periph/time/pacer.zig");
-    pub const pacing = @import("../periph/time/pacing.zig");
-    pub const speed = @import("../periph/time/speed.zig");
-    pub const soak = @import("../periph/time/soak.zig");
-    pub const soak_fault = @import("../periph/time/soak_fault.zig");
-};
 pub const crc = @import("periph/crc.zig");
 pub const dac = @import("periph/dac/dac.zig");
 pub const dac_output = @import("periph/dac/dac_output.zig");

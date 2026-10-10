@@ -13,7 +13,7 @@ const idler = @import("idler.zig");
 const zig_run = ra8.board.zig_run;
 const cpu_boot = ra8.core.cpu.boot;
 const memmap = ra8.core.memmap;
-const soak = ra8.periph.time_policy.soak;
+const soak = ra8.board.run.soak;
 
 const hz: u64 = 1_000_000;
 const ns_per_s: u64 = 1_000_000_000;

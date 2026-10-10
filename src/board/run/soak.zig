@@ -5,9 +5,9 @@
 //! so the report says when the firmware stopped feeding the dog rather than
 //! carrying on into a second boot. The first event is the one kept; whatever
 //! follows from it is not news. A fault the core latched into CFSR, HFSR
-//! or SFSR is an event too (slice 2b, src/periph/time/soak_fault.zig), and so
+//! or SFSR is an event too (slice 2b, src/board/run/soak_fault.zig), and so
 //! is a watched stack canary or heap guard word that changed (RA8EMU-619,
-//! src/periph/time/soak_watch.zig).
+//! src/board/run/soak_watch.zig).
 const std = @import("std");
 const timebase = @import("../../chip/periph/time/timebase.zig");
 const Calendar = @import("../../chip/periph/rtc/rtc_clock.zig").Calendar;

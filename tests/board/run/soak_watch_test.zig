@@ -1,7 +1,7 @@
-//! Tests for src/periph/time/soak_watch.zig.
+//! Tests for src/board/run/soak_watch.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const soak = ra8.periph.time_policy.soak;
+const soak = ra8.board.run.soak;
 const soak_watch = soak.soak_watch;
 
 /// Four words of memory at 0x2000_0000; anything else is unreadable.

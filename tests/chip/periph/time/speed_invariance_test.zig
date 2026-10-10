@@ -9,8 +9,8 @@ const idler = @import("../../../interfaces/cli/idler.zig");
 
 const zig_run = ra8.board.zig_run;
 const cpu_boot = ra8.core.cpu.boot;
-const pacing = ra8.periph.time_policy.pacing;
-const pacer = ra8.periph.time_policy.pacer;
+const pacing = ra8.board.run.pacing;
+const pacer = ra8.board.run.pacer;
 const budget: u64 = 2_000_000;
 const most_entries = 16;
 

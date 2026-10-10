@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const clocks = ra8.periph.clocks;
-const time_policy = ra8.periph.time_policy;
+const time_policy = ra8.board.run;
 const SpeedPost = ra8.gui.speed_post.SpeedPost;
 const us = std.time.ns_per_us;
 const ms = std.time.ns_per_ms;

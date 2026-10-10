@@ -183,7 +183,7 @@ test "plug and unplug wire a part in and out through the board mid-script" {
 const FakeWall = struct {
     at: u64 = 0,
 
-    fn clock(self: *FakeWall) ra8.periph.time_policy.pacer.Clock {
+    fn clock(self: *FakeWall) ra8.board.run.pacer.Clock {
         return .{ .ctx = self, .nowFn = now, .sleepFn = sleep };
     }
 
@@ -207,7 +207,7 @@ test "speed moves the board's pacer mid-script and refuses a bad factor" {
     var time = ra8.periph.clocks.Time{};
     time.base.advance(1000);
     var wall = FakeWall{};
-    var paced: ?ra8.periph.time_policy.pacing.Pacing = null;
+    var paced: ?ra8.board.run.pacing.Pacing = null;
     var speed: ra8.board.board_speed.BoardSpeed = .{ .time = &time, .paced = &paced, .clock = wall.clock() };
     target.session.speed = speed.hook();
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);

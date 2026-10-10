@@ -10,8 +10,8 @@ const store_board = @import("../../../interfaces/cli/store_board.zig");
 
 const zig_run = ra8.board.zig_run;
 const cpu_boot = ra8.core.cpu.boot;
-const pacing = ra8.periph.time_policy.pacing;
-const pacer = ra8.periph.time_policy.pacer;
+const pacing = ra8.board.run.pacing;
+const pacer = ra8.board.run.pacer;
 const Calendar = ra8.periph.rtc_clock.Calendar;
 
 const hz: u64 = 1_000_000;

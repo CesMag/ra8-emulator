@@ -1,7 +1,7 @@
 //! The speed factor a run asks for (RA8EMU-184, slice 1).
 //!
 //! A factor is kept in thousandths of real time, the unit the pacer works in
-//! (src/periph/time/pacer.zig): 1000 is 1x, 250 is 0.25x, 5000 is 5x. Text
+//! (src/board/run/pacer.zig): 1000 is 1x, 250 is 0.25x, 5000 is 5x. Text
 //! takes any positive decimal with up to three places, or `max` for an
 //! unpaced run, which is what a run without the flag already is.
 const std = @import("std");

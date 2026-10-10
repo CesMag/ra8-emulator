@@ -165,6 +165,15 @@ pub const board = struct {
     pub const camera_install = @import("board/camera_install.zig");
     pub const board_speed = @import("session/board_speed.zig");
     pub const run_policy = @import("board/run_policy.zig");
+    /// What a run asked for on top of the machine: real-time pacing, the
+    /// speed factor and what ends a soak. Held by `run_policy.RunPolicy`.
+    pub const run = struct {
+        pub const pacer = @import("board/run/pacer.zig");
+        pub const pacing = @import("board/run/pacing.zig");
+        pub const speed = @import("board/run/speed.zig");
+        pub const soak = @import("board/run/soak.zig");
+        pub const soak_fault = @import("board/run/soak_fault.zig");
+    };
     pub const session_events = @import("session/board_events.zig");
     pub const board_boundary = @import("session/board_boundary.zig");
     pub const session_schedule = @import("session/board_schedule.zig");

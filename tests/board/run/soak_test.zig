@@ -1,7 +1,7 @@
-//! Tests for src/periph/time/soak.zig.
+//! Tests for src/board/run/soak.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const soak = ra8.periph.time_policy.soak;
+const soak = ra8.board.run.soak;
 
 test "an unarmed soak ignores events and prints nothing" {
     var state = soak.Soak{};
