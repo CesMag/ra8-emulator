@@ -8,7 +8,7 @@
 //! through the board's own hook. A change the board refuses there comes
 //! back through `takeRefused`, for the panel to put its row back.
 const std = @import("std");
-const session_api = @import("../../session/session_api.zig");
+const session_api = @import("ra8_session").session_api;
 
 pub const Endpoint = session_api.Endpoint;
 pub const Error = error{QueueFull};

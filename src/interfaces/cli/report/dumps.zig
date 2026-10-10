@@ -14,10 +14,10 @@ const std = @import("std");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const elf = @import("ra8_board").image.elf;
 const cli = @import("../cli.zig");
-const symbols = @import("../../../session/symbols.zig");
+const symbols = @import("ra8_session").symbols;
 const sd_dump = @import("ra8_components").sd_dump;
 const sd_image = @import("ra8_components").sd_image;
-const registers = @import("../../../session/registers.zig");
+const registers = @import("ra8_session").registers;
 const json_regs = @import("json_regs.zig");
 
 /// Read each `--dump-sym` global out of RAM and print it.

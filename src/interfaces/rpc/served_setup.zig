@@ -5,13 +5,13 @@
 //! The camera hook is the application's to set, since opening a host camera
 //! source is its job.
 const std = @import("std");
-const harness = @import("../../session/harness.zig");
-const board_rtc = @import("../../session/board_rtc.zig");
-const session_plug = @import("../../session/board_plug.zig");
-const session_api = @import("../../session/session_api.zig");
-const region_map = @import("../../session/region_map.zig");
-const region_map_json = @import("../../session/region_map_json.zig");
-const region_map_text = @import("../../session/region_map_text.zig");
+const harness = @import("ra8_session").harness;
+const board_rtc = @import("ra8_session").board_rtc;
+const session_plug = @import("ra8_session").board_plug;
+const session_api = @import("ra8_session").session_api;
+const region_map = @import("ra8_session").region_map;
+const region_map_json = @import("ra8_session").region_map_json;
+const region_map_text = @import("ra8_session").region_map_text;
 const proto = @import("session_rpc.zig");
 const served = @import("session_server.zig");
 

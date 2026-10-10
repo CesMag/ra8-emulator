@@ -7,7 +7,7 @@ const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const boot = @import("ra8_chip").core.cpu.boot;
 const elf = @import("ra8_board").image.elf;
 const clocks = @import("ra8_chip").periph.clocks;
-const fault_file = @import("../../session/fault_file.zig");
+const fault_file = @import("ra8_session").fault_file;
 const cli = @import("cli.zig");
 const Board = @import("ra8_board").board.Board;
 const board_wiring = @import("ra8_board").wiring;
@@ -18,27 +18,27 @@ const frame_out = @import("frame_out.zig");
 const frames_out = @import("report.zig").frames_out;
 const eink_log = @import("eink_log.zig");
 const audio_out = @import("audio_out.zig");
-const rtos_hook = @import("../../session/rtos_hook.zig");
-const run_loop = @import("../../session/run_loop.zig");
+const rtos_hook = @import("ra8_session").rtos_hook;
+const run_loop = @import("ra8_session").run_loop;
 const second_core = @import("ra8_chip").core.second_core;
-const profile = @import("../../session/profile.zig");
-pub const stack_profile = @import("../../session/stack_profile.zig");
-const mem_dump = @import("../../session/mem_dump.zig");
-const watchpoint = @import("../../session/watchpoint.zig");
+const profile = @import("ra8_session").profile;
+pub const stack_profile = @import("ra8_session").stack_profile;
+const mem_dump = @import("ra8_session").mem_dump;
+const watchpoint = @import("ra8_session").watchpoint;
 /// `--watch` on a Zig run: src/session/zig_watch.zig.
-pub const zig_watch = @import("../../session/zig_watch.zig");
+pub const zig_watch = @import("ra8_session").zig_watch;
 const Until = @import("ra8_chip").core.until.Until;
 /// The `--stop-sym` counter a Zig run watches: src/session/zig_stop.zig.
-pub const stop_sym = @import("../../session/zig_stop.zig");
+pub const stop_sym = @import("ra8_session").zig_stop;
 /// Re-exported for tests/session/itm_console_test.zig: cli.zig is full.
-pub const itm_console = @import("../../session/itm_console.zig");
+pub const itm_console = @import("ra8_session").itm_console;
 /// The `--break-sym` arrival a Zig run counts: src/session/zig_break.zig.
-pub const break_sym = @import("../../session/zig_break.zig");
+pub const break_sym = @import("ra8_session").zig_break;
 /// `--stop-on-undefined` on a Zig run: src/session/zig_undefined.zig.
-pub const undefined_sites = @import("../../session/zig_undefined.zig");
+pub const undefined_sites = @import("ra8_session").zig_undefined;
 /// `--save-state` / `--load-state` (RA8EMU-696).
 pub const state_args = @import("state_args.zig");
-pub const zig_snapshot = @import("../../session/zig_snapshot.zig");
+pub const zig_snapshot = @import("ra8_session").zig_snapshot;
 
 /// What ends a Zig run before its budget: src/session/run_loop.zig.
 pub const Ends = run_loop.Ends;

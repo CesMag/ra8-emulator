@@ -6,7 +6,7 @@
 //! them from the symbol table is the frontend's job, so it lives here.
 const elf = @import("ra8_board").image.elf;
 const undefined_ops = @import("ra8_chip").core.undefined_ops;
-const symbols = @import("../../../session/symbols.zig");
+const symbols = @import("ra8_session").symbols;
 
 const Found = undefined_ops.Found;
 const limits = undefined_ops.limits;

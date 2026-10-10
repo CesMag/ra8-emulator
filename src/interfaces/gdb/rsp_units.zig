@@ -11,8 +11,8 @@
 //! (src/session/core_view.zig), so a Zig session hands its stores on
 //! the same way (RA8EMU-483).
 const std = @import("std");
-const core_view = @import("../../session/core_view.zig");
-const stop_machine = @import("../../session/stop_machine.zig");
+const core_view = @import("ra8_session").core_view;
+const stop_machine = @import("ra8_session").stop_machine;
 const dwt = @import("ra8_chip").periph.dwt;
 const dcb = @import("ra8_chip").periph.dcb;
 

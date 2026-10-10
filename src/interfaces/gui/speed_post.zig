@@ -8,7 +8,7 @@
 //! time carries straight on and only its rate against the wall changes. A
 //! run that was not paced starts pacing at that park, against `clock`.
 const std = @import("std");
-const session_api = @import("../../session/session_api.zig");
+const session_api = @import("ra8_session").session_api;
 const pacer = @import("ra8_board").run.pacer;
 const pacing = @import("ra8_board").run.pacing;
 

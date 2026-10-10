@@ -5,7 +5,7 @@
 //! taken; anything else is left for the packet reader once the run stops.
 const std = @import("std");
 const packet = @import("rsp_packet.zig");
-const debug_session = @import("../../session/session.zig");
+const debug_session = @import("ra8_session").session;
 const sock_ready = @import("ra8_host").sock_ready;
 
 /// Instructions per run chunk under gdb: small enough that an interrupt

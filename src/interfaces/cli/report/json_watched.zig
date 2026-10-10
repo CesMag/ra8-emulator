@@ -3,9 +3,9 @@
 //! opening and closing stores, how many fell between, how they spaced out
 //! over periods, and who wrote what. Every tally row is listed (no top-N).
 const elf = @import("ra8_board").image.elf;
-const symbols = @import("../../../session/symbols.zig");
-const watchpoint = @import("../../../session/watchpoint.zig");
-const tally_mod = @import("../../../session/tally.zig");
+const symbols = @import("ra8_session").symbols;
+const watchpoint = @import("ra8_session").watchpoint;
+const tally_mod = @import("ra8_session").tally;
 const symbol = @import("json_where.zig").symbol;
 
 /// Null unless `--watch` named a place the image resolves.

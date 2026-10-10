@@ -16,11 +16,11 @@
 //! sites behind the run's counters: counted pcs and where exceptions
 //! were taken.
 const clocks = @import("ra8_chip").periph.clocks;
-const tally_mod = @import("../../../session/tally.zig");
-const taken_in_mod = @import("../../../session/taken_in.zig");
+const tally_mod = @import("ra8_session").tally;
+const taken_in_mod = @import("ra8_session").taken_in;
 const elf = @import("ra8_board").image.elf;
-const symbols = @import("../../../session/symbols.zig");
-const pc_hits = @import("../../../session/pc_hits.zig");
+const symbols = @import("ra8_session").symbols;
+const pc_hits = @import("ra8_session").pc_hits;
 
 const Writer = @import("../report.zig").Writer;
 

@@ -7,21 +7,21 @@ const cpu1_image = @import("cpu1_image.zig");
 const cpu_mod = @import("ra8_chip").core.cpu.cpu;
 const Board = @import("ra8_board").board.Board;
 const board_wiring = @import("ra8_board").wiring;
-const board_speed = @import("../../session/board_speed.zig");
+const board_speed = @import("ra8_session").board_speed;
 const pacing = @import("ra8_board").run.pacing;
-const script = @import("../../session/script.zig");
-const stop_machine = @import("../../session/stop_machine.zig");
-const zig_script = @import("../../session/zig_script.zig");
-const session_api = @import("../../session/session_api.zig");
-const step_hook = @import("../../session/step_hook.zig");
-const watch_bus = @import("../../session/watch_bus.zig");
+const script = @import("ra8_session").script;
+const stop_machine = @import("ra8_session").stop_machine;
+const zig_script = @import("ra8_session").zig_script;
+const session_api = @import("ra8_session").session_api;
+const step_hook = @import("ra8_session").step_hook;
+const watch_bus = @import("ra8_session").watch_bus;
 const debug_front = @import("debug_front.zig");
 const rsp_dispatch = @import("../gdb/rsp_dispatch.zig");
 const rsp_poll = @import("../gdb/rsp_poll.zig");
 const second_core = @import("ra8_chip").core.second_core;
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const exclusive_peer = @import("ra8_chip").core.cpu.exclusive_peer;
-const harness = @import("../../session/harness.zig");
+const harness = @import("ra8_session").harness;
 
 /// Why a request cannot run on the Zig core's debugger yet, or null when it can.
 pub fn refusal(request: debug_front.Request) ?[]const u8 {

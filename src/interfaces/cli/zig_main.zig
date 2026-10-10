@@ -16,7 +16,7 @@ const report = @import("report.zig");
 const zig_run = @import("zig_run.zig");
 const dumps = @import("report/dumps.zig");
 const Stop = @import("ra8_chip").core.stop.Stop;
-const fault_file = @import("../../session/fault_file.zig");
+const fault_file = @import("ra8_session").fault_file;
 const Cpu0 = @import("ra8_board").cpu0_store.Cpu0;
 
 /// Fitting the board is shared with main's engine path.

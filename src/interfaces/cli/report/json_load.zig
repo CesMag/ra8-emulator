@@ -7,9 +7,9 @@
 //! its id (the thread's control block or the exception number; null for
 //! `before` and `idle`), its name where one can be read, its instructions
 //! and its share in permille, so a core's shares add up to exactly 1000.
-const rtos_report = @import("../../../session/rtos_report.zig");
-const rtos_load = @import("../../../session/rtos_load.zig");
-const names = @import("../../../session/rtos_names.zig");
+const rtos_report = @import("ra8_session").rtos_report;
+const rtos_load = @import("ra8_session").rtos_load;
+const names = @import("ra8_session").rtos_names;
 const json = @import("json.zig");
 
 /// The traced cores the load is read from.

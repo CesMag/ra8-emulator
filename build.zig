@@ -113,11 +113,16 @@ fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
     board.addImport("ra8_chip", chip);
     board.addImport("ra8_components", components);
     board.addImport("ra8_snapshot", snapshot);
+    const session = library(b, target, optimize, "ra8_session", "src/session/root.zig");
+    session.addImport("ra8_board", board);
+    session.addImport("ra8_chip", chip);
+    session.addImport("ra8_components", components);
     emu.addImport("ra8_host", host);
     emu.addImport("ra8_snapshot", snapshot);
     emu.addImport("ra8_chip", chip);
     emu.addImport("ra8_components", components);
     emu.addImport("ra8_board", board);
+    emu.addImport("ra8_session", session);
 }
 
 /// One library module, importable by its name from this build and from a

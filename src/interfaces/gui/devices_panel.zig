@@ -8,7 +8,7 @@
 //! showing what is really on the line. devices_pane.zig draws it
 //! and turns a click into `click`.
 const std = @import("std");
-const session_api = @import("../../session/session_api.zig");
+const session_api = @import("ra8_session").session_api;
 
 pub const Endpoint = session_api.Endpoint;
 

@@ -4,10 +4,10 @@
 //! importing the session.
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
-const dwarf_line = @import("../../session/dwarf_line.zig");
-const session_api = @import("../../session/session_api.zig");
-const symbols = @import("../../session/symbols.zig");
-const unwind = @import("../../session/unwind.zig");
+const dwarf_line = @import("ra8_session").dwarf_line;
+const session_api = @import("ra8_session").session_api;
+const symbols = @import("ra8_session").symbols;
+const unwind = @import("ra8_session").unwind;
 const stack_pane = @import("ui/stack_pane.zig");
 
 comptime {

@@ -10,8 +10,8 @@
 //! image and prints it.
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
-const region_map = @import("../../session/region_map.zig");
-const region_map_text = @import("../../session/region_map_text.zig");
+const region_map = @import("ra8_session").region_map;
+const region_map_text = @import("ra8_session").region_map_text;
 
 const usage = "usage: ra8_emulator --map <firmware.elf>\n";
 

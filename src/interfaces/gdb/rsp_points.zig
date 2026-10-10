@@ -6,8 +6,8 @@
 //! `Z4` are write, read and access watchpoints over `length` bytes, kept
 //! in the watch table. The requests are `Ztype,address,length`.
 const std = @import("std");
-const stop_machine = @import("../../session/stop_machine.zig");
-const watch_table = @import("../../session/watch_table.zig");
+const stop_machine = @import("ra8_session").stop_machine;
+const watch_table = @import("ra8_session").watch_table;
 
 pub const Error = error{NoSpace};
 

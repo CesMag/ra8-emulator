@@ -5,14 +5,14 @@
 //! same way the rest do.
 const std = @import("std");
 const cli = @import("cli.zig");
-const touch_spec = @import("../../session/touch_spec.zig");
+const touch_spec = @import("ra8_session").touch_spec;
 const request = @import("ra8_components").request;
 const fault_spec = @import("ra8_components").fault_spec;
 const source_spec = @import("ra8_host").camera.source_spec;
 const sci_reply = @import("ra8_chip").periph.sci_reply;
-const rtc_start = @import("../../session/rtc_start.zig");
+const rtc_start = @import("ra8_session").rtc_start;
 const speed = @import("ra8_board").run.speed;
-const duration = @import("../../session/duration.zig");
+const duration = @import("ra8_session").duration;
 const timebase = @import("ra8_chip").periph.timebase;
 
 const Options = cli.Options;

@@ -1,10 +1,10 @@
 //! Sorted per-function instruction and cycle counts.
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
-const profile = @import("../../../session/profile.zig");
-const symbols = @import("../../../session/symbols.zig");
-const stack_samples = @import("../../../session/stack_samples.zig");
-const stack_profile = @import("../../../session/stack_profile.zig");
+const profile = @import("ra8_session").profile;
+const symbols = @import("ra8_session").symbols;
+const stack_samples = @import("ra8_session").stack_samples;
+const stack_profile = @import("ra8_session").stack_profile;
 const Writer = @import("../report.zig").Writer;
 
 pub fn write(out: Writer, io: std.Io, image: elf.Image, table: profile.Table, path: ?[]const u8) !void {

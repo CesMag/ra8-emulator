@@ -5,9 +5,9 @@
 //! symbol around it; the text's top-N cut on taken-from is not applied.
 //! Nothing feeds it on the Zig core, so it is null.
 const elf = @import("ra8_board").image.elf;
-const pc_hits = @import("../../../session/pc_hits.zig");
-const tally_mod = @import("../../../session/tally.zig");
-const taken_in = @import("../../../session/taken_in.zig");
+const pc_hits = @import("ra8_session").pc_hits;
+const tally_mod = @import("ra8_session").tally;
+const taken_in = @import("ra8_session").taken_in;
 const symbol = @import("json_where.zig").symbol;
 
 /// The run's site tables, borrowed from the report Tally.

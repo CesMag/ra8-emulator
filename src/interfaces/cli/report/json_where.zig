@@ -7,12 +7,12 @@
 //! did not collect it (the Zig core feeds no step or sample hooks, and the
 //! profile exists only under --profile).
 const elf = @import("ra8_board").image.elf;
-const symbols = @import("../../../session/symbols.zig");
-const hotspots = @import("../../../session/hotspots.zig");
+const symbols = @import("ra8_session").symbols;
+const hotspots = @import("ra8_session").hotspots;
 
 /// The sampled-pc table type, so tests can build one.
 pub const Pcs = hotspots.Table;
-const functions = @import("../../../session/functions.zig");
+const functions = @import("ra8_session").functions;
 const profile = functions.profile;
 const lob = @import("ra8_chip").core.lob;
 const csel = @import("ra8_chip").core.csel;

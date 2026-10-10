@@ -5,7 +5,7 @@
 //! event. Kinds with their own topic (uart, lcd) or no wire name are skipped.
 const std = @import("std");
 const proto = @import("session_rpc.zig");
-const api = @import("../../session/session_api.zig");
+const api = @import("ra8_session").session_api;
 const Context = @import("session_handlers.zig").Context;
 
 /// Events read from the stream per pass.

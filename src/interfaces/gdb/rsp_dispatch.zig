@@ -13,7 +13,7 @@
 const std = @import("std");
 const Cortex = @import("ra8_chip").core.cpu.cortex.Cortex;
 const features = @import("rsp_features.zig");
-const stop_machine = @import("../../session/stop_machine.zig");
+const stop_machine = @import("ra8_session").stop_machine;
 
 pub const Error = error{NoSpace};
 
@@ -28,7 +28,7 @@ pub const server = @import("rsp_server.zig");
 pub const poll = @import("rsp_poll.zig");
 /// ITM text sent to gdb as `O` packets.
 pub const console = @import("rsp_console.zig");
-const core_view = @import("../../session/core_view.zig");
+const core_view = @import("ra8_session").core_view;
 
 /// The `g` order, which is target.xml's order: r0 to r12, sp, lr, pc, xpsr.
 pub const registers = [_]Cortex{

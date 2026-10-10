@@ -10,10 +10,10 @@
 //! as gdb expects: `T05` for a break or a step, `T05watch:` and friends
 //! for a watch, `T02` for an interrupt and `T0b` when the core faulted.
 const std = @import("std");
-const debug_session = @import("../../session/session.zig");
-const watch_table = @import("../../session/watch_table.zig");
-const zig_drive = @import("../../session/zig_drive.zig");
-const session_api = @import("../../session/session_api.zig");
+const debug_session = @import("ra8_session").session;
+const watch_table = @import("ra8_session").watch_table;
+const zig_drive = @import("ra8_session").zig_drive;
+const session_api = @import("ra8_session").session_api;
 
 pub const Error = error{NoSpace};
 

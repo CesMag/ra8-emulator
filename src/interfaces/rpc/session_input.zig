@@ -5,7 +5,7 @@ const std = @import("std");
 const rpc = @import("ra8_rpc");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
-const api = @import("../../session/session_api.zig");
+const api = @import("ra8_session").session_api;
 const gt911 = @import("ra8_components").gt911;
 
 const Ack = rpc.Outcome(proto.Ack);

@@ -7,7 +7,7 @@
 //! the session's own type (src/session/state_options.zig).
 const std = @import("std");
 const world_flags = @import("world_flags.zig");
-const state_options = @import("../../session/state_options.zig");
+const state_options = @import("ra8_session").state_options;
 
 pub const At = state_options.At;
 pub const Options = state_options.Options;

@@ -3,7 +3,7 @@
 //! never imports the session; `shown` turns each name into the session's
 //! Register at comptime, so a name the session does not know fails the
 //! build.
-const session_api = @import("../../session/session_api.zig");
+const session_api = @import("ra8_session").session_api;
 const registers_pane = @import("ui/registers_pane.zig");
 
 const Register = session_api.Register;

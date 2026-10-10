@@ -4,9 +4,9 @@
 const rpc = @import("ra8_rpc");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
-const api = @import("../../session/session_api.zig");
-const region_map = @import("../../session/region_map.zig");
-const stack_low = @import("../../session/stack_low.zig");
+const api = @import("ra8_session").session_api;
+const region_map = @import("ra8_session").region_map;
+const stack_low = @import("ra8_session").stack_low;
 
 const Outcome = rpc.Outcome(proto.StackReport);
 
