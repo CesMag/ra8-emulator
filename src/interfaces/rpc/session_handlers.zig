@@ -1,7 +1,7 @@
 //! The session RPC handlers: one thin adapter per method onto the Session
 //! API (RA8EMU-735). Handlers never see bytes; session_server.zig routes.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const api = @import("ra8_session").session_api;
 const stop_machine = @import("ra8_session").stop_machine;

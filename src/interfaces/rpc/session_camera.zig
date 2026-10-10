@@ -6,7 +6,7 @@
 //! says its user already consented: under --stdio the session's terminal
 //! is the wire, so it can never ask there.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 const source_spec = @import("ra8_host").camera.source_spec;

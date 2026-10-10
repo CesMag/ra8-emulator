@@ -2,7 +2,7 @@
 //! line with --json, one plain line without. Errors under --json go to
 //! stdout too, so an agent reads a single stream.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 
 pub const Reg = struct { register: proto.Register, value: u32 };
 

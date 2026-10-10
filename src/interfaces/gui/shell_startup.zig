@@ -4,7 +4,7 @@
 //! Each goes out as the plug the plug picker sends on Enter, one at a time.
 //! A refusal says so on stderr and the rest still go.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const request = @import("ra8_components").request;
 const parts = @import("ra8_components").parts;

@@ -1,6 +1,6 @@
 //! The rtc request (RA8EMU-809): the board's RTC calendar in one snapshot,
 //! decoded, for the debugger's time bar.
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 const session_rtc = @import("ra8_session").session_rtc;

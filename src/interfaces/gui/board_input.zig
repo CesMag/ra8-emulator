@@ -3,7 +3,7 @@
 //! a single `input` button request, because the board input script releases
 //! the switch itself after its fixed press length. A release anywhere else
 //! cancels the click.
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const board_pane = @import("ui/board_pane.zig");
 const session_link = @import("session_link.zig");
 

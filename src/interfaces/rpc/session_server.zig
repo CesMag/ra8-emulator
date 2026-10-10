@@ -6,7 +6,7 @@
 //! also queue a `stop` event, which `Host.poll` sends to a subscribed client
 //! after any `uart` events the run produced (RA8EMU-758).
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const api = @import("ra8_session").session_api;
 const handlers = @import("session_handlers.zig");

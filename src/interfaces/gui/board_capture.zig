@@ -2,7 +2,7 @@
 //! ui/board_pane.zig keeps its own LED count and lamp colours, because the
 //! GUI never imports the chip; the pane's test holds them equal to the
 //! chip's.
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const board_pane = @import("ui/board_pane.zig");
 
 /// Takes one session event; anything but a known LED's change is ignored.

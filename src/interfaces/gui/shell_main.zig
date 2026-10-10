@@ -25,7 +25,7 @@ const shell_registers = @import("shell_registers.zig");
 const shell_memory = @import("shell_memory.zig");
 const session_link = @import("session_link.zig");
 const local_session = @import("local_session.zig");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 
 const Env = proto.Client.Env;
 const usage = "usage: ra8_gui [--host NAME] [--hosts FILE] [--attach MODEL@ENDPOINT]... [--click]\n" ++

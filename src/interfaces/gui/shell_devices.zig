@@ -6,7 +6,7 @@
 //! the row's endpoint, and once the session answers the list is asked for
 //! again, so the rows follow the board.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;

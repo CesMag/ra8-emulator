@@ -1,8 +1,8 @@
 //! The answer loop the serve front runs on one connected peer (RA8EMU-736).
 const std = @import("std");
 const builtin = @import("builtin");
-const served = @import("../rpc/session_server.zig");
-const Stdio = @import("../rpc/stdio_transport.zig").Stdio;
+const served = @import("ra8_rpc").session_server;
+const Stdio = @import("ra8_rpc").stdio_transport.Stdio;
 const sock_ready = @import("ra8_host").sock_ready;
 const win32 = @import("ra8_host").win32;
 

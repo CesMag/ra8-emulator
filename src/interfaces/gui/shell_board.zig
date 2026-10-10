@@ -4,7 +4,7 @@
 //! an RGBA image that grows to cover every rectangle seen, and pixels no
 //! rectangle has reached yet stay black.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const draw_list = @import("ra8_render").draw_list;
 const colors = @import("ui/colors.zig");

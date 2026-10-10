@@ -5,7 +5,7 @@
 //! a long press when it was held in place, or a swipe when it moved. The
 //! wire carries whole gestures (RA8EMU-810), so the pane sends one `input`
 //! request per release.
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const draw_list = @import("ra8_render").draw_list;
 const board_pane = @import("ui/board_pane.zig");
 const fit = @import("ui/fit.zig");

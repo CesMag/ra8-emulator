@@ -2,7 +2,7 @@
 //! button press on the board's input script at a virtual board time, so the
 //! debugger's board pane can press a button or touch the panel.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 const api = @import("ra8_session").session_api;

@@ -1,5 +1,5 @@
 //! Session RPC messages carried by the shared RA8 wire protocol (RA8EMU-194).
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 
 pub const protocol_version: u16 = 1;
 /// Bit 0: LCD dirty rectangles. Bit 1: plug, unplug and fault methods.

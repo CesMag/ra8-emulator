@@ -7,7 +7,7 @@
 //! --stdio` on the profile's host for this one command, so each call is a
 //! fresh machine booted from ELF.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const Spec = @import("serve_listen.zig").Spec;
 const ctl_client = @import("ctl_client.zig");
 const Client = ctl_client.Client;

@@ -3,7 +3,7 @@
 //! subscribes both cores' uart topic; each uart event's bytes land in the
 //! log at the event's own virtual time (RA8EMU-774).
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const console_log = @import("console_log.zig");
 

@@ -6,7 +6,7 @@
 //! snapshot and the one it replaces the "before" the pane marks changes
 //! against. A load starts over, so a fresh image marks nothing.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const registers_pane = @import("ui/registers_pane.zig");
 const registers_capture = @import("registers_capture.zig");

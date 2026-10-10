@@ -4,7 +4,7 @@
 //! the timeout when no TEXT was given), 1 on a timeout while waiting for
 //! TEXT or on any stop that is not the end of a chunk.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const Client = @import("ctl_client.zig").Client;
 const out = @import("ctl_print.zig");
 

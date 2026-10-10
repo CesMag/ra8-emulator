@@ -2,9 +2,9 @@
 //! any byte transport, plus the connection state the shell's status line
 //! shows. Nothing blocks; the shell calls `pump` once a frame.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
-const proto = @import("../rpc/session_rpc.zig");
-const Stdio = @import("../rpc/stdio_transport.zig").Stdio;
+const rpc = @import("ra8_rpc_wire");
+const proto = @import("ra8_rpc").session_rpc;
+const Stdio = @import("ra8_rpc").stdio_transport.Stdio;
 
 const Env = proto.Client.Env;
 

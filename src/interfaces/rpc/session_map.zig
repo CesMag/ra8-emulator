@@ -3,7 +3,7 @@
 //! without a map hook, or a core with no image, refuses it; a map longer
 //! than one reply is `too_long`.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 

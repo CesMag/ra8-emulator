@@ -4,10 +4,10 @@
 //! `transport()`, and `answer` serves what it sent, once per frame. RPC over
 //! a pipe or socket is only for a remote session.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
-const served = @import("../rpc/session_server.zig");
-const served_setup = @import("../rpc/served_setup.zig");
-const proto = @import("../rpc/session_rpc.zig");
+const rpc = @import("ra8_rpc_wire");
+const served = @import("ra8_rpc").session_server;
+const served_setup = @import("ra8_rpc").served_setup;
+const proto = @import("ra8_rpc").session_rpc;
 
 pub const LocalSession = struct {
     setup: served_setup.Served,

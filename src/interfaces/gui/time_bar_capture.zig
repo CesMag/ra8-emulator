@@ -2,7 +2,7 @@
 //! the status, the speed field and the clock readout, and turns a click into
 //! a run, a step or a pause on the session link. The bar itself
 //! (gui/ui/time_bar.zig) only lays out, paints and hit-tests.
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const bar = @import("ui/time_bar.zig");
 const status_bar = @import("status_bar.zig");
 const speed_field = @import("speed_field.zig");

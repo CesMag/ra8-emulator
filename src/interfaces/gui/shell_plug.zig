@@ -6,7 +6,7 @@
 //! leaves a note above the field and keeps the text for fixing. One plug is
 //! in flight at a time. There is one field; with two devices leaves it sits
 //! in the last one drawn.
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;

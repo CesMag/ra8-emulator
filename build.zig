@@ -44,7 +44,7 @@ pub fn build(b: *std.Build) void {
     });
     const firmware = b.dependency("ra8_firmware", .{});
     libraries(b, target, optimize, firmware).importInto(emu);
-    emu.addImport("ra8_rpc", firmware.module("ra8_rpc"));
+    emu.addImport("ra8_rpc_wire", firmware.module("ra8_rpc"));
     emu.addImport("ra8_widget", firmware.module("ra8_widget"));
 
     const exe = b.addExecutable(.{
@@ -108,6 +108,9 @@ const Libraries = struct {
     board: *std.Build.Module,
     session: *std.Build.Module,
     render: *std.Build.Module,
+    rpc: *std.Build.Module,
+    gdb: *std.Build.Module,
+    usbip: *std.Build.Module,
 
     /// Every library, under its own name, into `module`.
     fn importInto(self: Libraries, module: *std.Build.Module) void {
@@ -138,7 +141,23 @@ fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         .{ .name = "ra8_widget", .module = firmware.module("ra8_widget") },
         .{ .name = "ra8_widget_host", .module = firmware.module("ra8_widget_host") },
     });
-    return .{ .host = host, .snapshot = snapshot, .chip = chip, .components = components, .board = board, .session = session, .render = render };
+    const rpc = library(b, target, optimize, "ra8_rpc", "src/interfaces/rpc/root.zig", &.{
+        .{ .name = "ra8_session", .module = session },
+        .{ .name = "ra8_components", .module = components },
+        .{ .name = "ra8_host", .module = host },
+        .{ .name = "ra8_rpc_wire", .module = firmware.module("ra8_rpc") },
+    });
+    const gdb = library(b, target, optimize, "ra8_gdb", "src/interfaces/gdb/root.zig", &.{
+        .{ .name = "ra8_session", .module = session },
+        .{ .name = "ra8_chip", .module = chip },
+        .{ .name = "ra8_host", .module = host },
+    });
+    const usbip = library(b, target, optimize, "ra8_usbip", "src/interfaces/usbip/root.zig", &.{
+        .{ .name = "ra8_board", .module = board },
+        .{ .name = "ra8_chip", .module = chip },
+        .{ .name = "ra8_host", .module = host },
+    });
+    return .{ .host = host, .snapshot = snapshot, .chip = chip, .components = components, .board = board, .session = session, .render = render, .rpc = rpc, .gdb = gdb, .usbip = usbip };
 }
 
 /// One library module, importable by its name from this build and from a

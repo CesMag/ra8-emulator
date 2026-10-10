@@ -7,7 +7,7 @@
 //! `bad_args`; one the board cannot honour is `refused`. list_parts
 //! (RA8EMU-791) answers in the same syntax plug takes.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 const endpoint = @import("ra8_components").endpoint;

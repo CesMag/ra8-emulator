@@ -2,10 +2,10 @@
 //! `serve`, one call at a time. The link is a socket to a running `serve`
 //! (`--connect`) or the pipes of one ctl starts (`--host`, RA8EMU-196).
 const std = @import("std");
-const rpc = @import("ra8_rpc");
-const proto = @import("../rpc/session_rpc.zig");
-const Connection = @import("../rpc/socket_transport.zig").Connection;
-const Child = @import("../rpc/child_transport.zig").Child;
+const rpc = @import("ra8_rpc_wire");
+const proto = @import("ra8_rpc").session_rpc;
+const Connection = @import("ra8_rpc").socket_transport.Connection;
+const Child = @import("ra8_rpc").child_transport.Child;
 const Spec = @import("serve_listen.zig").Spec;
 
 /// Where the server is: a socket spec, or the argv that starts `serve --stdio`.

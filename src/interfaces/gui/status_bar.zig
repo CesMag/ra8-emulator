@@ -2,7 +2,7 @@
 //! image and the run state, read as one line of text. Actions go through the
 //! session; the model changes only on what the session sends back.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const Link = session_link.Link;
 const Arrival = session_link.Arrival;

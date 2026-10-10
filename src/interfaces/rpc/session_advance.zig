@@ -9,7 +9,7 @@
 //! that moves no time ends it. A sleeping core goes by in wide chunks
 //! (RA8EMU-767), so minutes of sleep cost about a host second.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 const api = @import("ra8_session").session_api;

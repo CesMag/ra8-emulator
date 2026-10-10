@@ -1,7 +1,7 @@
 //! The RPC byte transport over a child process's pipes (RA8EMU-196): the
 //! child is a `serve --stdio`, run here or behind ssh.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const Stdio = @import("stdio_transport.zig").Stdio;
 
 pub const Child = struct {

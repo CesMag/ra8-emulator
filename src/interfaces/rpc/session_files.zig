@@ -2,7 +2,7 @@
 //! over the wire. Paths are read and written on the serving host. A server
 //! with no state hook, or a session with CPU1 attached, refuses.
 const std = @import("std");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 

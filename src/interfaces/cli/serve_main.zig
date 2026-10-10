@@ -5,7 +5,7 @@
 //! (--listen). Frames are the only thing written to stdout; complaints go
 //! to stderr.
 const std = @import("std");
-const served_setup = @import("../rpc/served_setup.zig");
+const served_setup = @import("ra8_rpc").served_setup;
 const loop = @import("serve_loop.zig");
 const listen = @import("serve_listen.zig");
 

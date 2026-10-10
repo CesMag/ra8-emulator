@@ -5,7 +5,7 @@
 //! session has one (RA8EMU-809); a server without the rtc method refuses it
 //! once and is not asked again.
 const std = @import("std");
-const proto = @import("../rpc/session_rpc.zig");
+const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const speed_field = @import("speed_field.zig");
 const session_rtc = @import("ra8_session").session_rtc;

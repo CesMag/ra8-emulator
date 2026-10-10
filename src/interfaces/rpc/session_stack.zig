@@ -1,7 +1,7 @@
 //! The stack request (RA8EMU-816): a core's MSP and PSP, the lowest each
 //! reached since reset, and how far the lowest MSP went past the main
 //! stack reservation of the image the core last loaded.
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
 const api = @import("ra8_session").session_api;

@@ -3,7 +3,7 @@
 //! so readiness there is PeekNamedPipe's byte count.
 const std = @import("std");
 const builtin = @import("builtin");
-const rpc = @import("ra8_rpc");
+const rpc = @import("ra8_rpc_wire");
 const win32 = @import("ra8_host").win32;
 
 const on_windows = builtin.os.tag == .windows;
