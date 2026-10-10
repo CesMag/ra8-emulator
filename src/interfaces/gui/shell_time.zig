@@ -95,6 +95,12 @@ pub const Time = struct {
         return true;
     }
 
+    /// Board time as near as the shell knows it: where the last slice
+    /// ended, or the last clock answer.
+    pub fn boardNow(self: *const Time) u64 {
+        return @max(self.run.board_ns orelse 0, self.readout.virtual_ns orelse 0);
+    }
+
     /// The bar's view. Its text lives in `self` until the next call.
     pub fn view(self: *Time, status: *const Status) time_bar.View {
         return time_bar_capture.view(&self.texts, status, &self.field, &self.readout, self.editing);

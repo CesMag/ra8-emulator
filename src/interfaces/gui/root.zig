@@ -35,6 +35,7 @@ pub const wall_clock = @import("wall_clock.zig");
 pub const shell_panes = @import("shell_panes.zig");
 pub const shell_console = @import("shell_console.zig");
 pub const shell_board = @import("shell_board.zig");
+pub const shell_board_input = @import("shell_board_input.zig");
 pub const shell_devices = @import("shell_devices.zig");
 pub const shell_fault = @import("shell_fault.zig");
 pub const shell_field = @import("ui/shell_field.zig");

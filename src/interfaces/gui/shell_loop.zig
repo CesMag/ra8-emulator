@@ -1,7 +1,8 @@
 //! The shell loop (RA8EMU-763): one frame of the debugger shell. It drains
 //! the window's events (quit, gutter drags), pumps the session link into the
 //! status bar model, the console (RA8EMU-787), the board (RA8EMU-790), the device list (RA8EMU-792) and the camera
-//! picker (RA8EMU-796), whose leaf also takes clicks, and the plug picker
+//! picker (RA8EMU-796), whose leaf also takes clicks, as does the board leaf
+//! for its switches and its panel (RA8EMU-1119), and the plug picker
 //! (RA8EMU-802), a device row's fault cell (RA8EMU-817), and the camera leaf's file field (RA8EMU-799), which take
 //! typing, and the registers leaves (RA8EMU-821), read again after a load
 //! or a stop, with the memory leaves following each core's SP and the
@@ -24,6 +25,7 @@ const status_bar = @import("status_bar.zig");
 const session_link = @import("session_link.zig");
 const shell_console = @import("shell_console.zig");
 const shell_board = @import("shell_board.zig");
+const shell_board_input = @import("shell_board_input.zig");
 const shell_devices = @import("shell_devices.zig");
 const shell_fault = @import("shell_fault.zig");
 const shell_camera = @import("shell_camera.zig");
@@ -59,6 +61,8 @@ pub const Shell = struct {
     painter: ?shell_frame.Painter = null,
     console: ?*shell_console.Console = null,
     board: ?*shell_board.Board = null,
+    /// The pointer on the board leaf: switch clicks and panel touches.
+    board_input: ?*shell_board_input.Pointer = null,
     devices: ?*shell_devices.Devices = null,
     /// Each device row's fault mode (RA8EMU-817), stepped by its cell.
     faults: ?*shell_fault.Faults = null,
@@ -142,9 +146,11 @@ pub const Shell = struct {
             .button => |press| {
                 if (press.button != 1) return;
                 self.held = if (press.down) solved.hit(press.x, press.y) else null;
-                if (!press.down or self.held != null) return;
+                if (!press.down) return self.releaseBoard(press.x, press.y);
+                if (self.held != null) return;
                 if (self.pressFields(press.x, press.y)) return;
                 if (shell_titles.press(&self.layout, solved, press.x, press.y)) return;
+                if (self.pressBoard(solved, press.x, press.y)) return;
                 if (self.link) |link| if (self.devices) |devices| {
                     if (self.faults) |faults| if (faults.clickIn(link, devices, &self.layout, solved, press.x, press.y)) return;
                     if (devices.clickIn(link, &self.layout, solved, press.x, press.y)) return;
@@ -154,7 +160,7 @@ pub const Shell = struct {
                 _ = camera.clickIn(&self.layout, solved, press.x, press.y);
             },
             .pointer => |at| {
-                const found = self.held orelse return;
+                const found = self.held orelse return self.moveBoard(at.x, at.y);
                 const axis = self.layout.node(found.split).body.split.axis;
                 self.layout.drag(found, if (axis == .across) at.x else at.y);
             },
@@ -181,6 +187,34 @@ pub const Shell = struct {
         const time = self.time orelse return false;
         const link = self.link orelse return false;
         return time.press(self.bar, x, y, &self.status, link);
+    }
+
+    /// Board time for an input: what the time bar last knew, or zero.
+    fn boardNow(self: *const Shell) u64 {
+        const time = self.time orelse return 0;
+        return time.boardNow();
+    }
+
+    /// Offer a left press to the board leaf: a switch, or the panel.
+    fn pressBoard(self: *Shell, solved: *const pane_layout.Solved, x: i32, y: i32) bool {
+        const pointer = self.board_input orelse return false;
+        const board = self.board orelse return false;
+        return pointer.down(board, &self.layout, solved, x, y, self.boardNow());
+    }
+
+    fn moveBoard(self: *Shell, x: i32, y: i32) void {
+        const pointer = self.board_input orelse return;
+        const board = self.board orelse return;
+        pointer.move(board, x, y);
+    }
+
+    /// The left button came up: the board leaf sends the click or the touch
+    /// it had under way, if any.
+    fn releaseBoard(self: *Shell, x: i32, y: i32) void {
+        const pointer = self.board_input orelse return;
+        const board = self.board orelse return;
+        const link = self.link orelse return;
+        pointer.up(board, link, x, y, self.boardNow());
     }
 
     /// The wall clock, or zero for a shell that was given none.

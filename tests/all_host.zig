@@ -110,6 +110,8 @@ test {
     _ = @import("interfaces/gui/shell_panes_test.zig");
     _ = @import("interfaces/gui/shell_console_test.zig");
     _ = @import("interfaces/gui/shell_board_test.zig");
+    _ = @import("interfaces/gui/shell_board_input_test.zig");
+    _ = @import("interfaces/gui/shell_board_live_test.zig");
     _ = @import("interfaces/gui/shell_devices_test.zig");
     _ = @import("interfaces/gui/shell_fault_test.zig");
     _ = @import("interfaces/gui/shell_fault_live_test.zig");

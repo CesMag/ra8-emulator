@@ -3,8 +3,9 @@
 //! over the link, and no pane has a feed there yet, so each body names the
 //! feed it waits for; each feed replaces its note in its own change under
 //! RA8EMU-772. The console leaf shows the console's log once it holds output
-//! (RA8EMU-787), and the board leaf the panel image once a frame has arrived
-//! (RA8EMU-790), and the devices leaf the fitted parts once the session has
+//! (RA8EMU-787), and the board leaf the board pane: the board's outline, its
+//! LEDs and switches, and the panel image once a frame has arrived
+//! (RA8EMU-790, RA8EMU-1119), and the devices leaf the fitted parts once the session has
 //! listed them (RA8EMU-792), and the camera leaf its source picker
 //! (RA8EMU-796); with a plug picker (RA8EMU-802) the devices leaf ends in
 //! its field, and with a file field (RA8EMU-799) so does the camera leaf.
@@ -20,6 +21,8 @@ const shell_frame = @import("ui/shell_frame.zig");
 const console_pane = @import("ui/console_pane.zig");
 const shell_console = @import("shell_console.zig");
 const shell_board = @import("shell_board.zig");
+const shell_board_input = @import("shell_board_input.zig");
+const board_pane = @import("ui/board_pane.zig");
 const fit = @import("ui/fit.zig");
 const shell_devices = @import("shell_devices.zig");
 const shell_fault = @import("shell_fault.zig");
@@ -53,6 +56,8 @@ pub fn waitingFor(kind: pane_layout.Kind) ?[]const u8 {
 pub const Panes = struct {
     console: ?*const shell_console.Console = null,
     board: ?*const shell_board.Board = null,
+    /// The pointer on the board leaf, for the switch it holds down.
+    board_input: ?*const shell_board_input.Pointer = null,
     devices: ?*const shell_devices.Devices = null,
     /// Each device row's fault mode, drawn in its cell (RA8EMU-817).
     faults: ?*const shell_fault.Faults = null,
@@ -109,6 +114,9 @@ fn paint(context: *anyopaque, list: *draw_list.DrawList, pane: pane_layout.Pane,
         if (model.now) |*read| return drawCode(list, body, model.from, read);
     };
     if (pane.kind == .board) if (self.board) |board| {
+        const pressed = if (self.board_input) |pointer| pointer.press.held else null;
+        if (!board_pane.Layout.of(body).board.empty()) return board_pane.draw(list, body, board.view(pressed));
+        // A leaf too small for the board still shows the panel by itself.
         if (board.hasFrame()) return list.image(fit.fitIn(body, board.width, board.height), board.image());
     };
     const note = noteFor(self, pane) orelse return;

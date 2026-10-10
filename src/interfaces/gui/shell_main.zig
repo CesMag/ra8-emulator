@@ -14,6 +14,7 @@ const shell_loop = @import("shell_loop.zig");
 const shell_panes = @import("shell_panes.zig");
 const shell_console = @import("shell_console.zig");
 const shell_board = @import("shell_board.zig");
+const shell_board_input = @import("shell_board_input.zig");
 const shell_devices = @import("shell_devices.zig");
 const shell_fault = @import("shell_fault.zig");
 const shell_camera = @import("shell_camera.zig");
@@ -189,6 +190,8 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     var board = shell_board.Board.init(allocator);
     defer board.deinit();
     shell.board = &board;
+    var board_input: shell_board_input.Pointer = .{};
+    shell.board_input = &board_input;
     var devices: shell_devices.Devices = .{};
     shell.devices = &devices;
     var faults: shell_fault.Faults = .{};
@@ -209,7 +212,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     shell.memory = &memory;
     var code: shell_memory.Pair = .{ .follows = .pc };
     shell.code = &code;
-    var panes: shell_panes.Panes = .{ .console = &console, .board = &board, .devices = &devices, .faults = &faults, .camera = &camera, .plug = &plug, .camera_file = &camera_file, .registers = &registers, .memory = &memory, .code = &code };
+    var panes: shell_panes.Panes = .{ .console = &console, .board = &board, .board_input = &board_input, .devices = &devices, .faults = &faults, .camera = &camera, .plug = &plug, .camera_file = &camera_file, .registers = &registers, .memory = &memory, .code = &code };
     shell.painter = panes.painter();
     try drive(io, &shell, window, path, bytes, args.frames);
     link.close();
