@@ -6,7 +6,7 @@ const Board = @import("ra8_board").board.Board;
 const frame_args = @import("frames_args.zig");
 const eink = @import("ra8_components").eink;
 const eink_wire = @import("ra8_components").eink_wire;
-const gif = @import("gif.zig");
+const gif_out = @import("gif_out.zig");
 const video_out = @import("video_out.zig");
 const display_settled = @import("ra8_board").display_settled;
 
@@ -17,7 +17,7 @@ pub const Sequence = struct {
     owns_directory: bool,
     index: ?std.Io.File,
     gif_path: ?[]const u8,
-    gif_writer: ?gif.Writer = null,
+    gif_writer: ?gif_out.Writer = null,
     video_writer: ?video_out.Writer = null,
     every: usize,
     scanned: usize = 0,
@@ -112,7 +112,7 @@ pub const Sequence = struct {
         self.scanned += 1;
         if (same or index % self.every != 0) return;
         if (self.gif_path) |path| {
-            if (self.gif_writer == null) self.gif_writer = try gif.Writer.init(self.allocator, self.io, path, width, height);
+            if (self.gif_writer == null) self.gif_writer = try gif_out.Writer.init(self.allocator, self.io, path, width, height);
             try self.gif_writer.?.record(width, height, pixels, when);
         }
         if (self.index != null) {

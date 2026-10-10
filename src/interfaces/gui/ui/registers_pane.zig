@@ -9,8 +9,8 @@
 //! fills a Snapshot. `draw` reads only the snapshot, so the shell redraws
 //! without touching a core.
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
-const font = @import("../../render/font.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
 const colors = @import("colors.zig");
 
 const Color = draw_list.Color;

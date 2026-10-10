@@ -3,8 +3,8 @@
 //! spell it, the part on it (or "empty") on the right, and a click on a
 //! row toggling it through the session. It draws nothing when no row fits.
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
-const font = @import("../../render/font.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
 const devices_panel = @import("../devices_panel.zig");
 const colors = @import("colors.zig");
 

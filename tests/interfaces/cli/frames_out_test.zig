@@ -135,7 +135,7 @@ test "an armed run keeps one frame per period with its emulated time" {
     var report = try frames_out.Run.init(std.testing.allocator, std.testing.io, &board, path, 1);
     try report.finish(&board);
     try std.testing.expectEqual(@as(usize, 2), armed.sequence.written);
-    try std.testing.expectEqual(@as(usize, 2), armed.sequence.gif_writer.?.wrote);
+    try std.testing.expectEqual(@as(usize, 2), armed.sequence.gif_writer.?.encoder.wrote);
     try expectIndex(armed.sequence, "frame_00000.ppm 16666667\nframe_00001.ppm 33333334\n");
     const bytes = try armed.sequence.directory.readFileAlloc(std.testing.io, "frame_00001.ppm", std.testing.allocator, .limited(64));
     defer std.testing.allocator.free(bytes);

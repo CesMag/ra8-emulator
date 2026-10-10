@@ -6,8 +6,8 @@
 //! own aspect inside its slot. The shell (RA8EMU-201) places the pane.
 //! gui/board_capture.zig folds the session's events into `Leds`; this pane
 //! never imports the session or the chip.
-const draw_list = @import("../../render/draw_list.zig");
-const font = @import("../../render/font.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
 const fit = @import("fit.zig");
 const colors = @import("colors.zig");
 

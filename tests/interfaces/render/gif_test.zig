@@ -1,4 +1,6 @@
-//! Round-trip and deterministic output checks for the pure Zig GIF89a writer.
+//! Covers src/interfaces/render/gif.zig: the encoder round-trips frames with
+//! their emulated delay, writes the same bytes for the same frames, and
+//! refuses a size the format cannot hold.
 const std = @import("std");
 const ra8 = @import("ra8");
 const gif = ra8.board.report.gif;
@@ -41,33 +43,27 @@ fn decodeFrame(bytes: []const u8, allocator: std.mem.Allocator, requested: usize
     return error.NoFrame;
 }
 
+/// Both frames through a fresh encoder, as the bytes it wrote.
+fn encoded(out: *std.Io.Writer.Allocating, first: []const u32, second: []const u32) !void {
+    var encoder = try gif.Encoder.init(std.testing.allocator, &out.writer, 2, 1);
+    defer encoder.deinit();
+    try encoder.record(2, 1, first, 1_000_000);
+    try encoder.record(2, 1, second, 31_000_000);
+    try encoder.finish();
+}
+
 test "GIF sequence round-trips both frames with emulated delay and deterministic bytes" {
-    var temp = std.testing.tmpDir(.{});
-    defer temp.cleanup();
-    const root = try temp.dir.realPathFileAlloc(std.testing.io, ".", std.testing.allocator);
-    defer std.testing.allocator.free(root);
-    const path_a = try std.fs.path.join(std.testing.allocator, &.{ root, "a.gif" });
-    defer std.testing.allocator.free(path_a);
-    const path_b = try std.fs.path.join(std.testing.allocator, &.{ root, "b.gif" });
-    defer std.testing.allocator.free(path_b);
     const first = [_]u32{ 0xFF11_2233, 0xFFAA_BBCC };
     const second = [_]u32{ 0xFFFF_0000, 0xFF00_FFFF };
-    var writer = try gif.Writer.init(std.testing.allocator, std.testing.io, path_a, 2, 1);
-    try writer.record(2, 1, &first, 1_000_000);
-    try writer.record(2, 1, &second, 31_000_000);
-    try writer.finish();
-    writer.deinit();
-    var again = try gif.Writer.init(std.testing.allocator, std.testing.io, path_b, 2, 1);
-    try again.record(2, 1, &first, 1_000_000);
-    try again.record(2, 1, &second, 31_000_000);
-    try again.finish();
-    again.deinit();
-
-    const a = try temp.dir.readFileAlloc(std.testing.io, "a.gif", std.testing.allocator, .limited(4096));
-    defer std.testing.allocator.free(a);
-    const b = try temp.dir.readFileAlloc(std.testing.io, "b.gif", std.testing.allocator, .limited(4096));
-    defer std.testing.allocator.free(b);
-    try std.testing.expectEqualSlices(u8, a, b);
+    var out_a = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer out_a.deinit();
+    var out_b = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer out_b.deinit();
+    try encoded(&out_a, &first, &second);
+    try encoded(&out_b, &first, &second);
+    const a = out_a.written();
+    try std.testing.expectEqualSlices(u8, a, out_b.written());
+    try std.testing.expectEqual(@as(u8, 0x3B), a[a.len - 1]);
     const first_frame = try decodeFrame(a, std.testing.allocator, 0);
     defer std.testing.allocator.free(first_frame.pixels);
     const second_frame = try decodeFrame(a, std.testing.allocator, 1);
@@ -77,4 +73,18 @@ test "GIF sequence round-trips both frames with emulated delay and deterministic
     try std.testing.expectEqual(@as(u16, 3), first_frame.delay);
     try std.testing.expectEqual(@as(u16, 3), second_frame.delay);
     try std.testing.expectError(error.NoFrame, decodeFrame(a, std.testing.allocator, 2));
+}
+
+test "a frame of another size, or a size the format cannot hold, is refused" {
+    var out = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer out.deinit();
+    try std.testing.expect(gif.fits(1, 1));
+    try std.testing.expect(gif.fits(65535, 65535));
+    try std.testing.expect(!gif.fits(0, 4));
+    try std.testing.expect(!gif.fits(65536, 4));
+    try std.testing.expectError(error.BadShape, gif.Encoder.init(std.testing.allocator, &out.writer, 0, 4));
+    try std.testing.expectEqual(@as(usize, 0), out.written().len);
+    var encoder = try gif.Encoder.init(std.testing.allocator, &out.writer, 2, 1);
+    defer encoder.deinit();
+    try std.testing.expectError(error.BadShape, encoder.record(2, 2, &.{ 0, 0, 0, 0 }, 0));
 }

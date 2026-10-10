@@ -112,10 +112,8 @@ test {
     _ = @import("frames_args_test.zig");
     _ = @import("state_args_test.zig");
     _ = @import("frames_out_test.zig");
-    _ = @import("gif_test.zig");
     _ = @import("video_out_test.zig");
-    _ = @import("gif_lzw_test.zig");
-    _ = @import("wav_test.zig");
+    _ = @import("gif_out_test.zig");
     _ = @import("audio_out_test.zig");
     _ = @import("audio_tone_test.zig");
     _ = @import("ctl_args_test.zig");

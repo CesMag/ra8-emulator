@@ -4,7 +4,7 @@
 //! Color.rgb literals; tests/interfaces/gui/ui/colors_test.zig keeps it that
 //! way. The board picture (src/interfaces/render/board_view.zig), the LCD image and
 //! colours computed from data are not chrome and stay where they are.
-const draw_list = @import("../../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 
 const Color = draw_list.Color;
 const palette = @This();

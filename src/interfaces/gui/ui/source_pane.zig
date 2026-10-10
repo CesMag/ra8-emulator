@@ -9,8 +9,8 @@
 //! Until the session can list a core's breakpoints (RA8EMU-765), `Marks`
 //! remembers the ones this gutter set, with the ids that clear them.
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
-const font = @import("../../render/font.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
 const colors = @import("colors.zig");
 
 const Color = draw_list.Color;

@@ -8,7 +8,7 @@
 //! only the platform seam's events, so the SDL window and the headless
 //! one drive it the same way.
 const std = @import("std");
-const draw_list = @import("../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 const platform = @import("platform.zig");
 const camera_panel = @import("camera_panel.zig");
 const source_spec = @import("ra8_host").camera.source_spec;

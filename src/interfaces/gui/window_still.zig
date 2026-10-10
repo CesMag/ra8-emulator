@@ -3,9 +3,9 @@
 //! this is how the camera panel's layout is checked on a machine with no
 //! display: numbered stills, one per state, that can be diffed or viewed.
 const std = @import("std");
-const png = @import("../render/png.zig");
-const raster = @import("../render/raster.zig");
-const Color = @import("../render/draw_list.zig").Color;
+const png = @import("ra8_render").png;
+const raster = @import("ra8_render").raster;
+const Color = @import("ra8_render").draw_list.Color;
 
 /// Copies `pixels` into `rgba` as opaque 8-bit RGBA; a window frame left
 /// transparent anywhere is shown as it would be on screen, solid.

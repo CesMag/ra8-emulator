@@ -4,7 +4,7 @@
 //! expose forced a redraw, and never closer together than the platform's
 //! interval: zero under vsync, which paces presents itself.
 const std = @import("std");
-const draw_list = @import("../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 
 /// The cap when the display gives no vsync: one present per 60 Hz refresh.
 pub const default_interval_ns: u64 = std.time.ns_per_s / 60;

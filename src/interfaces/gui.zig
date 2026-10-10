@@ -1,8 +1,8 @@
 //! The GUI's shared layer (RA8EMU-202, ADR 0001 in the knowledge base, RA8EMU-A-8).
-pub const draw_list = @import("render/draw_list.zig");
-pub const geometry = @import("render/geometry.zig");
-pub const raster = @import("render/raster.zig");
-pub const font = @import("render/font.zig");
+pub const draw_list = @import("ra8_render").draw_list;
+pub const geometry = @import("ra8_render").geometry;
+pub const raster = @import("ra8_render").raster;
+pub const font = @import("ra8_render").font;
 pub const platform = @import("gui/platform.zig");
 pub const headless = @import("gui/headless.zig");
 pub const camera_panel = @import("gui/camera_panel.zig");
@@ -72,6 +72,6 @@ pub const hex_entry = @import("gui/ui/hex_entry.zig");
 pub const pane_edit = @import("gui/pane_edit.zig");
 pub const plug_post = @import("gui/plug_post.zig");
 pub const speed_post = @import("gui/speed_post.zig");
-pub const widget_paint = @import("render/widget_paint.zig");
+pub const widget_paint = @import("ra8_render").widget_paint;
 pub const present_gate = @import("gui/present_gate.zig");
 pub const pane_layout = @import("gui/ui/pane_layout.zig");

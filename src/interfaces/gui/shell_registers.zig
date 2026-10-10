@@ -12,7 +12,7 @@ const registers_pane = @import("ui/registers_pane.zig");
 const registers_capture = @import("registers_capture.zig");
 const pane_layout = @import("ui/pane_layout.zig");
 const shell_frame = @import("ui/shell_frame.zig");
-const draw_list = @import("../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 
 const Env = proto.Client.Env;
 const shown = registers_capture.shown;

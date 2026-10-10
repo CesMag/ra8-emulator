@@ -4,7 +4,7 @@
 //! every pane's rect and every splitter's gutter; dragging a gutter moves
 //! its split, clamped so neither side drops under the minimum pane size.
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 
 pub const Rect = draw_list.Rect;
 pub const Index = u16;

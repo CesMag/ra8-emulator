@@ -5,10 +5,10 @@
 //! row when that row shows, else straight under the panel. Slots go in name
 //! order, each labelled with the start of its file's stem (RA8EMU-677).
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 const camera_view = @import("camera_view.zig");
 const device_row = @import("camera_device_row.zig");
-const font = @import("../../render/font.zig");
+const font = @import("ra8_render").font;
 const Row = device_row.Row;
 
 /// Where the row goes for a pane whose device row has `device_count` slots.

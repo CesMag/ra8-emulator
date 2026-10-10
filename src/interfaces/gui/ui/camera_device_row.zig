@@ -3,9 +3,9 @@
 //! A click on a slot names that device; the pane turns it into the webcam
 //! argument. Each slot is labelled vN for /dev/videoN (RA8EMU-677).
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 const camera_view = @import("camera_view.zig");
-const font = @import("../../render/font.zig");
+const font = @import("ra8_render").font;
 const Rect = draw_list.Rect;
 
 pub const slot_color = camera_view.camera_off;

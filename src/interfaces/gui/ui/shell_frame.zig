@@ -4,8 +4,8 @@
 //! strip (RA8EMU-759) runs along the bottom. What goes inside a leaf comes
 //! from a painter, so the window loop fills it and a test can leave it bare.
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
-const font = @import("../../render/font.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
 const pane_layout = @import("pane_layout.zig");
 const status_strip = @import("status_strip.zig");
 const colors = @import("colors.zig");

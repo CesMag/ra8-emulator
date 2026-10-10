@@ -4,7 +4,7 @@
 //! pipe's frame. The decoded picture is box-averaged down to fit a square
 //! of `side` pixels, keeping its shape, and drawn as one image quad.
 const std = @import("std");
-const draw_list = @import("../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 const decoded = @import("ra8_host").camera.decoded;
 const image_source = @import("ra8_host").camera.image_file;
 const y4m = @import("ra8_host").camera.y4m;

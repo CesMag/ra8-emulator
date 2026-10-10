@@ -43,10 +43,9 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
     const firmware = b.dependency("ra8_firmware", .{});
-    libraries(b, target, optimize, emu);
+    libraries(b, target, optimize, firmware).importInto(emu);
     emu.addImport("ra8_rpc", firmware.module("ra8_rpc"));
     emu.addImport("ra8_widget", firmware.module("ra8_widget"));
-    emu.addImport("ra8_widget_host", firmware.module("ra8_widget_host"));
 
     const exe = b.addExecutable(.{
         .name = "ra8_emulator",
@@ -99,36 +98,54 @@ pub fn build(b: *std.Build) void {
 
 /// The libraries that are build modules of their own (ADR 0004 section 1,
 /// RA8EMU-1031). Each is rooted in its own directory, so Zig refuses an
-/// import that leaves it, and is given exactly the modules it may import.
-/// What is not carved out yet is still part of `emu`.
-fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module) void {
-    const host = library(b, target, optimize, "ra8_host", "src/host/root.zig");
-    const snapshot = library(b, target, optimize, "ra8_snapshot", "src/snapshot/root.zig");
-    const chip = library(b, target, optimize, "ra8_chip", "src/chip/root.zig");
-    chip.addImport("ra8_snapshot", snapshot);
-    const components = library(b, target, optimize, "ra8_components", "src/components/root.zig");
-    components.addImport("ra8_chip", chip);
-    components.addImport("ra8_snapshot", snapshot);
-    const board = library(b, target, optimize, "ra8_board", "src/board/root.zig");
-    board.addImport("ra8_chip", chip);
-    board.addImport("ra8_components", components);
-    board.addImport("ra8_snapshot", snapshot);
-    const session = library(b, target, optimize, "ra8_session", "src/session/root.zig");
-    session.addImport("ra8_board", board);
-    session.addImport("ra8_chip", chip);
-    session.addImport("ra8_components", components);
-    emu.addImport("ra8_host", host);
-    emu.addImport("ra8_snapshot", snapshot);
-    emu.addImport("ra8_chip", chip);
-    emu.addImport("ra8_components", components);
-    emu.addImport("ra8_board", board);
-    emu.addImport("ra8_session", session);
+/// import that leaves it, and is given exactly the modules it may import:
+/// only ones below it, and the host only where the ADR allows it. What is
+/// not carved out yet is still part of `emu`.
+const Libraries = struct {
+    host: *std.Build.Module,
+    snapshot: *std.Build.Module,
+    chip: *std.Build.Module,
+    components: *std.Build.Module,
+    board: *std.Build.Module,
+    session: *std.Build.Module,
+    render: *std.Build.Module,
+
+    /// Every library, under its own name, into `module`.
+    fn importInto(self: Libraries, module: *std.Build.Module) void {
+        inline for (@typeInfo(Libraries).@"struct".field_names) |name| module.addImport("ra8_" ++ name, @field(self, name));
+    }
+};
+
+fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, firmware: *std.Build.Dependency) Libraries {
+    const host = library(b, target, optimize, "ra8_host", "src/host/root.zig", &.{});
+    const snapshot = library(b, target, optimize, "ra8_snapshot", "src/snapshot/root.zig", &.{});
+    const chip = library(b, target, optimize, "ra8_chip", "src/chip/root.zig", &.{.{ .name = "ra8_snapshot", .module = snapshot }});
+    const components = library(b, target, optimize, "ra8_components", "src/components/root.zig", &.{
+        .{ .name = "ra8_chip", .module = chip },
+        .{ .name = "ra8_snapshot", .module = snapshot },
+    });
+    const board = library(b, target, optimize, "ra8_board", "src/board/root.zig", &.{
+        .{ .name = "ra8_chip", .module = chip },
+        .{ .name = "ra8_components", .module = components },
+        .{ .name = "ra8_snapshot", .module = snapshot },
+    });
+    const session = library(b, target, optimize, "ra8_session", "src/session/root.zig", &.{
+        .{ .name = "ra8_board", .module = board },
+        .{ .name = "ra8_chip", .module = chip },
+        .{ .name = "ra8_components", .module = components },
+    });
+    const render = library(b, target, optimize, "ra8_render", "src/interfaces/render/root.zig", &.{
+        .{ .name = "ra8_session", .module = session },
+        .{ .name = "ra8_widget", .module = firmware.module("ra8_widget") },
+        .{ .name = "ra8_widget_host", .module = firmware.module("ra8_widget_host") },
+    });
+    return .{ .host = host, .snapshot = snapshot, .chip = chip, .components = components, .board = board, .session = session, .render = render };
 }
 
 /// One library module, importable by its name from this build and from a
 /// build that depends on this package.
-fn library(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, name: []const u8, root: []const u8) *std.Build.Module {
-    return b.addModule(name, .{ .root_source_file = b.path(root), .target = target, .optimize = optimize, .link_libc = true });
+fn library(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, name: []const u8, root: []const u8, imports: []const std.Build.Module.Import) *std.Build.Module {
+    return b.addModule(name, .{ .root_source_file = b.path(root), .target = target, .optimize = optimize, .link_libc = true, .imports = imports });
 }
 
 /// A tools/ program's module, shared by its executable and its tests.

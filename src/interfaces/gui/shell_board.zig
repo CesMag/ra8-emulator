@@ -6,7 +6,7 @@
 const std = @import("std");
 const proto = @import("../rpc/session_rpc.zig");
 const session_link = @import("session_link.zig");
-const draw_list = @import("../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 const colors = @import("ui/colors.zig");
 
 const Color = draw_list.Color;

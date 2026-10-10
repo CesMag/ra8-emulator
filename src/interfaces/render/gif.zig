@@ -1,15 +1,19 @@
-//! A small deterministic GIF89a writer for sampled panel frames.
+//! A small deterministic GIF89a encoder for sampled panel frames. It writes
+//! to the writer it is given and opens nothing: whoever owns the file opens
+//! it, and syncs and closes it after `finish`.
 const std = @import("std");
 
 pub const lzw = @import("gif_lzw.zig");
 
-pub const Writer = struct {
+/// Whether a frame of this size fits the format's 16-bit screen.
+pub fn fits(width: u32, height: u32) bool {
+    return width != 0 and height != 0 and width <= std.math.maxInt(u16) and height <= std.math.maxInt(u16);
+}
+
+pub const Encoder = struct {
     allocator: std.mem.Allocator,
-    io: std.Io,
-    file: std.Io.File,
-    /// Heap-held so the interface stays put while the Writer moves.
-    sink: *std.Io.File.Writer,
-    buffer: []u8,
+    /// Where the bytes go. It must stay put for as long as the encoder lives.
+    sink: *std.Io.Writer,
     width: u16,
     height: u16,
     pending: ?[]u32 = null,
@@ -17,30 +21,24 @@ pub const Writer = struct {
     prior_delay: u16 = 10,
     wrote: usize = 0,
 
-    pub fn init(allocator: std.mem.Allocator, io: std.Io, path: []const u8, width: u32, height: u32) !Writer {
-        if (width == 0 or height == 0 or width > std.math.maxInt(u16) or height > std.math.maxInt(u16)) return error.BadShape;
-        const file = try std.Io.Dir.cwd().createFile(io, path, .{ .truncate = true });
-        errdefer file.close(io);
-        const buffer = try allocator.alloc(u8, 8192);
-        errdefer allocator.free(buffer);
-        const sink = try allocator.create(std.Io.File.Writer);
-        errdefer allocator.destroy(sink);
-        sink.* = file.writerStreaming(io, buffer);
-        var self: Writer = .{ .allocator = allocator, .io = io, .file = file, .sink = sink, .buffer = buffer, .width = @intCast(width), .height = @intCast(height) };
+    /// Writes the header and the fixed palette to `sink`.
+    pub fn init(allocator: std.mem.Allocator, sink: *std.Io.Writer, width: u32, height: u32) !Encoder {
+        if (!fits(width, height)) return error.BadShape;
+        var self: Encoder = .{ .allocator = allocator, .sink = sink, .width = @intCast(width), .height = @intCast(height) };
         try self.header();
         return self;
     }
 
-    fn out(self: *Writer) *std.Io.Writer {
-        return &self.sink.interface;
+    fn out(self: *Encoder) *std.Io.Writer {
+        return self.sink;
     }
 
-    fn word(self: *Writer, value: u16) !void {
+    fn word(self: *Encoder, value: u16) !void {
         try self.out().writeByte(@truncate(value));
         try self.out().writeByte(@truncate(value >> 8));
     }
 
-    fn header(self: *Writer) !void {
+    fn header(self: *Encoder) !void {
         try self.out().writeAll("GIF89a");
         try self.word(self.width);
         try self.word(self.height);
@@ -64,7 +62,7 @@ pub const Writer = struct {
     }
 
     /// The previous frame remains pending until the next timestamp establishes its delay.
-    pub fn record(self: *Writer, width: u32, height: u32, pixels: []const u32, when: u64) !void {
+    pub fn record(self: *Encoder, width: u32, height: u32, pixels: []const u32, when: u64) !void {
         if (width != self.width or height != self.height or pixels.len != @as(usize, width) * height) return error.BadShape;
         if (self.pending) |previous| {
             self.prior_delay = delayFor(when -| self.pending_when);
@@ -75,7 +73,7 @@ pub const Writer = struct {
         self.pending_when = when;
     }
 
-    fn emit(self: *Writer, pixels: []const u32, delay: u16) !void {
+    fn emit(self: *Encoder, pixels: []const u32, delay: u16) !void {
         try self.out().writeAll(&.{ 0x21, 0xF9, 4, 0x04 });
         try self.word(delay);
         try self.out().writeAll(&.{ 0, 0, 0x2C });
@@ -107,7 +105,8 @@ pub const Writer = struct {
         return @truncate((pixel >> 16 & 0xE0) | (pixel >> 11 & 0x1C) | (pixel >> 6 & 0x03));
     }
 
-    pub fn finish(self: *Writer) !void {
+    /// Writes the last pending frame and the trailer, and flushes `sink`.
+    pub fn finish(self: *Encoder) !void {
         if (self.pending) |pixels| {
             try self.emit(pixels, if (self.wrote == 0) 10 else self.prior_delay);
             self.allocator.free(pixels);
@@ -115,13 +114,9 @@ pub const Writer = struct {
         }
         try self.out().writeByte(0x3B);
         try self.out().flush();
-        try self.file.sync(self.io);
     }
 
-    pub fn deinit(self: *Writer) void {
+    pub fn deinit(self: *Encoder) void {
         if (self.pending) |pixels| self.allocator.free(pixels);
-        self.allocator.destroy(self.sink);
-        self.allocator.free(self.buffer);
-        self.file.close(self.io);
     }
 };

@@ -5,7 +5,7 @@
 //! run on a machine with no display still leaves the camera panel's
 //! states on disk to view or diff.
 const std = @import("std");
-const raster = @import("../render/raster.zig");
+const raster = @import("ra8_render").raster;
 const platform_mod = @import("platform.zig");
 const window_still = @import("window_still.zig");
 

@@ -5,7 +5,7 @@
 const std = @import("std");
 const console_log = @import("console_log.zig");
 const console_pick = @import("ui/console_pick.zig");
-const Rect = @import("../render/draw_list.zig").Rect;
+const Rect = @import("ra8_render").draw_list.Rect;
 
 /// Longest name fileName gives: "console-sci10.txt" with room to spare.
 pub const name_len: usize = 24;

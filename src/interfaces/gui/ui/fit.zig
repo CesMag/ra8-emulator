@@ -1,7 +1,7 @@
 //! Aspect-kept placement for an image inside a body rect (RA8EMU-1081):
 //! pure layout, shared by the board pane, the board touch mapping and the
 //! shell's board leaf.
-const draw_list = @import("../../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 
 /// The largest area with the image's aspect that fits `body`, centred in it.
 pub fn fitIn(body: draw_list.Rect, width: u32, height: u32) draw_list.Rect {

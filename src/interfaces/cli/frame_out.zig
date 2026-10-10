@@ -8,8 +8,8 @@ const std = @import("std");
 const Board = @import("ra8_board").board.Board;
 const eink = @import("ra8_components").eink;
 const eink_wire = @import("ra8_components").eink_wire;
-const png = @import("../render/png.zig");
-const board_view = @import("../render/board_view.zig");
+const png = @import("ra8_render").png;
+const board_view = @import("ra8_render").board_view;
 const board_leds = @import("ra8_session").board_leds;
 
 /// The panel's size, the size of the view that was written, and whether

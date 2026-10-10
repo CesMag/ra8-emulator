@@ -2,8 +2,8 @@
 //! input events in, an RGBA framebuffer out. SDL3 is one backend
 //! (RA8EMU-616); headless.zig is another, for tests and the board's
 //! golden images. Nothing above this seam knows which one it has.
-const draw_list = @import("../render/draw_list.zig");
-const raster = @import("../render/raster.zig");
+const draw_list = @import("ra8_render").draw_list;
+const raster = @import("ra8_render").raster;
 
 pub const Size = struct { width: u32, height: u32 };
 

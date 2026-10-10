@@ -9,9 +9,9 @@
 //! Each button has its own colour and a short label in the built-in font
 //! (RA8EMU-677).
 const std = @import("std");
-const draw_list = @import("../../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 const camera_panel = @import("../camera_panel.zig");
-const font = @import("../../render/font.zig");
+const font = @import("ra8_render").font;
 const colors = @import("colors.zig");
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;

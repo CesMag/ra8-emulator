@@ -5,8 +5,8 @@
 //! set_camera_source with `KIND:PATH` (RA8EMU-796). The kind is the one last
 //! picked without a file, else the running file kind, whose source is then
 //! opened again with the new path. With neither, Enter does nothing.
-const draw_list = @import("../render/draw_list.zig");
-const font = @import("../render/font.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
 const platform = @import("platform.zig");
 const shell_frame = @import("ui/shell_frame.zig");
 const shell_field = @import("ui/shell_field.zig");

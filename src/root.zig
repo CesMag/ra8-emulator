@@ -20,6 +20,7 @@ pub const core = struct {
     pub const shell_startup = @import("interfaces/gui/shell_startup.zig");
     pub const host_spawn = @import("interfaces/cli/host_spawn.zig");
     pub const video_out = @import("interfaces/cli/video_out.zig");
+    pub const gif_out = @import("interfaces/cli/gif_out.zig");
     pub const debug_front = @import("interfaces/cli/debug_front.zig");
     pub const zig_debug_front = @import("interfaces/cli/zig_debug_front.zig");
     pub const csel = @import("ra8_chip").core.csel;
@@ -135,7 +136,7 @@ pub const components = @import("ra8_components");
 pub const host = @import("ra8_host");
 pub const gui = @import("interfaces/gui.zig");
 pub const render = struct {
-    pub const board_view = @import("interfaces/render/board_view.zig");
+    pub const board_view = @import("ra8_render").board_view;
 };
 pub const image = struct {
     pub const elf = @import("ra8_board").image.elf;

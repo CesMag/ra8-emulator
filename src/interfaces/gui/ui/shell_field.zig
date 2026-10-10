@@ -7,9 +7,9 @@
 const std = @import("std");
 const widget = @import("ra8_widget");
 const platform = @import("../platform.zig");
-const draw_list = @import("../../render/draw_list.zig");
-const font = @import("../../render/font.zig");
-const widget_paint = @import("../../render/widget_paint.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
+const widget_paint = @import("ra8_render").widget_paint;
 
 const text_field = widget.text_field;
 

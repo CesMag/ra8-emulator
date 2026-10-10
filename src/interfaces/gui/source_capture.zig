@@ -4,7 +4,7 @@
 //! image and the source directory. ui/source_pane.zig draws the result
 //! without importing the session.
 const std = @import("std");
-const draw_list = @import("../render/draw_list.zig");
+const draw_list = @import("ra8_render").draw_list;
 const elf = @import("ra8_board").image.elf;
 const dwarf_line = @import("ra8_session").dwarf_line;
 const session_api = @import("ra8_session").session_api;

@@ -9,10 +9,10 @@
 //! the same composition `--frame-out` writes (board_view.zig), drawn at its
 //! own size in the top-left corner with the camera pane to its right.
 const std = @import("std");
-const draw_list = @import("../render/draw_list.zig");
-const raster = @import("../render/raster.zig");
+const draw_list = @import("ra8_render").draw_list;
+const raster = @import("ra8_render").raster;
 const present_gate = @import("present_gate.zig");
-const font = @import("../render/font.zig");
+const font = @import("ra8_render").font;
 const platform = @import("platform.zig");
 const camera_pane = @import("camera_pane.zig");
 const console_pane = @import("ui/console_pane.zig");
@@ -32,7 +32,7 @@ const SourceSwap = @import("source_swap.zig").SourceSwap;
 const devices_panel = @import("devices_panel.zig");
 const devices_pane = @import("ui/devices_pane.zig");
 const plug_post = @import("plug_post.zig");
-pub const board_view = @import("../render/board_view.zig");
+pub const board_view = @import("ra8_render").board_view;
 const Color = draw_list.Color;
 
 /// What the board shows right now: the panel's ARGB pixels and the LEDs.

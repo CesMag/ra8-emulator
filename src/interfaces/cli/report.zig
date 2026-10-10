@@ -5,7 +5,7 @@ const std = @import("std");
 pub const profile = @import("report/profile.zig");
 pub const after = @import("report/after.zig");
 /// The board view's PNG writer (RA8EMU-73).
-pub const png = @import("../render/png.zig");
+pub const png = @import("ra8_render").png;
 pub const frame_out = @import("frame_out.zig");
 pub const frames_out = @import("frames_out.zig");
 pub const undefined_sites = @import("report/undefined.zig");
@@ -388,6 +388,6 @@ pub fn reboots(out: Writer, pending: reboot.Reboot) !void {
     );
 }
 
-pub const gif = @import("gif.zig");
-pub const wav = @import("wav.zig");
+pub const gif = @import("ra8_render").gif;
+pub const wav = @import("ra8_render").wav;
 pub const audio_out = @import("audio_out.zig");

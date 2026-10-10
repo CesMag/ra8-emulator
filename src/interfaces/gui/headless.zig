@@ -2,7 +2,7 @@
 //! read back the last frame it was asked to present.
 const std = @import("std");
 const platform_mod = @import("platform.zig");
-const raster = @import("../render/raster.zig");
+const raster = @import("ra8_render").raster;
 const Event = platform_mod.Event;
 const Size = platform_mod.Size;
 

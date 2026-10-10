@@ -15,7 +15,7 @@
 const std = @import("std");
 const Board = @import("ra8_board").board.Board;
 const ssie = @import("ra8_chip").periph.ssie;
-const wav = @import("wav.zig");
+const wav = @import("ra8_render").wav;
 const world_flags = @import("world_flags.zig");
 
 pub const default_rate: u32 = 48_000;

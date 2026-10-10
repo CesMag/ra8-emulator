@@ -5,8 +5,8 @@
 //! which also turns a click into a run, step or pause (RA8EMU-1086). The shell
 //! (RA8EMU-201) places the bar; this file only lays it out, paints it and
 //! answers clicks.
-const draw_list = @import("../../render/draw_list.zig");
-const font = @import("../../render/font.zig");
+const draw_list = @import("ra8_render").draw_list;
+const font = @import("ra8_render").font;
 const colors = @import("colors.zig");
 
 const Color = draw_list.Color;

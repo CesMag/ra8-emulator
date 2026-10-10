@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/cli/wav.zig: the header, a tone read back from
+//! Tests for src/interfaces/render/wav.zig: the header, a tone read back from
 //! the file, and silence where the stream underran.
 const std = @import("std");
 const ra8 = @import("ra8");
