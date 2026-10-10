@@ -8,7 +8,7 @@
 //! Always holds for the rest of the run. `changes` counts switches so the
 //! runner knows to reopen the CEU's source mid-run without a restart.
 //! Drawing the panel and persisting Always to the project are later slices.
-const source_spec = @import("../../host/camera/source_spec.zig");
+const source_spec = @import("ra8_host").camera.source_spec;
 
 pub const Kind = source_spec.Kind;
 

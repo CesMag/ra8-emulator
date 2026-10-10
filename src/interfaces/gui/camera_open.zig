@@ -9,8 +9,8 @@
 //! the panel's active kind after its permission dialog was accepted, so the
 //! spec it yields carries that consent and the terminal is never asked.
 const std = @import("std");
-const source_spec = @import("../../host/camera/source_spec.zig");
-const source_open = @import("../../host/camera/source_open.zig");
+const source_spec = @import("ra8_host").camera.source_spec;
+const source_open = @import("ra8_host").camera.source_open;
 const frame_source = @import("../../chip/periph/camera/frame_source.zig");
 const hosted = @import("../../components/camera_ov5640/hosted.zig");
 const Panel = @import("camera_panel.zig").Panel;

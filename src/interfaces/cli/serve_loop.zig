@@ -3,8 +3,8 @@ const std = @import("std");
 const builtin = @import("builtin");
 const served = @import("../rpc/session_server.zig");
 const Stdio = @import("../rpc/stdio_transport.zig").Stdio;
-const sock_ready = @import("../sock_ready.zig");
-const win32 = @import("../win32.zig");
+const sock_ready = @import("ra8_host").sock_ready;
+const win32 = @import("ra8_host").win32;
 
 /// How long an idle server waits on its peer before checking again.
 const idle_wait_ms = 20;

@@ -9,7 +9,7 @@ const served_setup = @import("../rpc/served_setup.zig");
 const loop = @import("serve_loop.zig");
 const listen = @import("serve_listen.zig");
 const camera_install = @import("../../board/camera_install.zig");
-const source_spec = @import("../../host/camera/source_spec.zig");
+const source_spec = @import("ra8_host").camera.source_spec;
 const camera_source = @import("camera_source.zig");
 const Board = @import("../../board/board.zig").Board;
 

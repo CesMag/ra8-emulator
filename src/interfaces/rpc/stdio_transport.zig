@@ -4,7 +4,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const rpc = @import("ra8_rpc");
-const win32 = @import("../win32.zig");
+const win32 = @import("ra8_host").win32;
 
 const on_windows = builtin.os.tag == .windows;
 pub const Handle = std.posix.fd_t;

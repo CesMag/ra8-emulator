@@ -43,6 +43,7 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
     const firmware = b.dependency("ra8_firmware", .{});
+    libraries(b, target, optimize, emu);
     emu.addImport("ra8_rpc", firmware.module("ra8_rpc"));
     emu.addImport("ra8_widget", firmware.module("ra8_widget"));
     emu.addImport("ra8_widget_host", firmware.module("ra8_widget_host"));
@@ -94,6 +95,21 @@ pub fn build(b: *std.Build) void {
     unitTests(b, &tests, target, optimize, emu, &exe.step);
 
     b.step("gate", "Check formatting, file and function length, and terminology").dependOn(gate(b, target));
+}
+
+/// The libraries that are build modules of their own (ADR 0004 section 1,
+/// RA8EMU-1031). Each is rooted in its own directory, so Zig refuses an
+/// import that leaves it, and is given exactly the modules it may import.
+/// What is not carved out yet is still part of `emu`.
+fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module) void {
+    const host = library(b, target, optimize, "ra8_host", "src/host/root.zig");
+    emu.addImport("ra8_host", host);
+}
+
+/// One library module, importable by its name from this build and from a
+/// build that depends on this package.
+fn library(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, name: []const u8, root: []const u8) *std.Build.Module {
+    return b.addModule(name, .{ .root_source_file = b.path(root), .target = target, .optimize = optimize, .link_libc = true });
 }
 
 /// A tools/ program's module, shared by its executable and its tests.

@@ -16,7 +16,6 @@ const Fake = struct {
     pub const Want = enum { readable, writable };
 
     var opened: ?Kind = null;
-    var sent_flags: u32 = 0;
     var closed: ?Fd = null;
 
     pub fn open(kind: Kind) !Fd {
@@ -30,8 +29,7 @@ const Fake = struct {
         return fd == 7 and want == .writable;
     }
     pub fn finished(_: Fd) !void {}
-    pub fn send(_: Fd, bytes: []const u8, flags: u32) !usize {
-        sent_flags = flags;
+    pub fn send(_: Fd, bytes: []const u8) !usize {
         return bytes.len;
     }
     pub fn recv(_: Fd, out: []u8, _: u32) !usize {

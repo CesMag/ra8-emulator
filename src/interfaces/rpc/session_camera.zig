@@ -9,7 +9,7 @@ const std = @import("std");
 const rpc = @import("ra8_rpc");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
-const source_spec = @import("../../host/camera/source_spec.zig");
+const source_spec = @import("ra8_host").camera.source_spec;
 
 const Ack = rpc.Outcome(proto.Ack);
 const refused: Ack = .{ .err = @fromBackingInt(@intCast(handlers.app_codes.refused)) };

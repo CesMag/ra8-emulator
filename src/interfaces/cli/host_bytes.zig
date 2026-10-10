@@ -2,7 +2,7 @@
 //! the CLI opens them through the host library and hands each model only
 //! the interface it declares.
 const std = @import("std");
-const host_read = @import("../../host/host_read.zig");
+const host_read = @import("ra8_host").host_read;
 const ByteSource = @import("../../chip/periph/byte_source.zig").ByteSource;
 
 /// The byte source that reads `handle` without waiting.

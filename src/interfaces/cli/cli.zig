@@ -14,7 +14,7 @@ const request = @import("../../components/request.zig");
 pub const ctl_args = @import("ctl_args.zig");
 pub const rtc_start = @import("../../session/rtc_start.zig");
 pub const usage = @import("cli_usage.zig").text;
-pub const card_setup = @import("../../session/card_setup.zig");
+pub const card_setup = @import("card_setup.zig");
 pub const usbip_wire = @import("../usbip/usbip_wire.zig");
 pub const usbip_export = @import("../usbip/usbip_export.zig");
 pub const console_output = @import("console_output.zig");
@@ -181,7 +181,7 @@ pub const Options = struct {
     /// periods. Null is untimed and the run goes to its instruction budget.
     ms: ?u64 = null,
     /// `--camera-source KIND[:ARG]`: where the CEU's pixels come from (RA8EMU-525).
-    camera: @import("../../host/camera/source_spec.zig").Spec = .{},
+    camera: @import("ra8_host").camera.source_spec.Spec = .{},
 
     /// The names asked for, as a slice rather than the fixed array.
     pub fn dumps(self: *const Options) []const []const u8 {

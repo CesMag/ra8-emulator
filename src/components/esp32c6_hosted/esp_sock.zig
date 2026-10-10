@@ -2,7 +2,6 @@
 //! replayed from a tape with no host socket at all (RA8EMU-560).
 const std = @import("std");
 const tape = @import("esp_tape.zig");
-const socket_flags = @import("../../host/socket_flags.zig");
 const host_net = @import("esp_host_net.zig");
 
 pub const Address = host_net.Address;
@@ -46,7 +45,7 @@ pub const Sock = struct {
             if (!reader.expect(bytes)) return error.ReplayDiverged;
             return bytes.len;
         }
-        const sent = try self.net.?.send(self.socket.?, bytes, socket_flags.nosignal);
+        const sent = try self.net.?.send(self.socket.?, bytes);
         if (self.writer) |*writer| writer.put(.guest, bytes[0..sent]);
         return sent;
     }

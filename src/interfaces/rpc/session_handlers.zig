@@ -6,7 +6,7 @@ const proto = @import("session_rpc.zig");
 const api = @import("../../session/session_api.zig");
 const stop_machine = @import("../../session/stop_machine.zig");
 const region_map = @import("../../session/region_map.zig");
-const source_spec = @import("../../host/camera/source_spec.zig");
+const source_spec = @import("ra8_host").camera.source_spec;
 const session_rtc = @import("../../session/session_rtc.zig");
 
 /// The refusal codes live with the wire (RA8EMU-998): both ends agree on them.

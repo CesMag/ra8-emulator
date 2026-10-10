@@ -1,12 +1,12 @@
 //! Fit the CLI's SD card options onto the board's card.
 const std = @import("std");
-const Board = @import("../board/board.zig").Board;
-const sd_format = @import("../components/sd_card/format.zig");
-const sd_advice = @import("../components/sd_card/format_advice.zig");
-const sd_image = @import("../components/sd_card/image.zig");
-const sd_mkimage = @import("../components/sd_card/mkimage.zig");
-const disk_file = @import("../host/disk_file.zig");
-const host_folder = @import("../host/folder.zig");
+const Board = @import("../../board/board.zig").Board;
+const sd_format = @import("../../components/sd_card/format.zig");
+const sd_advice = @import("../../components/sd_card/format_advice.zig");
+const sd_image = @import("../../components/sd_card/image.zig");
+const sd_mkimage = @import("../../components/sd_card/mkimage.zig");
+const disk_file = @import("ra8_host").disk_file;
+const host_folder = @import("ra8_host").folder;
 
 /// The label a `--sd-new` format gives the card when the spec names none.
 pub const default_label = "RA8";

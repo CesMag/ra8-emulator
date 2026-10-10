@@ -10,6 +10,7 @@ const system = posix.system;
 const darwin = builtin.os.tag.isDarwin();
 const on_windows = builtin.os.tag == .windows;
 const win = @import("host_sock_windows.zig");
+const socket_flags = @import("socket_flags.zig");
 
 pub const Fd = posix.socket_t;
 pub const invalid: Fd = if (on_windows) @import("win32.zig").invalid_handle else -1;
@@ -76,9 +77,11 @@ pub fn finished(fd: Fd) Error!void {
     if (code != 0) return mapErrno(@fromBackingInt(@intCast(code)));
 }
 
-pub fn send(fd: Fd, bytes: []const u8, flags: u32) Error!usize {
+/// Sends without raising SIGPIPE when the peer has closed. The flag covers
+/// the hosts with no per-socket opt-out; `open` sets that where there is one.
+pub fn send(fd: Fd, bytes: []const u8) Error!usize {
     if (on_windows) return win.sendBytes(fd, bytes);
-    return check(system.sendto(fd, @ptrCast(bytes.ptr), bytes.len, flags, null, 0));
+    return check(system.sendto(fd, @ptrCast(bytes.ptr), bytes.len, socket_flags.nosignal, null, 0));
 }
 
 /// Bytes received; with MSG_TRUNC on a datagram it is the full size.

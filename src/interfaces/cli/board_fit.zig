@@ -6,8 +6,8 @@
 const std = @import("std");
 const rtc_start = @import("../../session/rtc_start.zig");
 const cli = @import("cli.zig");
-const host_sock = @import("../host_sock.zig");
-const host_worker = @import("../../host/worker.zig");
+const host_sock = @import("ra8_host").host_sock;
+const host_worker = @import("ra8_host").worker;
 const camera_source = @import("camera_source.zig");
 const Board = @import("../../board/board.zig").Board;
 const usb_disk_option = @import("usb_disk_option.zig");
@@ -15,7 +15,7 @@ const pacing = @import("../../periph/time/pacing.zig");
 const profile = @import("../../board/profile.zig");
 const request = @import("../../components/request.zig");
 const tape = @import("../../components/esp32c6_hosted/esp_tape.zig");
-const tape_dir = @import("../../host/tape_dir.zig");
+const tape_dir = @import("ra8_host").tape_dir;
 
 /// A replay that met a request it has no recording for fails the run.
 pub fn tapeVerdict(board: *const Board, code: u8) u8 {

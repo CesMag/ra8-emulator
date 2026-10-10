@@ -6,7 +6,7 @@
 //! window closes. The image stays halted at reset until the shell runs it.
 //! Only the local host connects so far; SSH profiles join with RA8EMU-761.
 const std = @import("std");
-const host_profiles = @import("../../host/host_profiles.zig");
+const host_profiles = @import("ra8_host").host_profiles;
 const platform = @import("platform.zig");
 const pane_layout = @import("ui/pane_layout.zig");
 const shell_loop = @import("shell_loop.zig");
@@ -20,7 +20,7 @@ const shell_plug = @import("shell_plug.zig");
 const shell_camera_file = @import("shell_camera_file.zig");
 const shell_startup = @import("shell_startup.zig");
 const window_stills = @import("window_stills.zig");
-const source_spec = @import("../../host/camera/source_spec.zig");
+const source_spec = @import("ra8_host").camera.source_spec;
 const shell_registers = @import("shell_registers.zig");
 const shell_memory = @import("shell_memory.zig");
 const session_link = @import("session_link.zig");

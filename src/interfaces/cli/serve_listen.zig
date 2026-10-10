@@ -4,8 +4,8 @@
 //! bound address goes to stderr, and a Unix socket path is removed on exit.
 const std = @import("std");
 const builtin = @import("builtin");
-const sock_ready = @import("../sock_ready.zig");
-const win32 = @import("../win32.zig");
+const sock_ready = @import("ra8_host").sock_ready;
+const win32 = @import("ra8_host").win32;
 const served = @import("../rpc/session_server.zig");
 const Connection = @import("../rpc/socket_transport.zig").Connection;
 const loop = @import("serve_loop.zig");

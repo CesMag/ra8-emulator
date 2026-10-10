@@ -3,7 +3,7 @@
 //! copying the image into the remote cache under its SHA-256, which is
 //! skipped when the remote already holds that file.
 const std = @import("std");
-const profiles = @import("../../host/host_profiles.zig");
+const profiles = @import("ra8_host").host_profiles;
 
 /// Largest image ctl copies to a remote.
 const max_image = 64 * 1024 * 1024;

@@ -4,7 +4,7 @@
 const std = @import("std");
 const usb = @import("../../board/usb.zig");
 const usb_plug = @import("../../board/usb_plug.zig");
-const disk_file = @import("../../host/disk_file.zig");
+const disk_file = @import("ra8_host").disk_file;
 
 /// The disk bytes a spec names, owned by `allocator`.
 pub fn load(allocator: std.mem.Allocator, io: std.Io, spec: []const u8) ![]u8 {

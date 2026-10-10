@@ -18,7 +18,8 @@ pub const Net = struct {
     writable: *const fn (socket: Handle) anyerror!bool,
     /// The outcome of a connect that was pending; an error means it failed.
     finished: *const fn (socket: Handle) anyerror!void,
-    send: *const fn (socket: Handle, bytes: []const u8, flags: u32) anyerror!usize,
+    /// Never raises a signal when the peer has closed; the host sees to that.
+    send: *const fn (socket: Handle, bytes: []const u8) anyerror!usize,
     recv: *const fn (socket: Handle, out: []u8, flags: u32) anyerror!usize,
     shutdownSend: *const fn (socket: Handle) anyerror!void,
     close: *const fn (socket: Handle) void,
@@ -58,8 +59,8 @@ fn Over(comptime Host: type) type {
         fn finished(socket: Handle) anyerror!void {
             return Host.finished(fdOf(socket));
         }
-        fn send(socket: Handle, bytes: []const u8, flags: u32) anyerror!usize {
-            return Host.send(fdOf(socket), bytes, flags);
+        fn send(socket: Handle, bytes: []const u8) anyerror!usize {
+            return Host.send(fdOf(socket), bytes);
         }
         fn recv(socket: Handle, out: []u8, flags: u32) anyerror!usize {
             return Host.recv(fdOf(socket), out, flags);

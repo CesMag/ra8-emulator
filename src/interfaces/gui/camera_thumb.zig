@@ -5,10 +5,10 @@
 //! of `side` pixels, keeping its shape, and drawn as one image quad.
 const std = @import("std");
 const draw_list = @import("../render/draw_list.zig");
-const decoded = @import("../../host/camera/decoded_image.zig");
-const image_source = @import("../../host/camera/image_file.zig");
-const y4m = @import("../../host/camera/y4m_header.zig");
-const yuv = @import("../../host/camera/y4m_frame.zig");
+const decoded = @import("ra8_host").camera.decoded;
+const image_source = @import("ra8_host").camera.image_file;
+const y4m = @import("ra8_host").camera.y4m;
+const yuv = @import("ra8_host").camera.y4m_frame;
 const Color = draw_list.Color;
 
 /// The preview's longest edge, matching a panel button.

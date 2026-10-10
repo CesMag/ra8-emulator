@@ -6,7 +6,7 @@
 const std = @import("std");
 const packet = @import("rsp_packet.zig");
 const debug_session = @import("../../session/session.zig");
-const sock_ready = @import("../sock_ready.zig");
+const sock_ready = @import("ra8_host").sock_ready;
 
 /// Instructions per run chunk under gdb: small enough that an interrupt
 /// lands promptly, large enough that polling costs nothing measurable.
