@@ -1,7 +1,7 @@
 //! Covers src/chip/core/fp_context.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const fp = ra8.core.csel.fp_context;
+const fp = ra8.chip.core.csel.fp_context;
 
 const fpca = fp.control_fpca;
 const sfpa = fp.control_sfpa;

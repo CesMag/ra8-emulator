@@ -7,18 +7,18 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const wiring = ra8.board.wiring;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 
 pub const Fixture = struct {
     store: Store,
-    board: ra8.board.Board,
+    board: ra8.board.board.Board,
 
     /// Open in place: the board keeps pointers into itself once attached.
     pub fn open(self: *Fixture) !void {
         self.store = try Store.init(null);
         errdefer self.store.deinit();
-        self.board = ra8.board.Board.init(std.testing.allocator);
+        self.board = ra8.board.board.Board.init(std.testing.allocator);
         errdefer self.board.deinit();
         try wiring.attachBlocks(&self.board, self.memory());
         try wiring.primeWindows(&self.board, self.memory(), wiring.cpu0Windows(&self.board));

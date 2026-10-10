@@ -5,19 +5,20 @@
 //! re-list after the session answers, and the refusal note.
 const std = @import("std");
 const ra8 = @import("ra8");
-const status_capture = ra8.gui.status_capture;
-const proto = ra8.interfaces.rpc.session;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane_layout = ra8.gui.pane_layout;
-const frame = ra8.gui.shell_frame;
-const panes = ra8.gui.shell_panes;
-const status_bar = ra8.gui.status_bar;
-const shell_devices = ra8.gui.shell_devices;
+const gui_app = @import("gui_app");
+const status_capture = gui_app.status_capture;
+const proto = ra8.rpc.session_rpc;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane_layout = gui_app.pane_layout;
+const frame = gui_app.shell_frame;
+const panes = gui_app.shell_panes;
+const status_bar = gui_app.status_bar;
+const shell_devices = gui_app.shell_devices;
 const Devices = shell_devices.Devices;
-const Stdio = ra8.interfaces.rpc.stdio.Stdio;
-const session_link = ra8.gui.session_link;
+const Stdio = ra8.rpc.stdio_transport.Stdio;
+const session_link = gui_app.session_link;
 const Env = proto.Client.Env;
 
 /// A link that has finished its greeting, writing into a pipe nobody answers.

@@ -1,8 +1,8 @@
 //! Tests for src/board/image/elf.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const mod = ra8.image.elf;
+const memmap = ra8.chip.core.memmap;
+const mod = ra8.board.image.elf;
 
 const Error = mod.Error;
 const Header = mod.Header;

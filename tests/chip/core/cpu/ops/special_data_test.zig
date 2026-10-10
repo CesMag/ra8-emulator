@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/ops/special_data.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const regs = ra8.core.cpu.regs;
-const flags = ra8.core.cpu.flags;
-const special_data = ra8.core.cpu.ops.special_data;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const regs = ra8.chip.core.cpu.regs;
+const flags = ra8.chip.core.cpu.flags;
+const special_data = ra8.chip.core.cpu.ops.special_data;
 
 const thumb = regs.xpsr_bits.thumb;
 

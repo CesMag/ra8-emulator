@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const subclock = ra8.periph.subclock;
-const prcr = ra8.periph.prcr;
+const subclock = ra8.chip.periph.subclock;
+const prcr = ra8.chip.periph.prcr;
 
 const Fixture = struct {
     protection: prcr.Prcr,

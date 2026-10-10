@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const until = ra8.core.stop.until;
+const until = ra8.chip.core.stop.until;
 
 test "a line without the text does not end the run" {
     var wait = until.Until{ .needle = "decode=96x96 PASS" };

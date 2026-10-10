@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci = ra8.periph.sci;
-const sci_spi = ra8.periph.sci_spi;
-const sci_status = ra8.periph.sci_status;
+const sci = ra8.chip.periph.sci;
+const sci_spi = ra8.chip.periph.sci_spi;
+const sci_status = ra8.chip.periph.sci_status;
 
 const ccr3_simple_spi: u32 = sci_spi.mod.simple_spi << sci_spi.mod.shift;
 

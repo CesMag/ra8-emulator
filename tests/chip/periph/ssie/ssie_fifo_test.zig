@@ -1,7 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
 const ra8 = @import("ra8");
-const fifo = ra8.periph.ssie_fifo;
+const fifo = ra8.chip.periph.ssie_fifo;
 
 test "a fresh stage is quiet and empty" {
     const stage = fifo.Stage{};

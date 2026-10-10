@@ -1,7 +1,7 @@
 //! The table every watchpoint in a session lives in.
 const std = @import("std");
 const ra8 = @import("ra8");
-const watch_table = ra8.core.watch_table;
+const watch_table = ra8.session.watch_table;
 const Watch = watch_table.Watch;
 
 test "an empty range is refused" {

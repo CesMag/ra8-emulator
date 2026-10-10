@@ -1,7 +1,7 @@
 //! Covers src/chip/core/clrm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const clrm = ra8.core.csel.clrm;
+const clrm = ra8.chip.core.csel.clrm;
 
 const base: u32 = 0x2200_0000;
 

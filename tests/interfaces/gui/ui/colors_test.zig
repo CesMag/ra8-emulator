@@ -2,7 +2,7 @@
 //! This guard fails if a Color.rgb literal with constant arguments shows up
 //! anywhere else under src/interfaces/gui, so the palette stays in one file.
 const std = @import("std");
-const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
 const root = "src/interfaces/gui";
 const home = "ui/colors.zig";
@@ -41,7 +41,7 @@ fn literals(path: []const u8, text: []const u8) usize {
 }
 
 test "the status tones are the palette's roles" {
-    const colors = ra8.gui.colors;
+    const colors = gui_app.colors;
     try std.testing.expectEqual(colors.muted, colors.tone.waiting);
     try std.testing.expectEqual(colors.accent, colors.tone.running);
     try std.testing.expectEqual(colors.highlight, colors.tone.halted);

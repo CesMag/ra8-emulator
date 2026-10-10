@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/mve/reduce_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const reduce = ra8.core.mve.reduce;
-const vectors = ra8.core.mve.reduce_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const reduce = ra8.chip.core.cpu.mve.reduce;
+const vectors = ra8.chip.core.cpu.mve.reduce_vectors;
 
 fn addv(in: vectors.SumCase) u64 {
     return reduce.addv(@truncate(in.acc), in.a, in.size, in.unsigned);

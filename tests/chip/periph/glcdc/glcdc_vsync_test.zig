@@ -1,7 +1,7 @@
 //! Tests for the GLCDC frame boundary in src/chip/periph/glcdc/glcdc_vsync.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vsync = ra8.periph.glcdc_out.vsync;
+const vsync = ra8.chip.periph.glcdc_out.vsync;
 
 const Seen = struct {
     times: [4]u64 = undefined,

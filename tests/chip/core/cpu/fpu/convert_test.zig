@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const fpu = ra8.core.fpu;
+const fpu = ra8.chip.core.cpu.fpu;
 const convert = fpu.convert;
 const single = fpu.format.single;
 const double = fpu.format.double;

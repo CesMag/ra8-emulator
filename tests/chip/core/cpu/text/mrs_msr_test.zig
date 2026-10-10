@@ -4,7 +4,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const parity = @import("parity.zig");
-const Instr = ra8.core.cpu.instr.Instr;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 /// Every SYSm the group claims except the PAC keys, plus 0x0C (unclaimed).
 const sysms = [_]u8{
@@ -34,7 +34,7 @@ test "MSR matches its parity digest for every SYSm and mask" {
 
 fn expectText(hw1: u16, hw2_value: u16, want: []const u8) !void {
     const instr: Instr = .{ .address = parity.address, .hw1 = hw1, .hw2 = hw2_value, .size = 4 };
-    const got = ra8.core.cpu.decode.text.disasm.one(instr) orelse return error.Unclaimed;
+    const got = ra8.chip.core.cpu.decode.text.disasm.one(instr) orelse return error.Unclaimed;
     try std.testing.expectEqualStrings(want, got.slice());
 }
 

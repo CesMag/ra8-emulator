@@ -2,9 +2,9 @@
 //! (PID=BUF): held, sent on arming, and dropped by a bus reset.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.periph.usbhs_regs;
-const usbhs_pipe = ra8.periph.usbhs_pipe;
-const xfer = ra8.periph.usbhs_xfer;
+const regs = ra8.chip.periph.usbhs_regs;
+const usbhs_pipe = ra8.chip.periph.usbhs_pipe;
+const xfer = ra8.chip.periph.usbhs_xfer;
 const device = ra8.components.usb_echo;
 const echo_far = ra8.components.usb_echo_far;
 

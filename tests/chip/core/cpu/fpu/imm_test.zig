@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const fpu = ra8.core.fpu;
+const fpu = ra8.chip.core.cpu.fpu;
 
 /// The value the Arm ARM gives for imm8 = a:b:cd:efgh, computed in float
 /// arithmetic as an independent check on the bit assembly.

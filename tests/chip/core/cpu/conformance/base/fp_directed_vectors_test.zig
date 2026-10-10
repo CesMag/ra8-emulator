@@ -3,11 +3,11 @@
 //! APSR flags and FPSCR, and runs the `fp_directed` group.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.fp_directed_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.fp_directed_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 const Cpu = cpu_ns.cpu.Cpu;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
 
 fn put(cpu: *Cpu, wide: bool, reg: u5, value: u64) void {
     if (wide) cpu.fp.bank.writeD(@intCast(reg), value) else cpu.fp.bank.writeS(reg, @truncate(value));

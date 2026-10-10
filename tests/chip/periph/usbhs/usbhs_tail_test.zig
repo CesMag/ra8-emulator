@@ -2,8 +2,8 @@
 //! the head 32 bits at a time and the tail through CFIFOH and CFIFOHH.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.periph.usbhs_regs;
-const usbhs = ra8.periph.usbhs;
+const regs = ra8.chip.periph.usbhs_regs;
+const usbhs = ra8.chip.periph.usbhs;
 
 const base = regs.window.base;
 

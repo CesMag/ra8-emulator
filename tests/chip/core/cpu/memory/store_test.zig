@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/memory/store.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const Store = ra8.core.cpu.memory.store.Store;
+const memmap = ra8.chip.core.memmap;
+const Store = ra8.chip.core.cpu.memory.store.Store;
 
 test "every region is backed, and comes up zeroed" {
     var store = try Store.init(null);
@@ -142,7 +142,7 @@ test "the PPB is backed per store and starts zeroed (RA8EMU-416)" {
 }
 
 test "configured external memory shares NOR and instruments SDRAM aliases" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var config = ra8.board.external_memory.Config{};
     config.ospi.size = 1024 * 1024;
@@ -153,7 +153,7 @@ test "configured external memory shares NOR and instruments SDRAM aliases" {
     var external = try ra8.board.external_backing.Backing.init(try ra8.board.external_memory.Layout.init(config), board.nor.window());
     defer external.deinit();
     store.attachExternal(external.port());
-    const cpu = ra8.core.cpu.memory.guest.Guest{ .store = &store, .initiator = .cpu0 };
+    const cpu = ra8.chip.core.cpu.memory.guest.Guest{ .store = &store, .initiator = .cpu0 };
     try cpu.write(0x8000_0010, &.{0x0f});
     try std.testing.expectEqual(@as(u8, 0x0f), board.nor.byte(0x10));
     var byte: [1]u8 = undefined;

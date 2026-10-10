@@ -3,14 +3,14 @@
 //! non-zero and whose VPR starts at 0x00AB_1234.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.vscclrm_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.vscclrm_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 const Cpu = cpu_ns.cpu.Cpu;
 
 fn run(in: vectors.In) vectors.Out {
     var cpu: Cpu = .{ .bus = undefined };
-    cpu.fp.cpacr = ra8.core.fpu.cpacr.full_access;
+    cpu.fp.cpacr = ra8.chip.core.cpu.fpu.cpacr.full_access;
     for (0..32) |i| cpu.fp.bank.writeS(@intCast(i), 0x5A00_0000 | @as(u32, @intCast(i)) * 0x0101 + 1);
     cpu.fp.vpr = @bitCast(vectors.vpr_reset);
     cpu.fp.context.fpccr.aspen = in.aspen;

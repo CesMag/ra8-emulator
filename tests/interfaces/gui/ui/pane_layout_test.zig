@@ -3,8 +3,8 @@
 //! the minimum pane size, split and close keep the tree valid, a pane's
 //! core can be rebound, and the two-core seed layout has both cores.
 const std = @import("std");
-const ra8 = @import("ra8");
-const layout_mod = ra8.gui.pane_layout;
+const gui_app = @import("gui_app");
+const layout_mod = gui_app.pane_layout;
 const Layout = layout_mod.Layout;
 const Rect = layout_mod.Rect;
 

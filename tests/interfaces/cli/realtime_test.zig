@@ -1,8 +1,9 @@
 //! Tests for --realtime, --speed, --run-for and the pace line (src/board/run/pacing.zig).
 const std = @import("std");
 const ra8 = @import("ra8");
-const parse = ra8.core.cli.parse;
-const clocks = ra8.periph.clocks;
+const cli_app = @import("cli_app");
+const parse = cli_app.cli.parse;
+const clocks = ra8.chip.periph.clocks;
 const time_policy = ra8.board.run;
 const realtime = time_policy.pacing;
 
@@ -79,12 +80,12 @@ test "--run-for is a window of the image's own milliseconds (RA8EMU-762)" {
 test "--run-for times a run as --ms does and keeps the 1 GHz ceiling" {
     const ten = try parse(&[_][]const u8{ "emu", "a.elf", "--run-for", "10s" });
     const same = try parse(&[_][]const u8{ "emu", "a.elf", "--ms", "10000" });
-    const stop_sym = ra8.board.zig_run.stop_sym;
+    const stop_sym = cli_app.zig_run.stop_sym;
     try std.testing.expectEqual(stop_sym.deadline(same.ms).?.periods, stop_sym.deadline(ten.ms).?.periods);
     try std.testing.expectEqual(same.budgetFor(false), ten.budgetFor(false));
     // An image that never arms SysTick still gets 10 s at 1 GHz, plus boot.
     const at_1ghz = clocks.timebase.default_hz * 10;
-    try std.testing.expectEqual(at_1ghz + ra8.core.cli.budget, ten.budgetFor(false));
+    try std.testing.expectEqual(at_1ghz + cli_app.cli.budget, ten.budgetFor(false));
     const later = try parse(&[_][]const u8{ "emu", "a.elf", "--ms", "5", "--run-for", "2s" });
     try std.testing.expectEqual(@as(?u64, 2000), later.ms);
 }

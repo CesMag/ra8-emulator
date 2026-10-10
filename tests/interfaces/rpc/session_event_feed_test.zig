@@ -2,8 +2,8 @@
 //! stream events go out on the session topic, and as which wire kind.
 const std = @import("std");
 const ra8 = @import("ra8");
-const feed = ra8.interfaces.rpc.event_feed;
-const proto = ra8.interfaces.rpc.session;
+const feed = ra8.rpc.session_event_feed;
+const proto = ra8.rpc.session_rpc;
 
 test "stream kinds the wire names map to the same wire kind" {
     try std.testing.expectEqual(proto.EventKind.breakpoint_set, feed.wireKind(.breakpoint_set).?);
@@ -19,10 +19,10 @@ test "stream kinds with their own topic or no wire name are skipped" {
 }
 
 test "an LED change carries its index and level in the address" {
-    const on: ra8.core.session_api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 2, .level = true } } };
+    const on: ra8.session.session_api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 2, .level = true } } };
     try std.testing.expectEqual(@as(u32, 0x102), feed.addressOf(on));
-    const off: ra8.core.session_api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 0, .level = false } } };
+    const off: ra8.session.session_api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 0, .level = false } } };
     try std.testing.expectEqual(@as(u32, 0), feed.addressOf(off));
-    const point: ra8.core.session_api.Event = .{ .core = .cpu0, .kind = .breakpoint_set, .address = 0x0200_0040 };
+    const point: ra8.session.session_api.Event = .{ .core = .cpu0, .kind = .breakpoint_set, .address = 0x0200_0040 };
     try std.testing.expectEqual(@as(u32, 0x0200_0040), feed.addressOf(point));
 }

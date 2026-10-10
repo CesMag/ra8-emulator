@@ -4,10 +4,10 @@
 const ra8 = @import("ra8");
 
 const wiring = ra8.board.wiring;
-pub const Store = ra8.core.cpu.memory.store.Store;
-pub const Guest = ra8.core.cpu.memory.guest.Guest;
+pub const Store = ra8.chip.core.cpu.memory.store.Store;
+pub const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 
-pub fn attach(board: *ra8.board.Board, core: Guest) !void {
+pub fn attach(board: *ra8.board.board.Board, core: Guest) !void {
     try wiring.attachBlocks(board, core);
     try wiring.primeWindows(board, core, wiring.cpu0Windows(board));
 }

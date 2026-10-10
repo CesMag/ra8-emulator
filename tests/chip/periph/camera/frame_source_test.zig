@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const frame_source = ra8.periph.ceu.camera.frame_source;
+const frame_source = ra8.chip.periph.ceu.camera.frame_source;
 
 const Spy = struct {
     frames: u32 = 0,

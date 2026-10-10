@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/dp_reg.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const regs = ra8.core.cpu.regs;
-const flags = ra8.core.cpu.flags;
-const dp_reg = ra8.core.cpu.ops.dp_reg;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const regs = ra8.chip.core.cpu.regs;
+const flags = ra8.chip.core.cpu.flags;
+const dp_reg = ra8.chip.core.cpu.ops.dp_reg;
 
 const thumb = regs.xpsr_bits.thumb;
 const N = flags.bits.n;
@@ -42,7 +42,7 @@ const cases = [_]Case{
 };
 
 fn run(cpu: *Cpu, hw1: u16) !void {
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
     const exec = dp_reg.group.decode(instr) orelse return error.NotClaimed;
     try exec(cpu, instr);
 }

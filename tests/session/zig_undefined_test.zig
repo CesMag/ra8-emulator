@@ -1,9 +1,9 @@
 //! Covers src/session/zig_undefined.zig: `--stop-on-undefined` on a
 //! Zig run (RA8EMU-603).
 const std = @import("std");
-const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const zig_undefined = ra8.board.zig_run.undefined_sites;
+const zig_undefined = cli_app.zig_run.undefined_sites;
 
 fn oneSite() zig_undefined.Found {
     var found: zig_undefined.Found = .{};

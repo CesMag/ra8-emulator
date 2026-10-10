@@ -3,10 +3,10 @@
 //! flags the pseudocode produces.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const format = ra8.core.fpu.format;
-const round = ra8.core.fpu.round;
-const fpscr_mod = ra8.core.fpu.fpscr;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const format = ra8.chip.core.cpu.fpu.format;
+const round = ra8.chip.core.cpu.fpu.round;
+const fpscr_mod = ra8.chip.core.cpu.fpu.fpscr;
 const Fpscr = fpscr_mod.Fpscr;
 const RMode = fpscr_mod.RMode;
 const Real = format.Real;

@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/alignment.zig and the MemA groups that call it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const alignment = ra8.core.cpu.alignment;
-const Instr = ra8.core.cpu.instr.Instr;
+const alignment = ra8.chip.core.cpu.alignment;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const fixture = @import("exception/ram.zig");
 
 test "memA accepts aligned accesses of every size" {
@@ -18,9 +18,9 @@ test "memA rejects an access off its natural alignment" {
     try std.testing.expectError(error.Unaligned, alignment.memA(0x2000_0006, 8));
 }
 
-fn exec(cpu: *ra8.core.cpu.cpu.Cpu, hw1: u16, hw2: u16, size: u3) !void {
+fn exec(cpu: *ra8.chip.core.cpu.cpu.Cpu, hw1: u16, hw2: u16, size: u3) !void {
     const instr: Instr = .{ .address = fixture.code, .hw1 = hw1, .hw2 = hw2, .size = size };
-    try ra8.core.cpu.decode.decode(instr).?.exec(cpu, instr);
+    try ra8.chip.core.cpu.decode.decode(instr).?.exec(cpu, instr);
 }
 
 test "an unaligned ldrex, ldrd and ldm are all refused" {

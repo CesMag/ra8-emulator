@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/bit_reverse.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const br = ra8.core.mve.bit_reverse;
+const br = ra8.chip.core.cpu.mve.bit_reverse;
 
 test "a full-width reversal of one element" {
     try std.testing.expectEqual(@as(u32, 0x80), br.element(0x01, 8, 8));

@@ -4,9 +4,9 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const device = ra8.components.usb_echo;
 const echo_far = ra8.components.usb_echo_far;
-const regs = ra8.periph.usbhs_regs;
-const usbhs_pipe = ra8.periph.usbhs_pipe;
-const xfer = ra8.periph.usbhs_xfer;
+const regs = ra8.chip.periph.usbhs_regs;
+const usbhs_pipe = ra8.chip.periph.usbhs_pipe;
+const xfer = ra8.chip.periph.usbhs_xfer;
 
 fn getDescriptor(transfer: *xfer.Transfer, kind: u16, length: u16) void {
     transfer.usbreq = 0x0680;

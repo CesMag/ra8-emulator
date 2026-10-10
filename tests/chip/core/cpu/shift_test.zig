@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/shift.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const shift = ra8.core.cpu.shift;
+const shift = ra8.chip.core.cpu.shift;
 
 const Case = struct { value: u32, kind: shift.Kind, amount: u32, result: u32, carry: bool };
 

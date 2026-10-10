@@ -4,9 +4,9 @@
 //! that pair of controllers against one ICU.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dtc = ra8.periph.dtc;
-const icu = ra8.periph.icu;
-const xfer = ra8.periph.dtc_xfer;
+const dtc = ra8.chip.periph.dtc;
+const icu = ra8.chip.periph.icu;
+const xfer = ra8.chip.periph.dtc_xfer;
 
 const Cells = struct {
     base: u32 = 0x2000_0000,
@@ -58,7 +58,7 @@ const slot: usize = 7;
 const byte_copy: u32 = (@as(u32, 0b0000_1000) << 24) | (@as(u32, 0b0000_1000) << 16);
 
 /// A started controller reading the descriptor at `ti_at` through `table`.
-fn controller(table: ra8.periph.registry.Issuer) dtc.Dtc {
+fn controller(table: ra8.chip.periph.registry.Issuer) dtc.Dtc {
     var unit = dtc.Dtc.init();
     unit.table = table;
     unit.write(dtc.win_base + dtc.off.dtcvbr, 4, vector_base);

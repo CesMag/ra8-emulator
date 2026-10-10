@@ -2,12 +2,12 @@
 //! LLVM's assembler for -mcpu=cortex-m85 with MVE floating point.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const mve_vcmp_fp = ra8.core.cpu.ops.mve_vcmp_fp;
-const qreg = ra8.core.mve.qreg;
-const vpt = ra8.core.mve.vpt;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const mve_vcmp_fp = ra8.chip.core.cpu.ops.mve_vcmp_fp;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const vpt = ra8.chip.core.cpu.mve.vpt;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -70,11 +70,11 @@ test "vpt.f32 ge, q1, q2 opens a one-instruction block" {
 
 test "floating VPT resumed after A0 opens its remaining mask and retires ECI" {
     var cpu = loaded();
-    cpu.regs.xpsr = ra8.core.cpu.it_state.put(cpu.regs.xpsr, 0x10);
+    cpu.regs.xpsr = ra8.chip.core.cpu.it_state.put(cpu.regs.xpsr, 0x10);
     try run(&cpu, 0xEE73, 0x1F04);
     try std.testing.expectEqual(@as(u4, 0b1000), cpu.fp.vpr.mask01);
     try std.testing.expectEqual(@as(u4, 0b1000), cpu.fp.vpr.mask23);
-    try std.testing.expectEqual(@as(u8, 0), ra8.core.cpu.it_state.get(cpu.regs.xpsr));
+    try std.testing.expectEqual(@as(u8, 0), ra8.chip.core.cpu.it_state.get(cpu.regs.xpsr));
 }
 
 test "the table routes the float compares here and the integer ones elsewhere" {

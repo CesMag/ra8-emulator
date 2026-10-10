@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/bxns.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bxns = ra8.core.cpu.ops.bxns;
+const bxns = ra8.chip.core.cpu.ops.bxns;
 const fixture = @import("../exception/ram.zig");
-const Instr = ra8.core.cpu.instr.Instr;
-const State = ra8.core.banked.State;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const State = ra8.chip.core.banked.State;
 
 fn claims(hw1: u16) bool {
     return bxns.group.decode(.{ .address = 0, .hw1 = hw1, .size = 2 }) != null;

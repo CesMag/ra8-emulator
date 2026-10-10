@@ -5,11 +5,11 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const image_file = ra8.host.camera.image_file;
-const ceu = ra8.periph.ceu;
+const ceu = ra8.chip.periph.ceu;
 const hosted = ra8.components.camera.hosted;
 const FrameSource = ceu.camera.frame_source.FrameSource;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const allocator = std.testing.allocator;
 
 /// A 2x2 P6 picture: red, green / blue, white.

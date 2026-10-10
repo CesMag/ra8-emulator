@@ -4,7 +4,7 @@
 //! a sector past the part is refused.
 const std = @import("std");
 const ra8 = @import("ra8");
-const half = ra8.snapshot.nor_flash;
+const half = ra8.components.flash_snapshot;
 const fields = ra8.snapshot.fields;
 const Flash = ra8.components.nor_flash.Flash;
 const allocator = std.testing.allocator;

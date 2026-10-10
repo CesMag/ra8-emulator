@@ -1,8 +1,8 @@
 //! IPCSAR / IPCPAR: the attribution pair, and the PRC4 gate in front of it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const attr = ra8.periph.ipc_attr;
-const prcr = ra8.periph.prcr;
+const attr = ra8.chip.periph.ipc_attr;
+const prcr = ra8.chip.periph.prcr;
 
 const sar_addr = attr.win_base + attr.off.sar;
 const par_addr = attr.win_base + attr.off.par;

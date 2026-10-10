@@ -2,8 +2,8 @@
 //! the firmware prints its prompt (RA8EMU-626).
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci = ra8.periph.sci;
-const sci_reply = ra8.periph.sci_reply;
+const sci = ra8.chip.periph.sci;
+const sci_reply = ra8.chip.periph.sci_reply;
 
 fn console() sci.Sci {
     var unit = sci.Sci.init();

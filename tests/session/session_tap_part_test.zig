@@ -1,8 +1,8 @@
 //! Host tests for aiming a tap at part of a published widget (RA8EMU-731).
 const std = @import("std");
 const ra8 = @import("ra8");
-const tap_part = ra8.core.session_tap_part;
-const widget_tree = ra8.core.widget_tree;
+const tap_part = ra8.session.session_tap_part;
+const widget_tree = ra8.session.widget_tree;
 
 fn record(name: []const u8, state: []const u8, rect: widget_tree.Rect) widget_tree.Widget {
     var widget: widget_tree.Widget = .{ .name = @splat(0), .kind = @splat(0), .state = @splat(0), .rect = rect };

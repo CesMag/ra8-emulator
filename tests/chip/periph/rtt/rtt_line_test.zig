@@ -1,7 +1,7 @@
 //! Line assembly: what a drained ring turns into.
 const std = @import("std");
 const ra8 = @import("ra8");
-const text = ra8.periph.rtt_line;
+const text = ra8.chip.periph.rtt_line;
 
 fn feed(line: *text.Line, bytes: []const u8) void {
     for (bytes) |byte| line.feed(byte);

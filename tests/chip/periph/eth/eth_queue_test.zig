@@ -2,9 +2,9 @@
 //! marks for reception, and the request that kicks one.
 const std = @import("std");
 const ra8 = @import("ra8");
-const eth_mode = ra8.periph.eth_mode;
-const eth_queue = ra8.periph.eth_queue;
-const regs = ra8.periph.eth_regs;
+const eth_mode = ra8.chip.periph.eth_mode;
+const eth_queue = ra8.chip.periph.eth_queue;
+const regs = ra8.chip.periph.eth_regs;
 
 const gwca = regs.cluster.gwca0;
 

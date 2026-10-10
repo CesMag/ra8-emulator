@@ -1,9 +1,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const fp_ready = ra8.core.cpu.exception.fp_ready;
-const entry = ra8.core.cpu.exception.entry;
-const regs = ra8.core.cpu.regs;
-const memmap = ra8.core.memmap;
+const fp_ready = ra8.chip.core.cpu.exception.fp_ready;
+const entry = ra8.chip.core.cpu.exception.entry;
+const regs = ra8.chip.core.cpu.regs;
+const memmap = ra8.chip.core.memmap;
 const fixture = @import("ram.zig");
 
 const memfaultena: u32 = 1 << 16;

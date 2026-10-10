@@ -8,12 +8,13 @@
 //! golden frame.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane = ra8.gui.stack_pane;
-const capture = ra8.gui.stack_capture;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane = gui_app.stack_pane;
+const capture = gui_app.stack_capture;
 
 const Rect = draw_list.Rect;
 /// Room for 64 characters past the pc and six rows.
@@ -25,8 +26,8 @@ const sci_init: u32 = 0x0200_1A70;
 const golden: u64 = 5426307049046444676;
 
 /// The fixture stopped on ra8_sci_init's first instruction.
-fn stopped() !ra8.harness.Harness {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path });
+fn stopped() !ra8.session.harness.Harness {
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path });
     errdefer opened.deinit();
     const session = opened.session();
     _ = try session.setBreakpoint(.cpu0, .{ .address = sci_init });

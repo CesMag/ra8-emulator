@@ -5,13 +5,13 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
 const fake_source = @import("fake_source.zig");
-const bus = ra8.core.cpu.bus;
-const memmap = ra8.core.memmap;
-const mpu = ra8.periph.mpu;
-const mpu_check = ra8.core.cpu.board_bus.mpu_check;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Stop = ra8.core.cpu.cpu.Stop;
-const dispatch = ra8.core.cpu.exception.dispatch;
+const bus = ra8.chip.core.cpu.bus;
+const memmap = ra8.chip.core.memmap;
+const mpu = ra8.chip.periph.mpu;
+const mpu_check = ra8.chip.core.cpu.board_bus.mpu_check;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
+const dispatch = ra8.chip.core.cpu.exception.dispatch;
 
 const mem_handler: u32 = fixture.base + 0x180;
 const bus_handler: u32 = fixture.base + 0x1C0;
@@ -261,7 +261,7 @@ test "a HardFault return checks the restored context MPU privilege" {
     var routed: RoutedRam = .{ .ram = &ram, .check = &check };
     var cpu = try boot(&ram, &routed);
     cpu.mpu = &check;
-    cpu.regs.control |= ra8.core.cpu.regs.control_bits.npriv;
+    cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.npriv;
     cpu.regs.xpsr = 0;
 
     try std.testing.expectEqual(@as(?Stop, null), cpu.step());
@@ -308,7 +308,7 @@ test "an MPU-refused exception pop tail-chains MemManage with MUNSTKERR" {
     var routed: RoutedRam = .{ .ram = &ram, .check = &check };
     var cpu = try boot(&ram, &routed);
     cpu.mpu = &check;
-    cpu.regs.control |= ra8.core.cpu.regs.control_bits.npriv;
+    cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.npriv;
 
     try std.testing.expectEqual(@as(?Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.handler, cpu.regs.pc);

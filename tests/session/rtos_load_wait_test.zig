@@ -3,7 +3,7 @@
 //! PendSV is idle, not PendSV, until a thread is switched in or it returns.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_load = ra8.core.step_hook.rtos_hook.load;
+const rtos_load = ra8.session.step_hook.rtos_hook.load;
 
 const blink_a: u32 = 0x2200_10F0;
 const systick: u16 = 15;

@@ -5,12 +5,13 @@
 //! image reports it on the SCI console.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 
-const elf = ra8.image.elf;
-const zig_run = ra8.board.zig_run;
-const cpu_boot = ra8.core.cpu.boot;
-const loader = ra8.core.cpu.memory.load;
+const elf = ra8.board.image.elf;
+const zig_run = cli_app.zig_run;
+const cpu_boot = ra8.chip.core.cpu.boot;
+const loader = ra8.chip.core.cpu.memory.load;
 
 const image_bytes = @embedFile("../../fixtures/threadx/threadx_stkof.elf");
 const budget: u64 = 5_000_000;
@@ -20,14 +21,14 @@ test "a ThreadX thread overflowing its stack is caught by the stack limit" {
     var store = try store_board.Store.init(null);
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
     // As cpu0_store.Cpu0.attachStore: the image goes in after the board, and
     // the loader maps its option-setting windows too.
-    const loaded = try ra8.image.load.read(image);
+    const loaded = try ra8.board.image.load.read(image);
     _ = try loader.image(core, loaded.image());
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase };
     var ran: u64 = 0;
     var output: [1024]u8 = undefined;

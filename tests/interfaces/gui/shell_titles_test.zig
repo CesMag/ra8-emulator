@@ -2,10 +2,10 @@
 //! (RA8EMU-800): the kind cycle, a press on a title stepping only that leaf
 //! and keeping its core, and a press off every title doing nothing.
 const std = @import("std");
-const ra8 = @import("ra8");
-const pane_layout = ra8.gui.pane_layout;
-const frame = ra8.gui.shell_frame;
-const titles = ra8.gui.shell_titles;
+const gui_app = @import("gui_app");
+const pane_layout = gui_app.pane_layout;
+const frame = gui_app.shell_frame;
+const titles = gui_app.shell_titles;
 
 test "the kinds cycle from empty through disassembly and back to empty" {
     try std.testing.expectEqual(pane_layout.Kind.board, titles.nextKind(.empty));

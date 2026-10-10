@@ -3,9 +3,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const dfifo = ra8.periph.usbhs_dfifo;
-const regs = ra8.periph.usbhs_regs;
-const usbhs = ra8.periph.usbhs;
+const dfifo = ra8.chip.periph.usbhs_dfifo;
+const regs = ra8.chip.periph.usbhs_regs;
+const usbhs = ra8.chip.periph.usbhs;
 const echo_device = ra8.components.usb_echo;
 const echo_far = ra8.components.usb_echo_far;
 

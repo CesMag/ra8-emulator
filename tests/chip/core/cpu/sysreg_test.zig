@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/sysreg.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.core.cpu.regs;
-const sysreg = ra8.core.cpu.sysreg;
+const regs = ra8.chip.core.cpu.regs;
+const sysreg = ra8.chip.core.cpu.sysreg;
 const Regs = regs.Regs;
 
 test "known covers the PSR views, stack pointers, limits, masks, CONTROL and PAC keys" {

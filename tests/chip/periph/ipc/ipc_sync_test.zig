@@ -1,8 +1,8 @@
 //! IPCSEMn and the NMI doorbells: the lock is taken by the read itself.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ipc = ra8.periph.ipc;
-const sync = ra8.periph.ipc_sync;
+const ipc = ra8.chip.periph.ipc;
+const sync = ra8.chip.periph.ipc_sync;
 
 const sem_lock = sync.sem.lock;
 const nmi_bit = sync.nmi.bit;
@@ -226,7 +226,7 @@ test "a free semaphore, an unnamed lane and NMI status never repeat" {
 
 test "the IPC block's repeat reaches the semaphore through the peripheral bus" {
     var unit = ipc.Ipc.init();
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     try bus.add(unit.block());
     try std.testing.expect(!bus.repeat(semAddress(4), 4, 0));

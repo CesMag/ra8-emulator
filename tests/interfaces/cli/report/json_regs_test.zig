@@ -2,9 +2,10 @@
 //! of `--report json` read the Zig core's registers on a `--cpu zig` run.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const json_regs = ra8.board.report.json_run.json_dumps.json_regs;
-const Regs = ra8.core.cpu.boot.Regs;
+const json_regs = cli_app.report.json_run.json_dumps.json_regs;
+const Regs = ra8.chip.core.cpu.boot.Regs;
 
 test "a zig reader reads the core's registers, not reset values" {
     var regs: Regs = .{ .pc = 0x0200_1092, .lr = 0x0200_0645, .msp = 0x220F_FED8 };

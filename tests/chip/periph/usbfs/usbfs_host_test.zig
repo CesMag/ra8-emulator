@@ -2,8 +2,8 @@
 //! answers each request the way a device stack would.
 const std = @import("std");
 const ra8 = @import("ra8");
-const usbfs = ra8.periph.usbfs;
-const regs = ra8.periph.usbhs_regs;
+const usbfs = ra8.chip.periph.usbfs;
+const regs = ra8.chip.periph.usbhs_regs;
 const Host = usbfs.host.Host;
 
 fn at(offset: u32) u32 {

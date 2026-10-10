@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/mve/compare_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const compare = ra8.core.mve.compare;
-const vectors = ra8.core.mve.compare_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const compare = ra8.chip.core.cpu.mve.compare;
+const vectors = ra8.chip.core.cpu.mve.compare_vectors;
 
 fn run(in: vectors.CmpCase) u16 {
     return compare.compare(in.a, in.b, in.size, in.cond);

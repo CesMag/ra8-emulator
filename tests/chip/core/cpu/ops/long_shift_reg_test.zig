@@ -1,15 +1,15 @@
 //! Covers src/chip/core/cpu/ops/long_shift_reg.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const long_shift_reg = ra8.core.cpu.ops.long_shift_reg;
-const table = ra8.core.cpu.ops.table;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const long_shift_reg = ra8.chip.core.cpu.ops.long_shift_reg;
+const table = ra8.chip.core.cpu.ops.table;
 
 /// lsll r2, r3, r4 and asrl r2, r3, r4, as arm-none-eabi-as encodes them.
 const lsll_hw2: u16 = 0x430D;
 const asrl_hw2: u16 = 0x432D;
 
-fn wide(hw1: u16, hw2: u16) ra8.core.cpu.instr.Instr {
+fn wide(hw1: u16, hw2: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 
@@ -91,11 +91,11 @@ test "the group has a lockstep oracle" {
 }
 
 test "seam port: asrl r2, r3, r12 reads the amount and leaves Rm alone" {
-    var cpu: ra8.core.cpu.cpu.Cpu = .{ .bus = undefined };
+    var cpu: ra8.chip.core.cpu.cpu.Cpu = .{ .bus = undefined };
     cpu.regs.low[3] = 0x8000_0000;
     cpu.regs.set(12, 4);
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xEA52, .hw2 = 0xC32D, .size = 4 };
-    const exec = ra8.core.cpu.ops.long_shift_reg.group.decode(instr) orelse return error.NotClaimed;
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xEA52, .hw2 = 0xC32D, .size = 4 };
+    const exec = ra8.chip.core.cpu.ops.long_shift_reg.group.decode(instr) orelse return error.NotClaimed;
     try exec(&cpu, instr);
     try std.testing.expectEqual(@as(u32, 0), cpu.regs.low[2]);
     try std.testing.expectEqual(@as(u32, 0xF800_0000), cpu.regs.low[3]);

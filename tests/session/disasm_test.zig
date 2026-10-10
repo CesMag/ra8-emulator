@@ -1,7 +1,7 @@
 //! Tests for src/session/disasm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.core.disasm;
+const mod = ra8.session.disasm;
 
 const Error = mod.Error;
 const one = mod.one;

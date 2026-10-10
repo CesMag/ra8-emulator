@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/regs.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.core.cpu.regs;
+const regs = ra8.chip.core.cpu.regs;
 
 test "R13 is MSP in Thread mode until CONTROL.SPSEL picks PSP" {
     var r: regs.Regs = .{ .msp = 0x2000_1000, .psp = 0x2000_0800 };

@@ -2,11 +2,11 @@
 //! through the NPU's own registers, the way the firmware driver does it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const npu = ra8.periph.npu;
+const npu = ra8.chip.periph.npu;
 const store_memory = @import("../store_memory.zig");
 const Guest = store_memory.Guest;
 
-const arena_base: u32 = ra8.core.memmap.dtcm_end - arena_size;
+const arena_base: u32 = ra8.chip.core.memmap.dtcm_end - arena_size;
 const arena_size: u32 = 0x4000;
 const stream_at: u32 = arena_base;
 const region0: u32 = arena_base + 0x1000;
@@ -109,7 +109,7 @@ test "a DMA into unmapped memory is a bus error" {
 test "the regions come from BASEP0..7" {
     var unit = npu.Npu.init();
     poke(&unit, npu.off.basep0 + 3 * npu.geometry.basep_stride, 0x2200_0000);
-    try std.testing.expectEqual(@as(u64, 0x2200_0000), ra8.periph.npu_vela.hook.regions(&unit)[3]);
+    try std.testing.expectEqual(@as(u64, 0x2200_0000), ra8.chip.periph.npu_vela.hook.regions(&unit)[3]);
 }
 
 test "the report counts a Vela kick whether it reached STOP or faulted" {

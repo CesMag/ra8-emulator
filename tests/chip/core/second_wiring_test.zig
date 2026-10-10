@@ -2,9 +2,9 @@
 //! handed over the wiring, with no board type in the chip (RA8EMU-1012).
 const std = @import("std");
 const ra8 = @import("ra8");
-const Wiring = ra8.core.second_core.Wiring;
+const Wiring = ra8.chip.core.second_core.Wiring;
 const CoreWindows = ra8.board.wiring.CoreWindows;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 
 /// Stands in for the board: counts what CPU1 asked of it.
 const Host = struct {
@@ -25,11 +25,11 @@ const Host = struct {
     }
 };
 
-fn wiringFor(host: *Host, bus: *ra8.periph.registry.Bus, slot: *?Guest) Wiring {
+fn wiringFor(host: *Host, bus: *ra8.chip.periph.registry.Bus, slot: *?Guest) Wiring {
     const statics = struct {
         const dividers: u16 = 0;
-        const reboot: ?*ra8.core.reboot.Reboot = null;
-        const release: ra8.periph.cpu_ctrl.CpuCtrl = .{};
+        const reboot: ?*ra8.chip.core.reboot.Reboot = null;
+        const release: ra8.chip.periph.cpu_ctrl.CpuCtrl = .{};
     };
     return .{
         .bus = bus,
@@ -45,7 +45,7 @@ fn wiringFor(host: *Host, bus: *ra8.periph.registry.Bus, slot: *?Guest) Wiring {
 
 test "a reset request goes to the host behind the wiring" {
     var host: Host = .{};
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var slot: ?Guest = null;
     const wiring = wiringFor(&host, &bus, &slot);
@@ -56,25 +56,25 @@ test "a reset request goes to the host behind the wiring" {
 
 test "priming hands the host CPU1's own windows" {
     var host: Host = .{};
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var slot: ?Guest = null;
     const wiring = wiringFor(&host, &bus, &slot);
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    var partitions = ra8.periph.sau.Sau.init();
-    var regions = ra8.periph.mpu.Mpu.init();
-    var guard = ra8.core.mpu_guard.Guard.init();
-    var control = ra8.periph.scb.Scb.init();
-    var clears = ra8.core.cpu.board_bus.fault_clear.Clears.init();
+    var partitions = ra8.chip.periph.sau.Sau.init();
+    var regions = ra8.chip.periph.mpu.Mpu.init();
+    var guard = ra8.chip.core.mpu_guard.Guard.init();
+    var control = ra8.chip.periph.scb.Scb.init();
+    var clears = ra8.chip.core.cpu.board_bus.fault_clear.Clears.init();
     try wiring.prime(.{ .store = &store }, .{
         .partitions = &partitions,
         .regions = &regions,
         .guard = &guard,
-        .identity = ra8.periph.cpuid.cpu1,
+        .identity = ra8.chip.periph.cpuid.cpu1,
         .control = &control,
         .clears = &clears,
     });
     try std.testing.expectEqual(@as(u32, 1), host.primed);
-    try std.testing.expectEqual(ra8.periph.cpuid.cpu1, host.identity);
+    try std.testing.expectEqual(ra8.chip.periph.cpuid.cpu1, host.identity);
 }

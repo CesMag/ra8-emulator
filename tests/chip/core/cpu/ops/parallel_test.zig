@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/ops/parallel.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const parallel = ra8.core.cpu.ops.parallel;
-const xpsr_bits = ra8.core.cpu.regs.xpsr_bits;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const parallel = ra8.chip.core.cpu.ops.parallel;
+const xpsr_bits = ra8.chip.core.cpu.regs.xpsr_bits;
 
-fn wide(hw1: u16, hw2: u16) ra8.core.cpu.instr.Instr {
+fn wide(hw1: u16, hw2: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 

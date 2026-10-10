@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/block.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const decode = ra8.core.cpu.decode;
+const bus = ra8.chip.core.cpu.bus;
+const decode = ra8.chip.core.cpu.decode;
 const block = decode.block;
-const Instr = ra8.core.cpu.instr.Instr;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const DecodeCache = decode.cache.DecodeCache;
 
 const Rom = struct {

@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const transfer = ra8.core.fpu.transfer;
-const vectors = ra8.core.fpu.transfer_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const transfer = ra8.chip.core.cpu.fpu.transfer;
+const vectors = ra8.chip.core.cpu.fpu.transfer_vectors;
 
 test "VLDM, VSTM, VPUSH and VPOP match the pseudocode" {
     try vector.expectAll(transfer.Multiple, transfer.Plan, transfer.multiple, &vectors.multiple);

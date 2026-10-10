@@ -2,10 +2,10 @@
 //! stretch in flight (RA8EMU-464).
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cut = ra8.core.cpu.cpu.systick_cut.Cut;
-const Clocks = ra8.periph.clocks.Clocks;
-const Words = ra8.periph.clocks.Words;
+const bus = ra8.chip.core.cpu.bus;
+const Cut = ra8.chip.core.cpu.cpu.systick_cut.Cut;
+const Clocks = ra8.chip.periph.clocks.Clocks;
+const Words = ra8.chip.periph.clocks.Words;
 
 /// The two SysTick windows, the normal one and the Non-secure alias.
 const Ram = struct {

@@ -2,9 +2,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
-const memmap = ra8.core.memmap;
-const secure = ra8.core.cpu.exception.secure;
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const memmap = ra8.chip.core.memmap;
+const secure = ra8.chip.core.cpu.exception.secure;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 
 const secure_handler: u32 = fixture.base + 0x1C0;
 const hard_handler: u32 = fixture.base + 0x1E0;

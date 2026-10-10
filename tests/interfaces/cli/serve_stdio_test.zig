@@ -2,8 +2,9 @@
 //! (RA8EMU-737): greet, load, run, pause, read registers, close stdin.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const test_paths = @import("test_paths");
-const Stdio = ra8.interfaces.rpc.stdio.Stdio;
+const Stdio = ra8.rpc.stdio_transport.Stdio;
 const serve_peer = @import("serve_peer.zig");
 const image_path = serve_peer.image_path;
 
@@ -34,6 +35,6 @@ test "serve without --stdio prints its usage and exits 2" {
     defer std.testing.allocator.free(result.stdout);
     defer std.testing.allocator.free(result.stderr);
     try std.testing.expectEqual(std.process.Child.Term{ .exited = 2 }, result.term);
-    try std.testing.expectEqualStrings(ra8.core.serve_main.usage, result.stderr);
+    try std.testing.expectEqualStrings(cli_app.serve_main.usage, result.stderr);
     try std.testing.expectEqualStrings("", result.stdout);
 }

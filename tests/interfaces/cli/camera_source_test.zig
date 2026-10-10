@@ -2,10 +2,11 @@
 //! for the CEU and how the report names it.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const camera_source = ra8.core.cli_camera_source;
+const camera_source = cli_app.camera_source;
 const source_spec = ra8.host.camera.source_spec;
-const gradient = ra8.periph.ceu.camera.gradient;
+const gradient = ra8.chip.periph.ceu.camera.gradient;
 const allocator = std.testing.allocator;
 
 /// The sensor's FORMAT CONTROL byte as the camera example leaves it.

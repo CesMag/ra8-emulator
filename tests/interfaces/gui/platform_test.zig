@@ -2,9 +2,10 @@
 //! was given, and show falls back to the CPU path unless the backend draws.
 const std = @import("std");
 const ra8 = @import("ra8");
-const platform = ra8.gui.platform;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
+const gui_app = @import("gui_app");
+const platform = gui_app.platform;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
 const Text = platform.Text;
 
 test "text keeps what it was given" {

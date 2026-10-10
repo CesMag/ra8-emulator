@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/it_state.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const it_state = ra8.core.cpu.it_state;
+const it_state = ra8.chip.core.cpu.it_state;
 
 test "put and get round-trip through the split xPSR fields" {
     const xpsr: u32 = 0xF100_0000;

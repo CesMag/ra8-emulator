@@ -1,6 +1,6 @@
 //! Covers src/chip/core/cpu/exception/exc_return.zig.
 const std = @import("std");
-const exc_return = @import("ra8").core.cpu.exception.exc_return;
+const exc_return = @import("ra8").chip.core.cpu.exception.exc_return;
 
 test "entry makes the Secure basic-frame values for each mode and stack" {
     try std.testing.expectEqual(@as(u32, 0xFFFF_FFF9), exc_return.forEntry(.{ .thread = true, .psp = false }));

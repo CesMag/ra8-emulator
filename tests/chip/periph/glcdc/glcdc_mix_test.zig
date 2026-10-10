@@ -3,14 +3,14 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const mix = ra8.periph.glcdc_mix;
-const scan = ra8.periph.glcdc_scan;
-const blend = ra8.periph.glcdc_blend;
-const clut = ra8.periph.glcdc_clut;
-const pixel = ra8.periph.glcdc_pixel;
+const mix = ra8.chip.periph.glcdc_mix;
+const scan = ra8.chip.periph.glcdc_scan;
+const blend = ra8.chip.periph.glcdc_blend;
+const clut = ra8.chip.periph.glcdc_clut;
+const pixel = ra8.chip.periph.glcdc_pixel;
 const store_memory = @import("../store_memory.zig");
 const Guest = store_memory.Guest;
-const memmap = ra8.core.memmap;
+const memmap = ra8.chip.core.memmap;
 
 const lower_base: u32 = memmap.sram_base;
 const upper_base: u32 = memmap.sram_base + 0x1000;

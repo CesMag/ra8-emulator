@@ -4,8 +4,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Store = ra8.core.cpu.memory.store.Store;
-pub const Guest = ra8.core.cpu.memory.guest.Guest;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+pub const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 
 pub fn open() !Guest {
     const store = try std.testing.allocator.create(Store);

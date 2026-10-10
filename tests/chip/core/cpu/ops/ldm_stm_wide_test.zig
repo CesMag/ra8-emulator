@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/ldm_stm_wide.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const regs = ra8.core.cpu.regs;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const ldm_stm_wide = ra8.core.cpu.ops.ldm_stm_wide;
+const bus = ra8.chip.core.cpu.bus;
+const regs = ra8.chip.core.cpu.regs;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const ldm_stm_wide = ra8.chip.core.cpu.ops.ldm_stm_wide;
 
 /// 64 bytes of RAM at 0x2000_0000.
 const Ram = struct {
@@ -31,7 +31,7 @@ const Ram = struct {
     }
 };
 
-fn instr(hw1: u16, hw2: u16) ra8.core.cpu.instr.Instr {
+fn instr(hw1: u16, hw2: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 

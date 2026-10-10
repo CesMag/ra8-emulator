@@ -2,7 +2,7 @@
 //! turns a byte stream from gdb into acks, interrupts and packets.
 const std = @import("std");
 const ra8 = @import("ra8");
-const packet = ra8.core.rsp_packet;
+const packet = ra8.gdb.rsp_packet;
 
 fn readAll(reader: *packet.Reader, bytes: []const u8) ?packet.Event {
     var last: ?packet.Event = null;

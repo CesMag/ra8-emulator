@@ -5,14 +5,15 @@
 //! draws the field at its foot.
 const std = @import("std");
 const ra8 = @import("ra8");
-const proto = ra8.interfaces.rpc.session;
-const Stdio = ra8.interfaces.rpc.stdio.Stdio;
-const draw_list = ra8.gui.draw_list;
-const platform = ra8.gui.platform;
-const session_link = ra8.gui.session_link;
-const shell_camera = ra8.gui.shell_camera;
-const file_field = ra8.gui.shell_camera_file;
-const Kind = ra8.gui.camera_panel.Kind;
+const gui_app = @import("gui_app");
+const proto = ra8.rpc.session_rpc;
+const Stdio = ra8.rpc.stdio_transport.Stdio;
+const draw_list = ra8.render.draw_list;
+const platform = gui_app.platform;
+const session_link = gui_app.session_link;
+const shell_camera = gui_app.shell_camera;
+const file_field = gui_app.shell_camera_file;
+const Kind = gui_app.camera_panel.Kind;
 const Camera = shell_camera.Camera;
 const CameraFile = file_field.CameraFile;
 const Env = proto.Client.Env;
@@ -86,7 +87,7 @@ test "a path after a pick that needed one switches the session to it" {
     try std.testing.expect(camera.asked != null);
     try std.testing.expectEqual(Kind.video, camera.asked_kind);
     var buffer: [64]u8 = undefined;
-    const spec = try ra8.gui.camera_open.spec(camera.panel, camera.args);
+    const spec = try gui_app.camera_open.spec(camera.panel, camera.args);
     try std.testing.expectEqualStrings("video:a.y4m", try shell_camera.specText(&buffer, spec));
 }
 
@@ -137,7 +138,7 @@ test "the field sits at the leaf's foot only when it fits under the panel" {
     const short: draw_list.Rect = .{ .x = 0, .y = 0, .w = 300, .h = 40 };
     try std.testing.expect(!file_field.fits(short));
     const rect = file_field.fieldRect(body);
-    try std.testing.expectEqual(body.y + body.h - ra8.gui.shell_frame.pad - ra8.gui.shell_field.height, rect.y);
+    try std.testing.expectEqual(body.y + body.h - gui_app.shell_frame.pad - gui_app.shell_field.height, rect.y);
     const camera: Camera = .{};
     var file: CameraFile = .{};
     try file.init();

@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/ops/branch.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const regs = ra8.core.cpu.regs;
-const flags = ra8.core.cpu.flags;
-const branch = ra8.core.cpu.ops.branch;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const regs = ra8.chip.core.cpu.regs;
+const flags = ra8.chip.core.cpu.flags;
+const branch = ra8.chip.core.cpu.ops.branch;
 
 fn run(cpu: *Cpu, address: u32, hw1: u16) !void {
     const instr: Instr = .{ .address = address, .hw1 = hw1, .size = 2 };

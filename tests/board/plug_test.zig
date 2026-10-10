@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const plug = Board.plug;
 const model = ra8.components.model;
 
@@ -73,7 +73,7 @@ test "the kept asks are plugged on their lines, I2C included" {
 test "an ask that lands on a fitted Click part is refused" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
@@ -108,7 +108,7 @@ test "a model that does not fit the endpoint kind is refused" {
 test "a fault on a fitted part wraps it where it sits, and NACKs when disconnected" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
@@ -126,7 +126,7 @@ test "a fault on a fitted part wraps it where it sits, and NACKs when disconnect
 test "a fault on an empty endpoint has nothing fitted to wrap" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var board = Board.init(std.testing.allocator);
     defer board.deinit();

@@ -4,11 +4,11 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const plug = Board.plug;
 const model = ra8.components.model;
-const api = ra8.core.session_api;
-const session_faults = ra8.board.session_faults;
+const api = ra8.session.session_api;
+const session_faults = ra8.session.board_faults;
 
 const modem_at = "modem@uart:sci3";
 const spi_at: model.endpoint.Endpoint = .{ .spi = .{ .channel = 0, .select = 0 } };
@@ -19,7 +19,7 @@ const Echo = struct {
     fn exchange(_: *anyopaque, byte: u8) u8 {
         return ~byte;
     }
-    fn device() ra8.periph.spi.Device {
+    fn device() ra8.chip.periph.spi.Device {
         return .{ .context = &unused, .exchangeFn = exchange };
     }
 };
@@ -48,7 +48,7 @@ const Rig = struct {
         self.arena.deinit();
     }
 
-    fn modem(self: *Rig) ra8.periph.sci_device.Device {
+    fn modem(self: *Rig) ra8.chip.periph.sci_device.Device {
         return self.board.serial.channels[3].device.?;
     }
 
@@ -59,7 +59,7 @@ const Rig = struct {
         return device.feed('\r');
     }
 
-    fn panel(self: *Rig) ra8.periph.spi.Device {
+    fn panel(self: *Rig) ra8.chip.periph.spi.Device {
         return self.board.spi.channels[0].device.?;
     }
 };

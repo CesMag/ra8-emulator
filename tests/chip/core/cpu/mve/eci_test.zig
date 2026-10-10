@@ -2,7 +2,7 @@
 //! beat rules in the Arm ARM (DDI0553).
 const std = @import("std");
 const ra8 = @import("ra8");
-const eci = ra8.core.mve.eci;
+const eci = ra8.chip.core.cpu.mve.eci;
 
 test "a zero low nibble reads the high nibble as ECI" {
     try std.testing.expectEqual(eci.State{ .eci = .none }, eci.fromIt(0x00));

@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/decode.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const decode = ra8.core.cpu.decode;
+const decode = ra8.chip.core.cpu.decode;
 
 test "a known encoding comes back with its class" {
     const hit = decode.decode(.{ .address = 0, .hw1 = 0xBF00, .size = 2 }).?;

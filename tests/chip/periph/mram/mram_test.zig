@@ -3,9 +3,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const mram = ra8.periph.mram;
-const maci = ra8.periph.maci;
-const otp = ra8.periph.mram_otp;
+const mram = ra8.chip.periph.mram;
+const maci = ra8.chip.periph.maci;
+const otp = ra8.chip.periph.mram_otp;
 
 const port = mram.command.base;
 const enter_pe: u32 = mram.field.key | mram.field.mentry;

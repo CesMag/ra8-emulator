@@ -1,7 +1,7 @@
 //! Covers src/chip/periph/time/timebase.zig: virtual ns from cycles and a rate.
 const std = @import("std");
 const ra8 = @import("ra8");
-const time = ra8.periph.clocks.timebase;
+const time = ra8.chip.periph.clocks.timebase;
 
 const TimeBase = time.TimeBase;
 
@@ -55,7 +55,7 @@ test "cyclesUntil lands on the first cycle at or past the target" {
 }
 
 test "the board's clock starts at zero with nothing scheduled" {
-    const clock = ra8.periph.clocks.Time{};
+    const clock = ra8.chip.periph.clocks.Time{};
     try std.testing.expectEqual(@as(u64, 0), clock.base.now());
     try std.testing.expect(clock.queue.next() == null);
 }

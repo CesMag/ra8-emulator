@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/long_shift.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const long_shift = ra8.core.cpu.ops.long_shift;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const long_shift = ra8.chip.core.cpu.ops.long_shift;
 
-fn wide(hw1: u16, hw2: u16) ra8.core.cpu.instr.Instr {
+fn wide(hw1: u16, hw2: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 
@@ -86,7 +86,7 @@ test "seam port: lsll r2, r3, #2 shifts the pair" {
 }
 
 test "seam port: ordinary shifted-register encodings are no long shift" {
-    const ops = ra8.core.cpu.ops;
+    const ops = ra8.chip.core.cpu.ops;
     // orr.w r3, r3, r2, lsr #30 and and.w r3, r2, pc, lsl #2
     for ([_][2]u16{ .{ 0xEA43, 0x7392 }, .{ 0xEA02, 0x038F } }) |pair| {
         const instr = wide(pair[0], pair[1]);

@@ -2,7 +2,7 @@
 //! of them a store is allowed to lower.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rx_status = ra8.periph.canfd_rx_status;
+const rx_status = ra8.chip.periph.canfd_rx_status;
 
 const field = rx_status.field;
 

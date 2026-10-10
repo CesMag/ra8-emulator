@@ -2,11 +2,11 @@
 //! LLVM's assembler for -mcpu=cortex-m85 with MVE floating point.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const mve_float_scalar = ra8.core.cpu.ops.mve_float_scalar;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const mve_float_scalar = ra8.chip.core.cpu.ops.mve_float_scalar;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -58,10 +58,10 @@ test "vmul.f16 q7, q1, r12 uses only the low half of r12" {
 
 test "inside vpst only the P0 lanes are written" {
     var cpu = loaded();
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0xFF00 }, 0b1000);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0xFF00 }, 0b1000);
     try run(&cpu, 0xEE32, 0x0F42);
     try std.testing.expectEqual(@as(u128, 0x40C00000_40A00000_00000000_00000000), qreg.read(&cpu.fp.bank, 0));
-    try std.testing.expect(!ra8.core.mve.vpt.inBlock(cpu.fp.vpr));
+    try std.testing.expect(!ra8.chip.core.cpu.mve.vpt.inBlock(cpu.fp.vpr));
 }
 
 test "the table routes the by-scalar float encodings here" {

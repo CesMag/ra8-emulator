@@ -2,7 +2,7 @@
 //! output, most of them read off the two bounded polls RA8EMU-602 is for.
 const std = @import("std");
 const ra8 = @import("ra8");
-const td = ra8.core.cpu.cpu.trip_decode;
+const td = ra8.chip.core.cpu.cpu.trip_decode;
 
 fn one(hw1: u16, hw2: u16) td.Step {
     return td.decode(hw1, hw2);

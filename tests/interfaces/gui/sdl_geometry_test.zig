@@ -18,9 +18,9 @@ const ra8 = @import("ra8");
 const sdl = @import("gui_sdl");
 
 const c = sdl.c;
-const gui = ra8.gui;
-const draw_list = gui.draw_list;
-const raster = gui.raster;
+const render = ra8.render;
+const draw_list = render.draw_list;
+const raster = render.raster;
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
@@ -81,7 +81,7 @@ fn throughSdl(list: *const draw_list.DrawList, atlas: raster.Atlas, out: []Color
     var textures = sdl.geometry.Textures.init(std.testing.allocator, renderer);
     defer textures.deinit();
     try textures.setAtlas(atlas);
-    var batch = gui.geometry.Batch.init(std.testing.allocator);
+    var batch = render.geometry.Batch.init(std.testing.allocator);
     defer batch.deinit();
     try batch.build(list, atlas);
     try textures.beginFrame();
@@ -160,7 +160,7 @@ test "image textures not drawn in a frame are dropped at the next frame" {
     defer list.deinit();
     const texels = @as([6]Color, @splat(Color.rgb(1, 2, 3)));
     try list.image(rect(0, 0, 3, 2), .{ .width = 3, .height = 2, .pixels = &texels });
-    var batch = gui.geometry.Batch.init(std.testing.allocator);
+    var batch = render.geometry.Batch.init(std.testing.allocator);
     defer batch.deinit();
     try batch.build(&list, null);
     try textures.beginFrame();

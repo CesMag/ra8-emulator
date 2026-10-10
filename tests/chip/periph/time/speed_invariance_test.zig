@@ -4,11 +4,12 @@
 //! entry must land on the same instruction and the same virtual cycle.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("../../../interfaces/cli/store_board.zig");
 const idler = @import("../../../interfaces/cli/idler.zig");
 
-const zig_run = ra8.board.zig_run;
-const cpu_boot = ra8.core.cpu.boot;
+const zig_run = cli_app.zig_run;
+const cpu_boot = ra8.chip.core.cpu.boot;
 const pacing = ra8.board.run.pacing;
 const pacer = ra8.board.run.pacer;
 const budget: u64 = 2_000_000;
@@ -35,7 +36,7 @@ const FakeWall = struct {
 
 /// Each SysTick handler entry as (instructions retired, virtual cycles).
 const Timeline = struct {
-    timebase: *const ra8.periph.clocks.Clocks,
+    timebase: *const ra8.chip.periph.clocks.Clocks,
     retired: u64 = 0,
     entries: [most_entries][2]u64 = undefined,
     len: usize = 0,
@@ -56,15 +57,15 @@ fn runAt(speed_milli: ?u64) !Run {
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
     try idler.load(core);
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
     var wall: FakeWall = .{};
     if (speed_milli) |factor| board.run.pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), factor);
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = idler.chunk };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = idler.chunk };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase };
     var timeline: Timeline = .{ .timebase = &timebase };
-    const listener: ra8.core.cpu.cpu.RetireListener = .{ .context = &timeline, .instructionFn = Timeline.retire };
+    const listener: ra8.chip.core.cpu.cpu.RetireListener = .{ .context = &timeline, .instructionFn = Timeline.retire };
     var ran: u64 = 0;
     var output: [1024]u8 = undefined;
     var stream: std.Io.Writer = .fixed(&output);

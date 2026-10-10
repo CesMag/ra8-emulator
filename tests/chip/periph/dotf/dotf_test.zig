@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const dotf = ra8.periph.dotf;
-const control = ra8.periph.dotf_control;
+const dotf = ra8.chip.periph.dotf;
+const control = ra8.chip.periph.dotf_control;
 
 fn at(channel: usize, offset: u32) u32 {
     return dotf.channelAddress(channel) + offset;

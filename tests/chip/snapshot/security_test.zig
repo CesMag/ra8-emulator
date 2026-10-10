@@ -4,10 +4,10 @@
 //! or short section changes nothing.
 const std = @import("std");
 const ra8 = @import("ra8");
-const p = ra8.periph;
-const mpu_guard = ra8.core.mpu_guard;
+const p = ra8.chip.periph;
+const mpu_guard = ra8.chip.core.mpu_guard;
 const file = ra8.snapshot.file;
-const security = ra8.snapshot.security;
+const security = ra8.chip.snapshot.security;
 
 /// What the units point at. Two sets, so a load can be seen to keep its own.
 const Live = struct {

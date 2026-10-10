@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/ldst_reg.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const regs = ra8.core.cpu.regs;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const ldst_reg = ra8.core.cpu.ops.ldst_reg;
+const bus = ra8.chip.core.cpu.bus;
+const regs = ra8.chip.core.cpu.regs;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const ldst_reg = ra8.chip.core.cpu.ops.ldst_reg;
 
 /// 64 bytes of RAM at 0x2000_0000.
 const Ram = struct {
@@ -32,7 +32,7 @@ const Ram = struct {
 };
 
 fn run(cpu: *Cpu, hw1: u16) !void {
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
     const exec = ldst_reg.group.decode(instr) orelse return error.NotClaimed;
     try exec(cpu, instr);
 }
@@ -91,8 +91,8 @@ test "a positive halfword stays positive under ldrsh" {
 }
 
 test "the group leaves the immediate-offset and wide space alone" {
-    const imm: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0x6000, .size = 2 };
+    const imm: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0x6000, .size = 2 };
     try std.testing.expect(ldst_reg.group.decode(imm) == null);
-    const wide: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0x5000, .hw2 = 0, .size = 4 };
+    const wide: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0x5000, .hw2 = 0, .size = 4 };
     try std.testing.expect(ldst_reg.group.decode(wide) == null);
 }

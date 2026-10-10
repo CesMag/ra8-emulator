@@ -3,9 +3,9 @@
 //! keeps its own wiring; a missing or short section changes nothing.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const file = ra8.snapshot.file;
-const wired = ra8.snapshot.wired;
+const wired = ra8.board.snapshot.wired;
 
 fn Unit(comptime name: []const u8) type {
     return @FieldType(Board, name);

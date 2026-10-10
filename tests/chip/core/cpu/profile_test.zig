@@ -3,10 +3,10 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
-const decode = ra8.core.cpu.decode;
+const decode = ra8.chip.core.cpu.decode;
 const Profile = decode.profile.Profile;
-const Instr = ra8.core.cpu.instr.Instr;
-const memmap = ra8.core.memmap;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const memmap = ra8.chip.core.memmap;
 
 const usage_handler: u32 = fixture.base + 0x1C0;
 const usgfaultena: u32 = 1 << 18;
@@ -57,7 +57,7 @@ test "the decode cache keeps to the profile it is asked for" {
     try std.testing.expect(cache.findFor(Profile.m85, wide(lsll)) != null);
 }
 
-fn stepOn(core: Profile, hw: [2]u16, ram: *fixture.Ram) !ra8.core.cpu.cpu.Cpu {
+fn stepOn(core: Profile, hw: [2]u16, ram: *fixture.Ram) !ra8.chip.core.cpu.cpu.Cpu {
     ram.putWord(fixture.base + 6 * 4, usage_handler | 1);
     ram.putWord(memmap.scb.shcsr, usgfaultena);
     ram.putHalf(fixture.code, hw[0]);
@@ -71,7 +71,7 @@ test "on the M33 profile each Armv8.1-M encoding takes UsageFault UNDEFINSTR" {
     for (armv8_1m_only) |hw| {
         var ram: fixture.Ram = .{};
         var cpu = try stepOn(Profile.m33, hw, &ram);
-        try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+        try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
         try std.testing.expectEqual(usage_handler, cpu.regs.pc);
         try std.testing.expectEqual(@as(u32, 6), cpu.regs.xpsr & 0x1FF);
         try std.testing.expectEqual(undefinstr_bit, ram.word(memmap.scb.cfsr));

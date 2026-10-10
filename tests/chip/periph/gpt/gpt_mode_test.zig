@@ -3,8 +3,8 @@ const std = @import("std");
 const testing = std.testing;
 
 const ra8 = @import("ra8");
-const md = ra8.periph.gpt_mode;
-const gpt = ra8.periph.gpt;
+const md = ra8.chip.periph.gpt_mode;
+const gpt = ra8.chip.periph.gpt;
 
 /// A GTCR word carrying a mode encoding and the start bit.
 fn control(encoding: u32) u32 {
@@ -31,7 +31,7 @@ test "each named encoding selects its own mode" {
 }
 
 test "the start bit and the prescaler do not disturb the mode" {
-    const cr = control(4) | ra8.periph.gpt_clock.field.tpcs;
+    const cr = control(4) | ra8.chip.periph.gpt_clock.field.tpcs;
     try testing.expectEqual(md.Mode.triangle_pwm, md.modeOf(cr));
 }
 

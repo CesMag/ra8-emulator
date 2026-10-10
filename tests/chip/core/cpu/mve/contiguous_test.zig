@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/contiguous.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const contiguous = ra8.core.mve.contiguous;
+const contiguous = ra8.chip.core.cpu.mve.contiguous;
 
 test "the offset scales by the element size" {
     const p = contiguous.plan(.{ .base = 0x100, .imm7 = 3, .size = .word, .add = true, .pre = true, .wback = false });

@@ -1,9 +1,10 @@
 //! Covers src/interfaces/cli/report/dtc1.zig: DTC1's lines in the report.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const dtc = ra8.periph.dtc;
-const report_dtc1 = ra8.board.report.dtc1;
+const dtc = ra8.chip.periph.dtc;
+const report_dtc1 = cli_app.report.dtc1;
 
 fn render(unit: *const dtc.Dtc) !std.Io.Writer.Allocating {
     var text: std.Io.Writer.Allocating = .init(std.testing.allocator);

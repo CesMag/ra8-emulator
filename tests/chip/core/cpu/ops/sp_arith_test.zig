@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/sp_arith.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const regs = ra8.core.cpu.regs;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const sp_arith = ra8.core.cpu.ops.sp_arith;
+const bus = ra8.chip.core.cpu.bus;
+const regs = ra8.chip.core.cpu.regs;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const sp_arith = ra8.chip.core.cpu.ops.sp_arith;
 
 fn noBus() bus.Bus {
     return .{ .ctx = undefined, .vtable = &.{ .read = refuseRead, .write = refuseWrite } };
@@ -21,7 +21,7 @@ fn refuseWrite(ctx: *anyopaque, address: u32, from: []const u8) bus.Error!void {
 }
 
 fn run(cpu: *Cpu, address: u32, hw1: u16) !void {
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = address, .hw1 = hw1, .size = 2 };
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = address, .hw1 = hw1, .size = 2 };
     const exec = sp_arith.group.decode(instr) orelse return error.NotClaimed;
     try exec(cpu, instr);
 }

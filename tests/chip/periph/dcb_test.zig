@@ -1,7 +1,7 @@
 //! DHCSR, DCRSR and DCRDR as firmware sees them.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dcb = ra8.core.dcb;
+const dcb = ra8.chip.periph.dcb;
 const bits = dcb.dhcsr_bits;
 
 const keyed: u32 = bits.key << bits.key_shift;

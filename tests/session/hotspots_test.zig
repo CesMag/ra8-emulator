@@ -1,5 +1,5 @@
 const std = @import("std");
-const hotspots = @import("ra8").core.hotspots;
+const hotspots = @import("ra8").session.hotspots;
 
 test "a fresh table has nothing to say" {
     const table = hotspots.Table{};

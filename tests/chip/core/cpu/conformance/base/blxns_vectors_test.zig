@@ -3,11 +3,11 @@
 //! the first word of the Non-secure vector table and the 8 bytes below SP.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.blxns_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.blxns_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 const bus = cpu_ns.bus;
-const vtor_ns = ra8.core.memmap.scb.vtor_ns;
+const vtor_ns = ra8.chip.core.memmap.scb.vtor_ns;
 
 const Table = struct {
     in: vectors.In,

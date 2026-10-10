@@ -2,13 +2,13 @@
 //! assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const vdup = ra8.core.cpu.ops.mve_vdup;
-const qreg = ra8.core.mve.qreg;
-const vpt = ra8.core.mve.vpt;
-const decode = ra8.core.cpu.decode;
-const it_state = ra8.core.cpu.it_state;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const vdup = ra8.chip.core.cpu.ops.mve_vdup;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const vpt = ra8.chip.core.cpu.mve.vpt;
+const decode = ra8.chip.core.cpu.decode;
+const it_state = ra8.chip.core.cpu.it_state;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };

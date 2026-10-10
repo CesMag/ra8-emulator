@@ -2,8 +2,8 @@
 //! accept.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.periph.usbhs_regs;
-const usbhs_pipe = ra8.periph.usbhs_pipe;
+const regs = ra8.chip.periph.usbhs_regs;
+const usbhs_pipe = ra8.chip.periph.usbhs_pipe;
 
 test "PIPESEL opens the window on the pipe it names" {
     var table = usbhs_pipe.Table{};

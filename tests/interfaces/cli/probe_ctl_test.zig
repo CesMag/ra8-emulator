@@ -1,5 +1,5 @@
 const std = @import("std");
-const probe = @import("ra8").core.probe_ctl;
+const probe = @import("cli_app").probe_ctl;
 
 test "probe ctl parses capability and hardware actions" {
     const capabilities = [_][]const u8{ "ra8_emulator", "ctl", "probe", "star", "2331", "capabilities" };

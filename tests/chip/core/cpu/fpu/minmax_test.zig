@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const fpu = ra8.core.fpu;
+const fpu = ra8.chip.core.cpu.fpu;
 const single = fpu.format.single;
 
 test "FPMax itself propagates a quiet NaN" {

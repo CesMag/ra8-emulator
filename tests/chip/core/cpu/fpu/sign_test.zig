@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sign = ra8.core.fpu.sign;
+const sign = ra8.chip.core.cpu.fpu.sign;
 
 test "negating twice gives the operand back, bit for bit" {
     const ops = [_]u32{ 0, 0x8000_0000, 0x7FC0_0001, 0x7F80_0001, 0x1234_5678 };

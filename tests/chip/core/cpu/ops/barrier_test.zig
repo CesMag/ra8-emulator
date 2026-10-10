@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/barrier.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const barrier = ra8.core.cpu.ops.barrier;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const barrier = ra8.chip.core.cpu.ops.barrier;
 
 fn none(ctx: *anyopaque, address: u32, into: []u8) bus.Error!void {
     _ = ctx;

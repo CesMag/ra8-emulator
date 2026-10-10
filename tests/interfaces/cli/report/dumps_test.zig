@@ -2,10 +2,11 @@
 //! memory-probe verdict reads, the `--dump-regs` line and the `--dump-sd` block.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("../store_board.zig");
-const elf = ra8.image.elf;
-const cli = ra8.core.cli;
-const report_dumps = ra8.board.report_dumps;
+const elf = ra8.board.image.elf;
+const cli = cli_app.cli;
+const report_dumps = cli_app.report_dumps;
 const Builder = @import("../../../session/symbol_image.zig").Builder;
 
 fn dumped(core: store_board.Guest, image: elf.Image, names: []const []const u8, into: []u8) ![]const u8 {
@@ -43,7 +44,7 @@ test "no dump asked for prints nothing" {
     try std.testing.expectEqualStrings("", try dumped(core, image, &.{}, &out));
 }
 
-const Regs = ra8.core.cpu.regs.Regs;
+const Regs = ra8.chip.core.cpu.regs.Regs;
 
 fn registerLine(regs: *const Regs, core: store_board.Guest, into: []u8) ![]const u8 {
     const options: cli.Options = .{ .path = "probe.elf", .dump_regs = true };

@@ -2,9 +2,10 @@
 //! `--cpu zig` run prints about the second core once it stops.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const report_run = ra8.board.report_run;
-const Second = ra8.core.second_core.Second;
+const report_run = cli_app.report_run;
+const Second = ra8.chip.core.second_core.Second;
 
 /// Through a real file, because the SAU half of the report writes to a
 /// file writer rather than any writer.

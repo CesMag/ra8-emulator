@@ -4,14 +4,14 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const ceu = ra8.periph.ceu;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const ceu = ra8.chip.periph.ceu;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 
 /// The last page of SDRAM. The Zig core's store backs all of SDRAM, so the
 /// buffer sits at its top: the tests that run a capture off the end of
 /// memory still reach an address nothing backs.
-const frame_base: u32 = ra8.core.memmap.sdram_end - 0x1000;
+const frame_base: u32 = ra8.chip.core.memmap.sdram_end - 0x1000;
 
 fn at(offset: u32) u32 {
     return ceu.win_base + offset;
@@ -336,7 +336,7 @@ test "each arm hands the source the board's virtual time at that moment" {
     var bench = Bench{};
     try bench.open();
     defer bench.close();
-    var clock = ra8.periph.clocks.timebase.TimeBase{};
+    var clock = ra8.chip.periph.clocks.timebase.TimeBase{};
     var stamp = Stamp{};
     bench.unit.source = stamp.source();
     bench.unit.clock = &clock;

@@ -1,10 +1,11 @@
 //! Tests for src/chip/core/cli.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.core.cli;
+const cli_app = @import("cli_app");
+const mod = cli_app.cli;
 
 const parse = mod.parse;
-const Part = ra8.core.part.Part;
+const Part = ra8.chip.core.part.Part;
 
 test "the command line takes an image and an optional instruction budget" {
     const defaults = try parse(&[_][]const u8{ "emu", "a.elf" });
@@ -86,7 +87,7 @@ test "--sd selects a raw card image" {
 }
 
 test "--cpu picks the CPU, defaulting to the Zig core" {
-    const Choice = ra8.core.cpu.choice.Choice;
+    const Choice = ra8.chip.core.cpu.choice.Choice;
     try std.testing.expectEqual(Choice.zig, (try parse(&[_][]const u8{ "emu", "a.elf" })).cpu);
     try std.testing.expectError(error.BadValue, parse(&[_][]const u8{ "emu", "a.elf", "--cpu", "other" }));
     try std.testing.expectEqual(Choice.zig, (try parse(&[_][]const u8{ "emu", "a.elf", "--cpu", "zig" })).cpu);
@@ -151,7 +152,7 @@ test "the Zig core runs formed blocks unless --no-blocks turns them off" {
 }
 
 test "profile prints counts and folded profile takes an output path" {
-    const cli = @import("ra8").core.cli;
+    const cli = @import("cli_app").cli;
     const asked = try parse(&[_][]const u8{ "emu", "a.elf", "--profile" });
     try std.testing.expect(asked.profile);
     try std.testing.expectEqual(@as(?[]const u8, null), asked.profile_folded);
@@ -262,7 +263,7 @@ test "ctl cpu-load selects an image, a load window and the requested CPU" {
     try std.testing.expectEqual(@as(u64, 16), options.cpu_load_window.from);
     try std.testing.expectEqual(@as(u64, 32), options.cpu_load_window.to);
     try std.testing.expectEqual(@as(?usize, 128), options.instructions);
-    try std.testing.expectEqual(ra8.core.cpu.choice.Choice.zig, options.cpu);
+    try std.testing.expectEqual(ra8.chip.core.cpu.choice.Choice.zig, options.cpu);
 }
 
 test "--dump-mem repeats keep every place in order, each with its own count" {

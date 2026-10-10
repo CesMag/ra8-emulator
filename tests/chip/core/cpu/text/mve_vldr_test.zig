@@ -1,8 +1,8 @@
 //! Covers MVE contiguous load/store text against DDI0553 B5.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Instr = ra8.core.cpu.instr.Instr;
-const disasm = ra8.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
 const v81m = @import("v81m.zig");
 
 test "contiguous memory operations print widths and indexing modes" {

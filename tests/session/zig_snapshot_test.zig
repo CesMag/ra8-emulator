@@ -4,14 +4,15 @@
 //! it short, and the load picks it up there (RA8EMU-700).
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const memmap = ra8.core.memmap;
-const elf = ra8.image.elf;
-const zig_run = ra8.board.zig_run;
+const memmap = ra8.chip.core.memmap;
+const elf = ra8.board.image.elf;
+const zig_run = cli_app.zig_run;
 const main_path = zig_run.main_path;
 const Cpu0 = ra8.board.cpu0_store.Cpu0;
-const Parts = ra8.board.parts.Parts;
-const Options = ra8.core.cli.Options;
+const Parts = cli_app.parts.Parts;
+const Options = cli_app.cli.Options;
 
 const stkof = @embedFile("../fixtures/threadx/threadx_stkof.elf");
 const page: usize = 0x1000;
@@ -40,7 +41,7 @@ fn run(dir: std.Io.Dir, instructions: usize, state: zig_run.state_args.Options) 
 }
 
 fn runImage(dir: std.Io.Dir, file: []const u8, instructions: usize, state: zig_run.state_args.Options) !u64 {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     const options: Options = .{ .path = "cpu0.elf", .cpu = .zig, .instructions = instructions, .state = state };
     try main_path.fit(&board, std.testing.allocator, std.testing.io, options);
@@ -71,7 +72,7 @@ test "two chunks straight end where one chunk, saved, then one restored end" {
     var full: [3][]u8 = undefined;
     for (paths, 0..) |name, at| full[at] = try std.fs.path.join(std.testing.allocator, &.{ root, name });
     defer for (full) |one| std.testing.allocator.free(one);
-    const chunk: usize = ra8.periph.clocks.chunk_instructions;
+    const chunk: usize = ra8.chip.periph.clocks.chunk_instructions;
     _ = try run(tmp.dir, chunk * 2, .{ .save = full[0] });
     _ = try run(tmp.dir, chunk, .{ .save = full[1] });
     _ = try run(tmp.dir, chunk, .{ .load = full[1], .save = full[2] });
@@ -94,7 +95,7 @@ test "a split off a chunk boundary ends where the straight run ends too" {
     var full: [3][]u8 = undefined;
     for (paths, 0..) |name, at| full[at] = try std.fs.path.join(std.testing.allocator, &.{ root, name });
     defer for (full) |one| std.testing.allocator.free(one);
-    const chunk: usize = ra8.periph.clocks.chunk_instructions;
+    const chunk: usize = ra8.chip.periph.clocks.chunk_instructions;
     _ = try run(tmp.dir, chunk * 2, .{ .save = full[0] });
     _ = try run(tmp.dir, chunk + 1000, .{ .save = full[1] });
     _ = try run(tmp.dir, chunk - 1000, .{ .load = full[1], .save = full[2] });
@@ -145,7 +146,7 @@ test "snapshot-at mid-run restores to the straight run's end" {
     var full: [4][]u8 = undefined;
     for (paths, 0..) |name, at| full[at] = try std.fs.path.join(std.testing.allocator, &.{ root, name });
     defer for (full) |one| std.testing.allocator.free(one);
-    const chunk: usize = ra8.periph.clocks.chunk_instructions;
+    const chunk: usize = ra8.chip.periph.clocks.chunk_instructions;
     const half_ns = try run(tmp.dir, chunk * 2, .{ .save = full[1] });
     try std.testing.expect(half_ns > 0);
     _ = try run(tmp.dir, chunk * 4, .{ .save = full[0], .at = .{ .ns = half_ns, .path = full[2] } });
@@ -159,11 +160,11 @@ test "snapshot-at mid-run restores to the straight run's end" {
 }
 
 test "no flag, no hook" {
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
-    var timebase: ra8.periph.clocks.Clocks = .{};
+    var timebase: ra8.chip.periph.clocks.Clocks = .{};
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = .{ .store = &store }, .board = &board, .timebase = &timebase };
     try std.testing.expect(zig_run.zig_snapshot.hook(&clock) == null);
     clock.state = .{ .save = "x" };

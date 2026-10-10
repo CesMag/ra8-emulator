@@ -4,7 +4,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const limit = ra8.periph.drw_limit;
+const limit = ra8.chip.periph.drw_limit;
 
 /// One pixel of the sub-pixel grid the HAL writes in.
 const unit: i32 = @intCast(limit.subpixel.unit);

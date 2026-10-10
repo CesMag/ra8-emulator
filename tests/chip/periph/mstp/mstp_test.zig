@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/mstp.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const periph = ra8.periph.registry;
-const mod = ra8.periph.mstp;
+const periph = ra8.chip.periph.registry;
+const mod = ra8.chip.periph.mstp;
 
 const Mstp = mod.Mstp;
 const families = mod.families;
@@ -144,7 +144,7 @@ test "the gate follows the Non-secure alias too" {
 
 /// A bus with MSTPCRB bit 11 (USBHS) delegated to Non-secure, the way the
 /// tz_nsc_cgc_usb secure boot leaves it (RA8EMU-354).
-fn delegatedBus(bus: *periph.Bus, modules: *Mstp, unit: *ra8.periph.pscu.Unit) !void {
+fn delegatedBus(bus: *periph.Bus, modules: *Mstp, unit: *ra8.chip.periph.pscu.Unit) !void {
     try bus.add(modules.block());
     modules.attribution = unit;
     modules.bus = bus;
@@ -155,7 +155,7 @@ test "a Non-secure alias store moves a bit delegated to Non-secure" {
     var bus = periph.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var modules = Mstp{};
-    var unit = ra8.periph.pscu.Unit{};
+    var unit = ra8.chip.periph.pscu.Unit{};
     try delegatedBus(&bus, &modules, &unit);
 
     bus.write(win_base + periph.ns_offset + 4, 4, reset_rest & ~@as(u32, 1 << 11));
@@ -167,7 +167,7 @@ test "a Secure store still cannot move a delegated bit" {
     var bus = periph.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var modules = Mstp{};
-    var unit = ra8.periph.pscu.Unit{};
+    var unit = ra8.chip.periph.pscu.Unit{};
     try delegatedBus(&bus, &modules, &unit);
 
     bus.write(win_base + 4, 4, reset_rest & ~@as(u32, 1 << 11));
@@ -179,7 +179,7 @@ test "a Non-secure alias store to an undelegated bit lands as before" {
     var bus = periph.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var modules = Mstp{};
-    var unit = ra8.periph.pscu.Unit{};
+    var unit = ra8.chip.periph.pscu.Unit{};
     try delegatedBus(&bus, &modules, &unit);
 
     bus.write(win_base + periph.ns_offset + 4, 4, reset_rest & ~@as(u32, 1 << 31));

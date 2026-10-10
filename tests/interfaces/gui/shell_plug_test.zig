@@ -4,14 +4,15 @@
 //! the field at its foot under the rows.
 const std = @import("std");
 const ra8 = @import("ra8");
-const proto = ra8.interfaces.rpc.session;
-const draw_list = ra8.gui.draw_list;
-const platform = ra8.gui.platform;
-const shell_plug = ra8.gui.shell_plug;
-const shell_field = ra8.gui.shell_field;
-const shell_devices = ra8.gui.shell_devices;
-const Stdio = ra8.interfaces.rpc.stdio.Stdio;
-const session_link = ra8.gui.session_link;
+const gui_app = @import("gui_app");
+const proto = ra8.rpc.session_rpc;
+const draw_list = ra8.render.draw_list;
+const platform = gui_app.platform;
+const shell_plug = gui_app.shell_plug;
+const shell_field = gui_app.shell_field;
+const shell_devices = gui_app.shell_devices;
+const Stdio = ra8.rpc.stdio_transport.Stdio;
+const session_link = gui_app.session_link;
 const Env = proto.Client.Env;
 
 /// A link that has finished its greeting, writing into a pipe nobody answers.

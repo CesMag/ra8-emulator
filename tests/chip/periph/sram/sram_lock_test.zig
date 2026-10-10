@@ -3,7 +3,7 @@ const std = @import("std");
 const testing = std.testing;
 
 const ra8 = @import("ra8");
-const lock = ra8.periph.sram_lock;
+const lock = ra8.chip.periph.sram_lock;
 
 test "a fresh controller is locked" {
     const guard = lock.Lock{};

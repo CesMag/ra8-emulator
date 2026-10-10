@@ -1,7 +1,7 @@
 //! The target description and the windows qXfer reads it in.
 const std = @import("std");
 const ra8 = @import("ra8");
-const features = ra8.core.rsp_features;
+const features = ra8.gdb.rsp_features;
 
 test "a window short of the end is marked m, and the rest reads after it" {
     var out: [0x1000]u8 = undefined;

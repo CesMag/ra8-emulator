@@ -2,7 +2,7 @@
 //! SHCSR.MEMFAULTENA stands, an escalated HardFault when it does not.
 const std = @import("std");
 const ra8 = @import("ra8");
-const escalate = ra8.periph.mpu_escalate;
+const escalate = ra8.chip.periph.mpu_escalate;
 
 test "MEMFAULTENA set takes MemManage" {
     try std.testing.expectEqual(

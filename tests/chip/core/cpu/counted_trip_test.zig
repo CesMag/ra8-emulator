@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
-const Regs = ra8.core.cpu.regs.Regs;
-const ct = ra8.core.cpu.cpu.counted_trip;
+const Regs = ra8.chip.core.cpu.regs.Regs;
+const ct = ra8.chip.core.cpu.cpu.counted_trip;
 
 const head: u32 = fixture.code;
 const frame: u32 = fixture.base + 0x200;

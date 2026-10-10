@@ -5,11 +5,12 @@
 //! time, and the firmware's touch driver reads the same panel coordinates.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 const test_paths = @import("test_paths");
-const proto = ra8.interfaces.rpc.session;
-const session_link = ra8.gui.session_link;
-const pane = ra8.gui.board_pane;
-const touch = ra8.gui.board_touch;
+const proto = ra8.rpc.session_rpc;
+const session_link = gui_app.session_link;
+const pane = gui_app.board_pane;
+const touch = gui_app.board_touch;
 const Link = session_link.Link;
 const Env = proto.Client.Env;
 
@@ -61,7 +62,7 @@ fn report(link: *Link) !Report {
 }
 
 /// Press and release at (x, y) in window pixels, then let the firmware read it.
-fn tapAt(link: *Link, shown: ra8.gui.draw_list.Rect, x: i32, y: i32) !void {
+fn tapAt(link: *Link, shown: ra8.render.draw_list.Rect, x: i32, y: i32) !void {
     const now = try proto.decode(proto.U64, try answer(link, try link.send(proto.Now, .now, .{ .core = .cpu0 })));
     var drag: touch.Drag = .{};
     drag.down(shown, width, height, x, y, now.value);

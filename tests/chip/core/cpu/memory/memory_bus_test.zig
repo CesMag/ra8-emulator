@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/memory/memory_bus.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const bus = ra8.core.cpu.bus;
-const Store = ra8.core.cpu.memory.store.Store;
-const MemoryBus = ra8.core.cpu.memory.memory_bus.MemoryBus;
+const memmap = ra8.chip.core.memmap;
+const bus = ra8.chip.core.cpu.bus;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const MemoryBus = ra8.chip.core.cpu.memory.memory_bus.MemoryBus;
 
 test "the Zig core reads and writes its own memory with no engine open" {
     var store = try Store.init(null);

@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/ldr_literal.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const ldr_literal = ra8.core.cpu.ops.ldr_literal;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const ldr_literal = ra8.chip.core.cpu.ops.ldr_literal;
 
 /// 64 bytes of flash at 0x0800_0000, read-only.
 const Flash = struct {

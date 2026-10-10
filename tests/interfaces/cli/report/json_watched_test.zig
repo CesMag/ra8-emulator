@@ -3,13 +3,14 @@
 //! parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const json_watched = ra8.board.report.json_run.json_dumps.json_watched;
-const watchpoint = ra8.core.watchpoint;
+const json_watched = cli_app.report.json_run.json_dumps.json_watched;
+const watchpoint = ra8.session.watchpoint;
 const Value = std.json.Value;
 
 fn render(found: ?*const watchpoint.Watched, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
-    var j = ra8.board.report.json.Json(@TypeOf(&buf.writer)).init(&buf.writer);
+    var j = cli_app.report.json.Json(@TypeOf(&buf.writer)).init(&buf.writer);
     try j.open(null, '{');
     try json_watched.log(&j, null, "0x20000000", found);
     try j.close('}');

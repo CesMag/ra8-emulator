@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const sram = ra8.periph.cpscu.sram;
+const sram = ra8.chip.periph.cpscu.sram;
 
 test "reset leaves every word zero and the unit quiet" {
     var unit = sram.Unit{};

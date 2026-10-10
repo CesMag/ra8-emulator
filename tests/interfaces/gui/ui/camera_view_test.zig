@@ -3,10 +3,11 @@
 //! dialog.
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const view = ra8.gui.camera_view;
-const Panel = ra8.gui.camera_panel.Panel;
+const gui_app = @import("gui_app");
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const view = gui_app.camera_view;
+const Panel = gui_app.camera_panel.Panel;
 const Rect = draw_list.Rect;
 
 const layout = view.Layout{ .x = 10, .y = 20 };
@@ -33,7 +34,7 @@ fn render(panel: Panel) !raster.Framebuffer {
     defer list.deinit();
     try view.draw(&list, layout, panel);
     var frame = try raster.Framebuffer.init(std.testing.allocator, 256, 128);
-    raster.draw(&frame, &list, ra8.gui.font.atlas);
+    raster.draw(&frame, &list, ra8.render.font.atlas);
     return frame;
 }
 
@@ -45,7 +46,7 @@ fn pixel(frame: *const raster.Framebuffer, at: Rect) draw_list.Color {
 test "every source has its button and the active one is ringed" {
     var frame = try render(.{});
     defer frame.deinit(std.testing.allocator);
-    for (std.enums.values(ra8.gui.camera_panel.Kind)) |kind| {
+    for (std.enums.values(gui_app.camera_panel.Kind)) |kind| {
         try std.testing.expectEqual(view.colorOf(kind), pixel(&frame, layout.source(kind)));
     }
     const gradient = layout.source(.gradient);
@@ -111,13 +112,13 @@ test "the dialog row does nothing while closed and clicks outside are not taken"
 test "every source and dialog button carries a label in ink that reads on it" {
     var frame = try render(.{ .asking = true });
     defer frame.deinit(std.testing.allocator);
-    for (std.enums.values(ra8.gui.camera_panel.Kind)) |kind| {
+    for (std.enums.values(gui_app.camera_panel.Kind)) |kind| {
         const ink = view.inkOn(view.colorOf(kind));
         try std.testing.expect(!std.meta.eql(ink, view.colorOf(kind)));
         try std.testing.expect(inked(&frame, layout.source(kind), ink) > 10);
         try std.testing.expect(view.labelOf(kind).len <= 3);
     }
-    for (std.enums.values(ra8.gui.camera_panel.Answer)) |reply| {
+    for (std.enums.values(gui_app.camera_panel.Answer)) |reply| {
         try std.testing.expect(inked(&frame, layout.dialog(reply), view.inkOn(view.answerColor(reply))) > 5);
     }
 }

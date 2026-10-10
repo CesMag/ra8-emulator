@@ -1,12 +1,12 @@
 //! Tests for src/session/zig_drive.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const zig_core = ra8.core.step_hook.zig_core;
-const zig_drive = ra8.core.step_hook.zig_drive;
-const Machine = ra8.core.stop_machine.Machine;
-const QuietSource = ra8.core.cpu.exception.quiet_source.QuietSource;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const zig_core = ra8.session.step_hook.zig_core;
+const zig_drive = ra8.session.step_hook.zig_drive;
+const Machine = ra8.session.stop_machine.Machine;
+const QuietSource = ra8.chip.core.cpu.exception.quiet_source.QuietSource;
 const Fake = @import("../chip/core/cpu/exception/fake_source.zig").Fake;
 
 /// 64 bytes of RAM at address 0, the vector table first.

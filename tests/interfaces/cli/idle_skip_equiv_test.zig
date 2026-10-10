@@ -2,10 +2,11 @@
 //! same state at the same virtual time with and without idle fast-forward.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 
-const zig_run = ra8.board.zig_run;
-const cpu_boot = ra8.core.cpu.boot;
+const zig_run = cli_app.zig_run;
+const cpu_boot = ra8.chip.core.cpu.boot;
 
 const idler = @import("idler.zig");
 const budget: u64 = 1_000_000;
@@ -52,11 +53,11 @@ fn runIdler(skip: bool, reload: ?u32, cycles: u64) !Ended {
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
     try idler.load(core);
-    if (reload) |value| try core.writeWord(ra8.core.memmap.syst.rvr, value);
-    var board = ra8.board.Board.init(std.testing.allocator);
+    if (reload) |value| try core.writeWord(ra8.chip.core.memmap.syst.rvr, value);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = idler.chunk };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = idler.chunk };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .idle_skip = skip };
     var counted: Counted = .{ .clock = &clock };
     var ran: u64 = 0;

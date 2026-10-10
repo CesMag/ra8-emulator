@@ -3,10 +3,10 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const install = ra8.board.camera_install.install;
-const FrameSource = ra8.periph.ceu.camera.frame_source.FrameSource;
-const Shape = ra8.periph.ceu.camera.frame_source.Shape;
+const FrameSource = ra8.chip.periph.ceu.camera.frame_source.FrameSource;
+const Shape = ra8.chip.periph.ceu.camera.frame_source.Shape;
 
 const Stub = struct {
     closed: u32 = 0,
@@ -36,5 +36,5 @@ test "an opened source replaces the old one and closes it" {
     try std.testing.expectEqual(@as(u32, 1), old.closed);
     try std.testing.expectEqual(@as(u32, 0), next.closed);
     try std.testing.expectEqualStrings("next", board.capture.source.label);
-    board.capture.source = ra8.periph.ceu.camera.gradient.source();
+    board.capture.source = ra8.chip.periph.ceu.camera.gradient.source();
 }

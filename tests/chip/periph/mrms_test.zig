@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/mrms.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mrms = ra8.periph.mrms;
+const mrms = ra8.chip.periph.mrms;
 
 fn unit() mrms.Mrms {
     return .{};

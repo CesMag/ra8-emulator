@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const agt = ra8.periph.agt;
+const agt = ra8.chip.periph.agt;
 
 const ch0 = agt.win_base;
 const ch1 = agt.win_base + agt.stride;

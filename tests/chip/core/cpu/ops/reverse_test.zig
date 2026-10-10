@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/reverse.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const reverse = ra8.core.cpu.ops.reverse;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const reverse = ra8.chip.core.cpu.ops.reverse;
 
 fn at(hw1: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .size = 2 };

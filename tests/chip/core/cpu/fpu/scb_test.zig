@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/fpu/scb.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const scb = ra8.core.fpu.scb;
-const State = ra8.core.fpu.state.State;
-const control_bits = ra8.core.cpu.regs.control_bits;
+const scb = ra8.chip.core.cpu.fpu.scb;
+const State = ra8.chip.core.cpu.fpu.state.State;
+const control_bits = ra8.chip.core.cpu.regs.control_bits;
 
 test "each word reads back what the context holds, through its mask" {
     var state: State = .{};
@@ -40,6 +40,6 @@ test "CPACR keeps CP10 and CP11 and starts with the FPU off" {
     try std.testing.expectEqual(@as(u32, 0), scb.read(&state, scb.address.cpacr).?);
     try std.testing.expect(scb.write(&state, scb.address.cpacr, 0xFFFF_FFFF));
     try std.testing.expectEqual(@as(u32, 0x00F0_0000), scb.read(&state, scb.address.cpacr).?);
-    const cpacr = ra8.core.fpu.cpacr;
+    const cpacr = ra8.chip.core.cpu.fpu.cpacr;
     try std.testing.expectEqual(cpacr.Access.full, cpacr.access(state.cpacr));
 }

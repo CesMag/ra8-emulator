@@ -1,8 +1,8 @@
 //! Tests for src/chip/core/banked.zig: the Secure/Non-secure register banks.
 const std = @import("std");
 const ra8 = @import("ra8");
-const banked = ra8.core.banked;
-const regs = ra8.core.cpu.regs;
+const banked = ra8.chip.core.banked;
+const regs = ra8.chip.core.cpu.regs;
 const Regs = regs.Regs;
 
 test "a state switch swaps the banked registers and keeps the shared ones" {
@@ -104,9 +104,9 @@ test "the _NS encodings are not this file's from Non-secure state" {
 // push in its own state and is parked, unchecked, in the other.
 
 const fixture = @import("cpu/exception/ram.zig");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Stop = ra8.core.cpu.cpu.Stop;
-const State = ra8.core.cpu.cpu.attribution.State;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
+const State = ra8.chip.core.cpu.cpu.attribution.State;
 const usgfaultena: u32 = 1 << 18;
 
 /// Attributes every address to one state, so the core runs where it is put.
@@ -130,7 +130,7 @@ const Limits = struct { secure: u32, non_secure: u32 };
 fn pushRetires(run: banked.State, stack: Stack, limits: Limits) !bool {
     var ram: fixture.Ram = .{};
     ram.putWord(fixture.base + 6 * 4, fixture.handler | 1);
-    ram.putWord(ra8.core.memmap.scb.shcsr, usgfaultena);
+    ram.putWord(ra8.chip.core.memmap.scb.shcsr, usgfaultena);
     ram.putHalf(fixture.code, 0xB401); // push {r0}
     var cpu: Cpu = try fixture.boot(&ram);
     var where: Everywhere = .{ .state = if (run == .secure) .secure else .non_secure };

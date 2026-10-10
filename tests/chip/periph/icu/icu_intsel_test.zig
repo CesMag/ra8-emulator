@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const intsel = ra8.periph.icu.intsel;
+const intsel = ra8.chip.periph.icu.intsel;
 
 test "the bank sits where the COMMON_ICU map puts it" {
     try std.testing.expectEqual(@as(u32, 0x4000_6040), intsel.wordAddress(0));

@@ -4,10 +4,10 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const dispatch = ra8.core.rsp_dispatch;
-const packet = ra8.core.rsp_packet;
+const dispatch = ra8.gdb.rsp_dispatch;
+const packet = ra8.gdb.rsp_packet;
 const server = dispatch.server;
-const memmap = ra8.core.memmap;
+const memmap = ra8.chip.core.memmap;
 const Rig = @import("../../session/view_ram.zig").Rig;
 
 fn open(rig: *Rig) !void {

@@ -4,6 +4,9 @@ const request = @import("ra8_components").request;
 const external = @import("external_memory.zig");
 
 pub const max_fits: usize = 4;
+
+/// The shipped EK-RA8D2 profile, the board a run gets when it names none.
+pub const ek_ra8d2 = @embedFile("ek_ra8d2.board");
 pub const Profile = struct {
     fits: [max_fits]request.Request = undefined,
     count: usize = 0,

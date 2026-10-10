@@ -2,7 +2,7 @@
 //! are split, and the load table a known run prints.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_hook = ra8.core.step_hook.rtos_hook;
+const rtos_hook = ra8.session.step_hook.rtos_hook;
 const report = rtos_hook.report;
 
 const blink_a: u32 = 0x2200_10F0;

@@ -2,12 +2,12 @@
 //! assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const vldr = ra8.core.cpu.ops.mve_vldr_wide;
-const qreg = ra8.core.mve.qreg;
-const vpt = ra8.core.mve.vpt;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const vldr = ra8.chip.core.cpu.ops.mve_vldr_wide;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const vpt = ra8.chip.core.cpu.mve.vpt;
 
 /// 64 bytes of RAM at 0x2000_0000.
 const Ram = struct {

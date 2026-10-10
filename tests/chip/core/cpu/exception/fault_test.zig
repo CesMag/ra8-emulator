@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
-const memmap = ra8.core.memmap;
+const memmap = ra8.chip.core.memmap;
 
 const usage_handler: u32 = fixture.base + 0x1C0;
 const hard_handler: u32 = fixture.base + 0x1E0;
@@ -38,7 +38,7 @@ fn putThreadxUsageHandler(ram: *fixture.Ram) void {
 }
 
 /// `ldm r0!, {r1, r2}` at the reset PC with r0 one byte off a word.
-fn faulting(ram: *fixture.Ram) !ra8.core.cpu.cpu.Cpu {
+fn faulting(ram: *fixture.Ram) !ra8.chip.core.cpu.cpu.Cpu {
     ram.putWord(fixture.base + 3 * 4, hard_handler | 1);
     ram.putWord(fixture.base + 6 * 4, usage_handler | 1);
     ram.putWord(fixture.code, 0x0000_C806);
@@ -47,7 +47,7 @@ fn faulting(ram: *fixture.Ram) !ra8.core.cpu.cpu.Cpu {
     return cpu;
 }
 
-fn ipsr(cpu: *const ra8.core.cpu.cpu.Cpu) u32 {
+fn ipsr(cpu: *const ra8.chip.core.cpu.cpu.Cpu) u32 {
     return cpu.regs.xpsr & 0x1FF;
 }
 
@@ -55,7 +55,7 @@ test "an unaligned access is taken as UsageFault when USGFAULTENA is set" {
     var ram: fixture.Ram = .{};
     ram.putWord(memmap.scb.shcsr, usgfaultena);
     var cpu = try faulting(&ram);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 6), ipsr(&cpu));
     try std.testing.expectEqual(unaligned_bit, ram.word(memmap.scb.cfsr));
@@ -74,7 +74,7 @@ test "an unaligned MVE load sets CFSR.UNALIGNED on the Zig core" {
     var cpu = try fixture.boot(&ram);
     cpu.regs.low[1] = fixture.base + 0x202;
 
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(unaligned_bit, ram.word(memmap.scb.cfsr));
 }
@@ -82,28 +82,28 @@ test "an unaligned MVE load sets CFSR.UNALIGNED on the Zig core" {
 test "with USGFAULTENA clear it escalates to HardFault and sets HFSR.FORCED" {
     var ram: fixture.Ram = .{};
     var cpu = try faulting(&ram);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(hard_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 3), ipsr(&cpu));
     try std.testing.expectEqual(unaligned_bit, ram.word(memmap.scb.cfsr));
     try std.testing.expectEqual(forced, ram.word(memmap.scb.hfsr));
 }
 
-fn stackOverrun(ram: *fixture.Ram, psp: bool, first: u16, second: ?u16) !ra8.core.cpu.cpu.Cpu {
+fn stackOverrun(ram: *fixture.Ram, psp: bool, first: u16, second: ?u16) !ra8.chip.core.cpu.cpu.Cpu {
     ram.putWord(fixture.base + 6 * 4, usage_handler | 1);
     ram.putWord(memmap.scb.shcsr, usgfaultena);
     ram.putHalf(fixture.code, first);
     if (second) |hw2| ram.putHalf(fixture.code + 2, hw2);
     var cpu = try fixture.boot(ram);
     if (psp) {
-        cpu.regs.control |= ra8.core.cpu.regs.control_bits.spsel;
+        cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.spsel;
         cpu.regs.psp = fixture.psp_top;
         cpu.regs.psplim = fixture.psp_top;
     } else {
         cpu.regs.msplim = fixture.msp_top;
     }
     cpu.regs.low[0] = if (psp) fixture.psp_top - 4 else fixture.msp_top - 4;
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 6), ipsr(&cpu));
     try std.testing.expectEqual(stkof_bit, ram.word(memmap.scb.cfsr));
@@ -136,15 +136,15 @@ test "ThreadX PSPLIM overflow reaches the port stack-error callback on Zig" {
     putThreadxUsageHandler(&ram);
 
     var cpu = try fixture.boot(&ram);
-    cpu.regs.control |= ra8.core.cpu.regs.control_bits.spsel;
+    cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.spsel;
     cpu.regs.low[12] = stack_start;
     cpu.regs.low[0] = 0xA5A5_5A5A;
 
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(stack_start, cpu.regs.psplim);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(stack_start, cpu.regs.psp);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(threadx_usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(stack_start, cpu.regs.psp);
     // The RAM-backed SCS does not model the W1C clear of CFSR.
@@ -152,7 +152,7 @@ test "ThreadX PSPLIM overflow reaches the port stack-error callback on Zig" {
 
     for (0..32) |_| {
         if (ram.word(threadx_error_seen) != 0) break;
-        try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+        try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     }
     try std.testing.expectEqual(threadx_thread, ram.word(threadx_error_seen));
     try std.testing.expectEqual(@as(u32, 6), ipsr(&cpu));
@@ -184,7 +184,7 @@ test "PUSH that stays above MSPLIM retires normally" {
     ram.putHalf(fixture.code, 0xB401); // push {r0}
     var cpu = try fixture.boot(&ram);
     cpu.regs.msplim = fixture.msp_top - 16;
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.code + 2, cpu.regs.pc);
     try std.testing.expectEqual(fixture.msp_top - 4, cpu.regs.msp);
     try std.testing.expectEqual(@as(u32, 0), ram.word(memmap.scb.cfsr));
@@ -194,8 +194,8 @@ test "EPSR.T clear raises INVSTATE" {
     var ram: fixture.Ram = .{};
     ram.putWord(memmap.scb.shcsr, usgfaultena);
     var cpu = try faulting(&ram);
-    cpu.regs.xpsr &= ~ra8.core.cpu.regs.xpsr_bits.thumb;
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    cpu.regs.xpsr &= ~ra8.chip.core.cpu.regs.xpsr_bits.thumb;
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(invstate_bit, ram.word(memmap.scb.cfsr));
 }
@@ -212,7 +212,7 @@ test "a fault with FAULTMASK set locks up and stops instead" {
 test "a fault inside HardFault locks up" {
     var ram: fixture.Ram = .{};
     var cpu = try faulting(&ram);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     ram.putWord(hard_handler, 0x0000_C806);
     try std.testing.expectEqual(hard_handler, cpu.step().?.unaligned);
 }
@@ -226,10 +226,10 @@ test "a blx through a null function pointer is taken as INVSTATE at address zero
     ram.putWord(fixture.code, 0x0000_47A0);
     var cpu = try fixture.boot(&ram);
     cpu.regs.low[4] = 0;
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(@as(u32, 0), cpu.regs.pc);
     try std.testing.expectEqual((fixture.code + 2) | 1, cpu.regs.lr);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 6), ipsr(&cpu));
     try std.testing.expectEqual(invstate_bit, ram.word(memmap.scb.cfsr));
@@ -237,7 +237,7 @@ test "a blx through a null function pointer is taken as INVSTATE at address zero
     try std.testing.expectEqual(@as(u32, 0), ram.word(cpu.regs.sp() + 24));
 }
 
-fn divideCpu(ram: *fixture.Ram, hw1: u16, ccr: u32, shcsr: u32) !ra8.core.cpu.cpu.Cpu {
+fn divideCpu(ram: *fixture.Ram, hw1: u16, ccr: u32, shcsr: u32) !ra8.chip.core.cpu.cpu.Cpu {
     ram.putWord(fixture.base + 3 * 4, hard_handler | 1);
     ram.putWord(fixture.base + 6 * 4, usage_handler | 1);
     ram.putHalf(fixture.code, hw1);
@@ -254,7 +254,7 @@ test "SDIV and UDIV zero traps enter UsageFault and latch DIVBYZERO" {
     for ([_]u16{ 0xFB90, 0xFBB0 }) |hw1| {
         var ram: fixture.Ram = .{};
         var cpu = try divideCpu(&ram, hw1, div_0_trp, usgfaultena);
-        try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+        try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
         try std.testing.expectEqual(usage_handler, cpu.regs.pc);
         try std.testing.expectEqual(@as(u32, 6), ipsr(&cpu));
         try std.testing.expectEqual(divbyzero_bit, ram.word(memmap.scb.cfsr));
@@ -266,7 +266,7 @@ test "SDIV and UDIV zero traps enter UsageFault and latch DIVBYZERO" {
 test "a disabled UsageFault escalates divide zero to forced HardFault" {
     var ram: fixture.Ram = .{};
     var cpu = try divideCpu(&ram, 0xFBB0, div_0_trp, 0);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(hard_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 3), ipsr(&cpu));
     try std.testing.expectEqual(divbyzero_bit, ram.word(memmap.scb.cfsr));
@@ -276,7 +276,7 @@ test "a disabled UsageFault escalates divide zero to forced HardFault" {
 test "DIV_0_TRP clear leaves the zero quotient unchanged" {
     var ram: fixture.Ram = .{};
     var cpu = try divideCpu(&ram, 0xFBB0, 0, usgfaultena);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(@as(u32, 0), cpu.regs.low[2]);
     try std.testing.expectEqual(@as(u32, 0), ram.word(memmap.scb.cfsr));
 }
@@ -290,15 +290,15 @@ test "a refused coprocessor op latches NOCP and runs the UsageFault handler" {
     ram.putHalf(usage_handler, 0x202A); // movs r0, #42
     var cpu = try fixture.boot(&ram);
     cpu.fp.cpacr = 0;
-    cpu.regs.control |= ra8.core.cpu.regs.control_bits.sfpa;
+    cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.sfpa;
 
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 6), ipsr(&cpu));
     try std.testing.expectEqual(nocp_bit, ram.word(memmap.scb.cfsr));
     try std.testing.expectEqual(fixture.code, ram.word(cpu.regs.sp() + 24));
 
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(@as(u32, 42), cpu.regs.low[0]);
     try std.testing.expectEqual(usage_handler + 2, cpu.regs.pc);
 }

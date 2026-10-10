@@ -3,11 +3,11 @@
 //! the guest's own load takes it afterwards.
 const std = @import("std");
 const ra8 = @import("ra8");
-const registry = ra8.periph.registry;
-const sci = ra8.periph.sci;
-const BoardBus = ra8.core.cpu.board_bus.BoardBus;
-const Banked = ra8.core.banked.Banked;
-const debug_read = ra8.core.step_hook.debug_read;
+const registry = ra8.chip.periph.registry;
+const sci = ra8.chip.periph.sci;
+const BoardBus = ra8.chip.core.cpu.board_bus.BoardBus;
+const Banked = ra8.chip.core.banked.Banked;
+const debug_read = ra8.session.step_hook.debug_read;
 const store_memory = @import("../chip/periph/store_memory.zig");
 
 const channel: usize = 3;
@@ -19,8 +19,8 @@ test "a debugger read over RDR leaves the queued byte for the guest" {
     defer periph.deinit();
     var unit = sci.Sci.init();
     try periph.add(unit.block());
-    var secure_mpu = ra8.periph.mpu.Mpu.init();
-    var ns_mpu = ra8.periph.mpu.Mpu.init();
+    var secure_mpu = ra8.chip.periph.mpu.Mpu.init();
+    var ns_mpu = ra8.chip.periph.mpu.Mpu.init();
     var state: Banked = .{};
     var board: BoardBus = .{
         .memory = .{ .store = .{ .store = memory.store } },

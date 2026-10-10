@@ -1,8 +1,8 @@
 const std = @import("std");
 const testing = std.testing;
 
-const rst = @import("ra8").periph.riic_reset;
-const flag = @import("ra8").periph.riic_flags;
+const rst = @import("ra8").chip.periph.riic_reset;
+const flag = @import("ra8").chip.periph.riic_flags;
 
 const ice = flag.iccr1.ice;
 const iicrst = flag.iccr1.iicrst;

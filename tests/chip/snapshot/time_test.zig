@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const file = ra8.snapshot.file;
-const snap = ra8.snapshot.time;
-const clocks = ra8.periph.clocks;
+const snap = ra8.chip.snapshot.time;
+const clocks = ra8.chip.periph.clocks;
 
 fn running() !clocks.Time {
     var time: clocks.Time = .{};

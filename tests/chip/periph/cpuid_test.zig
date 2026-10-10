@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const cpuid = ra8.periph.cpuid;
+const cpuid = ra8.chip.periph.cpuid;
 
 /// One core's CPUID word, standing in for its PPB.
 const Ppb = struct {

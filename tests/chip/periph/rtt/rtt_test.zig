@@ -2,10 +2,10 @@
 //! dev skips, and the ring coming out in order.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const rtt = ra8.periph.rtt;
-const block = ra8.periph.rtt_block;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const rtt = ra8.chip.periph.rtt;
+const block = ra8.chip.periph.rtt_block;
 
 const cb_at: u32 = 0x2200_1000;
 const ring_at: u32 = 0x2200_2000;

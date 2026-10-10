@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/registry.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.periph.registry;
+const mod = ra8.chip.periph.registry;
 
 const Block = mod.Block;
 const Bus = mod.Bus;

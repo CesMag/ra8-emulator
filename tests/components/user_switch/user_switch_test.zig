@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const user_switch = ra8.components.user_switch;
-const gpio = ra8.periph.gpio;
+const gpio = ra8.chip.periph.gpio;
 
 const sw: user_switch.Switch = .{ .name = "sw", .port = 2, .pin = 5, .irq = 7 };
 

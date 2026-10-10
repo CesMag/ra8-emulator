@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/cps.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const regs = ra8.core.cpu.regs;
-const cps = ra8.core.cpu.ops.cps;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const regs = ra8.chip.core.cpu.regs;
+const cps = ra8.chip.core.cpu.ops.cps;
 
 fn narrow(hw1: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = 0, .size = 2 };

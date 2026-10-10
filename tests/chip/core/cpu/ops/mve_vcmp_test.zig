@@ -2,11 +2,11 @@
 //! assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const vcmp = ra8.core.cpu.ops.mve_vcmp;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const vcmp = ra8.chip.core.cpu.ops.mve_vcmp;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -24,7 +24,7 @@ test "vcmp.i8 eq, q0, q1 writes P0 and leaves no block open" {
     qreg.write(&cpu.fp.bank, 1, 0x0302);
     try run(&cpu, 0xFE01, 0x0F02);
     try std.testing.expectEqual(@as(u16, 0xFFFD), cpu.fp.vpr.p0);
-    try std.testing.expect(!ra8.core.mve.vpt.inBlock(cpu.fp.vpr));
+    try std.testing.expect(!ra8.chip.core.cpu.mve.vpt.inBlock(cpu.fp.vpr));
 }
 
 test "vcmp.s32 gt, q7, r12 compares Qn against Rm signed" {
@@ -47,10 +47,10 @@ test "vpt.u8 hi opens a one-instruction block" {
 
 test "inside a block, VCMP clears the bytes the block masks off" {
     var cpu: Cpu = .{ .bus = undefined };
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0x00FF }, 0b1000);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0x00FF }, 0b1000);
     try run(&cpu, 0xFE01, 0x0F02);
     try std.testing.expectEqual(@as(u16, 0x00FF), cpu.fp.vpr.p0);
-    try std.testing.expect(!ra8.core.mve.vpt.inBlock(cpu.fp.vpr));
+    try std.testing.expect(!ra8.chip.core.cpu.mve.vpt.inBlock(cpu.fp.vpr));
 }
 
 test "VPT resumed after A0 retains completed P0 and opens the remaining mask" {
@@ -58,12 +58,12 @@ test "VPT resumed after A0 retains completed P0 and opens the remaining mask" {
     qreg.write(&cpu.fp.bank, 0, 0x80);
     qreg.write(&cpu.fp.bank, 1, 0x7F);
     cpu.fp.vpr.p0 = 0xA55A;
-    cpu.regs.xpsr = ra8.core.cpu.it_state.put(cpu.regs.xpsr, 0x10);
+    cpu.regs.xpsr = ra8.chip.core.cpu.it_state.put(cpu.regs.xpsr, 0x10);
     try run(&cpu, 0xFE41, 0x0F83);
     try std.testing.expectEqual(@as(u4, 0b1000), cpu.fp.vpr.mask01);
     try std.testing.expectEqual(@as(u4, 0b1000), cpu.fp.vpr.mask23);
     try std.testing.expectEqual(@as(u16, 0x000A), cpu.fp.vpr.p0);
-    try std.testing.expectEqual(@as(u8, 0), ra8.core.cpu.it_state.get(cpu.regs.xpsr));
+    try std.testing.expectEqual(@as(u8, 0), ra8.chip.core.cpu.it_state.get(cpu.regs.xpsr));
 }
 
 test "the table routes VCMP and VPT here" {

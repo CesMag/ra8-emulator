@@ -1,7 +1,7 @@
 //! Covers src/chip/periph/time/event_queue.zig: ordering, ties, cancel, full.
 const std = @import("std");
 const ra8 = @import("ra8");
-const queue = ra8.periph.clocks.event_queue;
+const queue = ra8.chip.periph.clocks.event_queue;
 
 test "events come out in time order, and only once due" {
     var q = queue.EventQueue{};

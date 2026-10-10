@@ -1,6 +1,6 @@
 //! Tests for src/session/touch_spec.zig, through the flag that uses it.
 const std = @import("std");
-const parse = @import("ra8").core.cli.parse;
+const parse = @import("cli_app").cli.parse;
 
 test "a touch spec is X,Y in panel coordinates" {
     const options = try parse(&[_][]const u8{ "emu", "a.elf", "--touch", "120,48" });

@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/exclusive_peer.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const exclusive_peer = ra8.core.cpu.exclusive_peer;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const ex = ra8.core.cpu.ops.exclusive;
+const bus = ra8.chip.core.cpu.bus;
+const exclusive_peer = ra8.chip.core.cpu.exclusive_peer;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const ex = ra8.chip.core.cpu.ops.exclusive;
 const fixture = @import("exception/ram.zig");
 
 /// Shared SRAM both cores store into.

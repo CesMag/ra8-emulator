@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/cbz.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const cbz = ra8.core.cpu.ops.cbz;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const cbz = ra8.chip.core.cpu.ops.cbz;
 
 fn at(hw1: u16) Instr {
     return .{ .address = 0x0200_1000, .hw1 = hw1, .size = 2 };

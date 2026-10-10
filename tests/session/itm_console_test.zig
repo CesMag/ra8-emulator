@@ -1,10 +1,11 @@
 //! Covers src/session/itm_console.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const itm = ra8.core.itm;
-const itm_console = ra8.board.zig_run.itm_console;
+const cli_app = @import("cli_app");
+const itm = ra8.chip.periph.itm;
+const itm_console = cli_app.zig_run.itm_console;
 
-const demcr = ra8.core.memmap.scb.demcr;
+const demcr = ra8.chip.core.memmap.scb.demcr;
 const trcena: u32 = 1 << 24;
 
 /// A memory that keeps the last word written to each ITM register and DEMCR.

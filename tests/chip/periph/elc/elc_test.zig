@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const elc = ra8.periph.elc;
+const elc = ra8.chip.periph.elc;
 
 /// A generator sequence the hardware accepts: unlock, arm, fire.
 const step = struct {
@@ -212,7 +212,7 @@ test "the window covers every register and the block claims it once" {
 }
 
 test "the block answers through the bus at its own window" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit = elc.Elc.init();
     try bus.add(unit.block());

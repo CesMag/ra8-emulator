@@ -6,7 +6,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const standing = ra8.periph.standing;
+const standing = ra8.chip.periph.standing;
 
 test "a run that never pends PendSV says nothing" {
     var tally = standing.Standing{};

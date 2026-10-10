@@ -1,7 +1,7 @@
 //! Tests for the ancillary Ethernet setup register bank.
 const std = @import("std");
 const ra8 = @import("ra8");
-const open_regs = ra8.periph.eth.open_regs;
+const open_regs = ra8.chip.periph.eth.open_regs;
 
 test "setup words retain writes and reserved GWCA words read zero" {
     var bank: open_regs.Bank = .{};

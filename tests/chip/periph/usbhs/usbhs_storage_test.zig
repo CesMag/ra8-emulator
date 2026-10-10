@@ -5,10 +5,10 @@ const ra8 = @import("ra8");
 const device = ra8.components.usb_echo;
 const echo_far = ra8.components.usb_echo_far;
 const msc = ra8.components.usb_stick;
-const regs = ra8.periph.usbhs_regs;
-const setup = ra8.periph.usbhs_setup;
-const usbhs_pipe = ra8.periph.usbhs_pipe;
-const xfer = ra8.periph.usbhs_xfer;
+const regs = ra8.chip.periph.usbhs_regs;
+const setup = ra8.chip.periph.usbhs_setup;
+const usbhs_pipe = ra8.chip.periph.usbhs_pipe;
+const xfer = ra8.chip.periph.usbhs_xfer;
 
 var disk = @as([2 * msc.block_len]u8, @splat(0x5A));
 var stick: msc.Target = .{};

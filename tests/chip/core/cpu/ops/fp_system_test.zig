@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/fp_system.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const fp_system = ra8.core.cpu.ops.fp_system;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const fp_system = ra8.chip.core.cpu.ops.fp_system;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -93,7 +93,7 @@ test "vmsr P0, r1 moves only P0 and vmrs r2, P0 zero-extends it" {
 
 test "FPSCR_nzcvqc transfers only condition and saturation flags" {
     var cpu = fresh();
-    cpu.fp.fpscr = ra8.core.fpu.fpscr.Fpscr.fromBits(0xA5CF_009F);
+    cpu.fp.fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr.fromBits(0xA5CF_009F);
     try run(&cpu, 0xEEF2, 0x3A10);
     try std.testing.expectEqual(@as(u32, 0xA000_0000), cpu.regs.get(3));
     cpu.regs.set(2, 0x5800_0000);
@@ -103,15 +103,15 @@ test "FPSCR_nzcvqc transfers only condition and saturation flags" {
 
 test "FPCXT_NS saves and restores active non-secure FP context" {
     var cpu = fresh();
-    cpu.regs.control = ra8.core.cpu.regs.control_bits.fpca;
-    cpu.fp.fpscr = ra8.core.fpu.fpscr.Fpscr.fromBits(0xA5CF_009F);
+    cpu.regs.control = ra8.chip.core.cpu.regs.control_bits.fpca;
+    cpu.fp.fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr.fromBits(0xA5CF_009F);
     try run(&cpu, 0xEEFE, 0x4A10);
     try std.testing.expectEqual(@as(u32, 0x05CF_009F), cpu.regs.get(4));
     try std.testing.expectEqual(cpu.fp.context.defaultFpscr().bits(), cpu.fp.fpscr.bits());
     cpu.regs.set(5, 0xD123_4567);
     try run(&cpu, 0xEEEE, 0x5A10);
-    try std.testing.expectEqual(ra8.core.fpu.fpscr.Fpscr.fromBits(0x0123_4567).bits(), cpu.fp.fpscr.bits());
-    try std.testing.expect(cpu.regs.control & ra8.core.cpu.regs.control_bits.sfpa != 0);
+    try std.testing.expectEqual(ra8.chip.core.cpu.fpu.fpscr.Fpscr.fromBits(0x0123_4567).bits(), cpu.fp.fpscr.bits());
+    try std.testing.expect(cpu.regs.control & ra8.chip.core.cpu.regs.control_bits.sfpa != 0);
 }
 
 test "FPCXT_NS inactive: a read returns the NS defaults and a write is a NOP" {
@@ -128,16 +128,16 @@ test "FPCXT_NS inactive: a read returns the NS defaults and a write is a NOP" {
 
 test "FPCXT_S saves and restores the Secure FP context" {
     var cpu = fresh();
-    cpu.regs.control |= ra8.core.cpu.regs.control_bits.sfpa;
-    cpu.fp.fpscr = ra8.core.fpu.fpscr.Fpscr.fromBits(0xA5CF_009F);
+    cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.sfpa;
+    cpu.fp.fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr.fromBits(0xA5CF_009F);
     try run(&cpu, 0xEEFF, 0x8A10);
     try std.testing.expectEqual(@as(u32, 0x85CF_009F), cpu.regs.get(8));
     try std.testing.expectEqual(cpu.fp.context.defaultFpscr().bits(), cpu.fp.fpscr.bits());
-    try std.testing.expectEqual(@as(u32, 0), cpu.regs.control & ra8.core.cpu.regs.control_bits.sfpa);
+    try std.testing.expectEqual(@as(u32, 0), cpu.regs.control & ra8.chip.core.cpu.regs.control_bits.sfpa);
     cpu.regs.set(9, 0xC123_4567);
     try run(&cpu, 0xEEEF, 0x9A10);
-    try std.testing.expectEqual(ra8.core.fpu.fpscr.Fpscr.fromBits(0x0123_4567).bits(), cpu.fp.fpscr.bits());
-    try std.testing.expect(cpu.regs.control & ra8.core.cpu.regs.control_bits.sfpa != 0);
+    try std.testing.expectEqual(ra8.chip.core.cpu.fpu.fpscr.Fpscr.fromBits(0x0123_4567).bits(), cpu.fp.fpscr.bits());
+    try std.testing.expect(cpu.regs.control & ra8.chip.core.cpu.regs.control_bits.sfpa != 0);
 }
 
 test "FPCXT payload accesses are undefined from Non-secure state" {

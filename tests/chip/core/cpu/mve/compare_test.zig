@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/compare.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const compare = ra8.core.mve.compare;
+const compare = ra8.chip.core.cpu.mve.compare;
 
 test "condOf numbers the conditions as the encoding does" {
     try std.testing.expectEqual(compare.Cond.eq, compare.condOf(false, false, false));

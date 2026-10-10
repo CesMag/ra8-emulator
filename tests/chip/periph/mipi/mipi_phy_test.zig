@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const mipi_phy = ra8.periph.mipi_phy;
-const status = ra8.periph.mipi_phy_status;
+const mipi_phy = ra8.chip.periph.mipi_phy;
+const status = ra8.chip.periph.mipi_phy_status;
 
 fn at(offset: u32) u32 {
     return mipi_phy.win_base + offset;

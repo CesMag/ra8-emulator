@@ -4,19 +4,19 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const memmap = ra8.core.memmap;
-const stop_machine = ra8.core.stop_machine;
-const step_hook = ra8.core.step_hook;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const memmap = ra8.chip.core.memmap;
+const stop_machine = ra8.session.stop_machine;
+const step_hook = ra8.session.step_hook;
 const watch_bus = step_hook.watch_bus;
 const unit_view = watch_bus.unit_view;
 const zig_drive = step_hook.zig_drive;
 const ZigCore = step_hook.zig_core.ZigCore;
-const fpb = ra8.core.fpb;
-const dwt = ra8.core.dwt;
-const itm = ra8.core.itm;
-const dcb = ra8.core.dcb;
+const fpb = ra8.session.fpb;
+const dwt = ra8.chip.periph.dwt;
+const itm = ra8.chip.periph.itm;
+const dcb = ra8.chip.periph.dcb;
 
 const layout = struct {
     const code: u32 = memmap.sram_base;
@@ -71,7 +71,7 @@ const Rig = struct {
         self.driver = .{ .machine = &self.machine };
         self.watching = .{ .inner = self.memory.view(), .driver = &self.driver };
         self.cpu = .{ .bus = self.watching.view() };
-        self.cpu.regs.xpsr = ra8.core.cpu.regs.xpsr_bits.thumb;
+        self.cpu.regs.xpsr = ra8.chip.core.cpu.regs.xpsr_bits.thumb;
         @memcpy(self.memory.sram[0..program.len], program);
         const core: ZigCore = .{ .cpu = &self.cpu };
         core.setRegister(.pc, layout.code);

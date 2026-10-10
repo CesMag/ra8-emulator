@@ -1,9 +1,10 @@
 //! Tests for src/interfaces/cli/report/usb_cable.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const usb_cable = ra8.board.report.usb_cable;
-const usbfs = ra8.periph.usbfs;
+const usb_cable = cli_app.report.usb_cable;
+const usbfs = ra8.chip.periph.usbfs;
 const Loop = ra8.components.usb_loop_cable.Loop;
 
 /// The rendered section: up to 512 bytes, kept by value.

@@ -2,11 +2,11 @@
 //! register descriptions for FPCCR, FPCAR and FPDSCR and ExecuteFPCheck().
 const std = @import("std");
 const ra8 = @import("ra8");
-const context = ra8.core.fpu.context;
+const context = ra8.chip.core.cpu.fpu.context;
 const Context = context.Context;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
-const State = ra8.core.fpu.state.State;
-const Vpr = ra8.core.mve.predicate.Vpr;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
+const State = ra8.chip.core.cpu.fpu.state.State;
+const Vpr = ra8.chip.core.cpu.mve.predicate.Vpr;
 const fpca: u32 = 1 << 2;
 
 test "reset values: FPCCR has ASPEN and LSPEN, FPDSCR reads LTPSIZE 4" {
@@ -72,7 +72,7 @@ test "Secure FP use opens a Secure context when SFPA is clear despite FPCA" {
     var fpscr: Fpscr = @bitCast(@as(u32, 0x8000_0011));
     var vpr: Vpr = @bitCast(@as(u32, 0x0000_00FF));
     const control = c.touch(fpca, .secure, &fpscr, &vpr);
-    try std.testing.expectEqual(fpca | ra8.core.cpu.regs.control_bits.sfpa, control);
+    try std.testing.expectEqual(fpca | ra8.chip.core.cpu.regs.control_bits.sfpa, control);
     try std.testing.expectEqual(@as(u32, 0x0204_0000), fpscr.bits());
     try std.testing.expectEqual(@as(u32, 0), @as(u32, @bitCast(vpr)));
     try std.testing.expectEqual(@as(u1, 1), c.fpccr.s);

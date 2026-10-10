@@ -2,11 +2,11 @@
 //! LLVM's assembler for -mcpu=cortex-m85 with MVE, as `op q0, q1, r2`.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const scalar = ra8.core.cpu.ops.mve_int_scalar;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const scalar = ra8.chip.core.cpu.ops.mve_int_scalar;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -59,7 +59,7 @@ test "vqdmulh.s16 saturates and vqrdmulh.s16 rounds" {
 
 test "a masked-off lane that would saturate leaves QC clear" {
     var cpu = fresh();
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0x0001 }, 0b1000);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0x0001 }, 0b1000);
     _ = try run(&cpu, 0xEE02, 0x0F62, 0x7F_00, 1);
     try std.testing.expectEqual(@as(u1, 0), cpu.fp.fpscr.qc);
 }
@@ -101,6 +101,6 @@ test "vbrsr reverses each lane and keeps Rm's bottom byte of bits" {
 test "vbrsr writes only the lanes VPR leaves live" {
     var cpu = fresh();
     qreg.write(&cpu.fp.bank, 0, 0xAAAA_0000);
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0x0003 }, 0b1000);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0x0003 }, 0b1000);
     try std.testing.expectEqual(@as(u128, 0xAAAA_8000), try run(&cpu, 0xFE13, 0x1E62, 0x0001_0001, 16) & 0xFFFF_FFFF);
 }

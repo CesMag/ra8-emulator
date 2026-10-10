@@ -3,12 +3,12 @@
 //! (RA8EMU-673).
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_monitor = ra8.core.step_hook.zig_drive.zig_monitor;
-const ZigCore = ra8.core.step_hook.zig_core.ZigCore;
-const dcb = ra8.core.dcb;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_monitor = ra8.session.step_hook.zig_drive.zig_monitor;
+const ZigCore = ra8.session.step_hook.zig_core.ZigCore;
+const dcb = ra8.chip.periph.dcb;
 
 /// Just the DEMCR and DFSR words.
 const Rig = struct {
@@ -74,5 +74,5 @@ test "take pends only when the machine holds an event, and only once" {
     machine.monitor_pending = .breakpoint;
     zig_monitor.take(rig.core(), &machine);
     try std.testing.expect(rig.demcr & dcb.demcr_bits.mon_pend != 0);
-    try std.testing.expectEqual(@as(?ra8.core.stop_machine.Monitor, null), machine.monitor_pending);
+    try std.testing.expectEqual(@as(?ra8.session.stop_machine.Monitor, null), machine.monitor_pending);
 }

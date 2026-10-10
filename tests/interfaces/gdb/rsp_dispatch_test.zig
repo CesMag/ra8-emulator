@@ -2,8 +2,8 @@
 //! qSupported, registers in target.xml order, and memory, read and written.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dispatch = ra8.core.rsp_dispatch;
-const memmap = ra8.core.memmap;
+const dispatch = ra8.gdb.rsp_dispatch;
+const memmap = ra8.chip.core.memmap;
 const Rig = @import("../../session/view_ram.zig").Rig;
 
 const base: u32 = memmap.sram_base;
@@ -149,7 +149,7 @@ test "Z goes to the stop machine when one is attached" {
     var out: [16]u8 = undefined;
     const bare = dispatch.Dispatch{ .view = rig.view() };
     try std.testing.expectEqualStrings("", try bare.answer("Z0,22000008,2", &out));
-    var machine = ra8.core.stop_machine.Machine{};
+    var machine = ra8.session.stop_machine.Machine{};
     const stub = dispatch.Dispatch{ .view = rig.view(), .machine = &machine };
     try std.testing.expectEqualStrings("OK", try stub.answer("Z0,22000008,2", &out));
     try std.testing.expect(machine.breaks.find(0x2200_0008) != null);

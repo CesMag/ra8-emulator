@@ -5,16 +5,17 @@
 //! and no command-line run here (RA8EMU-1097): the run flags belong to
 //! ra8_emulator, which never links SDL.
 const std = @import("std");
-const ra8 = @import("ra8");
+const app = @import("gui_app");
+const host = @import("ra8_host");
 const gui_window = @import("gui_window.zig");
 
 // A macOS build carries the Info.plist the camera permission needs.
 comptime {
-    _ = ra8.host.camera.av_info_plist;
+    _ = host.camera.av_info_plist;
 }
 
 pub fn main(init: std.process.Init) !u8 {
     const allocator = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(allocator);
-    return ra8.core.shell_main.run(allocator, init.io, init.environ_map, argv, gui_window.opener);
+    return app.shell_main.run(allocator, init.io, init.environ_map, argv, gui_window.opener);
 }

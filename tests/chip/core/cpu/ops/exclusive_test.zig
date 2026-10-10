@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/exclusive.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ex = ra8.core.cpu.ops.exclusive;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
+const ex = ra8.chip.core.cpu.ops.exclusive;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const fixture = @import("../exception/ram.zig");
 
 const data: u32 = fixture.base + 0x200;
@@ -96,7 +96,7 @@ test "exception entry clears the monitor" {
     var ram: fixture.Ram = .{};
     var cpu = try fixture.boot(&ram);
     cpu.exclusive = data;
-    _ = try ra8.core.cpu.exception.entry.take(&cpu, 11, fixture.code);
+    _ = try ra8.chip.core.cpu.exception.entry.take(&cpu, 11, fixture.code);
     try std.testing.expectEqual(@as(?u32, null), cpu.exclusive);
 }
 

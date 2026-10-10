@@ -4,11 +4,12 @@
 //! configurations.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const test_paths = @import("test_paths");
 
-const sweep_cli = ra8.core.sweep_cli;
-const sweep_elf = ra8.core.sweep_elf;
-const matrix = ra8.core.sizing.matrix;
+const sweep_cli = cli_app.sweep_cli;
+const sweep_elf = cli_app.sweep_elf;
+const matrix = ra8.board.sizing.matrix;
 const profile = ra8.board.profile;
 
 const fixture = "tests/fixtures/sizing/ext_stream.elf";

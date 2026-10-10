@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/nvic.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const mod = ra8.periph.nvic;
+const memmap = ra8.chip.core.memmap;
+const mod = ra8.chip.periph.nvic;
 
 const Error = mod.Error;
 const Nvic = mod.Nvic;
@@ -302,7 +302,7 @@ test "DHCSR.C_MASKINTS holds SysTick and external lines back while debug is on" 
     try core.writeWord(memmap.nvic.ispr, 1 << 5);
     try core.writeWord(memmap.nvic.iser, 1 << 5);
     try core.writeWord(memmap.scb.icsr, icsr_pendstset);
-    const dhcsr = ra8.core.dcb;
+    const dhcsr = ra8.chip.periph.dcb;
     try core.writeWord(dhcsr.base, dhcsr.dhcsr_bits.c_debugen | dhcsr.dhcsr_bits.c_maskints);
 
     var irqs = Nvic{};

@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/text/text.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const text = ra8.core.cpu.decode.text.text;
+const text = ra8.chip.core.cpu.decode.text.text;
 
 test "registers use the standard UAL names" {
     try std.testing.expectEqualStrings("sb", text.names[9]);

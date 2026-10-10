@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const maci = ra8.periph.maci;
+const maci = ra8.chip.periph.maci;
 
 fn program(stream: *maci.Sequencer, halfwords: []const u16) maci.Step {
     _ = stream.byteWritten(maci.opcode.program);

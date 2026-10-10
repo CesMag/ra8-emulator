@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const cadence = ra8.core.cadence;
+const cadence = ra8.chip.core.cadence;
 
 test "the default boundary is narrower than dev's chunk" {
     try std.testing.expect(cadence.instructions < 500_000);
@@ -70,7 +70,7 @@ test "the default budget passes through enough boundaries for a bounded poll" {
 }
 
 test "the clocks charge a boundary's worth of instructions per boundary" {
-    try std.testing.expectEqual(cadence.instructions, ra8.periph.clocks.chunk_instructions);
+    try std.testing.expectEqual(cadence.instructions, ra8.chip.periph.clocks.chunk_instructions);
 }
 
 test "boundaries and chunks agree on how a budget is cut" {

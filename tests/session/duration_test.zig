@@ -1,7 +1,7 @@
 //! Tests for src/session/duration.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const duration = ra8.board.duration;
+const duration = ra8.session.duration;
 
 const s: u64 = 1_000_000_000;
 

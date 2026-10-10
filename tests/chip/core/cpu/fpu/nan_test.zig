@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const format = ra8.core.fpu.format;
-const nan = ra8.core.fpu.nan;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
+const format = ra8.chip.core.cpu.fpu.format;
+const nan = ra8.chip.core.cpu.fpu.nan;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
 
 test "the default NaN is 0x7FC00000 and 0x7FF8000000000000" {
     try std.testing.expectEqual(@as(u32, 0x7FC0_0000), nan.defaultNaN(format.single));

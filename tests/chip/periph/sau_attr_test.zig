@@ -3,7 +3,7 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const sau = ra8.periph.sau;
+const sau = ra8.chip.periph.sau;
 const mod = sau.attribution;
 
 const enable: u32 = 1 << 0;

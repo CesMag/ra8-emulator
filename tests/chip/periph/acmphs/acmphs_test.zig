@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const acmphs = ra8.periph.acmphs;
-const output = ra8.periph.acmphs_output;
+const acmphs = ra8.chip.periph.acmphs;
+const output = ra8.chip.periph.acmphs_output;
 
 fn ctl(unit: usize) u32 {
     return acmphs.channelAddress(unit) + acmphs.off.cmpctl;

@@ -2,7 +2,7 @@
 //! of their banks.
 const std = @import("std");
 const ra8 = @import("ra8");
-const nvic_banked = ra8.periph.nvic.nvic_banked;
+const nvic_banked = ra8.chip.periph.nvic.nvic_banked;
 
 const icsr: u32 = 0xE000_ED04;
 const shpr3: u32 = 0xE000_ED20;

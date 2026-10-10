@@ -1,7 +1,7 @@
 //! The layout of a register dump.
 const std = @import("std");
 const ra8 = @import("ra8");
-const registers = ra8.core.registers;
+const registers = ra8.session.registers;
 
 test "the argument registers lead the dump" {
     try std.testing.expectEqualStrings("r0", registers.dumped[0].name);
@@ -13,7 +13,7 @@ test "the argument registers lead the dump" {
 test "the dump ends on the program counter" {
     const last = registers.dumped[registers.dumped.len - 1];
     try std.testing.expectEqualStrings("pc", last.name);
-    try std.testing.expectEqual(ra8.core.cpu.cortex.Cortex.pc, last.which);
+    try std.testing.expectEqual(ra8.chip.core.cpu.cortex.Cortex.pc, last.which);
 }
 
 test "a line ends every fourth register" {

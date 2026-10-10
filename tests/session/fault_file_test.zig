@@ -4,14 +4,15 @@
 //! style run of tests/fixtures/plug/gauge_poll.elf.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("../interfaces/cli/store_board.zig");
 
-const parse = ra8.core.cli.parse;
-const fault_file = ra8.core.cli_fault_file;
-const boot = ra8.core.cpu.boot;
-const elf = ra8.image.elf;
-const loader = ra8.core.cpu.memory.load;
-const zig_run = ra8.board.zig_run;
+const parse = cli_app.cli.parse;
+const fault_file = ra8.session.fault_file;
+const boot = ra8.chip.core.cpu.boot;
+const elf = ra8.board.image.elf;
+const loader = ra8.chip.core.cpu.memory.load;
+const zig_run = cli_app.zig_run;
 
 const image_bytes = @embedFile("../fixtures/plug/gauge_poll.elf");
 const counts_at: u32 = 0x2200_0100;
@@ -42,7 +43,7 @@ test "a malformed or missing schedule is refused before the run" {
     defer tmp.cleanup();
     var buffer: [std.fs.max_path_bytes]u8 = undefined;
     const bad = try writeFile(tmp.dir, "bad.faults", "2m unplug i2c:riic@0x36\n1m plug i2c:riic@0x36 max17048\n", &buffer);
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var run: fault_file.Run = undefined;
     try std.testing.expectError(error.TimeBackwards, run.open(&board, std.testing.io, bad));
@@ -59,10 +60,10 @@ test "a soak run applies every scheduled event at its exact virtual time" {
     var store = try store_board.Store.init(null);
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
-    const loaded = try ra8.image.load.read(image);
+    const loaded = try ra8.board.image.load.read(image);
     _ = try loader.image(core, loaded.image());
     board.run.soak.armed = true; // as `--run-for` arms it
 
@@ -72,7 +73,7 @@ test "a soak run applies every scheduled event at its exact virtual time" {
     var applied: [5]u64 = .{ 0, 0, 0, 0, 0 };
     run.applier.applied_ns = &applied;
 
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase };
     var ran: u64 = 0;
     var output: [256]u8 = undefined;

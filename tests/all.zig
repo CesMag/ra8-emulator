@@ -117,8 +117,5 @@ test {
     _ = @import("chip/core/module_fault_seam_test.zig");
     _ = @import("tools/all_test.zig");
     const ra8 = @import("ra8");
-    std.testing.refAllDecls(ra8.core);
-    std.testing.refAllDecls(ra8.periph);
-    std.testing.refAllDecls(ra8.board);
-    std.testing.refAllDecls(ra8.interfaces.rpc);
+    inline for (.{ ra8.chip.core, ra8.chip.periph, ra8.board, ra8.session, ra8.rpc, ra8.gdb, @import("cli_app") }) |module| std.testing.refAllDecls(module);
 }

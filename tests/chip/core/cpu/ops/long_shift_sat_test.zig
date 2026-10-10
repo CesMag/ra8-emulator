@@ -3,9 +3,9 @@
 //! pseudocode, round half up and saturating clamps setting Q.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const sat = ra8.core.cpu.ops.long_shift_sat;
-const table = ra8.core.cpu.ops.table;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const sat = ra8.chip.core.cpu.ops.long_shift_sat;
+const table = ra8.chip.core.cpu.ops.table;
 const q_bit: u32 = 1 << 27;
 
 const uqshl5: u16 = 0x1F4F; // uqshl r2, #5
@@ -15,7 +15,7 @@ const sqshl5: u16 = 0x1F7F; // sqshl r2, #5
 const uqrshl: u16 = 0x4F0D; // uqrshl r2, r4
 const sqrshr: u16 = 0x4F2D; // sqrshr r2, r4
 
-fn wide(hw1: u16, hw2: u16) ra8.core.cpu.instr.Instr {
+fn wide(hw1: u16, hw2: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 

@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const prcr = ra8.periph.prcr;
+const prcr = ra8.chip.periph.prcr;
 
 test "a keyed write retains only the group bits" {
     var unit = prcr.Prcr.init();
@@ -82,7 +82,7 @@ test "an untouched unit stays out of the report" {
 }
 
 test "the block answers for its own window through the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit = prcr.Prcr.init();
     try bus.add(unit.block());

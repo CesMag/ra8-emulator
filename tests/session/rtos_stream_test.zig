@@ -1,7 +1,7 @@
 //! Tests for src/session/rtos_stream.zig: incremental, non-blocking readers.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos = ra8.core.step_hook;
+const rtos = ra8.session.step_hook;
 const Event = rtos.rtos_trace.Event;
 const Kind = rtos.rtos_trace.Kind;
 const Cursor = rtos.rtos_stream.Cursor;

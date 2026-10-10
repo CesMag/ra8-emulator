@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/mve/qreg.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const qreg = ra8.core.mve.qreg;
-const Bank = ra8.core.fpu.bank.Bank;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const Bank = ra8.chip.core.cpu.fpu.bank.Bank;
 
 test "Q1 is D3:D2, S4 holding the low word" {
     var bank: Bank = .{};

@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/passed.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const passed = ra8.periph.passed;
+const passed = ra8.chip.periph.passed;
 
 test "a fresh tally is quiet" {
     const tally = passed.Passed{};

@@ -2,10 +2,12 @@
 //! an opaque PNG of its own size, and stills are numbered in order.
 const std = @import("std");
 const ra8 = @import("ra8");
-const still = ra8.board.window_still;
-const png = ra8.board.report.png;
-const raster = ra8.gui.raster;
-const Color = ra8.gui.draw_list.Color;
+const cli_app = @import("cli_app");
+const gui_app = @import("gui_app");
+const still = gui_app.window_still;
+const png = cli_app.report.png;
+const raster = ra8.render.raster;
+const Color = ra8.render.draw_list.Color;
 
 test "a window frame goes out opaque, channel for channel" {
     const pixels = [_]Color{ .{ .r = 1, .g = 2, .b = 3, .a = 0 }, Color.rgb(200, 100, 50) };

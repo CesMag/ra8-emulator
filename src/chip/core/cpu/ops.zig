@@ -1,5 +1,5 @@
 //! The instruction groups under src/chip/core/cpu/ops/, by name, so tests and
-//! tools reach each one as ra8.core.cpu.ops.<group>. The decode order lives
+//! tools reach each one as ra8.chip.core.cpu.ops.<group>. The decode order lives
 //! in ops/table.zig, not here.
 
 pub const hint = @import("ops/hint.zig");

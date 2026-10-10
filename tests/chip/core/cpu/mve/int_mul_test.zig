@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/int_mul.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mul = ra8.core.mve.int_mul;
+const mul = ra8.chip.core.cpu.mve.int_mul;
 
 test "VQDMULH saturates only the most negative value squared" {
     const min = mul.multiplyHigh(0x8000, 0x8000, .half, .{ .double = true });

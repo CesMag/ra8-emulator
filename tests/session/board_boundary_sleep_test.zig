@@ -6,13 +6,13 @@ const ra8 = @import("ra8");
 const idler = @import("../interfaces/cli/idler.zig");
 const store_board = @import("../interfaces/cli/store_board.zig");
 
-const memmap = ra8.core.memmap;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const GuestBus = ra8.core.cpu.memory.guest_bus.GuestBus;
-const NvicSource = ra8.core.cpu.exception.nvic_source.NvicSource;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_boundary = ra8.core.step_hook.zig_boundary;
-const BoardBoundary = ra8.board.board_boundary.BoardBoundary;
+const memmap = ra8.chip.core.memmap;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const GuestBus = ra8.chip.core.cpu.memory.guest_bus.GuestBus;
+const NvicSource = ra8.chip.core.cpu.exception.nvic_source.NvicSource;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_boundary = ra8.session.step_hook.zig_boundary;
+const BoardBoundary = ra8.session.board_boundary.BoardBoundary;
 
 /// Counts the boundaries a run passes and the instructions they carry.
 const Counter = struct {
@@ -89,14 +89,14 @@ test "a breakpoint armed keeps every chunk at its normal width" {
 /// The idler image on a real board: SysTick armed one period ahead.
 const Idle = struct {
     store: store_board.Store = undefined,
-    board: ra8.board.Board = undefined,
+    board: ra8.board.board.Board = undefined,
 
     fn open(self: *Idle) !store_board.Guest {
         self.store = try store_board.Store.init(null);
         errdefer self.store.deinit();
         const core: store_board.Guest = .{ .store = &self.store };
         try idler.load(core);
-        self.board = ra8.board.Board.init(std.testing.allocator);
+        self.board = ra8.board.board.Board.init(std.testing.allocator);
         errdefer self.board.deinit();
         try store_board.attach(&self.board, core);
         return core;
@@ -124,7 +124,7 @@ test "CPU1 selected keeps the normal width" {
     var idle: Idle = .{};
     const core = try idle.open();
     defer idle.close();
-    const cpu1: u8 = @backingInt(ra8.periph.registry.Issuer.cpu1);
+    const cpu1: u8 = @backingInt(ra8.chip.periph.registry.Issuer.cpu1);
     var edge: BoardBoundary = .{ .board = &idle.board, .core = core, .selected = &cpu1 };
     const hook = edge.hook();
     try std.testing.expectEqual(idler.chunk, hook.sleepFn.?(hook.context, idler.chunk));

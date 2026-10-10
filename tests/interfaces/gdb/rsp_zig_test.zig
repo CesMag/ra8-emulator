@@ -1,13 +1,13 @@
 //! Tests for src/interfaces/gdb/rsp_zig.zig and the Dispatch path that reaches it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Machine = ra8.core.stop_machine.Machine;
-const dispatch = ra8.core.rsp_dispatch;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Machine = ra8.session.stop_machine.Machine;
+const dispatch = ra8.gdb.rsp_dispatch;
 const zig_run = dispatch.zig_run;
-const zig_session = ra8.core.step_hook.zig_session;
-const session_api = ra8.core.session_api;
+const zig_session = ra8.session.step_hook.zig_session;
+const session_api = ra8.session.session_api;
 
 /// 64 bytes of RAM at address 0, the vector table first.
 const Ram = struct {

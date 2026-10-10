@@ -1,8 +1,8 @@
 //! Tests for src/session/debug_read.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const debug_read = ra8.core.step_hook.debug_read;
+const bus = ra8.chip.core.cpu.bus;
+const debug_read = ra8.session.step_hook.debug_read;
 
 /// A bus that logs each access and peeks from `peek_from` up.
 const Probe = struct {

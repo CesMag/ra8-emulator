@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const cycle_count = ra8.core.step_hook.cycle_count;
-const dwt = ra8.core.dwt;
+const cycle_count = ra8.session.step_hook.cycle_count;
+const dwt = ra8.chip.periph.dwt;
 
 test "the count climbs one per instruction while the word stands still" {
     var count = cycle_count.Count{};

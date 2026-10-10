@@ -3,17 +3,18 @@
 //! and capture reads each core across the end of mapped memory.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_session = ra8.core.step_hook.zig_session;
-const api = ra8.core.session_api;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane = ra8.gui.memory_pane;
-const capture = ra8.gui.memory_capture;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_session = ra8.session.step_hook.zig_session;
+const api = ra8.session.session_api;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane = gui_app.memory_pane;
+const capture = gui_app.memory_capture;
 
 /// Exactly one row wide and four rows deep, as in the pane's own test.
 const area = draw_list.Rect{ .x = 0, .y = 0, .w = pane.min_w, .h = 2 * pane.pad + 4 * pane.row_h };

@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/flags.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const flags = ra8.core.cpu.flags;
-const regs = ra8.core.cpu.regs;
+const flags = ra8.chip.core.cpu.flags;
+const regs = ra8.chip.core.cpu.regs;
 
 const Case = struct { x: u32, y: u32, c: bool, result: u32, carry: bool, overflow: bool };
 

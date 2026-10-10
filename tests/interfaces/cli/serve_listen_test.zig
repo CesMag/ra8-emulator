@@ -2,8 +2,9 @@
 //! ephemeral localhost TCP port and drives a session over each (RA8EMU-736).
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const test_paths = @import("test_paths");
-const Connection = ra8.interfaces.rpc.socket.Connection;
+const Connection = ra8.rpc.socket_transport.Connection;
 const serve_peer = @import("serve_peer.zig");
 const image_path = serve_peer.image_path;
 const Term = std.process.Child.Term;
@@ -54,12 +55,12 @@ test "serve --listen with a bad spec prints its usage and exits 2" {
         defer std.testing.allocator.free(result.stdout);
         defer std.testing.allocator.free(result.stderr);
         try std.testing.expectEqual(Term{ .exited = 2 }, result.term);
-        try std.testing.expectEqualStrings(ra8.core.serve_main.usage, result.stderr);
+        try std.testing.expectEqualStrings(cli_app.serve_main.usage, result.stderr);
     }
 }
 
 test "listen specs: an empty host and localhost bind loopback, a bracketed v6 literal parses" {
-    const Spec = ra8.core.serve_listen.Spec;
+    const Spec = cli_app.serve_listen.Spec;
     const loopback = try std.Io.net.IpAddress.parse("127.0.0.1", 7000);
     try std.testing.expect((try Spec.parse("tcp::7000")).tcp.eql(&loopback));
     try std.testing.expect((try Spec.parse("tcp:localhost:7000")).tcp.eql(&loopback));

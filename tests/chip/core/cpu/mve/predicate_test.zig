@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/predicate.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const predicate = ra8.core.mve.predicate;
+const predicate = ra8.chip.core.cpu.mve.predicate;
 
 test "VPR fields sit where the Arm ARM puts them" {
     const vpr: predicate.Vpr = @bitCast(@as(u32, 0x0042_F00F));

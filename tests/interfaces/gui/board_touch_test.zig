@@ -3,10 +3,11 @@
 //! and release make.
 const std = @import("std");
 const ra8 = @import("ra8");
-const pane = ra8.gui.board_pane;
-const touch = ra8.gui.board_touch;
-const Rect = ra8.gui.draw_list.Rect;
-const proto = ra8.interfaces.rpc.session;
+const gui_app = @import("gui_app");
+const pane = gui_app.board_pane;
+const touch = gui_app.board_touch;
+const Rect = ra8.render.draw_list.Rect;
+const proto = ra8.rpc.session_rpc;
 
 const width: u32 = 1024;
 const height: u32 = 600;

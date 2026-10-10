@@ -14,8 +14,8 @@
 //! `vadd.i32 q3, q3, q1; bx lr`.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const qreg = ra8.core.mve.qreg;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const qreg = ra8.chip.core.cpu.mve.qreg;
 const fixture = @import("../exception/ram.zig");
 const Fake = @import("../exception/fake_source.zig").Fake;
 

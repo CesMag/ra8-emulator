@@ -2,8 +2,8 @@
 //! because the reference disassembler had no Armv8.1-M.
 const std = @import("std");
 const ra8 = @import("ra8");
-const disasm = ra8.core.cpu.decode.text.disasm;
-const Instr = ra8.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 pub const Case = struct { hw1: u16, hw2: u16, text: []const u8 };
 

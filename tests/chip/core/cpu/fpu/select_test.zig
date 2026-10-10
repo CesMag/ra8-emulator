@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const select = ra8.core.fpu.select;
+const select = ra8.chip.core.cpu.fpu.select;
 
 test "the cc field values match the encoding" {
     try std.testing.expectEqual(@as(u2, 0b00), @backingInt(select.Cond.eq));

@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const commands = ra8.core.commands;
+const commands = ra8.session.commands;
 const Command = commands.Command;
 
 fn expectParsed(expected: Command, line: []const u8) !void {

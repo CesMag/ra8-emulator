@@ -1,8 +1,8 @@
 //! Covers MVE register gather/scatter printers against DDI0553 C2.4.366/486.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Instr = ra8.core.cpu.instr.Instr;
-const disasm = ra8.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
 const v81m = @import("v81m.zig");
 
 test "gather loads print access type, signedness and scaled offsets" {

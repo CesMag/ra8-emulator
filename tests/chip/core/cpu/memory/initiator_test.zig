@@ -1,6 +1,6 @@
 //! Tests for src/chip/core/cpu/memory/initiator.zig.
 const std = @import("std");
-const Initiator = @import("ra8").core.cpu.memory.initiator.Initiator;
+const Initiator = @import("ra8").chip.core.cpu.memory.initiator.Initiator;
 
 test "timedIndex gives each timed initiator its own port and none to setup" {
     try std.testing.expectEqual(@as(?usize, null), Initiator.none.timedIndex());

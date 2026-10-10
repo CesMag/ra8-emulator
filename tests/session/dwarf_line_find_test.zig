@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const find = ra8.core.dwarf_line_find;
-const session_source = ra8.core.session_source;
+const find = ra8.session.dwarf_line_find;
+const session_source = ra8.session.session_source;
 const unit = @import("dwarf_units.zig").unit;
 
 // Directories "src"; files "main.c" in directory 1, "/abs/boot.s" in 0.
@@ -15,7 +15,7 @@ const tables = "src\x00\x00main.c\x00\x01\x00\x00/abs/boot.s\x00\x00\x00\x00\x00
 // op; copy (0x1006, boot.s:3); advance_pc 1 op; end_sequence at 0x1008.
 const program = [_]u8{ 0x00, 0x05, 0x02, 0x00, 0x10, 0x00, 0x00, 0x03, 0x02, 0x01, 0x02, 0x01, 0x03, 0x02, 0x01, 0x02, 0x01, 0x03, 0x7e, 0x01, 0x04, 0x02, 0x02, 0x01, 0x01, 0x02, 0x01, 0x00, 0x01, 0x01 };
 
-fn sections(list: *std.ArrayList(u8)) !ra8.core.dwarf_line.Sections {
+fn sections(list: *std.ArrayList(u8)) !ra8.session.dwarf_line.Sections {
     try unit(list, 4, 2, tables, &program);
     return .{ .line = list.items };
 }
@@ -40,12 +40,12 @@ test "a line without code falls to the next one, and past the last is none" {
 }
 
 test "a file is found by name, path tail or whole path, never a partial name" {
-    const relative = ra8.core.dwarf_line.File{ .directory = "src", .name = "main.c" };
+    const relative = ra8.session.dwarf_line.File{ .directory = "src", .name = "main.c" };
     try std.testing.expect(find.named(relative, "main.c"));
     try std.testing.expect(find.named(relative, "src/main.c"));
     try std.testing.expect(!find.named(relative, "ain.c"));
     try std.testing.expect(!find.named(relative, "lib/main.c"));
-    const absolute = ra8.core.dwarf_line.File{ .directory = "src", .name = "/abs/boot.s" };
+    const absolute = ra8.session.dwarf_line.File{ .directory = "src", .name = "/abs/boot.s" };
     try std.testing.expect(find.named(absolute, "boot.s"));
     try std.testing.expect(find.named(absolute, "abs/boot.s"));
     try std.testing.expect(find.named(absolute, "/abs/boot.s"));
@@ -72,10 +72,10 @@ test "a break on a function's entry moves past the prologue, or is refused befor
     var list: std.ArrayList(u8) = .empty;
     defer list.deinit(std.testing.allocator);
     try unit(&list, 4, 2, entry_tables, &entry_program);
-    const s = ra8.core.dwarf_line.Sections{ .line = list.items };
+    const s = ra8.session.dwarf_line.Sections{ .line = list.items };
     try std.testing.expectEqual(@as(?u32, 0x1002), try find.prologueEnd(s, 0x1000, 0x1004));
     try std.testing.expectEqual(@as(?u32, null), try find.prologueEnd(s, 0x1003, 0x1004));
-    const function = ra8.core.dwarf_info.Function{ .low = 0x1000, .high = 0x1004, .decl_line = 2 };
+    const function = ra8.session.dwarf_info.Function{ .low = 0x1000, .high = 0x1004, .decl_line = 2 };
     try std.testing.expectEqual(@as(?u32, 0x1002), session_source.settle(s, 0x1000, function, 2));
     try std.testing.expectEqual(@as(?u32, null), session_source.settle(s, 0x1000, function, 1));
     try std.testing.expectEqual(@as(?u32, 0x1002), session_source.settle(s, 0x1002, function, 4));

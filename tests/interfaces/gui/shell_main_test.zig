@@ -3,10 +3,11 @@
 //! and the whole run on a window the test hands in.
 const std = @import("std");
 const ra8 = @import("ra8");
-const shell_main = ra8.core.shell_main;
-const Profile = ra8.core.host_profiles.Profile;
-const platform = ra8.gui.platform;
-const Headless = ra8.gui.headless.Headless;
+const gui_app = @import("gui_app");
+const shell_main = gui_app.shell_main;
+const Profile = ra8.host.host_profiles.Profile;
+const platform = gui_app.platform;
+const Headless = gui_app.headless.Headless;
 
 /// No RA8_HOSTS or HOME: every lookup goes through --hosts or fails.
 const empty_env: std.process.Environ.Map = .{ .array_hash_map = .empty, .allocator = std.testing.allocator };
@@ -128,7 +129,7 @@ const Window = struct {
         return inner.?.platform().scale();
     }
 
-    fn present(_: *anyopaque, frame: *const ra8.gui.raster.Framebuffer) anyerror!void {
+    fn present(_: *anyopaque, frame: *const ra8.render.raster.Framebuffer) anyerror!void {
         presents += 1;
         return inner.?.platform().present(frame);
     }
@@ -157,18 +158,18 @@ test "--frames ends a window nobody closes, after that many frames with the imag
 
 test "--frames fails once the session is gone instead of waiting for a load" {
     const gpa = std.testing.allocator;
-    var session: ra8.core.local_session.LocalSession = undefined;
+    var session: gui_app.local_session.LocalSession = undefined;
     try session.open(gpa, std.testing.io, image);
     defer session.deinit();
-    const Env = ra8.interfaces.rpc.session.Client.Env;
+    const Env = ra8.rpc.session_rpc.Client.Env;
     const rx = try gpa.alloc(u8, 2 * Env.max_frame);
     defer gpa.free(rx);
     const tx = try gpa.alloc(u8, Env.max_frame);
     defer gpa.free(tx);
-    var link: ra8.gui.session_link.Link = undefined;
+    var link: gui_app.session_link.Link = undefined;
     link.open(session.transport(), rx, tx);
     link.close();
-    var shell = ra8.gui.shell_loop.Shell.init(gpa, try ra8.gui.pane_layout.twoCore(gpa));
+    var shell = gui_app.shell_loop.Shell.init(gpa, try gui_app.pane_layout.twoCore(gpa));
     defer shell.deinit();
     shell.link = &link;
     var window = Headless.init(gpa, 480, 320);

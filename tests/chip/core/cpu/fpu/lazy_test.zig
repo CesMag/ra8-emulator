@@ -3,8 +3,8 @@
 //! frame (S0 at FPCAR, FPSCR at +0x40, VPR at +0x44).
 const std = @import("std");
 const ra8 = @import("ra8");
-const lazy = ra8.core.fpu.lazy;
-const State = ra8.core.fpu.state.State;
+const lazy = ra8.chip.core.cpu.fpu.lazy;
+const State = ra8.chip.core.cpu.fpu.state.State;
 const fixture = @import("../exception/ram.zig");
 
 fn sample() State {
@@ -84,7 +84,7 @@ test "a Secure context with FPCCR.TS also writes S16-S31 from 0x48" {
     try std.testing.expectEqual(@as(u32, 0x4000_001F), ram.word(at + 0x84));
 }
 
-const cpu_mod = ra8.core.cpu.cpu;
+const cpu_mod = ra8.chip.core.cpu.cpu;
 const Gate = cpu_mod.data_gate.Gate;
 /// Everything from here up is Secure; below it is Non-secure.
 const secure_from: u32 = fixture.base + 0x300;
@@ -119,7 +119,7 @@ fn behindGate(ram: *fixture.Ram, gate: *Gate, at: u32, s: u1) !void {
 test "a Non-secure context's push into Secure memory is LSPERR and writes nothing" {
     var ram: fixture.Ram = .{};
     var split: Split = .{};
-    var current: ra8.core.banked.State = .non_secure;
+    var current: ra8.chip.core.banked.State = .non_secure;
     var gate: Gate = .{ .source = split.source(), .current = &current };
     try std.testing.expectError(error.LazyPreserveError, behindGate(&ram, &gate, secure_from, 0));
     try std.testing.expectEqual(@as(u32, 0), ram.word(secure_from));
@@ -133,7 +133,7 @@ test "a Non-secure context's push into Secure memory is LSPERR and writes nothin
 test "a Non-secure context's push into Non-secure memory lands" {
     var ram: fixture.Ram = .{};
     var split: Split = .{};
-    var current: ra8.core.banked.State = .non_secure;
+    var current: ra8.chip.core.banked.State = .non_secure;
     var gate: Gate = .{ .source = split.source(), .current = &current };
     const at = secure_from - 0x48;
     try behindGate(&ram, &gate, at, 0);
@@ -143,7 +143,7 @@ test "a Non-secure context's push into Non-secure memory lands" {
 test "a Secure context's push lands in Secure memory while Non-secure code runs" {
     var ram: fixture.Ram = .{};
     var split: Split = .{};
-    var current: ra8.core.banked.State = .non_secure;
+    var current: ra8.chip.core.banked.State = .non_secure;
     var gate: Gate = .{ .source = split.source(), .current = &current };
     try behindGate(&ram, &gate, secure_from, 1);
     try std.testing.expectEqual(@as(u32, 0x3F80_0000), ram.word(secure_from));

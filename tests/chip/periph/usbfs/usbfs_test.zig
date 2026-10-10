@@ -2,8 +2,8 @@
 //! INTSTS0 flags a driver clears, and the shadow behind the rest.
 const std = @import("std");
 const ra8 = @import("ra8");
-const usbfs = ra8.periph.usbfs;
-const regs = ra8.periph.usbhs_regs;
+const usbfs = ra8.chip.periph.usbfs;
+const regs = ra8.chip.periph.usbhs_regs;
 
 fn at(offset: u32) u32 {
     return usbfs.window.base + offset;

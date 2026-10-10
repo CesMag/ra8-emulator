@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/ops/fp_mem.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const fp_mem = ra8.core.cpu.ops.fp_mem;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const fp_mem = ra8.chip.core.cpu.ops.fp_mem;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
 
 /// 64 bytes of RAM at 0x2000_0000.
 const Ram = struct {
@@ -200,7 +200,7 @@ test "VLDR and VSTR system registers cover each register and addressing form" {
             const base = Ram.base + 16;
             const address = expectedAddress(base, form);
             cpu.regs.set(0, base);
-            cpu.regs.control |= ra8.core.cpu.regs.control_bits.fpca | ra8.core.cpu.regs.control_bits.sfpa;
+            cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.fpca | ra8.chip.core.cpu.regs.control_bits.sfpa;
             cpu.fp.fpscr = Fpscr.fromBits(stored);
             cpu.fp.vpr = @bitCast(stored);
 
@@ -246,10 +246,10 @@ test "inactive FPCXT_NS VLDR skips ExecuteFPCheck and memory access" {
     cpu.regs.set(0, Ram.base + 16);
     cpu.fp.fpscr = Fpscr.fromBits(0x1234_5678);
     const instr = systemInstr(system_registers[4], address_forms[1], true);
-    const exec = ra8.core.cpu.decode.decode(instr).?.exec;
+    const exec = ra8.chip.core.cpu.decode.decode(instr).?.exec;
     try exec(&cpu, instr);
     try std.testing.expectEqual(@as(u32, 0x1234_5678) & 0xFFCF_009F, cpu.fp.fpscr.bits());
-    try std.testing.expectEqual(@as(u32, 0), cpu.regs.control & ra8.core.cpu.regs.control_bits.fpca);
+    try std.testing.expectEqual(@as(u32, 0), cpu.regs.control & ra8.chip.core.cpu.regs.control_bits.fpca);
     try std.testing.expectEqual(Ram.base + 24, cpu.regs.get(0));
 }
 
@@ -258,7 +258,7 @@ test "VLDR VPR runs unprivileged and keeps the reserved bits zero" {
     var cpu: Cpu = .{ .bus = ram.view() };
     const base = Ram.base + 16;
     cpu.regs.set(0, base);
-    cpu.regs.control |= ra8.core.cpu.regs.control_bits.fpca | ra8.core.cpu.regs.control_bits.npriv;
+    cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.fpca | ra8.chip.core.cpu.regs.control_bits.npriv;
     ram.put(base + 8, 0xFF12_3456);
     try run(&cpu, systemInstr(system_registers[2], address_forms[0], true));
     try std.testing.expectEqual(@as(u32, 0x0012_3456), @as(u32, @bitCast(cpu.fp.vpr)));

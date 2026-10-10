@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/reduce_minmax.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rm = ra8.core.mve.reduce_minmax;
+const rm = ra8.chip.core.cpu.mve.reduce_minmax;
 
 const a: u128 = 0x80000000_7FFFFFFF_00FF7F80_FFFF0001;
 

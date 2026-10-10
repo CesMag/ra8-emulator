@@ -1,9 +1,9 @@
 //! Covers src/interfaces/cli/report/part.zig: the part line a non-default
 //! run prints, and that the default part prints none.
 const std = @import("std");
-const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const report_part = ra8.board.report_part;
+const report_part = cli_app.report_part;
 
 test "an RA8P1 run names its part and its cited geometry" {
     var buf: [256]u8 = undefined;

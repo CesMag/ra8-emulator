@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/instr.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Instr = ra8.core.cpu.instr.Instr;
+const bus = ra8.chip.core.cpu.bus;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 const Rom = struct {
     bytes: []const u8,

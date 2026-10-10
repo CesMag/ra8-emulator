@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const exception = ra8.core.unwind.exception;
+const exception = ra8.session.unwind.exception;
 
 const Memory = struct {
     base: u32,

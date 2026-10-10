@@ -5,8 +5,8 @@ const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
 const Fake = @import("exception/fake_source.zig").Fake;
 const file = ra8.snapshot.file;
-const snap = ra8.snapshot.cpu;
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const snap = ra8.chip.core.cpu.cpu_snapshot;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 
 const pendsv: u9 = 14;
 
@@ -31,7 +31,7 @@ fn expectSame(want: *const Cpu, got: *const Cpu) !void {
     try std.testing.expectEqualDeep(want.banked, got.banked);
     try std.testing.expectEqual(want.retired, got.retired);
     try std.testing.expectEqual(want.active.depth, got.active.depth);
-    try std.testing.expectEqualSlices(ra8.core.cpu.exception.active.Entry, want.active.stack[0..want.active.depth], got.active.stack[0..got.active.depth]);
+    try std.testing.expectEqualSlices(ra8.chip.core.cpu.exception.active.Entry, want.active.stack[0..want.active.depth], got.active.stack[0..got.active.depth]);
     try std.testing.expectEqual(want.waiting, got.waiting);
     try std.testing.expectEqual(want.exclusive, got.exclusive);
 }

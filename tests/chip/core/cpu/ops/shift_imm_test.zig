@@ -1,13 +1,13 @@
 //! Covers src/chip/core/cpu/ops/shift_imm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const regs = ra8.core.cpu.regs;
-const flags = ra8.core.cpu.flags;
-const shift_imm = ra8.core.cpu.ops.shift_imm;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const regs = ra8.chip.core.cpu.regs;
+const flags = ra8.chip.core.cpu.flags;
+const shift_imm = ra8.chip.core.cpu.ops.shift_imm;
 
 fn run(cpu: *Cpu, hw1: u16) !void {
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
     const exec = shift_imm.group.decode(instr) orelse return error.NotClaimed;
     try exec(cpu, instr);
 }

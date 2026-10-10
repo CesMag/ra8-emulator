@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const ulpt = ra8.periph.ulpt;
+const ulpt = ra8.chip.periph.ulpt;
 
 const ch0 = ulpt.win_base;
 const ch1 = ulpt.win_base + ulpt.stride;

@@ -5,13 +5,12 @@
 //! no longer draws it. Every run sets its clip rect and then draws its
 //! indices, blending straight alpha source-over as raster.zig does.
 const std = @import("std");
-const ra8 = @import("ra8");
+const render = @import("ra8_render");
 const c = @import("sdl_c.zig").c;
 
-const gui = ra8.gui;
-const geometry = gui.geometry;
-const draw_list = gui.draw_list;
-const raster = gui.raster;
+const geometry = render.geometry;
+const draw_list = render.draw_list;
+const raster = render.raster;
 
 pub const Error = error{ SdlTexture, SdlDraw, OutOfMemory };
 

@@ -3,9 +3,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const console = ra8.core.rsp_dispatch.console;
-const itm = ra8.core.itm;
-const packet = ra8.core.rsp_packet;
+const console = ra8.gdb.rsp_dispatch.console;
+const itm = ra8.chip.periph.itm;
+const packet = ra8.gdb.rsp_packet;
 
 fn enabled() itm.Itm {
     var unit = itm.Itm{};

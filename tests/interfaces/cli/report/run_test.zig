@@ -2,9 +2,10 @@
 //! `--cpu zig` run prints after the core stops.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const report_run = ra8.board.report_run;
-const Store = ra8.core.cpu.memory.store.Store;
+const report_run = cli_app.report_run;
+const Store = ra8.chip.core.cpu.memory.store.Store;
 
 /// Run `zigCore` on a fresh board into a scratch file and return what it wrote.
 fn zigReport(buf: []u8) ![]const u8 {
@@ -12,12 +13,12 @@ fn zigReport(buf: []u8) ![]const u8 {
 }
 
 /// The same, with a timebase the caller has already charged.
-fn zigReportWith(buf: []u8, timebase: ra8.periph.clocks.Clocks) ![]const u8 {
+fn zigReportWith(buf: []u8, timebase: ra8.chip.periph.clocks.Clocks) ![]const u8 {
     // Attaching wires the blocks to their power domains, which the report
     // reads; a zig run attaches them over CPU0's own store.
     var store = try Store.init(null);
     defer store.deinit();
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try ra8.board.wiring.attachBlocks(&board, .{ .store = &store });
     var dir = std.testing.tmpDir(.{});
@@ -47,7 +48,7 @@ test "a quiet board prints no console line" {
 }
 
 /// Run `busErrors` into a scratch file and return what it wrote.
-fn busLine(buf: []u8, tally: ra8.periph.fault_status.bus.Tally) ![]const u8 {
+fn busLine(buf: []u8, tally: ra8.chip.periph.fault_status.bus.Tally) ![]const u8 {
     var dir = std.testing.tmpDir(.{});
     defer dir.cleanup();
     const file = try dir.dir.createFile(std.testing.io, "bus.txt", .{ .read = true });

@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/bkup/bkup_pcr1.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const pcr1 = ra8.periph.bkup.pcr1;
-const prcr = ra8.periph.prcr;
+const pcr1 = ra8.chip.periph.bkup.pcr1;
+const prcr = ra8.chip.periph.prcr;
 
 const Fixture = struct {
     protection: prcr.Prcr,
@@ -56,7 +56,7 @@ test "BPWSWSTP stops the switch and clearing it enables it again" {
 }
 
 test "the block puts VBTBPCR1 on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var fix: Fixture = undefined;
     fix.init();

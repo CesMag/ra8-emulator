@@ -1,7 +1,7 @@
 //! The run, step, step over, step out, continue and halt decisions.
 const std = @import("std");
 const ra8 = @import("ra8");
-const stop_machine = ra8.core.stop_machine;
+const stop_machine = ra8.session.stop_machine;
 const Machine = stop_machine.Machine;
 const Event = stop_machine.Event;
 
@@ -118,19 +118,19 @@ test "a halt request on a halted session is dropped" {
 
 test "a watched write stops after the instruction that made it" {
     var machine = Machine{};
-    const id = try machine.watches.add(try ra8.core.watch_table.Watch.span(0x2000_0040, 4, .write));
+    const id = try machine.watches.add(try ra8.session.watch_table.Watch.span(0x2000_0040, 4, .write));
     machine.proceed();
     _ = machine.onInstruction(at(0x100));
     try std.testing.expectEqual(@as(?stop_machine.Stop, null), machine.onInstruction(at(0x102)));
     machine.onAccess(0x2000_0040, 4, .write, null);
     const stop = machine.onInstruction(at(0x104)).?;
     try std.testing.expectEqual(id, stop.watchpoint.id);
-    try std.testing.expectEqual(ra8.core.watch_table.Access.write, stop.watchpoint.access);
+    try std.testing.expectEqual(ra8.session.watch_table.Access.write, stop.watchpoint.access);
 }
 
 test "a watched access on a halted session is ignored" {
     var machine = Machine{};
-    _ = try machine.watches.add(try ra8.core.watch_table.Watch.span(0x2000_0040, 4, .access));
+    _ = try machine.watches.add(try ra8.session.watch_table.Watch.span(0x2000_0040, 4, .access));
     machine.onAccess(0x2000_0040, 4, .read, null);
     machine.step();
     _ = machine.onInstruction(at(0x100));
@@ -139,7 +139,7 @@ test "a watched access on a halted session is ignored" {
 
 test "resuming clears a watch stop that was already reported" {
     var machine = Machine{};
-    _ = try machine.watches.add(try ra8.core.watch_table.Watch.span(0x2000_0040, 4, .write));
+    _ = try machine.watches.add(try ra8.session.watch_table.Watch.span(0x2000_0040, 4, .write));
     machine.proceed();
     _ = machine.onInstruction(at(0x100));
     machine.onAccess(0x2000_0040, 4, .write, null);
@@ -151,7 +151,7 @@ test "resuming clears a watch stop that was already reported" {
 
 test "a comparator the firmware enabled in the core's FPB stops the run there" {
     var machine = Machine{};
-    const fpb = ra8.core.fpb;
+    const fpb = ra8.session.fpb;
     _ = machine.fpb.write(fpb.offsets.comp0 + 4, 0x108 | fpb.comp_enable);
     machine.proceed();
     try std.testing.expectEqual(@as(?stop_machine.Stop, null), machine.onInstruction(at(0x100)));
@@ -162,7 +162,7 @@ test "a comparator the firmware enabled in the core's FPB stops the run there" {
 
 test "a halting DWT data comparator stops the run once the access retired" {
     var machine = Machine{};
-    const dwt = ra8.core.dwt;
+    const dwt = ra8.chip.periph.dwt;
     machine.dwt.trcena = true;
     _ = machine.dwt.write(dwt.offsets.comp0, 0x2000_1000);
     _ = machine.dwt.write(dwt.offsets.function0, dwt.match.data_write | (dwt.function_bits.action_debug << dwt.function_bits.action_shift) | (2 << dwt.function_bits.size_shift));
@@ -175,7 +175,7 @@ test "a halting DWT data comparator stops the run once the access retired" {
 
 test "with halting debug off, an FPB match runs on and is held for DebugMonitor" {
     var machine = Machine{ .halting = false };
-    const fpb = ra8.core.fpb;
+    const fpb = ra8.session.fpb;
     _ = machine.fpb.write(fpb.offsets.comp0, 0x108 | fpb.comp_enable);
     _ = machine.fpb.write(fpb.offsets.ctrl, fpb.ctrl_bits.enable | fpb.ctrl_bits.key);
     machine.proceed();
@@ -187,7 +187,7 @@ test "with halting debug off, an FPB match runs on and is held for DebugMonitor"
 
 test "with DHCSR.C_STEP set, a resume runs one instruction and halts" {
     var machine = Machine{};
-    const dcb = ra8.core.dcb;
+    const dcb = ra8.chip.periph.dcb;
     const keyed = dcb.dhcsr_bits.key << dcb.dhcsr_bits.key_shift;
     machine.dcb.attachDebugger();
     _ = machine.dcb.write(dcb.offsets.dhcsr, keyed | dcb.dhcsr_bits.c_debugen | dcb.dhcsr_bits.c_step);
@@ -202,7 +202,7 @@ test "with DHCSR.C_STEP set, a resume runs one instruction and halts" {
 
 test "C_STEP written without a debugger attached is ignored" {
     var machine = Machine{};
-    const dcb = ra8.core.dcb;
+    const dcb = ra8.chip.periph.dcb;
     const keyed = dcb.dhcsr_bits.key << dcb.dhcsr_bits.key_shift;
     _ = machine.dcb.write(dcb.offsets.dhcsr, keyed | dcb.dhcsr_bits.c_step);
     machine.proceed();
@@ -212,7 +212,7 @@ test "C_STEP written without a debugger attached is ignored" {
 
 test "breaks and watches are numbered from one sequence" {
     var machine = Machine{};
-    const watch = try ra8.core.watch_table.Watch.span(0x2200_0054, 4, .write);
+    const watch = try ra8.session.watch_table.Watch.span(0x2200_0054, 4, .write);
     try std.testing.expectEqual(@as(u32, 1), try machine.addBreak(.{ .address = 0x2200_0008 }));
     try std.testing.expectEqual(@as(u32, 2), try machine.addWatch(watch));
     try std.testing.expectEqual(@as(u32, 3), try machine.addBreak(.{ .address = 0x2200_0010 }));

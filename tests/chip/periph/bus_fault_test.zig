@@ -2,9 +2,9 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const bus = ra8.periph.fault_status.bus;
-const Nvic = ra8.periph.nvic.Nvic;
+const memmap = ra8.chip.core.memmap;
+const bus = ra8.chip.periph.fault_status.bus;
+const Nvic = ra8.chip.periph.nvic.Nvic;
 
 const FakeCore = @import("fake_core.zig").FakeCore;
 

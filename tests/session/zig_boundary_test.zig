@@ -2,12 +2,12 @@
 //! board's boundary by what each chunk retired (RA8EMU-709).
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const zig_core = ra8.core.step_hook.zig_core;
-const zig_boundary = ra8.core.step_hook.zig_boundary;
-const zig_session = ra8.core.step_hook.zig_session;
-const Machine = ra8.core.stop_machine.Machine;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const zig_core = ra8.session.step_hook.zig_core;
+const zig_boundary = ra8.session.step_hook.zig_boundary;
+const zig_session = ra8.session.step_hook.zig_session;
+const Machine = ra8.session.stop_machine.Machine;
 
 /// 64 bytes of RAM at address 0, the vector table first.
 const Ram = struct {

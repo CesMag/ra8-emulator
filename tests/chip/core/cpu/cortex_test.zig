@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Cortex = ra8.core.cpu.cortex.Cortex;
+const Cortex = ra8.chip.core.cpu.cortex.Cortex;
 
 test "the register enum names every register the debugger and report read" {
     try std.testing.expectEqual(@as(usize, 59), @typeInfo(Cortex).@"enum".field_names.len);

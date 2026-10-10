@@ -2,10 +2,10 @@
 //! arm-none-eabi-as -march=armv8.1-m.main.
 const std = @import("std");
 const ra8 = @import("ra8");
-const clrm = ra8.core.cpu.ops.clrm;
-const table = ra8.core.cpu.ops.table;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
+const clrm = ra8.chip.core.cpu.ops.clrm;
+const table = ra8.chip.core.cpu.ops.table;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const fixture = @import("../exception/ram.zig");
 
 fn wide(hw2: u16) Instr {

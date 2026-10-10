@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const mode = ra8.periph.lpm_mode;
+const mode = ra8.chip.periph.lpm_mode;
 
 test "the five LPMD codes the HUM defines resolve" {
     try std.testing.expectEqual(mode.Mode.active, mode.modeOf(0x0).?);

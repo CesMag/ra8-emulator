@@ -1,8 +1,8 @@
 //! The MPU window: the region count it reports, and the table it captures.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mpu = ra8.periph.mpu;
-const memmap = ra8.core.memmap;
+const mpu = ra8.chip.periph.mpu;
+const memmap = ra8.chip.core.memmap;
 
 /// A stand-in for the core that holds the PPB words the block reads and writes.
 const FakePpb = struct {

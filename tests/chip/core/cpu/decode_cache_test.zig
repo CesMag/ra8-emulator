@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/decode_cache.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const decode = ra8.core.cpu.decode;
+const decode = ra8.chip.core.cpu.decode;
 const DecodeCache = decode.cache.DecodeCache;
-const Instr = ra8.core.cpu.instr.Instr;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 const nop: Instr = .{ .address = 0x0200_0100, .hw1 = 0xBF00, .size = 2 };
 const movs: Instr = .{ .address = 0x0200_0100, .hw1 = 0x2001, .size = 2 };

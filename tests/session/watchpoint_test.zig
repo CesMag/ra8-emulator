@@ -2,7 +2,7 @@
 //! and the spellings that watch nothing at all.
 const std = @import("std");
 const ra8 = @import("ra8");
-const watchpoint = ra8.core.watchpoint;
+const watchpoint = ra8.session.watchpoint;
 
 test "a store records its pc, its value and its width" {
     var watched = watchpoint.Watched{ .address = 0x2204_00A0 };
@@ -97,82 +97,82 @@ test "the window is a word wide" {
 }
 
 test "nothing named is nothing watched" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     try std.testing.expect(watchpoint.resolve(image, null) == null);
 }
 
 test "a literal place resolves without a symbol table" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     const watched = watchpoint.resolve(image, "0x220400A0") orelse return error.NotResolved;
     try std.testing.expectEqual(@as(u32, 0x2204_00A0), watched.address);
 }
 
 test "a name the image does not carry watches nothing" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     try std.testing.expect(watchpoint.resolve(image, "g_missing") == null);
 }
 
 test "a dereferencing place watches nothing" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     try std.testing.expect(watchpoint.resolve(image, "@0x220400A0+0x10") == null);
 }
 
 test "an offset is applied to a literal base" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     const watched = watchpoint.resolve(image, "0x22040000+0xA0") orelse return error.NotResolved;
     try std.testing.expectEqual(@as(u32, 0x2204_00A0), watched.address);
 }
 
 test "a watch nothing wrote to still prints its place" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();
     const watched = watchpoint.Watched{ .address = 0x2204_00A0 };
@@ -182,15 +182,15 @@ test "a watch nothing wrote to still prints its place" {
 }
 
 test "no watch prints nothing at all" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();
     try watchpoint.print(&out.writer, image, null, null);
@@ -198,15 +198,15 @@ test "no watch prints nothing at all" {
 }
 
 test "a place written in a loop reports its last store, not just its first" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     @memset(&buffer, 0);
-    const head: *align(1) ra8.image.elf.Header =
-        std.mem.bytesAsValue(ra8.image.elf.Header, &buffer);
+    const head: *align(1) ra8.board.image.elf.Header =
+        std.mem.bytesAsValue(ra8.board.image.elf.Header, &buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    const image = try ra8.image.elf.Image.init(&buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    const image = try ra8.board.image.elf.Image.init(&buffer);
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();
     var watched = watchpoint.Watched{ .address = 0x2204_00A0 };

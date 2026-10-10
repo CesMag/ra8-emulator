@@ -2,9 +2,10 @@
 //! the end-of-run report names, lowest first, capped at the limit.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const report_unmodelled = ra8.board.report_unmodelled;
-const Bus = ra8.periph.registry.Bus;
+const report_unmodelled = cli_app.report_unmodelled;
+const Bus = ra8.chip.periph.registry.Bus;
 
 test "lists unmodelled addresses lowest first with how they were touched" {
     var bus = Bus.init(std.testing.allocator);

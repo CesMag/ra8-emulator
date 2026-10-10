@@ -2,9 +2,9 @@
 //! context in front of a gated group, per the Arm ARM (DDI0553).
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const ops = ra8.core.cpu.ops;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const ops = ra8.chip.core.cpu.ops;
 const fpca: u32 = 1 << 2;
 
 const gated = ops.fp_gate.gated(ops.fp_arith.group);
@@ -21,7 +21,7 @@ fn run(cpu: *Cpu, hw1: u16, hw2: u16) !void {
 
 fn fresh() Cpu {
     var cpu: Cpu = .{ .bus = undefined };
-    cpu.fp.cpacr = ra8.core.fpu.cpacr.full_access;
+    cpu.fp.cpacr = ra8.chip.core.cpu.fpu.cpacr.full_access;
     return cpu;
 }
 
@@ -38,7 +38,7 @@ test "the first FP op sets FPCA and seeds FPSCR from FPDSCR before it runs" {
     cpu.fp.bank.writeS(1, 0x3F80_0000); // 1.0
     cpu.fp.bank.writeS(2, 0x3380_0000); // 2^-24
     try run(&cpu, 0xEE30, 0x0A81); // vadd.f32 s0, s1, s2
-    try std.testing.expectEqual(fpca | ra8.core.cpu.regs.control_bits.sfpa, cpu.regs.control & (fpca | ra8.core.cpu.regs.control_bits.sfpa));
+    try std.testing.expectEqual(fpca | ra8.chip.core.cpu.regs.control_bits.sfpa, cpu.regs.control & (fpca | ra8.chip.core.cpu.regs.control_bits.sfpa));
     try std.testing.expectEqual(@as(u1, 1), cpu.fp.context.fpccr.s);
     // Rounded towards zero, so the sum stays 1.0 and only IXC is set.
     try std.testing.expectEqual(@as(u32, 0x3F80_0000), cpu.fp.bank.readS(0));
@@ -47,7 +47,7 @@ test "the first FP op sets FPCA and seeds FPSCR from FPDSCR before it runs" {
 
 test "with FPCA already set the FPSCR carries over" {
     var cpu = fresh();
-    cpu.regs.control = fpca | ra8.core.cpu.regs.control_bits.sfpa;
+    cpu.regs.control = fpca | ra8.chip.core.cpu.regs.control_bits.sfpa;
     cpu.fp.context.writeFpdscr(0x00C0_0000);
     cpu.fp.fpscr = @bitCast(@as(u32, 0x8004_0000));
     cpu.fp.bank.writeS(1, 0x3F80_0000);
@@ -66,7 +66,7 @@ test "ASPEN clear leaves CONTROL alone" {
 
 test "the decode table routes FP encodings through the gate" {
     var cpu = fresh();
-    const hit = ra8.core.cpu.decode.decode(wide(0xEE30, 0x0A81)) orelse return error.NotClaimed;
+    const hit = ra8.chip.core.cpu.decode.decode(wide(0xEE30, 0x0A81)) orelse return error.NotClaimed;
     try hit.exec(&cpu, wide(0xEE30, 0x0A81));
     try std.testing.expectEqual(fpca, cpu.regs.control & fpca);
 }
@@ -144,15 +144,15 @@ test "Secure gate reopens context when FPCA is set but SFPA is clear" {
     cpu.fp.bank.writeS(2, 0x3F80_0000);
     try run(&cpu, 0xEE30, 0x0A81);
     try std.testing.expectEqual(
-        fpca | ra8.core.cpu.regs.control_bits.sfpa,
-        cpu.regs.control & (fpca | ra8.core.cpu.regs.control_bits.sfpa),
+        fpca | ra8.chip.core.cpu.regs.control_bits.sfpa,
+        cpu.regs.control & (fpca | ra8.chip.core.cpu.regs.control_bits.sfpa),
     );
     try std.testing.expectEqual(@as(u32, 1), cpu.fp.context.fpccr.s);
     try std.testing.expectEqual(@as(u32, 0x00C4_0000), cpu.fp.fpscr.bits());
     try std.testing.expectEqual(@as(u32, 0), @as(u32, @bitCast(cpu.fp.vpr)));
 }
 
-const memmap = ra8.core.memmap;
+const memmap = ra8.chip.core.memmap;
 const usage_handler: u32 = fixture.base + 0x1C0;
 const hard_handler: u32 = fixture.base + 0x1E0;
 const usgfaultena: u32 = 1 << 18;
@@ -177,7 +177,7 @@ fn faddOn(ram: *fixture.Ram, cpacr: u32, usage: bool) !Cpu {
 test "CPACR.CP10 off: an FP op takes UsageFault.NOCP and touches no FP state" {
     var ram: fixture.Ram = .{};
     var cpu = try faddOn(&ram, 0, true);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(nocp_bit, ram.word(memmap.scb.cfsr));
     try std.testing.expectEqual(fixture.code, ram.word(cpu.regs.sp() + 24));
@@ -189,15 +189,15 @@ test "privileged-only CPACR.CP10 refuses unprivileged Thread mode" {
     var ram: fixture.Ram = .{};
     var cpu = try faddOn(&ram, 0x0050_0000, true);
     cpu.regs.control |= 1; // nPRIV
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(nocp_bit, ram.word(memmap.scb.cfsr));
 }
 
 test "CPACR.CP10 on: the same op runs" {
     var ram: fixture.Ram = .{};
-    var cpu = try faddOn(&ram, ra8.core.fpu.cpacr.full_access, true);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    var cpu = try faddOn(&ram, ra8.chip.core.cpu.fpu.cpacr.full_access, true);
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.code + 4, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 0x4000_0000), cpu.fp.bank.readS(0));
     try std.testing.expectEqual(@as(u32, 0), ram.word(memmap.scb.cfsr));
@@ -206,7 +206,7 @@ test "CPACR.CP10 on: the same op runs" {
 test "NOCP with USGFAULTENA clear escalates to HardFault with HFSR.FORCED" {
     var ram: fixture.Ram = .{};
     var cpu = try faddOn(&ram, 0, false);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(hard_handler, cpu.regs.pc);
     try std.testing.expectEqual(nocp_bit, ram.word(memmap.scb.cfsr));
     try std.testing.expectEqual(forced, ram.word(memmap.scb.hfsr));

@@ -1,7 +1,7 @@
 //! Covers src/board/run/speed.zig and Pacer.setSpeed (RA8EMU-184).
 const std = @import("std");
 const ra8 = @import("ra8");
-const clocks = ra8.periph.clocks;
+const clocks = ra8.chip.periph.clocks;
 const time_policy = ra8.board.run;
 
 const speed = time_policy.speed;

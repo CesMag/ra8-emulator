@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/memory/extra.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const extra = ra8.core.cpu.memory.extra;
+const extra = ra8.chip.core.cpu.memory.extra;
 
 test "a mapped window reads zero and answers inside its range only" {
     var windows: extra.Extra = .{};

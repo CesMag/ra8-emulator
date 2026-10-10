@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/cpu_ctrl.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const cpu_ctrl = ra8.periph.cpu_ctrl;
+const cpu_ctrl = ra8.chip.periph.cpu_ctrl;
 
 fn at(offset: u32) u32 {
     return cpu_ctrl.win_base + offset;

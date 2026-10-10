@@ -3,14 +3,14 @@
 //! conformance vectors' job, so this file checks the decoded fields.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Instr = ra8.core.cpu.instr.Instr;
-const mve_shift_imm = ra8.core.cpu.ops.mve_shift_imm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const mve_shift_imm = ra8.chip.core.cpu.ops.mve_shift_imm;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0x100, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 
-fn expectFields(hw1: u16, hw2: u16, kind: mve_shift_imm.Kind, size: ra8.core.mve.qreg.Size, amount: u6) !void {
+fn expectFields(hw1: u16, hw2: u16, kind: mve_shift_imm.Kind, size: ra8.chip.core.cpu.mve.qreg.Size, amount: u6) !void {
     const f = mve_shift_imm.fields(wide(hw1, hw2)) orelse return error.NotClaimed;
     try std.testing.expectEqual(kind, f.kind);
     try std.testing.expectEqual(size, f.size);

@@ -9,33 +9,51 @@ writing code here.
 ADR 0004 (knowledge base article RA8EMU-A-2) sets the layout. The chip is a
 standalone library, the board library uses the chip plus pluggable
 components, and the CLI and the GUI are separate applications over one
-embedding API. Each library is a named build module. Code in one library
-imports another by module name (`@import("ra8_chip")`), never by a relative
-path that leaves its own directory. Zig refuses a file import outside a
-module's root directory, so the compiler enforces these edges:
+embedding API. Each library and each application is a named build module.
+Code in one module imports another by module name (`@import("ra8_chip")`),
+never by a relative path that leaves its own directory. Zig refuses a file
+import outside a module's root directory and a module name build.zig did not
+give it, so the compiler enforces these edges. The table is what build.zig
+declares:
 
 ```
-ra8_host        src/host/             std only: sockets, console, camera backends, host files
-ra8_snapshot    src/snapshot/         std only: the snapshot format
-ra8_chip        src/chip/             ra8_snapshot
-ra8_components  src/components/       ra8_chip line interfaces, ra8_snapshot
-ra8_board       src/board/            ra8_chip, ra8_components, ra8_snapshot
-ra8_session     src/session/          ra8_board, ra8_chip, ra8_snapshot
-ra8_render      src/interfaces/render/ ra8_session value types, ra8_widget
-ra8_rpc         src/interfaces/rpc/   ra8_session, ra8_host
-ra8_gdb         src/interfaces/gdb/   ra8_session, ra8_host
-ra8_usbip       src/interfaces/usbip/ ra8_board, ra8_host
-cli app         src/interfaces/cli/   the libraries, never the gui app
-gui app         src/interfaces/gui/   the libraries and gui_sdl, never the cli app
+ra8_host        src/host/               std only: sockets, console, camera backends, host files
+ra8_snapshot    src/snapshot/           std only: the snapshot format
+ra8_chip        src/chip/               ra8_snapshot
+ra8_components  src/components/         ra8_chip, ra8_snapshot
+ra8_board       src/board/              ra8_chip, ra8_components, ra8_snapshot
+ra8_session     src/session/            ra8_board, ra8_chip, ra8_components
+ra8_render      src/interfaces/render/  ra8_session, ra8_widget, ra8_widget_host
+ra8_rpc         src/interfaces/rpc/     ra8_session, ra8_components, ra8_host, ra8_rpc_wire
+ra8_gdb         src/interfaces/gdb/     ra8_session, ra8_chip, ra8_host
+ra8_usbip       src/interfaces/usbip/   ra8_board, ra8_chip, ra8_host
+cli_app         src/interfaces/cli/     every library and ra8_rpc_wire, never gui_app
+gui_app         src/interfaces/gui/     ra8_session, ra8_rpc, ra8_render, ra8_components, ra8_host,
+                                        ra8_rpc_wire, ra8_widget; never ra8_board, ra8_chip or cli_app
+gui_sdl         src/interfaces/gui/     the sdl files: gui_app, ra8_render and SDL3
 tests/          one test file per source file, on the mirrored path
 ```
+
+A module imports only modules below it, and only the adapters and the
+applications import `ra8_host`. `ra8_rpc_wire` is ra8-firmware's wire library
+(named `ra8_rpc` there), and `ra8_widget` and `ra8_widget_host` are its widget
+libraries. Every module's root file is `root.zig` in its own directory. Inside
+`ra8_board`, the run policy (pacing, speed, soak) is `src/board/run/` and the
+image loader is `src/board/image/`.
+
+An executable's entry file is a root of its own beside its application
+module: `src/interfaces/cli/main.zig` (ra8_emulator) imports `cli_app` and
+`ra8_host`, and `src/interfaces/gui/main.zig` (ra8_gui) imports `gui_app`,
+`gui_sdl` and `ra8_host`. The GUI reads and changes the machine only through
+the Session API, which is why `gui_app` is given neither the board nor the
+chip.
 
 Nothing below the applications opens host files or devices. A component that
 needs host data declares an interface (a frame source, a byte source, a
 socket), and the application fills it from `ra8_host`. `src/root.zig` is the
-`ra8` umbrella for tests and embedders. It holds module-name re-exports only:
-no file paths, no CLI, no GUI. Scaffolding (hello windows, spikes) does not
-stay in the tree or the build.
+`ra8` umbrella for tests and embedders. It holds one re-export line per
+library and nothing else: no file paths, no CLI, no GUI. Scaffolding (hello
+windows, spikes) does not stay in the tree or the build.
 
 The tree moved to this layout in the order ADR 0004 gives (epic RA8EMU-985).
 New code goes where the ADR puts it.
@@ -90,9 +108,11 @@ src/chip/periph/crc.zig   ->  tests/chip/periph/crc_test.zig
 src/board/image/elf.zig  ->  tests/board/image/elf_test.zig
 ```
 
-`tests/all.zig` is the test root and lists every test file, so `zig build test`
-runs everything. A test file reaches the code under test through the `ra8`
-module (`const crc = ra8.periph.crc;`), never through a relative path into
+`tests/all.zig` and `tests/all_host.zig` are the test roots and between them
+list every test file, so `zig build test` runs everything. A test file reaches
+a library through the `ra8` module (`const crc = ra8.chip.periph.crc;`) and an
+application's files through `cli_app` or `gui_app`
+(`const cli = @import("cli_app").cli;`), never through a relative path into
 `src/`. A decl a test needs is `pub`; a fixture the test owns lives in the test
 file.
 

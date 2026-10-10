@@ -1,15 +1,15 @@
 //! Covers src/chip/periph/ipc/ipc_repeat.zig: which IPC reads repeat unstepped.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ipc = ra8.periph.ipc;
-const sync = ra8.periph.ipc_sync;
+const ipc = ra8.chip.periph.ipc;
+const sync = ra8.chip.periph.ipc_sync;
 
 fn reg(channel: usize, offset: u32) u32 {
     return ipc.channelAddress(channel) + offset;
 }
 
-fn withBus(unit: *ipc.Ipc) !ra8.periph.registry.Bus {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+fn withBus(unit: *ipc.Ipc) !ra8.chip.periph.registry.Bus {
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     errdefer bus.deinit();
     try bus.add(unit.block());
     return bus;

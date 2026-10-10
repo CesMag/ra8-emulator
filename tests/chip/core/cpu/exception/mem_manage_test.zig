@@ -4,12 +4,12 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
-const memmap = ra8.core.memmap;
-const bus = ra8.core.cpu.bus;
-const mpu = ra8.periph.mpu;
-const mpu_check = ra8.core.cpu.board_bus.mpu_check;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Stop = ra8.core.cpu.cpu.Stop;
+const memmap = ra8.chip.core.memmap;
+const bus = ra8.chip.core.cpu.bus;
+const mpu = ra8.chip.periph.mpu;
+const mpu_check = ra8.chip.core.cpu.board_bus.mpu_check;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
 
 const mem_handler: u32 = fixture.base + 0x1C0;
 const hard_handler: u32 = fixture.base + 0x1E0;
@@ -51,7 +51,7 @@ fn unitOf(ctrl: u32) mpu.Mpu {
     return unit;
 }
 
-const Profile = ra8.core.cpu.decode.profile.Profile;
+const Profile = ra8.chip.core.cpu.decode.profile.Profile;
 /// CPU0's profile and CPU1's: every case runs on both.
 const profiles = [_]Profile{ Profile.m85, Profile.m33 };
 /// A privileged-only read-write region, no access to unprivileged code.
@@ -105,7 +105,7 @@ const Rig = struct {
     }
     fn boot(self: *Rig, profile: Profile, instr: u16, address: u32, unprivileged: bool) !Cpu {
         var cpu = try bootWith(&self.ram, &self.guarded, profile, instr, address);
-        if (unprivileged) cpu.regs.control |= ra8.core.cpu.regs.control_bits.npriv;
+        if (unprivileged) cpu.regs.control |= ra8.chip.core.cpu.regs.control_bits.npriv;
         return cpu;
     }
 };

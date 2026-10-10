@@ -1,17 +1,17 @@
 //! Covers src/chip/core/cpu/exception/entry.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.core.cpu.regs;
-const entry = ra8.core.cpu.exception.entry;
+const regs = ra8.chip.core.cpu.regs;
+const entry = ra8.chip.core.cpu.exception.entry;
 const fixture = @import("ram.zig");
-const memmap = ra8.core.memmap;
+const memmap = ra8.chip.core.memmap;
 const stkof: u32 = 1 << 20;
 const usage_fault_enable: u32 = 1 << 18;
 const shcsr_usage_pending: u32 = 1 << 12;
-const dispatch = ra8.core.cpu.exception.dispatch;
-const ExceptionSource = ra8.core.cpu.exception.source.Source;
-const ActiveEntry = ra8.core.cpu.exception.active.Entry;
-const bus = ra8.core.cpu.bus;
+const dispatch = ra8.chip.core.cpu.exception.dispatch;
+const ExceptionSource = ra8.chip.core.cpu.exception.source.Source;
+const ActiveEntry = ra8.chip.core.cpu.exception.active.Entry;
+const bus = ra8.chip.core.cpu.bus;
 
 const PendingException = struct {
     pending: bool = true,
@@ -109,7 +109,7 @@ test "entry with an FP context stacks the extended frame and clears FPCA" {
     cpu.regs.control |= regs.control_bits.fpca;
     for (0..16) |i| cpu.fp.bank.writeS(@intCast(i), 0x4000_0000 + @as(u32, @intCast(i)));
     cpu.fp.bank.writeS(16, 0xDEAD_BEEF);
-    cpu.fp.fpscr = ra8.core.fpu.fpscr.Fpscr.fromBits(0x0300_0000);
+    cpu.fp.fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr.fromBits(0x0300_0000);
     _ = try entry.take(&cpu, 11, 0x2000_0102);
     const sp = fixture.msp_top - 0x68;
     try std.testing.expectEqual(sp, cpu.regs.msp);
@@ -159,17 +159,17 @@ test "an SVC inside an IT block: entry clears ITSTATE, the frame keeps it, retur
     ram.putHalf(fixture.code + 4, 0x2001);
     ram.putHalf(fixture.handler, 0x4770); // bx lr
     var cpu = try fixture.boot(&ram);
-    const it_state = ra8.core.cpu.it_state;
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    const it_state = ra8.chip.core.cpu.it_state;
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 0), cpu.regs.xpsr & entry.it_bits);
     // The SVC moved the block on: NE with one instruction left.
     try std.testing.expectEqual(@as(u8, 0x18), it_state.get(ram.word(cpu.regs.sp() + 28)));
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.code + 4, cpu.regs.pc);
     try std.testing.expectEqual(@as(u8, 0x18), it_state.get(cpu.regs.xpsr));
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(@as(u32, 1), cpu.regs.low[0]);
     try std.testing.expectEqual(@as(u8, 0), it_state.get(cpu.regs.xpsr));
 }

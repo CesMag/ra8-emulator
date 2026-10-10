@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const Bank = ra8.core.fpu.bank.Bank;
+const Bank = ra8.chip.core.cpu.fpu.bank.Bank;
 
 test "D[n] is S[2n+1]:S[2n]" {
     var bank: Bank = .{};

@@ -1,8 +1,9 @@
 //! The hosts file `ctl --host` reads (RA8EMU-196).
 const std = @import("std");
 const ra8 = @import("ra8");
-const profiles = ra8.core.host_profiles;
-const host_spawn = ra8.core.host_spawn;
+const cli_app = @import("cli_app");
+const profiles = ra8.host.host_profiles;
+const host_spawn = cli_app.host_spawn;
 
 const text =
     \\# lab machines

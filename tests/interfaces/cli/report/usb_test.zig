@@ -1,9 +1,10 @@
 //! Tests for src/interfaces/cli/report/usb.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const report_usb = ra8.board.report.usb;
-const Host = ra8.periph.usbfs.host.Host;
+const report_usb = cli_app.report.usb;
+const Host = ra8.chip.periph.usbfs.host.Host;
 
 /// The rendered section: up to 512 bytes, kept by value.
 const Text = struct {

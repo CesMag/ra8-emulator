@@ -1,6 +1,6 @@
 //! Covers src/chip/core/cpu/exception/active.zig.
 const std = @import("std");
-const active = @import("ra8").core.cpu.exception.active;
+const active = @import("ra8").chip.core.cpu.exception.active;
 
 test "the stack pushes and pops innermost last, up to its guard" {
     var stack: active.Active = .{};

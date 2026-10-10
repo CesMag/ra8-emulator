@@ -2,9 +2,9 @@
 //! on every saved field and keeps the fresh unit's own wiring.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci = ra8.periph.sci;
+const sci = ra8.chip.periph.sci;
 const file = ra8.snapshot.file;
-const serial = ra8.snapshot.serial;
+const serial = ra8.chip.periph.sci_snapshot;
 
 const Stand = struct { serial: sci.Sci = .{} };
 

@@ -3,10 +3,11 @@
 //! --stdio` session over the link.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 const test_paths = @import("test_paths");
-const proto = ra8.interfaces.rpc.session;
-const session_link = ra8.gui.session_link;
-const speed_field = ra8.gui.speed_field;
+const proto = ra8.rpc.session_rpc;
+const session_link = gui_app.session_link;
+const speed_field = gui_app.speed_field;
 const Link = session_link.Link;
 const Field = speed_field.Field;
 const Env = proto.Client.Env;

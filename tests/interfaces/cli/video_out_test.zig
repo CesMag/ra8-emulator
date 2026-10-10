@@ -1,7 +1,7 @@
 //! Tests for virtual-time Y4M and MP4 panel video output.
 const std = @import("std");
-const ra8 = @import("ra8");
-const video_out = ra8.core.video_out;
+const cli_app = @import("cli_app");
+const video_out = cli_app.video_out;
 
 fn outputPath(tmp: *std.testing.TmpDir, allocator: std.mem.Allocator, name: []const u8) ![]u8 {
     return try std.fmt.allocPrint(allocator, ".zig-cache/tmp/{s}/{s}", .{ tmp.sub_path, name });

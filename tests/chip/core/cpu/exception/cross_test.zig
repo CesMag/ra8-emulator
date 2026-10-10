@@ -3,14 +3,14 @@
 //! the return that puts Non-secure back.
 const std = @import("std");
 const ra8 = @import("ra8");
-const exception = ra8.core.cpu.exception;
+const exception = ra8.chip.core.cpu.exception;
 const fixture = @import("ram.zig");
 
 const bx_lr: u16 = 0x4770;
 /// The Secure Main stack; the fixture's own `msp_top` serves Non-secure.
 const secure_msp: u32 = fixture.psp_top;
 
-fn nonSecureCpu(ram: *fixture.Ram) !ra8.core.cpu.cpu.Cpu {
+fn nonSecureCpu(ram: *fixture.Ram) !ra8.chip.core.cpu.cpu.Cpu {
     ram.putWord(fixture.base + 3 * 4, fixture.handler | 1);
     ram.putHalf(fixture.handler, bx_lr);
     var cpu = try fixture.boot(ram);
@@ -40,7 +40,7 @@ test "BX LR from the Secure handler returns to Non-secure Thread code intact" {
     cpu.regs.low[1] = 0x11;
     _ = try exception.entry.take(&cpu, 3, fixture.code);
     cpu.regs.low[1] = 0xDEAD;
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(.non_secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.code, cpu.regs.pc);
     try std.testing.expect(!cpu.regs.handlerMode());

@@ -4,9 +4,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
-const fnc_return = ra8.core.cpu.exception.fnc_return;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const State = ra8.core.banked.State;
+const fnc_return = ra8.chip.core.cpu.exception.fnc_return;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const State = ra8.chip.core.banked.State;
 
 const blxns_r0: u16 = 0x4784;
 const bx_lr: u16 = 0x4770;
@@ -28,7 +28,7 @@ fn caller(ram: *fixture.Ram, body: []const u16) !Cpu {
 }
 
 fn steps(cpu: *Cpu, n: usize) !void {
-    for (0..n) |_| try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    for (0..n) |_| try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
 }
 
 test "BLXNS then BX LR comes back to Secure after the call with the frame popped" {
@@ -42,7 +42,7 @@ test "BLXNS then BX LR comes back to Secure after the call with the frame popped
     try std.testing.expectEqual(fixture.code + 2, cpu.regs.pc);
     try std.testing.expectEqual(fixture.msp_top, cpu.regs.msp);
     try std.testing.expectEqual(ns_sp, cpu.banked.other.msp);
-    try std.testing.expect(cpu.regs.xpsr & ra8.core.cpu.regs.xpsr_bits.thumb != 0);
+    try std.testing.expect(cpu.regs.xpsr & ra8.chip.core.cpu.regs.xpsr_bits.thumb != 0);
     try std.testing.expectEqual(@as(?u32, null), cpu.regs.fnc_return);
     try steps(&cpu, 1); // the nop after the call runs Secure
     try std.testing.expectEqual(fixture.code + 4, cpu.regs.pc);
@@ -92,7 +92,7 @@ test "consistency follows the Arm ARM: Thread with 0, or IPSR 1 with nonzero" {
 }
 
 test "only bits 31:24 of 0xFE are FNC_RETURN, in Thread mode too" {
-    var r: ra8.core.cpu.regs.Regs = .{};
+    var r: ra8.chip.core.cpu.regs.Regs = .{};
     r.bxWritePc(0xFEFF_FFFF);
     try std.testing.expectEqual(@as(?u32, 0xFEFF_FFFF), r.fnc_return);
     r.fnc_return = null;

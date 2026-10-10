@@ -1,7 +1,8 @@
 //! Tests for src/interfaces/cli/eink_log.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const eink_log = ra8.core.eink_log;
+const cli_app = @import("cli_app");
+const eink_log = cli_app.eink_log;
 const eink = ra8.components.eink;
 const proto = ra8.components.eink_wire;
 
@@ -26,7 +27,7 @@ fn refresh(panel: *eink.Panel, x: u16, y: u16, width: u16, height: u16, mode: u1
 }
 
 test "scripted full and partial refreshes produce JSONL and totals by waveform" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var recorder = eink_log.Run.init(std.testing.allocator, &board);
     defer recorder.deinit();
@@ -45,7 +46,7 @@ test "scripted full and partial refreshes produce JSONL and totals by waveform" 
 
     var totals: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer totals.deinit();
-    var j = ra8.board.report.json.over(&totals.writer);
+    var j = cli_app.report.json.over(&totals.writer);
     try recorder.reportJson(&j);
     try std.testing.expect(std.mem.indexOf(u8, totals.written(), "\"waveform\":2,\"count\":2") != null);
     try std.testing.expect(std.mem.indexOf(u8, totals.written(), "\"waveform\":3,\"count\":1") != null);

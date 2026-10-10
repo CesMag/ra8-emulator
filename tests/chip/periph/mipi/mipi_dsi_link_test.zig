@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const rule = ra8.periph.mipi_dsi_link;
+const rule = ra8.chip.periph.mipi_dsi_link;
 
 test "an idle link reports nothing running" {
     try std.testing.expectEqual(@as(u32, 0), rule.linkWord(false, false, false, .{}));

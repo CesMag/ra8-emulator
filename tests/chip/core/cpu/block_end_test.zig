@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/block_end.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ends = ra8.core.cpu.decode.block.ends;
-const Instr = ra8.core.cpu.instr.Instr;
+const ends = ra8.chip.core.cpu.decode.block.ends;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 fn narrow(hw1: u16) bool {
     return ends(.{ .address = 0, .hw1 = hw1, .size = 2 });

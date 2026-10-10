@@ -1,12 +1,12 @@
 //! Tests for src/chip/core/second_zig.zig: CPU1 on the Zig core (RA8EMU-234).
 const std = @import("std");
 const ra8 = @import("ra8");
-const second_core = ra8.core.second_core;
+const second_core = ra8.chip.core.second_core;
 const SecondZig = second_core.zig.SecondZig;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const memmap = ra8.core.memmap;
-const Board = ra8.board.Board;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const memmap = ra8.chip.core.memmap;
+const Board = ra8.board.board.Board;
 
 const vectors: u32 = memmap.sram_base + 0x1000;
 const code: u32 = vectors + 0x200;
@@ -70,7 +70,7 @@ test "CPU1's Zig core resets from CPU1's vector table and runs its turn" {
     var core: SecondZig = undefined;
     try pair.bring(&core, &board);
     try std.testing.expectEqual(stack, core.cpu.regs.sp());
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, core.turn(2));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, core.turn(2));
     try std.testing.expectEqual(@as(u32, 6), core.cpu.regs.get(0));
     try std.testing.expectEqual(@as(u64, 2), core.cpu.retired);
 }
@@ -84,8 +84,8 @@ test "CPU1's Zig core is an M33 on the CPU1 side of the board" {
 
     var core: SecondZig = undefined;
     try pair.bring(&core, &board);
-    try std.testing.expectEqual(ra8.core.part.cpu1_profile, core.cpu.profile);
-    try std.testing.expectEqual(ra8.periph.registry.Issuer.cpu1, core.board.issuer);
+    try std.testing.expectEqual(ra8.chip.core.part.cpu1_profile, core.cpu.profile);
+    try std.testing.expectEqual(ra8.chip.periph.registry.Issuer.cpu1, core.board.issuer);
 }
 
 test "an MVE op on CPU1's Zig core takes UsageFault, not a step" {
@@ -102,7 +102,7 @@ test "an MVE op on CPU1's Zig core takes UsageFault, not a step" {
     var core: SecondZig = undefined;
     try pair.bring(&core, &board);
     try core.cpu.bus.write(memmap.scb.shcsr, std.mem.asBytes(&usgfaultena));
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, core.turn(1));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, core.turn(1));
     try std.testing.expectEqual(usage_handler, core.cpu.regs.pc);
     try std.testing.expectEqual(code, try pair.guest().readWord(core.cpu.regs.sp() + 24));
 }
@@ -119,7 +119,7 @@ test "CPU1's Zig core polls through its own quiet source (RA8EMU-440)" {
     var core: SecondZig = undefined;
     try pair.bring(&core, &board);
     try std.testing.expectEqual(&core.quiet, core.cpu.quiet.?);
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, core.turn(4));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, core.turn(4));
     try std.testing.expect(core.quiet.settled);
     // A RAM store leaves the answer standing; a peripheral store stirs it.
     try core.cpu.bus.write(code + 0x100, &.{ 1, 2, 3, 4 });
@@ -151,7 +151,7 @@ const store_stack: u32 = store_vectors + 0x800;
 /// One executable PT_LOAD segment at `store_vectors`: a vector pair, then
 /// MOVS r0, #5; ADDS r0, #1; B . at +0x200.
 fn cpu1Image() [store_page * 2]u8 {
-    const elf = ra8.image.elf;
+    const elf = ra8.board.image.elf;
     var file: [store_page * 2]u8 align(@alignOf(elf.Header)) = @splat(0);
     const head: *elf.Header = @ptrCast(@alignCast(&file[0]));
     head.* = .{
@@ -188,41 +188,41 @@ fn cpu1Image() [store_page * 2]u8 {
 
 test "CPU1's Zig core resets and runs over a store with no engine open" {
     var file = cpu1Image();
-    const image = try ra8.image.elf.Image.init(&file);
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    const image = try ra8.board.image.elf.Image.init(&file);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    const memory: ra8.core.cpu.memory.guest.Guest = .{ .store = &store };
-    const loaded = try ra8.image.load.read(image);
+    const memory: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &store };
+    const loaded = try ra8.board.image.load.read(image);
     const seeded = try second_core.seedImage(memory, loaded.image());
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
-    var partitions = ra8.periph.sau.Sau.init();
-    var regions = ra8.periph.mpu.Mpu.init();
-    var clears = ra8.periph.fault_status.clear.Clears.init();
+    var partitions = ra8.chip.periph.sau.Sau.init();
+    var regions = ra8.chip.periph.mpu.Mpu.init();
+    var clears = ra8.chip.periph.fault_status.clear.Clears.init();
     var core: SecondZig = undefined;
     try core.openOn(memory, .{ .partitions = &partitions, .regions = &regions, .clears = &clears, .vector_base = seeded.vector_base }, &board.bus);
     try std.testing.expectEqual(store_stack, core.cpu.regs.sp());
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, core.turn(2));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, core.turn(2));
     try std.testing.expectEqual(@as(u32, 6), core.cpu.regs.get(0));
 }
 
 test "CPU1 on its own store shares CPU0's SRAM and answers as an M33" {
-    var lender = try ra8.core.cpu.memory.store.Store.init(null);
+    var lender = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer lender.deinit();
     const shared_word: u32 = memmap.sram_base + 0x3000;
-    try (ra8.core.cpu.memory.guest.Guest{ .store = &lender }).writeWord(shared_word, 0x5EED_CAFE);
+    try (ra8.chip.core.cpu.memory.guest.Guest{ .store = &lender }).writeWord(shared_word, 0x5EED_CAFE);
     var file = cpu1Image();
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
     var own: second_core.zig.Own = undefined;
-    const loaded = try ra8.image.load.read(try ra8.image.elf.Image.init(&file));
+    const loaded = try ra8.board.image.load.read(try ra8.board.image.elf.Image.init(&file));
     try own.open(&lender, ra8.board.wiring.cpu1(&board), loaded.image());
     defer own.close();
     const memory = own.core.memory;
     try std.testing.expectEqual(@as(u32, 0x5EED_CAFE), try memory.readWord(shared_word));
-    try std.testing.expectEqual(ra8.periph.cpuid.cpu1, try memory.readWord(ra8.periph.cpuid.address));
+    try std.testing.expectEqual(ra8.chip.periph.cpuid.cpu1, try memory.readWord(ra8.chip.periph.cpuid.address));
     try std.testing.expectEqual(store_stack, own.core.cpu.regs.sp());
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, own.core.turn(2));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, own.core.turn(2));
     try std.testing.expectEqual(@as(u32, 6), own.core.cpu.regs.get(0));
 }
 

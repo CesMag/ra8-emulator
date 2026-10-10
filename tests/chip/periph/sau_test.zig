@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sau = ra8.periph.sau;
+const sau = ra8.chip.periph.sau;
 
 test "TYPE reports the region count this core implements" {
     try std.testing.expectEqual(@as(u32, 8), sau.geometry.type_value);

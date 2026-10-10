@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/ops/dp_shifted.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const regs = ra8.core.cpu.regs;
-const flags = ra8.core.cpu.flags;
-const dp_shifted = ra8.core.cpu.ops.dp_shifted;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const regs = ra8.chip.core.cpu.regs;
+const flags = ra8.chip.core.cpu.flags;
+const dp_shifted = ra8.chip.core.cpu.ops.dp_shifted;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };

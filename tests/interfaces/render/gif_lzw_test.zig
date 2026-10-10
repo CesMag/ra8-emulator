@@ -1,8 +1,8 @@
 //! GIF LZW encoder: round trips through the test decoder, code widening,
 //! table clears and the size of a flat panel frame.
 const std = @import("std");
-const ra8 = @import("ra8");
-const lzw = ra8.board.report.gif.lzw;
+const cli_app = @import("cli_app");
+const lzw = cli_app.report.gif.lzw;
 const lzw_decode = @import("gif_lzw_decode.zig");
 
 fn roundTrip(indices: []const u8) !usize {

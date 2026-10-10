@@ -7,12 +7,13 @@
 //! ends that sleep at the 121st wrap, one second later (RA8EMU-657).
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 const idler = @import("idler.zig");
 
-const zig_run = ra8.board.zig_run;
-const cpu_boot = ra8.core.cpu.boot;
-const memmap = ra8.core.memmap;
+const zig_run = cli_app.zig_run;
+const cpu_boot = ra8.chip.core.cpu.boot;
+const memmap = ra8.chip.core.memmap;
 const soak = ra8.board.run.soak;
 
 const hz: u64 = 1_000_000;
@@ -44,13 +45,13 @@ test "a soak ends at the virtual minute the firmware overwrites its canary" {
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
     try load(core);
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
     board.time.base.setRate(hz);
     board.run.soak.armed = true;
     try board.run.soak.watch.add(.{ .address = canary_at, .expected = fill, .kind = .stack_canary });
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .idle_skip = true };
     var ran: u64 = 0;
     var final: cpu_boot.Regs = .{};

@@ -4,11 +4,12 @@
 //! band with the caret after the digits.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const hex_entry = ra8.gui.hex_entry;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const hex_entry = gui_app.hex_entry;
 
 test "only hex digits are typed, upper-cased, up to the width" {
     var field = hex_entry.Field.init(8);

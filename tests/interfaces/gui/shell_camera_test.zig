@@ -4,19 +4,20 @@
 //! the leaf painting the panel.
 const std = @import("std");
 const ra8 = @import("ra8");
-const status_capture = ra8.gui.status_capture;
-const proto = ra8.interfaces.rpc.session;
-const Stdio = ra8.interfaces.rpc.stdio.Stdio;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane_layout = ra8.gui.pane_layout;
-const frame = ra8.gui.shell_frame;
-const panes = ra8.gui.shell_panes;
-const status_bar = ra8.gui.status_bar;
-const camera_view = ra8.gui.camera_view;
-const session_link = ra8.gui.session_link;
-const shell_camera = ra8.gui.shell_camera;
+const gui_app = @import("gui_app");
+const status_capture = gui_app.status_capture;
+const proto = ra8.rpc.session_rpc;
+const Stdio = ra8.rpc.stdio_transport.Stdio;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane_layout = gui_app.pane_layout;
+const frame = gui_app.shell_frame;
+const panes = gui_app.shell_panes;
+const status_bar = gui_app.status_bar;
+const camera_view = gui_app.camera_view;
+const session_link = gui_app.session_link;
+const shell_camera = gui_app.shell_camera;
 const Camera = shell_camera.Camera;
 const Env = proto.Client.Env;
 
@@ -73,12 +74,12 @@ test "a pick is asked once while connected, and the answer moves the ring" {
     try std.testing.expectEqual(shell_camera.Status.asking, camera.status);
     reply(&camera, first, true);
     try std.testing.expectEqual(shell_camera.Status.switched, camera.status);
-    try std.testing.expectEqual(ra8.gui.camera_panel.Kind.image, camera.running);
+    try std.testing.expectEqual(gui_app.camera_panel.Kind.image, camera.running);
     camera.panel.pick(.gradient);
     camera.attach(&wire.link);
     reply(&camera, camera.asked.?, false);
     try std.testing.expectEqual(shell_camera.Status.refused, camera.status);
-    try std.testing.expectEqual(ra8.gui.camera_panel.Kind.image, camera.panel.active);
+    try std.testing.expectEqual(gui_app.camera_panel.Kind.image, camera.panel.active);
 }
 
 test "a source with no file chosen is not asked and the ring goes back" {
@@ -90,7 +91,7 @@ test "a source with no file chosen is not asked and the ring goes back" {
     camera.attach(&wire.link);
     try std.testing.expectEqual(@as(?u32, null), camera.asked);
     try std.testing.expectEqual(shell_camera.Status.needs_file, camera.status);
-    try std.testing.expectEqual(ra8.gui.camera_panel.Kind.gradient, camera.panel.active);
+    try std.testing.expectEqual(gui_app.camera_panel.Kind.gradient, camera.panel.active);
     camera.attach(&wire.link);
     try std.testing.expectEqual(@as(?u32, null), camera.asked);
 }
@@ -106,7 +107,7 @@ test "the webcam is asked only after the panel's consent" {
     camera.panel.answer(.allow_once);
     camera.attach(&wire.link);
     try std.testing.expect(camera.asked != null);
-    try std.testing.expectEqual(ra8.gui.camera_panel.Kind.webcam, camera.asked_kind);
+    try std.testing.expectEqual(gui_app.camera_panel.Kind.webcam, camera.asked_kind);
 }
 
 fn cameraLayout(gpa: std.mem.Allocator) !pane_layout.Layout {
@@ -135,7 +136,7 @@ test "a press in the camera leaf picks in its panel; one elsewhere does not" {
     var camera: Camera = .{};
     try std.testing.expect(!camera.clickIn(&layout, &solved, 1, frame.bodyOf(solved.panes.items[0].area).y + 1));
     try std.testing.expect(camera.clickIn(&layout, &solved, button.x + 1, button.y + 1));
-    try std.testing.expectEqual(ra8.gui.camera_panel.Kind.pipe, camera.panel.active);
+    try std.testing.expectEqual(gui_app.camera_panel.Kind.pipe, camera.panel.active);
 }
 
 fn holds(pixels: *const raster.Framebuffer, area: draw_list.Rect, color: draw_list.Color) bool {

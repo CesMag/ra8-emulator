@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const errors = ra8.periph.canfd_error;
+const errors = ra8.chip.periph.canfd_error;
 
 test "a fresh channel has no error flags standing" {
     const unit = errors.Errors{};

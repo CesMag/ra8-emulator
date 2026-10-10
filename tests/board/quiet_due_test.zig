@@ -2,43 +2,43 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const quiet_due = ra8.board.boundary.quiet_due;
-const ulpt = ra8.periph.ulpt;
+const ulpt = ra8.chip.periph.ulpt;
 
 test "a fresh board is quiet until its next queued event" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try std.testing.expect(quiet_due.quietUntilDue(&board));
 }
 
 test "a running low-power timer keeps the board busy" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.lowpower.channels[1].cr |= ulpt.control.tstart;
     try std.testing.expect(!quiet_due.quietUntilDue(&board));
 }
 
 test "an armed transfer channel keeps the board busy" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
-    board.dma.channels[3].dmcnt |= ra8.periph.dmac.field.dte;
+    board.dma.channels[3].dmcnt |= ra8.chip.periph.dmac.field.dte;
     try std.testing.expect(!quiet_due.quietUntilDue(&board));
 }
 
 test "the panel's next vsync is an edge ahead of now" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try std.testing.expect(quiet_due.vsyncDue(&board) > 0);
 }
 
 test "stopped GPT channels give no edge" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try std.testing.expectEqual(@as(u64, 0), quiet_due.gptDue(&board));
 }
 
 test "a running GPT channel's next wrap is an edge ahead of now" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
-    board.pwm.channels[0].cr |= ra8.periph.gpt.control.cst;
+    board.pwm.channels[0].cr |= ra8.chip.periph.gpt.control.cst;
     try std.testing.expect(quiet_due.gptDue(&board) > 0);
 }

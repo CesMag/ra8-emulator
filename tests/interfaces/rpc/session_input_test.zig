@@ -4,9 +4,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const server = ra8.interfaces.rpc.server;
-const input = ra8.interfaces.rpc.input;
-const proto = ra8.interfaces.rpc.session;
+const server = ra8.rpc.session_server;
+const input = ra8.rpc.session_input;
+const proto = ra8.rpc.session_rpc;
 
 const image = "tests/fixtures/fpu/fp_basic.elf";
 
@@ -18,7 +18,7 @@ fn send(context: *server.Context, args: proto.ScheduleInput) !void {
 }
 
 test "a button press and a tap land on the input script in time order" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
@@ -29,7 +29,7 @@ test "a button press and a tap land on the input script in time order" {
     try std.testing.expectEqual(@as(u64, 1_000_000), script.events[0].at_ns);
     const pressed = script.events[0].event.button;
     try std.testing.expect(pressed.down);
-    try std.testing.expectEqual(ra8.core.session_api.Button.sw2, pressed.button_id);
+    try std.testing.expectEqual(ra8.session.session_api.Button.sw2, pressed.button_id);
     try std.testing.expectEqual(@as(u64, 2_000_000), script.events[1].at_ns);
     const touched = script.events[1].event.tap;
     try std.testing.expectEqual(@as(u16, 120), touched.x);
@@ -37,7 +37,7 @@ test "a button press and a tap land on the input script in time order" {
 }
 
 test "a swipe and a long press carry their path and hold" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
@@ -53,7 +53,7 @@ test "a swipe and a long press carry their path and hold" {
 }
 
 test "an unknown button is bad_args and queues nothing" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
@@ -62,7 +62,7 @@ test "an unknown button is bad_args and queues nothing" {
 }
 
 test "a session without an input script refuses cleanly" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     const session = opened.session();

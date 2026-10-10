@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const icu = ra8.periph.icu;
-const memmap = ra8.core.memmap;
+const icu = ra8.chip.periph.icu;
+const memmap = ra8.chip.core.memmap;
 
 /// A stand-in for the core: the ICU only ever reaches the PPB, so a word map
 /// is the whole of what it needs. Its two methods are called through `anytype`
@@ -296,7 +296,7 @@ test "the unit carries an INTSELR bank that starts with every event on CPU0" {
 
 test "the bus window serves each core its own event-link table" {
     var unit = icu.Icu.init();
-    var issuer: ra8.periph.registry.Issuer = .cpu1;
+    var issuer: ra8.chip.periph.registry.Issuer = .cpu1;
     unit.issuer = &issuer;
     const window = unit.block();
     window.writeFn(window.context, icu.slotAddress(5), 4, 0x42);

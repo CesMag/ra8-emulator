@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const format = ra8.core.fpu.format;
-const mul = ra8.core.fpu.mul;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
+const format = ra8.chip.core.cpu.fpu.format;
+const mul = ra8.chip.core.cpu.fpu.mul;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
 
 test "the sign bit is the top bit of each format" {
     try std.testing.expectEqual(@as(u32, 0x8000_0000), mul.signBit(format.single));

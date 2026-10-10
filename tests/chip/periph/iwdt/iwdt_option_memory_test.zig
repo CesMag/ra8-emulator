@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const iwdt = ra8.periph.iwdt;
-const option_memory = ra8.periph.iwdt_option_memory;
+const iwdt = ra8.chip.periph.iwdt;
+const option_memory = ra8.chip.periph.iwdt_option_memory;
 
 const Image = struct {
     word: ?u32,

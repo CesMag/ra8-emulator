@@ -2,7 +2,7 @@
 const std = @import("std");
 
 const ra8 = @import("ra8");
-const gpt = ra8.periph.gpt;
+const gpt = ra8.chip.periph.gpt;
 const window = gpt.window;
 
 test "every lane of a word maps back to the word" {

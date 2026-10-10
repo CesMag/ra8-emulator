@@ -5,7 +5,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const regs = ra8.periph.drw_regs;
+const regs = ra8.chip.periph.drw_regs;
 
 /// Every offset the map names, in HUM order.
 const every = [_]u32{

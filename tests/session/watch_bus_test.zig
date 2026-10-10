@@ -3,20 +3,20 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const commands = ra8.core.commands;
-const memmap = ra8.core.memmap;
-const session = ra8.core.debug_session;
-const stop_machine = ra8.core.stop_machine;
-const step_hook = ra8.core.step_hook;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const commands = ra8.session.commands;
+const memmap = ra8.chip.core.memmap;
+const session = ra8.session.session;
+const stop_machine = ra8.session.stop_machine;
+const step_hook = ra8.session.step_hook;
 const watch_bus = step_hook.watch_bus;
 const zig_drive = step_hook.zig_drive;
 const zig_script = step_hook.zig_script;
-const Session = ra8.core.session_api.Session;
-const dwt = ra8.core.dwt;
-const watch_table = ra8.core.watch_table;
-const Store = ra8.core.cpu.memory.store.Store;
+const Session = ra8.session.session_api.Session;
+const dwt = ra8.chip.periph.dwt;
+const watch_table = ra8.session.watch_table;
+const Store = ra8.chip.core.cpu.memory.store.Store;
 
 /// The program tests/session/zig_script_test.zig uses: a loop at +0x18
 /// calling a helper at +0x8 that adds r0 into the word at 0x22000054.
@@ -82,7 +82,7 @@ const Rig = struct {
         self.driver = .{ .machine = &self.machine };
         self.watching = .{ .inner = self.memory.view(), .driver = &self.driver };
         self.cpu = .{ .bus = self.watching.view() };
-        self.cpu.regs.xpsr = ra8.core.cpu.regs.xpsr_bits.thumb;
+        self.cpu.regs.xpsr = ra8.chip.core.cpu.regs.xpsr_bits.thumb;
     }
 };
 
@@ -156,7 +156,7 @@ test "an instruction's own fetch is not an access" {
     rig.wire();
     const code: u32 = image.base + 0x100;
     @memcpy(rig.memory.sram[0x100..0x108], &[_]u8{ 0x00, 0xBF, 0x00, 0xBF, 0x00, 0xBF, 0x00, 0xBF });
-    _ = try rig.machine.addWatch(try ra8.core.watch_table.Watch.span(code, 4, .access));
+    _ = try rig.machine.addWatch(try ra8.session.watch_table.Watch.span(code, 4, .access));
     const core: step_hook.zig_core.ZigCore = .{ .cpu = &rig.cpu };
     core.setRegister(.pc, code);
     rig.machine.begin();
@@ -175,14 +175,14 @@ test "the core's fault latch passes through as a latch, not a store" {
 /// words wired, which is how zig_run builds it, so a lost latch shows up here.
 const Board = struct {
     store: Store = undefined,
-    periph: ra8.periph.registry.Bus = undefined,
-    clears: ra8.core.cpu.board_bus.fault_clear.Clears = undefined,
-    board: ra8.core.cpu.board_bus.BoardBus = undefined,
+    periph: ra8.chip.periph.registry.Bus = undefined,
+    clears: ra8.chip.core.cpu.board_bus.fault_clear.Clears = undefined,
+    board: ra8.chip.core.cpu.board_bus.BoardBus = undefined,
 
     fn open(self: *Board) !void {
         self.store = try Store.init(null);
-        self.periph = ra8.periph.registry.Bus.init(std.testing.allocator);
-        self.clears = ra8.core.cpu.board_bus.fault_clear.Clears.init();
+        self.periph = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
+        self.clears = ra8.chip.core.cpu.board_bus.fault_clear.Clears.init();
         self.board = .{ .memory = .{ .store = .{ .store = &self.store } }, .periph = &self.periph, .scs = .{ .clears = &self.clears } };
     }
 
@@ -220,10 +220,10 @@ test "a trapped divide by zero reads DIVBYZERO back at CFSR through the watched 
     cpu.regs.low[4] = memmap.scb.cfsr;
     machine.begin();
     watching.arm(code, 4);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage, cpu.regs.pc);
     watching.arm(usage, 2);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(@as(u32, 1 << 25), cpu.regs.low[3] & (1 << 25));
     try std.testing.expectEqual(@as(u32, 1 << 25), rig.board.faults().cfsr);
 }

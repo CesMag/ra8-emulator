@@ -2,12 +2,12 @@
 //! LLVM's assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const lane_pair = ra8.core.cpu.ops.mve_lane_pair;
-const qreg = ra8.core.mve.qreg;
-const vpt = ra8.core.mve.vpt;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const lane_pair = ra8.chip.core.cpu.ops.mve_lane_pair;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const vpt = ra8.chip.core.cpu.mve.vpt;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -81,7 +81,7 @@ test "unclaimed: Rt or Rt2 of 13 or 15, a repeated core register, stray bits" {
 }
 
 test "ECI skips the lane whose beat is done and still moves the other" {
-    const it_state = ra8.core.cpu.it_state;
+    const it_state = ra8.chip.core.cpu.it_state;
     var cpu: Cpu = .{ .bus = undefined };
     qreg.write(&cpu.fp.bank, 0, lanes);
     cpu.regs.xpsr = it_state.put(0, 0x10);

@@ -2,9 +2,9 @@
 //! into fresh units compare equal.
 const std = @import("std");
 const ra8 = @import("ra8");
-const periph = ra8.periph;
+const periph = ra8.chip.periph;
 const file = ra8.snapshot.file;
-const timers = ra8.snapshot.timers;
+const timers = ra8.chip.snapshot.timers;
 
 /// The Board's timer fields, under the Board's names.
 const Stand = struct {

@@ -2,9 +2,10 @@
 //! sweep_table.zig: the `sweep` flags and both forms of its report.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const sweep_cli = ra8.core.sweep_cli;
-const sizing = ra8.core.sizing;
+const sweep_cli = cli_app.sweep_cli;
+const sizing = ra8.board.sizing;
 
 test "the sweep flags set the workload, the target and the form" {
     const options = try sweep_cli.parse(&[_][]const u8{

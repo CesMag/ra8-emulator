@@ -1,12 +1,12 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const case = ra8.core.fpu.case;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
+const case = ra8.chip.core.cpu.fpu.case;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
 
 test "a case carries its rounding mode, FZ and DN into FPSCR" {
     const c = case.Binary(u32){ .a = 0, .b = 0, .mode = .zero, .fz = 1, .dn = 1 };
     const fpscr = c.fpscr();
-    try std.testing.expectEqual(ra8.core.fpu.fpscr.RMode.zero, fpscr.rmode);
+    try std.testing.expectEqual(ra8.chip.core.cpu.fpu.fpscr.RMode.zero, fpscr.rmode);
     try std.testing.expectEqual(@as(u1, 1), fpscr.fz);
     try std.testing.expectEqual(@as(u1, 1), fpscr.dn);
 }

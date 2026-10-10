@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const rounding = ra8.core.fpu.rounding;
+const rounding = ra8.chip.core.cpu.fpu.rounding;
 
 test "each FPSCR mode maps to the rounding of the same name" {
     try std.testing.expectEqual(rounding.Rounding.nearest, rounding.Rounding.of(.nearest));

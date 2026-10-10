@@ -3,15 +3,15 @@
 //! core's MPU, over a configured SAU and MPU map (RA8EMU-276).
 const std = @import("std");
 const ra8 = @import("ra8");
-const ops_tt = ra8.core.cpu.ops.tt;
-const sau = ra8.periph.sau;
-const mpu = ra8.periph.mpu;
-const mpu_check = ra8.core.cpu.board_bus.mpu_check;
-const field = ra8.core.csel.tt.field;
+const ops_tt = ra8.chip.core.cpu.ops.tt;
+const sau = ra8.chip.periph.sau;
+const mpu = ra8.chip.periph.mpu;
+const mpu_check = ra8.chip.core.cpu.board_bus.mpu_check;
+const field = ra8.chip.core.csel.tt.field;
 const fixture = @import("exception/ram.zig");
-const cpu_mod = ra8.core.cpu.cpu;
+const cpu_mod = ra8.chip.core.cpu.cpu;
 const tt_mpu = cpu_mod.tt_mpu;
-const Instr = ra8.core.cpu.instr.Instr;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const SauSource = cpu_mod.sau_source.SauSource;
 
 const both = field.r | field.rw;

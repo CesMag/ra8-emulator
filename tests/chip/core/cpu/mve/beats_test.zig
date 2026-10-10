@@ -2,9 +2,9 @@
 //! beat-wise rules in the Arm ARM (DDI0553).
 const std = @import("std");
 const ra8 = @import("ra8");
-const beats = ra8.core.mve.beats;
-const vpt = ra8.core.mve.vpt;
-const Vpr = ra8.core.mve.predicate.Vpr;
+const beats = ra8.chip.core.cpu.mve.beats;
+const vpt = ra8.chip.core.cpu.mve.vpt;
+const Vpr = ra8.chip.core.cpu.mve.predicate.Vpr;
 
 test "ECI cuts the VPT mask down to the beats still to run" {
     const vpr: Vpr = .{ .p0 = 0x0F0F, .mask01 = 0b1000, .mask23 = 0b1000 };

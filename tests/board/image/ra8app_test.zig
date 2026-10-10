@@ -1,7 +1,7 @@
 //! The `.ra8app` reader admits what ra8-firmware's loader admits.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ra8app = ra8.image.ra8app;
+const ra8app = ra8.board.image.ra8app;
 
 const code_len = 16;
 const data_len = 8;

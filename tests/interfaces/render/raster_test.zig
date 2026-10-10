@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
 const Color = draw_list.Color;
 
 const clear = Color{ .r = 0, .g = 0, .b = 0, .a = 0 };

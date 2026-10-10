@@ -2,7 +2,7 @@
 //! linear copy NPU_OP_DMA_START does.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dma = ra8.periph.npu_vela.dma;
+const dma = ra8.chip.periph.npu_vela.dma;
 
 /// A flat 4 KiB memory at bus address 0x1000 that refuses everything else.
 const Memory = struct {
@@ -66,18 +66,18 @@ test "an address past 32 bits is refused before any access" {
 }
 
 test "Ethos-U55 DMA is charged to shared external SDRAM" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var config = ra8.board.external_memory.Config{};
     config.ospi.size = 1024 * 1024;
     config.sdram = .{ .size = 1024 * 1024, .width = 32, .clock_hz = 100_000_000, .latency_cycles = 1, .burst = .incrementing16 };
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
     const layout = try ra8.board.external_memory.Layout.init(config);
     var external = try ra8.board.external_backing.Backing.init(layout, board.nor.window());
     defer external.deinit();
     store.attachExternal(external.port());
-    const plain = ra8.core.cpu.memory.guest.Guest{ .store = &store };
+    const plain = ra8.chip.core.cpu.memory.guest.Guest{ .store = &store };
     var source: [256]u8 = undefined;
     for (&source, 0..) |*byte_value, index| byte_value.* = @truncate(index);
     try plain.write(0x6800_0000, &source);

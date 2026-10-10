@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/poeg.zig.
 const std = @import("std");
-const poeg = @import("ra8").periph.poeg;
+const poeg = @import("ra8").chip.periph.poeg;
 
 const g0 = poeg.groupAddress(0);
 const g1 = poeg.groupAddress(1);

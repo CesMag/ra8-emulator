@@ -4,8 +4,9 @@
 //! refilled in place changes the digest.
 const std = @import("std");
 const ra8 = @import("ra8");
-const present_gate = ra8.gui.present_gate;
-const draw_list = ra8.gui.draw_list;
+const gui_app = @import("gui_app");
+const present_gate = gui_app.present_gate;
+const draw_list = ra8.render.draw_list;
 const Color = draw_list.Color;
 
 const ms: i128 = std.time.ns_per_ms;

@@ -3,9 +3,9 @@
 //! text lands in the frame.
 const std = @import("std");
 const ra8 = @import("ra8");
-const font = ra8.gui.font;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
+const font = ra8.render.font;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
 const Color = draw_list.Color;
 
 fn at(x: u32, y: u32) u8 {

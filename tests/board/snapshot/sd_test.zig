@@ -2,10 +2,10 @@
 //! into fresh cards match byte for byte and read back the same data.
 const std = @import("std");
 const ra8 = @import("ra8");
-const periph = ra8.periph;
+const periph = ra8.chip.periph;
 const components = ra8.components;
 const file = ra8.snapshot.file;
-const sd = ra8.snapshot.sd;
+const sd = ra8.board.snapshot.sd;
 
 const Stand = struct {
     sd: components.sd_card.Card,

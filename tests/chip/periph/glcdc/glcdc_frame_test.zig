@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const frame = ra8.periph.glcdc_frame;
-const memmap = ra8.core.memmap;
+const frame = ra8.chip.periph.glcdc_frame;
+const memmap = ra8.chip.core.memmap;
 
 test "a framebuffer lives in the RAM a bus initiator can reach" {
     try std.testing.expect(frame.addressIsRam(memmap.sram_base));

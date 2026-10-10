@@ -4,8 +4,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const tex = ra8.periph.drw_tex;
-const texel = ra8.periph.drw_texel;
+const tex = ra8.chip.periph.drw_tex;
+const texel = ra8.chip.periph.drw_texel;
 const store_memory = @import("../store_memory.zig");
 const Guest = store_memory.Guest;
 

@@ -3,9 +3,9 @@
 //! a short section changes nothing.
 const std = @import("std");
 const ra8 = @import("ra8");
-const clocks = ra8.periph.clocks;
+const clocks = ra8.chip.periph.clocks;
 const file = ra8.snapshot.file;
-const section = ra8.snapshot.systick;
+const section = ra8.chip.snapshot.systick;
 
 fn running() [2]clocks.Clocks {
     var secure: clocks.Clocks = .{};

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const lvd = ra8.periph.lvd;
+const lvd = ra8.chip.periph.lvd;
 
 const pvd1: u2 = 0;
 const pvd4: u2 = 2;

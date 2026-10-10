@@ -1,13 +1,13 @@
 //! TAS gate-list RAM and cycle register behavior.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Store = ra8.core.cpu.memory.store.Store;
-const eth = ra8.periph.eth;
-const regs = ra8.periph.eth_regs;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const eth = ra8.chip.periph.eth;
+const regs = ra8.chip.periph.eth_regs;
 const net = ra8.board.net;
-const periph = ra8.periph.registry;
-const pdctr = ra8.periph.pdctr;
-const prcr = ra8.periph.prcr;
+const periph = ra8.chip.periph.registry;
+const pdctr = ra8.chip.periph.pdctr;
+const prcr = ra8.chip.periph.prcr;
 
 const base = regs.cluster.etha0;
 

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const dwarf_line = ra8.core.dwarf_line;
+const dwarf_line = ra8.session.dwarf_line;
 
 const unit = @import("dwarf_units.zig").unit;
 
@@ -72,7 +72,7 @@ test "64-bit DWARF is refused and a truncated unit is caught" {
 }
 
 test "the LEB128 reader takes multi-byte and negative values" {
-    var cursor = ra8.core.dwarf_cursor.Cursor{ .bytes = &.{ 0xe5, 0x8e, 0x26, 0x7f, 0x80, 0x7f } };
+    var cursor = ra8.session.dwarf_cursor.Cursor{ .bytes = &.{ 0xe5, 0x8e, 0x26, 0x7f, 0x80, 0x7f } };
     try std.testing.expectEqual(@as(u64, 624485), try cursor.uleb());
     try std.testing.expectEqual(@as(i64, -1), try cursor.sleb());
     try std.testing.expectEqual(@as(i64, -128), try cursor.sleb());

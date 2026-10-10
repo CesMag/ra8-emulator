@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const fpu = ra8.core.fpu;
+const fpu = ra8.chip.core.cpu.fpu;
 
 test "an integral value comes back unchanged without flags" {
     var fpscr: fpu.fpscr.Fpscr = .{};

@@ -12,8 +12,8 @@
 //!   0x118  nop
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const qreg = ra8.core.mve.qreg;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const qreg = ra8.chip.core.cpu.mve.qreg;
 const fixture = @import("../exception/ram.zig");
 
 const listing = [_]u16{ 0xF020, 0xE001, 0xEF20, 0x0842, 0xF01F, 0xC005, 0xF011, 0xC005, 0xEF14, 0x4842, 0xF01F, 0xC005, 0xBF00 };

@@ -1,9 +1,9 @@
 //! Covers src/interfaces/cli/report/json.zig: commas, nesting, escaping and
 //! the scalar forms the report writes.
 const std = @import("std");
-const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const json = ra8.board.report.json;
+const json = cli_app.report.json;
 
 test "objects and arrays get commas between items and none after the last" {
     var buf: std.Io.Writer.Allocating = .init(std.testing.allocator);

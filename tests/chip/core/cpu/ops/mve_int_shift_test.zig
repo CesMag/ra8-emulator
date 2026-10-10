@@ -2,11 +2,11 @@
 //! LLVM's assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const shift = ra8.core.cpu.ops.mve_int_shift;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const shift = ra8.chip.core.cpu.ops.mve_int_shift;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -56,7 +56,7 @@ test "vqshl.u8 and vqrshl.s16 saturate and raise QC" {
 
 test "a masked-off lane that would saturate leaves QC clear" {
     var cpu = loaded(0x80_00, 0x01_01);
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0xFFFD }, 0b1000);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0xFFFD }, 0b1000);
     try run(&cpu, 0xFF04, 0x0452);
     try std.testing.expectEqual(@as(u1, 0), cpu.fp.fpscr.qc);
     try std.testing.expectEqual(@as(u128, 0), q0(&cpu) & 0xFF00);

@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/clocks.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const mod = ra8.periph.clocks;
+const memmap = ra8.chip.core.memmap;
+const mod = ra8.chip.periph.clocks;
 
 const Clocks = mod.Clocks;
 const Wrapped = mod.Wrapped;

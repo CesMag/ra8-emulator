@@ -2,8 +2,9 @@
 //! widths, and SSIE0 driven through its registers into a written WAV.
 const std = @import("std");
 const ra8 = @import("ra8");
-const audio_out = ra8.board.report.audio_out;
-const ssie = ra8.periph.ssie;
+const cli_app = @import("cli_app");
+const audio_out = cli_app.report.audio_out;
+const ssie = ra8.chip.periph.ssie;
 
 const allocator = std.testing.allocator;
 const ch0 = ssie.channelAddress(0);
@@ -13,7 +14,7 @@ fn ssicr(dwl: u32, frm: u32, right: bool) u32 {
     return shape | (if (right) ssie.tap.pdta else 0) | ssie.field.ten;
 }
 
-fn send(board: *ra8.board.Board, words: []const u32) void {
+fn send(board: *ra8.board.board.Board, words: []const u32) void {
     for (words) |word| board.audio.write(ch0 + ssie.off_ssiftdr, 4, word);
 }
 
@@ -65,7 +66,7 @@ test "containers: 8 and 16 go to 16, 18 to 24 go to 24, 32 stays 32" {
 }
 
 test "a 16-bit I2S stream on SSIE0 is written as a stereo WAV at the asked rate" {
-    var board = ra8.board.Board.init(allocator);
+    var board = ra8.board.board.Board.init(allocator);
     defer board.deinit();
     var output = try Output.init();
     defer output.deinit();
@@ -85,7 +86,7 @@ test "a 16-bit I2S stream on SSIE0 is written as a stereo WAV at the asked rate"
 }
 
 test "samples a quiet stretch of virtual time skipped come out as silence" {
-    var board = ra8.board.Board.init(allocator);
+    var board = ra8.board.board.Board.init(allocator);
     defer board.deinit();
     var output = try Output.init();
     defer output.deinit();
@@ -102,7 +103,7 @@ test "samples a quiet stretch of virtual time skipped come out as silence" {
 }
 
 test "a prohibited DWL is reported and no file is written" {
-    var board = ra8.board.Board.init(allocator);
+    var board = ra8.board.board.Board.init(allocator);
     defer board.deinit();
     var output = try Output.init();
     defer output.deinit();
@@ -117,7 +118,7 @@ test "a prohibited DWL is reported and no file is written" {
 }
 
 test "a shape change mid-stream stops the recording and keeps what came before" {
-    var board = ra8.board.Board.init(allocator);
+    var board = ra8.board.board.Board.init(allocator);
     defer board.deinit();
     var output = try Output.init();
     defer output.deinit();
@@ -137,7 +138,7 @@ test "a shape change mid-stream stops the recording and keeps what came before" 
 }
 
 test "with no path the board is left without a listener and nothing is said" {
-    var board = ra8.board.Board.init(allocator);
+    var board = ra8.board.board.Board.init(allocator);
     defer board.deinit();
     var run: audio_out.Run = .{};
     run.arm(&board, .{});

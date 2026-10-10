@@ -6,7 +6,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 
 const one: u32 = 0x3F80_0000; // 1.0
 const three: u32 = 0x4040_0000; // 3.0

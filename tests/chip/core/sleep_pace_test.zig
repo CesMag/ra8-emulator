@@ -1,7 +1,7 @@
 //! Covers src/chip/core/sleep_pace.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sleep_pace = ra8.core.sleep_pace;
+const sleep_pace = ra8.chip.core.sleep_pace;
 const fixture = @import("cpu/exception/ram.zig");
 const Fake = @import("cpu/exception/fake_source.zig").Fake;
 
@@ -10,7 +10,7 @@ const wfe: u16 = 0xBF20;
 const nop: u16 = 0xBF00;
 
 /// A core that ran `first` and then NOPs, with a source the test sets.
-fn asleep(ram: *fixture.Ram, fake: *Fake, first: u16) !ra8.core.cpu.cpu.Cpu {
+fn asleep(ram: *fixture.Ram, fake: *Fake, first: u16) !ra8.chip.core.cpu.cpu.Cpu {
     var at = fixture.code + 2;
     while (at < fixture.code + 0x40) : (at += 2) ram.putHalf(at, nop);
     ram.putHalf(fixture.code, first);

@@ -1,5 +1,5 @@
 const std = @import("std");
-const pc_hits = @import("ra8").core.pc_hits;
+const pc_hits = @import("ra8").session.pc_hits;
 
 test "a run that asked for nothing stays quiet" {
     const hits = pc_hits.Hits{};

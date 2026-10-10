@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const fault = ra8.core.fault;
+const fault = ra8.chip.core.fault;
 
 test "a fresh watch has caught nothing" {
     const watch = fault.Watch{};

@@ -3,8 +3,8 @@
 //! as the reference disassembler did (tests/chip/core/cpu/text/digest.zig).
 const std = @import("std");
 const ra8 = @import("ra8");
-const decode = ra8.core.cpu.decode;
-const Instr = ra8.core.cpu.instr.Instr;
+const decode = ra8.chip.core.cpu.decode;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const digest = @import("digest.zig");
 
 pub const address: u32 = 0x0200_0100;

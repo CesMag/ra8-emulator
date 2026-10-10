@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const memmap = ra8.core.memmap;
-const elf = ra8.image.elf;
+const memmap = ra8.chip.core.memmap;
+const elf = ra8.board.image.elf;
 const Cpu0 = ra8.board.cpu0_store.Cpu0;
 
 const page: usize = 0x1000;
@@ -47,7 +47,7 @@ fn image() [page * 2]u8 {
 }
 
 test "a single-core zig run loads CPU0 into its own store" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var file = image();
     var cpu0: Cpu0 = .{};
@@ -56,7 +56,7 @@ test "a single-core zig run loads CPU0 into its own store" {
     const memory = cpu0.own();
     try std.testing.expectEqual(&cpu0.store.?, memory.store);
     try std.testing.expectEqual(stack, try memory.readWord(vectors));
-    try std.testing.expectEqual(ra8.periph.cpuid.cpu0, try memory.readWord(ra8.periph.cpuid.address));
+    try std.testing.expectEqual(ra8.chip.periph.cpuid.cpu0, try memory.readWord(ra8.chip.periph.cpuid.address));
     // The whole option window is mapped, its last page included, with room
     // left for an image page outside memmap.
     _ = try memory.readWord(0x02E1_79F0);

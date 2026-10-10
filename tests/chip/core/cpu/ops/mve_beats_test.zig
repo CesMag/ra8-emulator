@@ -2,11 +2,11 @@
 //! an instruction resumed with EPSR.ECI set runs only its later beats.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const ops = ra8.core.cpu.ops;
-const qreg = ra8.core.mve.qreg;
-const it_state = ra8.core.cpu.it_state;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const ops = ra8.chip.core.cpu.ops;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const it_state = ra8.chip.core.cpu.it_state;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };

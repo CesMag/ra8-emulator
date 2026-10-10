@@ -2,9 +2,9 @@
 //! through the `bxns` group on a bare core with a Non-secure MSP banked.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.bxns_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.bxns_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 
 fn fault(err: cpu_ns.op.Error) vectors.Fault {
     return switch (err) {

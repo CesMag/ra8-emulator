@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/modimm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const modimm = ra8.core.mve.modimm;
+const modimm = ra8.chip.core.cpu.mve.modimm;
 
 test "cmode and op pick the instruction" {
     try std.testing.expectEqual(modimm.Op.mov, modimm.kind(0, 0).?);

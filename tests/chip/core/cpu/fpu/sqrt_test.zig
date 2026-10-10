@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sqrt = ra8.core.fpu.sqrt;
-const Real = ra8.core.fpu.format.Real;
+const sqrt = ra8.chip.core.cpu.fpu.sqrt;
+const Real = ra8.chip.core.cpu.fpu.format.Real;
 
 test "an even exponent and a perfect square give an exact root" {
     const r = sqrt.root(.{ .sign = 0, .mant = 9, .exp = 4 });

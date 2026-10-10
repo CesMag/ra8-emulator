@@ -3,16 +3,16 @@
 //! old turn, now through second_zig_run.Driver on a Store, no engine.
 const std = @import("std");
 const ra8 = @import("ra8");
-const second_core = ra8.core.second_core;
+const second_core = ra8.chip.core.second_core;
 const Driver = second_core.zig_run.Driver;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const Units = second_core.zig.Units;
-const memmap = ra8.core.memmap;
-const nvic = ra8.periph.nvic;
-const systick_bank = ra8.core.systick_bank;
-const xpsr_bits = ra8.core.cpu.regs.xpsr_bits;
-const Board = ra8.board.Board;
+const memmap = ra8.chip.core.memmap;
+const nvic = ra8.chip.periph.nvic;
+const systick_bank = ra8.chip.core.systick_bank;
+const xpsr_bits = ra8.chip.core.cpu.regs.xpsr_bits;
+const Board = ra8.board.board.Board;
 
 const vectors: u32 = memmap.sram_base + 0x1000;
 const spin: u32 = vectors + 0x200;
@@ -75,7 +75,7 @@ const Pair = struct {
     }
 
     fn expectRunning(self: *Pair) !void {
-        try std.testing.expectEqual(@as(?ra8.core.fault.Fault, null), self.driver.second.state.fault);
+        try std.testing.expectEqual(@as(?ra8.chip.core.fault.Fault, null), self.driver.second.state.fault);
     }
 };
 

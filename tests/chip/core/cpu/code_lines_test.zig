@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/code_lines.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const code_lines = ra8.core.cpu.decode.code_lines;
+const memmap = ra8.chip.core.memmap;
+const code_lines = ra8.chip.core.cpu.decode.code_lines;
 
 fn fresh() code_lines.CodeLines {
     var lines: code_lines.CodeLines = undefined;

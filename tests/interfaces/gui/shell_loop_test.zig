@@ -4,15 +4,16 @@
 //! with the status strip following.
 const std = @import("std");
 const ra8 = @import("ra8");
-const status_capture = ra8.gui.status_capture;
+const gui_app = @import("gui_app");
+const status_capture = gui_app.status_capture;
 const test_paths = @import("test_paths");
-const proto = ra8.interfaces.rpc.session;
-const pane_layout = ra8.gui.pane_layout;
-const shell_frame = ra8.gui.shell_frame;
-const shell_loop = ra8.gui.shell_loop;
-const session_link = ra8.gui.session_link;
-const strip = ra8.gui.status_strip;
-const Headless = ra8.gui.headless.Headless;
+const proto = ra8.rpc.session_rpc;
+const pane_layout = gui_app.pane_layout;
+const shell_frame = gui_app.shell_frame;
+const shell_loop = gui_app.shell_loop;
+const session_link = gui_app.session_link;
+const strip = gui_app.status_strip;
+const Headless = gui_app.headless.Headless;
 
 const Env = proto.Client.Env;
 const elf_path = "tests/fixtures/fpu/fp_basic.elf";

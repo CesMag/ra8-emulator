@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const deadline = ra8.core.deadline;
+const deadline = ra8.chip.core.deadline;
 
 test "a deadline is not met before its periods have gone by" {
     var due = deadline.Deadline{ .periods = 4000 };

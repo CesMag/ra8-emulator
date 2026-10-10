@@ -8,16 +8,16 @@
 //!     0x0c  f043 c801  wls  lr, r3, 0x12
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const lob = ra8.core.cpu.ops.lob;
-const table = ra8.core.cpu.ops.table;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const lob = ra8.chip.core.cpu.ops.lob;
+const table = ra8.chip.core.cpu.ops.table;
 
 const dls_r2 = [2]u16{ 0xF042, 0xE001 };
 const le_back = [2]u16{ 0xF00F, 0xC007 };
 const wls_r3 = [2]u16{ 0xF043, 0xC801 };
 const flags: u32 = 0xF100_0000;
 
-fn wide(at: u32, pair: [2]u16) ra8.core.cpu.instr.Instr {
+fn wide(at: u32, pair: [2]u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = at, .hw1 = pair[0], .hw2 = pair[1], .size = 4 };
 }
 
@@ -125,7 +125,7 @@ test "the group has a lockstep oracle" {
     try std.testing.expect(lob.group.oracle);
 }
 
-const fpca = ra8.core.cpu.regs.control_bits.fpca;
+const fpca = ra8.chip.core.cpu.regs.control_bits.fpca;
 
 /// LE at 0x08 with LR = 3, after an FP context opened or not.
 fn leWith(fp_active: bool, ltpsize: u3) Cpu {

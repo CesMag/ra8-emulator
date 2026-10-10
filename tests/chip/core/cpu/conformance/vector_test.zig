@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
+const vector = ra8.chip.core.cpu.conformance_vector;
 
 const In = struct { a: u32, b: u32 };
 const V = vector.Vector(In, u32);

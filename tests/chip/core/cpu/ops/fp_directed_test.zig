@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/fp_directed.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const fp_directed = ra8.core.cpu.ops.fp_directed;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const fp_directed = ra8.chip.core.cpu.ops.fp_directed;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -92,8 +92,8 @@ test "vrintz and vrintr on -2.7, vrintx raises IXC" {
 }
 
 test "the rm field" {
-    try std.testing.expectEqual(ra8.core.fpu.rounding.Rounding.ties_away, fp_directed.roundingOf(0));
-    try std.testing.expectEqual(ra8.core.fpu.rounding.Rounding.minus_inf, fp_directed.roundingOf(3));
+    try std.testing.expectEqual(ra8.chip.core.cpu.fpu.rounding.Rounding.ties_away, fp_directed.roundingOf(0));
+    try std.testing.expectEqual(ra8.chip.core.cpu.fpu.rounding.Rounding.minus_inf, fp_directed.roundingOf(3));
 }
 
 test "unclaimed: VSEL with o set, VRINTA with N set, D16+, VCVT.F64.F32" {

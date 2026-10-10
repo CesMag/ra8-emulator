@@ -3,8 +3,8 @@ const std = @import("std");
 const testing = std.testing;
 
 const ra8 = @import("ra8");
-const clk = ra8.periph.gpt_clock;
-const gpt = ra8.periph.gpt;
+const clk = ra8.chip.periph.gpt_clock;
+const gpt = ra8.chip.periph.gpt;
 
 /// A GTCR word carrying a prescaler encoding and the start bit.
 fn control(encoding: u32) u32 {
@@ -183,7 +183,7 @@ test "an overflow is due one count past the period, rounded up" {
 test "a running saw channel is due at its wrap on the derived PCLKD" {
     const sched = clk.sched;
     try testing.expectEqual(@as(u64, 327_700_000), sched.pclkd_hz);
-    var channel = ra8.periph.gpt_channel.Channel{};
+    var channel = ra8.chip.periph.gpt_channel.Channel{};
     try testing.expectEqual(@as(?u64, null), sched.dueAt(channel, 0));
     channel.cr = control(0);
     // GTPR = 0 counts to 0xFFFF: 65536 counts, rounded up to 199988 ns.
@@ -229,7 +229,7 @@ test "a GPT overflow is raised on the boundary its due time falls in" {
 
 test "a compare match is due where GTCNT reaches GTCCRA, this cycle or after the wrap" {
     const sched = clk.sched;
-    var channel = ra8.periph.gpt_channel.Channel{};
+    var channel = ra8.chip.periph.gpt_channel.Channel{};
     channel.cr = control(0);
     try testing.expectEqual(@as(?u64, null), sched.compareDueAt(channel, .a, 0));
     // 0x4001 counts ahead is exactly one 50000 ns boundary.
@@ -259,12 +259,12 @@ test "a compare-A match is flagged on the boundary that reaches its due time" {
     var at = start;
     while (at + 3_001 < due) : (at += 3_001) {
         clk.sched.tickFor(&timer, at, at + 3_001);
-        try testing.expect(channel.st & ra8.periph.gpt_channel.status.tcfa == 0);
+        try testing.expect(channel.st & ra8.chip.periph.gpt_channel.status.tcfa == 0);
     }
     clk.sched.tickFor(&timer, at, due - 1);
-    try testing.expect(channel.st & ra8.periph.gpt_channel.status.tcfa == 0);
+    try testing.expect(channel.st & ra8.chip.periph.gpt_channel.status.tcfa == 0);
     clk.sched.tickFor(&timer, due - 1, due);
-    try testing.expect(channel.st & ra8.periph.gpt_channel.status.tcfa != 0);
+    try testing.expect(channel.st & ra8.chip.periph.gpt_channel.status.tcfa != 0);
 }
 
 fn triangle(encoding: u32) u32 {
@@ -273,7 +273,7 @@ fn triangle(encoding: u32) u32 {
 
 test "a triangle's peak and trough are due where the folded phase reaches them" {
     const sched = clk.sched;
-    var channel = ra8.periph.gpt_channel.Channel{};
+    var channel = ra8.chip.periph.gpt_channel.Channel{};
     channel.cr = triangle(0);
     channel.period.live = 100_000;
     channel.cnt = 30_000;
@@ -307,12 +307,12 @@ test "a triangle peak is flagged on the boundary that reaches its due time" {
     while (at + 2_999 < due) : (at += 2_999) {
         clk.sched.tickFor(&timer, at, at + 2_999);
         try testing.expect(!timer.pending);
-        try testing.expect(channel.st & ra8.periph.gpt_channel.status.tcfpo == 0);
+        try testing.expect(channel.st & ra8.chip.periph.gpt_channel.status.tcfpo == 0);
     }
     clk.sched.tickFor(&timer, at, due - 1);
-    try testing.expect(channel.st & ra8.periph.gpt_channel.status.tcfpo == 0);
+    try testing.expect(channel.st & ra8.chip.periph.gpt_channel.status.tcfpo == 0);
     clk.sched.tickFor(&timer, due - 1, due);
-    try testing.expect(channel.st & ra8.periph.gpt_channel.status.tcfpo != 0);
+    try testing.expect(channel.st & ra8.chip.periph.gpt_channel.status.tcfpo != 0);
     try testing.expect(timer.pending);
     try testing.expect(!channel.rising);
 }

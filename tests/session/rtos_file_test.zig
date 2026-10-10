@@ -3,9 +3,9 @@
 //! own file.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_hook = ra8.core.step_hook.rtos_hook;
+const rtos_hook = ra8.session.step_hook.rtos_hook;
 const rtos_file = rtos_hook.file;
-const rtos_trace = ra8.core.step_hook.rtos_trace;
+const rtos_trace = ra8.session.step_hook.rtos_trace;
 
 const Event = rtos_trace.Event;
 

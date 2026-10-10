@@ -24,13 +24,13 @@ test "every vector names an encoding the core claims" {
 // function pointers name Cpu, and evaluating them first loops through Cpu's
 // decode cache.
 comptime {
-    std.debug.assert(@sizeOf(ra8.core.cpu.cpu.Cpu) > 0);
+    std.debug.assert(@sizeOf(ra8.chip.core.cpu.cpu.Cpu) > 0);
 }
 
 /// Every group the decode table registers, by name, in decode order.
 fn groupNames(into: [][]const u8) []const []const u8 {
     var n: usize = 0;
-    for (ra8.core.cpu.ops.table.groups) |group| {
+    for (ra8.chip.core.cpu.ops.table.groups) |group| {
         if (n == into.len) break;
         into[n] = group.name;
         n += 1;
@@ -65,7 +65,7 @@ test "tests/chip/core/cpu/conformance/coverage.md matches the suite, or is rewri
 }
 
 test "the decode table section lists every registered group exactly once" {
-    const groups = ra8.core.cpu.ops.table.groups;
+    const groups = ra8.chip.core.cpu.ops.table.groups;
     var names: [256][]const u8 = undefined;
     const decoded = groupNames(&names);
     try std.testing.expect(groups.len <= names.len);

@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/eth/eth_agent.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const agent = ra8.periph.eth.agent;
+const agent = ra8.chip.periph.eth.agent;
 
 const base: u32 = 0x403C_A000;
 
@@ -54,7 +54,7 @@ test "error status reads 0 and ignores stores" {
 }
 
 test "both windows sit on the bus at the port's base" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit = agent.Agent.init(base);
     for (unit.blocks()) |block| try bus.add(block);

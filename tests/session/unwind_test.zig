@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const unwind = ra8.core.unwind;
+const unwind = ra8.session.unwind;
 
 /// Words from `base` up; anything else is unreadable.
 const Memory = struct {

@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/bus.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const memmap = ra8.core.memmap;
+const bus = ra8.chip.core.cpu.bus;
+const memmap = ra8.chip.core.memmap;
 
 /// A Bus over one slice of bytes at a base address; anything outside it is
 /// unmapped.

@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const port = ra8.core.cpu.memory.external_port;
+const port = ra8.chip.core.cpu.memory.external_port;
 
 test "geometry decodes both apertures and the Non-secure SDRAM alias" {
     const geometry: port.Geometry = .{ .ospi = 1024 * 1024, .sdram = 2 * 1024 * 1024 };

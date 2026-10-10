@@ -2,12 +2,13 @@
 //! refuses to invent.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const gt911 = ra8.components.gt911;
-const gpio = ra8.periph.gpio;
+const gpio = ra8.chip.periph.gpio;
 const switches = ra8.board.switches;
 const sw1 = switches.user[0];
 const sw2 = switches.user[1];
-const host_bytes = ra8.core.cli.host_bytes;
+const host_bytes = cli_app.cli.host_bytes;
 
 /// Writes all of `bytes` to a pipe end, as the host side of the test.
 fn send(fd: std.posix.fd_t, bytes: []const u8) !void {

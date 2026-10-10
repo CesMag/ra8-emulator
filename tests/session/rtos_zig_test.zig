@@ -2,12 +2,12 @@
 //! run's bus and exception source.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_hook = ra8.core.step_hook.rtos_hook;
-const rtos_trace = ra8.core.step_hook.rtos_trace;
+const rtos_hook = ra8.session.step_hook.rtos_hook;
+const rtos_trace = ra8.session.step_hook.rtos_trace;
 const Listener = rtos_hook.zig.Listener;
-const bus = ra8.core.cpu.bus;
-const Source = ra8.core.cpu.exception.source.Source;
-const Entry = ra8.core.cpu.exception.active.Entry;
+const bus = ra8.chip.core.cpu.bus;
+const Source = ra8.chip.core.cpu.exception.source.Source;
+const Entry = ra8.chip.core.cpu.exception.active.Entry;
 
 /// A bus that keeps the last write and reads zeros.
 const Memory = struct {

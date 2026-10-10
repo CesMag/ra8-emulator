@@ -4,13 +4,14 @@
 //! across a run, including a date written into its RTC counters.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 const test_paths = @import("test_paths");
-const proto = ra8.interfaces.rpc.session;
-const session_link = ra8.gui.session_link;
-const time_readout = ra8.gui.time_readout;
+const proto = ra8.rpc.session_rpc;
+const session_link = gui_app.session_link;
+const time_readout = gui_app.time_readout;
 const Link = session_link.Link;
 const Readout = time_readout.Readout;
-const Status = ra8.gui.status_bar.Status;
+const Status = gui_app.status_bar.Status;
 const Env = proto.Client.Env;
 
 const elf_path = "tests/fixtures/fpu/fp_basic.elf";

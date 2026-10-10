@@ -2,7 +2,7 @@
 //! parts this emulator runs, and the refusal to guess at a third.
 const std = @import("std");
 const ra8 = @import("ra8");
-const part = ra8.core.part;
+const part = ra8.chip.core.part;
 
 test "the two parts this emulator models parse by name" {
     try std.testing.expectEqual(part.Part.ra8d2, part.Part.parse("ra8d2").?);
@@ -34,7 +34,7 @@ test "CPU1 has a Secure and a Non-secure SysTick too" {
 }
 
 test "CPU0 decodes as a Cortex-M85 and CPU1 as a Cortex-M33" {
-    const Profile = ra8.core.cpu.decode.profile.Profile;
+    const Profile = ra8.chip.core.cpu.decode.profile.Profile;
     try std.testing.expectEqual(Profile.m85, part.cpu0_profile);
     try std.testing.expectEqual(Profile.m33, part.cpu1_profile);
 }

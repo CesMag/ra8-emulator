@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const wdt = ra8.periph.wdt;
-const periph = ra8.periph.registry;
+const wdt = ra8.chip.periph.wdt;
+const periph = ra8.chip.periph.registry;
 
 /// A watchdog with the shortest timeout and a window that is open from the
 /// reload, which is what a firmware that does not care about the window sets.

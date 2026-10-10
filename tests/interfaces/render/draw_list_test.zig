@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
+const draw_list = ra8.render.draw_list;
 const Color = draw_list.Color;
 
 const red = Color.rgb(255, 0, 0);

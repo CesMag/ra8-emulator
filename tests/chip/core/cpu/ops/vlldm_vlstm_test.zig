@@ -7,12 +7,12 @@
 //!     ec33 0a80  vlldm r3, {d0-d31}
 const std = @import("std");
 const ra8 = @import("ra8");
-const vl = ra8.core.cpu.ops.vlldm_vlstm;
-const table = ra8.core.cpu.ops.table;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const control_bits = ra8.core.cpu.regs.control_bits;
-const cpacr = ra8.core.fpu.cpacr;
+const vl = ra8.chip.core.cpu.ops.vlldm_vlstm;
+const table = ra8.chip.core.cpu.ops.table;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const control_bits = ra8.chip.core.cpu.regs.control_bits;
+const cpacr = ra8.chip.core.cpu.fpu.cpacr;
 const fixture = @import("../exception/ram.zig");
 
 const vlstm = [2]u16{ 0xEC20, 0x0A00 };

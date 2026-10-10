@@ -5,11 +5,11 @@
 //! hand-stepped and match the host-worked words in nnf_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const boot = ra8.core.cpu.boot;
-const elf = ra8.image.elf;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const memmap = ra8.chip.core.memmap;
+const boot = ra8.chip.core.cpu.boot;
+const elf = ra8.board.image.elf;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const vectors = @import("nnf_vectors.zig");
 
 const image_bytes = @embedFile("../../../fixtures/fpu/nnf.elf");
@@ -29,7 +29,7 @@ test "the TFLM/CMSIS-NN float corpus runs bit-exact on the Zig core" {
     var stream: std.Io.Writer = .fixed(&output);
     var retired: u64 = 0;
     const vector_base = image.vectorBase() orelse return error.MissingVectorTable;
-    var periph = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var periph = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer periph.deinit();
     const status = try boot.start(&stream, .zig, core, &periph, vector_base, 1_000_000, &retired, .{});
     try std.testing.expectEqual(@as(u8, 0), status);

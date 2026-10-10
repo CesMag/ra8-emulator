@@ -9,15 +9,15 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const mpu = ra8.periph.mpu;
-const bus = ra8.core.cpu.bus;
-const mpu_check = ra8.core.cpu.board_bus.mpu_check;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Stop = ra8.core.cpu.cpu.Stop;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const MemoryBus = ra8.core.cpu.memory.memory_bus.MemoryBus;
+const memmap = ra8.chip.core.memmap;
+const mpu = ra8.chip.periph.mpu;
+const bus = ra8.chip.core.cpu.bus;
+const mpu_check = ra8.chip.core.cpu.board_bus.mpu_check;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const MemoryBus = ra8.chip.core.cpu.memory.memory_bus.MemoryBus;
 
 /// The module's code, the kernel's recovery point, its stack, a span only
 /// privileged code may touch, and the vector table with its handlers.

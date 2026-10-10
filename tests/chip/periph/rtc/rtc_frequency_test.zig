@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/rtc_frequency.zig.
 const std = @import("std");
-const freq = @import("ra8").periph.rtc_frequency;
+const freq = @import("ra8").chip.periph.rtc_frequency;
 
 test "the pair is named from RFRH through the top of RFRL" {
     try std.testing.expect(!freq.names(0x29));

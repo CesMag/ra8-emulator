@@ -2,9 +2,9 @@
 //! hands each group's encodings (RA8EMU-453).
 const std = @import("std");
 const ra8 = @import("ra8");
-const decode = ra8.core.cpu.decode;
-const Instr = ra8.core.cpu.instr.Instr;
-const Eci = ra8.core.cpu.op.Eci;
+const decode = ra8.chip.core.cpu.decode;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const Eci = ra8.chip.core.cpu.op.Eci;
 
 fn narrow(hw1: u16) Instr {
     return .{ .address = 0x100, .hw1 = hw1, .hw2 = 0, .size = 2 };

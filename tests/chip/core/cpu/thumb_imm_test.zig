@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/thumb_imm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const thumb_imm = ra8.core.cpu.thumb_imm;
-const Instr = ra8.core.cpu.instr.Instr;
+const thumb_imm = ra8.chip.core.cpu.thumb_imm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 fn expect(imm: u12, carry_in: bool, value: u32, carry: bool) !void {
     const got = thumb_imm.expandC(imm, carry_in) orelse return error.Unpredictable;

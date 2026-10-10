@@ -4,16 +4,17 @@
 //! plugs reach an in-process session once its image is loaded.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const shell_main = ra8.core.shell_main;
-const shell_startup = ra8.core.shell_startup;
-const local_session = ra8.core.local_session;
-const shell_loop = ra8.gui.shell_loop;
-const shell_devices = ra8.gui.shell_devices;
-const session_link = ra8.gui.session_link;
-const platform = ra8.gui.platform;
-const Headless = ra8.gui.headless.Headless;
-const Env = ra8.interfaces.rpc.session.Client.Env;
+const shell_main = gui_app.shell_main;
+const shell_startup = gui_app.shell_startup;
+const local_session = gui_app.local_session;
+const shell_loop = gui_app.shell_loop;
+const shell_devices = gui_app.shell_devices;
+const session_link = gui_app.session_link;
+const platform = gui_app.platform;
+const Headless = gui_app.headless.Headless;
+const Env = ra8.rpc.session_rpc.Client.Env;
 
 const image = "tests/fixtures/fpu/fp_basic.elf";
 
@@ -88,7 +89,7 @@ const Settled = struct {
         return self.inner.platform().scale();
     }
 
-    fn present(ctx: *anyopaque, frame: *const ra8.gui.raster.Framebuffer) anyerror!void {
+    fn present(ctx: *anyopaque, frame: *const ra8.render.raster.Framebuffer) anyerror!void {
         const self: *Settled = @ptrCast(@alignCast(ctx));
         self.frames += 1;
         return self.inner.platform().present(frame);
@@ -109,7 +110,7 @@ fn settle(startup: *shell_startup.Startup, devices: *shell_devices.Devices) !voi
     defer gpa.free(tx);
     var link: session_link.Link = undefined;
     link.open(session.transport(), rx, tx);
-    var shell = shell_loop.Shell.init(gpa, try ra8.gui.pane_layout.twoCore(gpa));
+    var shell = shell_loop.Shell.init(gpa, try gui_app.pane_layout.twoCore(gpa));
     defer shell.deinit();
     shell.link = &link;
     shell.devices = devices;

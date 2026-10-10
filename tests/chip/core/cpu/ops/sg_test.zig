@@ -1,13 +1,13 @@
 //! Covers src/chip/core/cpu/ops/sg.zig and its SecureFault through Cpu.step.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sg = ra8.core.cpu.ops.sg;
+const sg = ra8.chip.core.cpu.ops.sg;
 const fixture = @import("../exception/ram.zig");
-const memmap = ra8.core.memmap;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const Attribution = ra8.core.cpu.cpu.attribution.Attribution;
-const State = ra8.core.cpu.cpu.attribution.State;
+const memmap = ra8.chip.core.memmap;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const Attribution = ra8.chip.core.cpu.cpu.attribution.Attribution;
+const State = ra8.chip.core.cpu.cpu.attribution.State;
 
 const secure_handler: u32 = fixture.base + 0x1C0;
 const securefaultena: u32 = 1 << 19;
@@ -61,7 +61,7 @@ test "SG in Secure state is a NOP" {
     const sp = cpu.regs.sp();
     cpu.regs.lr = fixture.handler | 1;
     try run(&cpu, at(fixture.code));
-    try std.testing.expectEqual(ra8.core.banked.State.secure, cpu.banked.current);
+    try std.testing.expectEqual(ra8.chip.core.banked.State.secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.handler | 1, cpu.regs.lr);
     try std.testing.expectEqual(sp, cpu.regs.sp());
 }
@@ -71,7 +71,7 @@ test "SG at a callable address makes a Non-secure core Secure and banks the stac
     var fixed: Fixed = .{ .state = .callable };
     var cpu = try nonSecure(&ram, &fixed);
     try run(&cpu, at(fixture.code));
-    try std.testing.expectEqual(ra8.core.banked.State.secure, cpu.banked.current);
+    try std.testing.expectEqual(ra8.chip.core.banked.State.secure, cpu.banked.current);
     // LR bit 0 clear, so BXNS LR goes back to Non-secure state.
     try std.testing.expectEqual(fixture.handler, cpu.regs.lr);
     // The Secure stack is back; the Non-secure one is parked in the bank.
@@ -84,7 +84,7 @@ test "SG fetched from Non-secure memory by a Non-secure core is a NOP" {
     var fixed: Fixed = .{ .state = .non_secure };
     var cpu = try nonSecure(&ram, &fixed);
     try run(&cpu, at(fixture.code));
-    try std.testing.expectEqual(ra8.core.banked.State.non_secure, cpu.banked.current);
+    try std.testing.expectEqual(ra8.chip.core.banked.State.non_secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.handler | 1, cpu.regs.lr);
     try std.testing.expectEqual(ns_sp, cpu.regs.sp());
 }
@@ -94,7 +94,7 @@ test "SG fetched from Secure memory by a Non-secure core is refused" {
     var fixed: Fixed = .{ .state = .secure };
     var cpu = try nonSecure(&ram, &fixed);
     try std.testing.expectError(error.InvalidEntry, run(&cpu, at(fixture.code)));
-    try std.testing.expectEqual(ra8.core.banked.State.non_secure, cpu.banked.current);
+    try std.testing.expectEqual(ra8.chip.core.banked.State.non_secure, cpu.banked.current);
 }
 
 test "stepping SG outside NSC takes SecureFault INVEP on the SG itself" {
@@ -105,7 +105,7 @@ test "stepping SG outside NSC takes SecureFault INVEP on the SG itself" {
     ram.putHalf(fixture.code + 2, sg.encoding);
     var fixed: Fixed = .{ .state = .secure };
     var cpu = try nonSecure(&ram, &fixed);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(secure_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 7), cpu.regs.xpsr & 0x1FF);
     try std.testing.expectEqual(invep, ram.word(sfsr));
@@ -123,8 +123,8 @@ test "SG leaves a Secure stack below its own limit alone (RA8EMU-395)" {
     // A Secure PSP the gateway never touches, under a PSPLIM_S above it.
     cpu.banked.other.psp = fixture.base + 0x40;
     cpu.banked.other.psplim = fixture.base + 0x100;
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
-    try std.testing.expectEqual(ra8.core.banked.State.secure, cpu.banked.current);
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(ra8.chip.core.banked.State.secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.code + 4, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 0), ram.word(memmap.scb.cfsr));
     try std.testing.expectEqual(ns_sp, cpu.banked.other.msp);

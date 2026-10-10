@@ -2,7 +2,7 @@
 //! and what falls back to the bare pointer.
 const std = @import("std");
 const ra8 = @import("ra8");
-const names = ra8.core.step_hook.rtos_hook.names;
+const names = ra8.session.step_hook.rtos_hook.names;
 
 /// A slice of target memory starting at `base`; anything outside it fails.
 const Window = struct {

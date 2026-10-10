@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/lpm/lpm_dps.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dps = ra8.periph.lpm.dps;
+const dps = ra8.chip.periph.lpm.dps;
 
 test "the registers sit where ra8_lpm_regs.h puts them" {
     try std.testing.expectEqual(@as(u32, 0x4001_EA08), dps.addressOf(.enable, 0));
@@ -42,7 +42,7 @@ test "the gaps between registers answer nothing" {
 }
 
 test "the block puts every register on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit: dps.Dps = .{};
     try bus.add(unit.block());

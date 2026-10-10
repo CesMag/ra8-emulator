@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/mve/int_shift_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const int = ra8.core.mve.int;
-const shift = ra8.core.mve.int_shift;
-const vectors = ra8.core.mve.int_shift_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const int = ra8.chip.core.cpu.mve.int;
+const shift = ra8.chip.core.cpu.mve.int_shift;
+const vectors = ra8.chip.core.cpu.mve.int_shift_vectors;
 
 fn byRegister(in: vectors.RegCase) int.Sat {
     return shift.byRegister(in.a, in.b, in.size, in.mode);

@@ -3,11 +3,12 @@
 //! held switch draws pressed.
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane = ra8.gui.board_pane;
-const input = ra8.gui.board_input;
+const gui_app = @import("gui_app");
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane = gui_app.board_pane;
+const input = gui_app.board_input;
 const Rect = draw_list.Rect;
 const Color = draw_list.Color;
 

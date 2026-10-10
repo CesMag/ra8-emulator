@@ -3,9 +3,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const esp_hosted = ra8.components.esp_hosted;
-const gpio = ra8.periph.gpio;
+const gpio = ra8.chip.periph.gpio;
 const file = ra8.snapshot.file;
-const section = ra8.snapshot.c6;
+const section = ra8.components.c6_snapshot;
 
 const Stand = struct { c6: esp_hosted.C6 };
 

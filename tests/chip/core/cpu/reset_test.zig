@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/reset.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const regs = ra8.core.cpu.regs;
-const reset = ra8.core.cpu.reset;
+const bus = ra8.chip.core.cpu.bus;
+const regs = ra8.chip.core.cpu.regs;
+const reset = ra8.chip.core.cpu.reset;
 
 const Table = struct {
     words: []const u32,

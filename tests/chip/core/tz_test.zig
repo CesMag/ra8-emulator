@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const tz = ra8.core.tz;
+const tz = ra8.chip.core.tz;
 
 test "a BLXNS decodes to the register it branches through" {
     // BLXNS r2 is 0x4794, the one the RA8D2 secure boot issues.

@@ -1,11 +1,11 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sysclk = ra8.periph.sysclk;
-const sysclk_div = ra8.periph.sysclk_div;
-const prcr = ra8.periph.prcr;
-const oscsf = ra8.periph.oscsf;
-const vscr = ra8.periph.vscr;
-const hazard = ra8.periph.voltage_hazard;
+const sysclk = ra8.chip.periph.sysclk;
+const sysclk_div = ra8.chip.periph.sysclk_div;
+const prcr = ra8.chip.periph.prcr;
+const oscsf = ra8.chip.periph.oscsf;
+const vscr = ra8.chip.periph.vscr;
+const hazard = ra8.chip.periph.voltage_hazard;
 
 /// A tree with its own protection and oscillators, the way the board builds
 /// one. Both have to outlive the tree, so the fixture owns all three.

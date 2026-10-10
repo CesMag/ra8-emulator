@@ -2,9 +2,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const cache = ra8.periph.cache;
-const geometry = ra8.periph.cache_geometry;
-const memmap = ra8.core.memmap;
+const cache = ra8.chip.periph.cache;
+const geometry = ra8.chip.periph.cache_geometry;
+const memmap = ra8.chip.core.memmap;
 
 /// A stand-in for the machine: the handful of PPB words this block touches,
 /// answering reads and taking writes the way the plain-RAM mapping does.

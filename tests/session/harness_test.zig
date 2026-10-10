@@ -10,7 +10,7 @@ const input_path = "tests/fixtures/display/tap.input";
 
 test "public harness opens real display firmware, taps, settles, and frames" {
     if (builtin.mode != .fast) return error.SkipZigTest;
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{
         .elf_path = image_path,
         .input_script = input_path,
     });
@@ -39,7 +39,7 @@ test "RA8EMU-768: restore returns the session to a saved screen, frame for frame
     defer std.testing.allocator.free(dir);
     const path = try std.fs.path.join(std.testing.allocator, &.{ dir, "screen.ra8snap" });
     defer std.testing.allocator.free(path);
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path, .input_script = input_path });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path, .input_script = input_path });
     defer opened.deinit();
 
     try opened.session().waitSettled(2_000_000_000);
@@ -60,7 +60,7 @@ test "RA8EMU-768: restore returns the session to a saved screen, frame for frame
 }
 
 test "public harness rejects a zero settle window before opening the image" {
-    const result = ra8.harness.open(std.testing.allocator, std.testing.io, .{
+    const result = ra8.session.harness.open(std.testing.allocator, std.testing.io, .{
         .elf_path = image_path,
         .settle_window_ns = 0,
     });
@@ -77,7 +77,7 @@ test "public harness cleans up an invalid ELF" {
     try tmp.dir.writeFile(std.testing.io, .{ .sub_path = "bad.elf", .data = "not an elf" });
     var path_buffer: [128]u8 = undefined;
     const path = try std.fmt.bufPrint(&path_buffer, ".zig-cache/tmp/{s}/bad.elf", .{tmp.sub_path});
-    const result = ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = path });
+    const result = ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = path });
     if (result) |opened_value| {
         var opened = opened_value;
         opened.deinit();
@@ -86,7 +86,7 @@ test "public harness cleans up an invalid ELF" {
 }
 
 test "public harness streams ThreadX switches and exceptions in time order" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = "tests/fixtures/threadx/threadx_stkof.elf" });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = "tests/fixtures/threadx/threadx_stkof.elf" });
     defer opened.deinit();
     try std.testing.expect(opened.traceRtos());
     const session = opened.session();
@@ -94,7 +94,7 @@ test "public harness streams ThreadX switches and exceptions in time order" {
     session.live.budget = 2_000_000;
     _ = try session.run(.cpu0, .cont);
 
-    var events: [256]ra8.core.session_event_stream.Event = undefined;
+    var events: [256]ra8.session.session_event_stream.Event = undefined;
     const read = session.pollEvents(id, &events) orelse return error.NoEvents;
     var switches: usize = 0;
     var entries: usize = 0;
@@ -115,12 +115,12 @@ test "public harness streams ThreadX switches and exceptions in time order" {
 }
 
 test "public harness reports no RTOS trace for an image without ThreadX" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path });
     defer opened.deinit();
     try std.testing.expect(!opened.traceRtos());
 }
 
-const StreamEvent = ra8.core.session_event_stream.Event;
+const StreamEvent = ra8.session.session_event_stream.Event;
 
 fn isRtos(event: StreamEvent) bool {
     return switch (event.kind) {
@@ -130,7 +130,7 @@ fn isRtos(event: StreamEvent) bool {
 }
 
 test "public harness streams the same RTOS events --trace-rtos records" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = "tests/fixtures/threadx/threadx_stkof.elf" });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = "tests/fixtures/threadx/threadx_stkof.elf" });
     defer opened.deinit();
     try std.testing.expect(opened.traceRtos());
     const session = opened.session();
@@ -161,7 +161,7 @@ test "public harness streams the same RTOS events --trace-rtos records" {
             .leave => .isr_leave,
         };
         try std.testing.expectEqual(kind, got.kind);
-        try std.testing.expectEqual(ra8.core.session_event_stream.Core.cpu0, got.core);
+        try std.testing.expectEqual(ra8.session.session_event_stream.Core.cpu0, got.core);
         try std.testing.expectEqual(@as(u1, 0), want.core);
         try std.testing.expectEqual(state.publisher.nsOf(want.when), got.virtual_ns);
         try std.testing.expectEqual(want.thread, got.payload.rtos.thread);
@@ -170,14 +170,14 @@ test "public harness streams the same RTOS events --trace-rtos records" {
 }
 
 fn retiredAfter(stall: bool) !struct { retired: u64, recorded: usize, dropped: u64, total: usize } {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = "tests/fixtures/threadx/threadx_stkof.elf" });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = "tests/fixtures/threadx/threadx_stkof.elf" });
     defer opened.deinit();
     try std.testing.expect(opened.traceRtos());
     const session = opened.session();
     const id = if (stall) try session.subscribe() else null;
     session.live.budget = 2_000_000;
     _ = try session.run(.cpu0, .cont);
-    var batch: [ra8.core.session_event_stream.capacity]StreamEvent = undefined;
+    var batch: [ra8.session.session_event_stream.capacity]StreamEvent = undefined;
     const dropped = if (id) |held| (session.pollEvents(held, &batch) orelse return error.NoEvents).dropped else 0;
     const trace = &opened.state.tracer.?.trace;
     return .{ .retired = opened.primaryCpu().retired, .recorded = trace.len, .dropped = dropped, .total = trace.len + trace.dropped };
@@ -188,11 +188,11 @@ test "a subscriber that never reads does not change the run" {
     const stalled = try retiredAfter(true);
     try std.testing.expectEqual(free.retired, stalled.retired);
     try std.testing.expectEqual(free.recorded, stalled.recorded);
-    if (stalled.total > ra8.core.session_event_stream.capacity) try std.testing.expect(stalled.dropped > 0);
+    if (stalled.total > ra8.session.session_event_stream.capacity) try std.testing.expect(stalled.dropped > 0);
 }
 
 test "RA8EMU-950: a session core sees CPACR, so fp_basic's first VADD lands" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{
         .elf_path = "tests/fixtures/fpu/fp_basic.elf",
     });
     defer opened.deinit();

@@ -6,14 +6,15 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const camera = ra8.periph.ceu.camera;
+const camera = ra8.chip.periph.ceu.camera;
 const pipe = ra8.host.camera.pipe_input;
 const allocator = std.testing.allocator;
-const ceu = ra8.periph.ceu;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const frame_base: u32 = ra8.core.memmap.sdram_end - 0x1000;
+const ceu = ra8.chip.periph.ceu;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const frame_base: u32 = ra8.chip.core.memmap.sdram_end - 0x1000;
 
 /// The CEU programs RGB565 here; a 2x1 rgb24 frame becomes 4 bytes.
 var rgb565: u8 = 0x6F;
@@ -200,7 +201,7 @@ test "a pipe is named after its argument" {
     defer allocator.free(path);
     const text = try std.mem.concat(allocator, u8, &.{ path, ",2x1,rgb24" });
     defer allocator.free(text);
-    const named = try ra8.core.cli_camera_source.open(allocator, std.testing.io, .{ .kind = .pipe, .arg = text }, &rgb565);
+    const named = try cli_app.camera_source.open(allocator, std.testing.io, .{ .kind = .pipe, .arg = text }, &rgb565);
     defer named.close();
     try std.testing.expectEqualStrings("pipe", named.label);
     try std.testing.expectEqualStrings(text, named.detail);

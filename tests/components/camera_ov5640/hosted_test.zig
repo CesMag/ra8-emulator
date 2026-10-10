@@ -4,7 +4,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const camera = ra8.periph.ceu.camera;
+const camera = ra8.chip.periph.ceu.camera;
 const hosted = ra8.components.camera.hosted;
 const allocator = std.testing.allocator;
 

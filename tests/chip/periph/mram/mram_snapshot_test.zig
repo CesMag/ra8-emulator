@@ -5,9 +5,9 @@
 //! fit.
 const std = @import("std");
 const ra8 = @import("ra8");
-const half = ra8.snapshot.option_mram;
+const half = ra8.chip.periph.mram_snapshot;
 const fields = ra8.snapshot.fields;
-const Mram = ra8.periph.mram.Mram;
+const Mram = ra8.chip.periph.mram.Mram;
 const allocator = std.testing.allocator;
 
 const cell = 0x02E0_7610;

@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/exception/fp_frame.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const frame = ra8.core.cpu.exception.frame;
-const fp_frame = ra8.core.cpu.exception.fp_frame;
+const frame = ra8.chip.core.cpu.exception.frame;
+const fp_frame = ra8.chip.core.cpu.exception.fp_frame;
 const fixture = @import("ram.zig");
 
 const basic: frame.Frame = .{ 1, 2, 3, 4, 12, 0x14, 0x2000_0102, 0x0100_0200 };

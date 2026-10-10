@@ -2,7 +2,7 @@
 //! so a model constant can't drift onto a neighbouring bit.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.periph.usbhs_regs;
+const regs = ra8.chip.periph.usbhs_regs;
 
 test "SUREQ is DCPCTR bit 14, not SQMON's bit 6" {
     // HUM 37.2.24 DCPCTR: SUREQ b14, SUREQCLR b11, SQMON b6, CCPL b2.

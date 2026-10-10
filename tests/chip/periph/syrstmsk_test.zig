@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const syrstmsk = ra8.periph.syrstmsk;
-const prcr = ra8.periph.prcr;
+const syrstmsk = ra8.chip.periph.syrstmsk;
+const prcr = ra8.chip.periph.prcr;
 
 const a0 = syrstmsk.win_base + syrstmsk.off.msk0;
 const a1 = syrstmsk.win_base + syrstmsk.off.msk1;

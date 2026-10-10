@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/doc_operand.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.periph.doc_operand;
+const mod = ra8.chip.periph.doc_operand;
 
 test "the operand is two bytes with DOBW clear and four with it set" {
     try std.testing.expectEqual(@as(u32, 2), mod.operandBytes(false));

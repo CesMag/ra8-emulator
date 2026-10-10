@@ -2,10 +2,10 @@
 //! polled host sees is one the USBFS driver committed on the other jack.
 const std = @import("std");
 const ra8 = @import("ra8");
-const usbfs = ra8.periph.usbfs;
-const regs = ra8.periph.usbhs_regs;
-const usbhs_pipe = ra8.periph.usbhs_pipe;
-const xfer = ra8.periph.usbhs_xfer;
+const usbfs = ra8.chip.periph.usbfs;
+const regs = ra8.chip.periph.usbhs_regs;
+const usbhs_pipe = ra8.chip.periph.usbhs_pipe;
+const xfer = ra8.chip.periph.usbhs_xfer;
 const Loop = ra8.components.usb_loop_cable.Loop;
 
 fn at(offset: u32) u32 {

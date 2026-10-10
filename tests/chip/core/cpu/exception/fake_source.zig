@@ -1,8 +1,8 @@
 //! An exception source a test sets by hand: one pending exception or none,
 //! and a record of what the core took and returned from.
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const exception = ra8.core.cpu.exception;
+const bus = ra8.chip.core.cpu.bus;
+const exception = ra8.chip.core.cpu.exception;
 const Entry = exception.active.Entry;
 
 pub const Fake = struct {

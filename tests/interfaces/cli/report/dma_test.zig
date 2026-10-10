@@ -5,10 +5,11 @@
 //! short transfer books are carried up so the loud line can be printed.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const report_dma = ra8.board.report_dma;
-const dmac = ra8.periph.dmac;
-const dma_bank = ra8.periph.dma_bank;
+const report_dma = cli_app.report_dma;
+const dmac = ra8.chip.periph.dmac;
+const dma_bank = ra8.chip.periph.dma_bank;
 
 /// A DMAC with no engine behind it. Nothing here asks it to transfer: the
 /// tests set the counters a run would have left and ask what the report

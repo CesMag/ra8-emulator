@@ -2,7 +2,7 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const route = ra8.periph.fault_status.route;
+const route = ra8.chip.periph.fault_status.route;
 
 const all_enabled: u32 = (1 << 16) | (1 << 17) | (1 << 18);
 /// MemManage at 0x20, BusFault at 0x40, UsageFault at 0x60.

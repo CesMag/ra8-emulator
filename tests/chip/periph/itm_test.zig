@@ -1,7 +1,7 @@
 //! The ITM stimulus ports, their enables, and the text port 0 collects.
 const std = @import("std");
 const ra8 = @import("ra8");
-const itm = ra8.core.itm;
+const itm = ra8.chip.periph.itm;
 
 fn enabled() itm.Itm {
     var unit = itm.Itm{};

@@ -1,8 +1,8 @@
 //! Covers src/interfaces/cli/host_bytes.zig: a host handle as a model's
 //! byte source, read without waiting.
 const std = @import("std");
-const ra8 = @import("ra8");
-const host_bytes = ra8.core.cli.host_bytes;
+const cli_app = @import("cli_app");
+const host_bytes = cli_app.cli.host_bytes;
 
 test "a host pipe read through its byte source" {
     const ends = try std.Io.Threaded.pipe2(.{ .NONBLOCK = true });

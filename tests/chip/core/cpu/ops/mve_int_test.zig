@@ -2,11 +2,11 @@
 //! assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const mve_int = ra8.core.cpu.ops.mve_int;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const mve_int = ra8.chip.core.cpu.ops.mve_int;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -49,12 +49,12 @@ test "register fields: vadd.i32 q7, q0, q0 / q0, q7, q0 / q0, q0, q7" {
 
 test "inside vpste the first add writes P0 lanes and the second the rest" {
     var cpu = loaded();
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0x00FF }, 0b1100);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0x00FF }, 0b1100);
     try run(&cpu, 0xEF22, 0x0844);
     try std.testing.expectEqual(@as(u128, 0x0000_0000_0000_0000_0000_0012_0000_0001), qreg.read(&cpu.fp.bank, 0));
     try run(&cpu, 0xFF22, 0x0844);
     try std.testing.expectEqual(@as(u128, 0xFFFF_FFF4_FFFF_FFF3_0000_0012_0000_0001), qreg.read(&cpu.fp.bank, 0));
-    try std.testing.expect(!ra8.core.mve.vpt.inBlock(cpu.fp.vpr));
+    try std.testing.expect(!ra8.chip.core.cpu.mve.vpt.inBlock(cpu.fp.vpr));
 }
 
 test "the table routes the T1 encodings here" {

@@ -2,7 +2,7 @@
 //! run over a plain register file. Encodings are arm-none-eabi-as 13.3's.
 const std = @import("std");
 const ra8 = @import("ra8");
-const long_shift = ra8.core.long_shift;
+const long_shift = ra8.chip.core.long_shift;
 
 fn runOn(first: u16, second: u16, regs: *long_shift.Regs) !bool {
     const form = long_shift.decode(first, second) orelse return error.NotALongShift;

@@ -4,9 +4,9 @@
 //! or short section changes nothing and leaves nothing allocated.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const file = ra8.snapshot.file;
-const storage = ra8.snapshot.storage;
+const storage = ra8.board.snapshot.storage;
 const allocator = std.testing.allocator;
 
 const Options = @FieldType(Board, "options");

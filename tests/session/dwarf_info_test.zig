@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const info = ra8.core.dwarf_info;
+const info = ra8.session.dwarf_info;
 
 // 1: compile_unit with children, name as a string. 2: subprogram, low_pc
 // addr, high_pc data4 (a length), decl_line data1, external flag_present.

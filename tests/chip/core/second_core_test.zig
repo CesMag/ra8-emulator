@@ -1,15 +1,15 @@
 //! Tests for src/chip/core/second_core.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.core.second_core;
-const memmap = ra8.core.memmap;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const Board = ra8.board.Board;
-const sau = ra8.periph.sau;
-const mpu = ra8.periph.mpu;
-const scb = ra8.periph.scb;
-const nvic = ra8.periph.nvic;
+const mod = ra8.chip.core.second_core;
+const memmap = ra8.chip.core.memmap;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const Board = ra8.board.board.Board;
+const sau = ra8.chip.periph.sau;
+const mpu = ra8.chip.periph.mpu;
+const scb = ra8.chip.periph.scb;
+const nvic = ra8.chip.periph.nvic;
 
 /// A thumb image is not needed to test the wiring: CPU1's own store
 /// beside CPU0's, sharing its SRAM the way the Zig run lays them out.
@@ -86,7 +86,7 @@ test "one core's SAU map does not land in the other's table" {
 }
 
 test "a round is the chunk boundary" {
-    try std.testing.expectEqual(ra8.core.cadence.instructions, mod.limits.round);
+    try std.testing.expectEqual(ra8.chip.core.cadence.instructions, mod.limits.round);
 }
 
 test "a second core carries an MPU and guard of its own, not the board's" {
@@ -95,7 +95,7 @@ test "a second core carries an MPU and guard of its own, not the board's" {
     defer pair.part();
     var cpu1: mod.Second = .{};
     cpu1.regions = mpu.Mpu.init();
-    cpu1.guard = ra8.core.mpu_guard.Guard.init();
+    cpu1.guard = ra8.chip.core.mpu_guard.Guard.init();
 
     var board = Board.init(std.testing.allocator);
     defer board.deinit();

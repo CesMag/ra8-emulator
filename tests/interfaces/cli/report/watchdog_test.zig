@@ -5,9 +5,9 @@
 //! and the two readings this line was written to make legible read the way
 //! the firmware's own declared period reads.
 const std = @import("std");
-const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const report_watchdog = ra8.board.report_watchdog;
+const report_watchdog = cli_app.report_watchdog;
 
 test "a run that never refreshed has no cadence" {
     try std.testing.expectEqual(@as(?f64, null), report_watchdog.everyPeriods(0, 200));

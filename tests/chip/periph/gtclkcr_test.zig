@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const gtclkcr = ra8.periph.gtclkcr;
-const mstp = ra8.periph.mstp;
+const gtclkcr = ra8.chip.periph.gtclkcr;
+const mstp = ra8.chip.periph.mstp;
 
 const Fixture = struct {
     modules: mstp.Mstp,

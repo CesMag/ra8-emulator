@@ -2,11 +2,11 @@
 //! refuses.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.periph.riic_bus;
-const flag = ra8.periph.i3c_flags;
+const bus = ra8.chip.periph.riic_bus;
+const flag = ra8.chip.periph.i3c_flags;
 const gt911 = ra8.components.gt911;
-const i3c = ra8.periph.i3c;
-const reset = ra8.periph.i3c_reset;
+const i3c = ra8.chip.periph.i3c;
+const reset = ra8.chip.periph.i3c_reset;
 
 /// A part that answers with a fixed reply and remembers what it was told.
 const Echo = struct {

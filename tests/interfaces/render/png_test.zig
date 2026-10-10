@@ -1,7 +1,7 @@
 //! Tests for src/interfaces/render/png.zig.
 const std = @import("std");
-const ra8 = @import("ra8");
-const png = ra8.board.report.png;
+const cli_app = @import("cli_app");
+const png = cli_app.report.png;
 
 const Chunk = struct { kind: []const u8, data: []const u8 };
 

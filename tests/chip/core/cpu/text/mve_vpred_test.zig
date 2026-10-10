@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/text/mve_vpred.zig against DDI0553 syntax.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Instr = ra8.core.cpu.instr.Instr;
-const disasm = ra8.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
 const v81m = @import("v81m.zig");
 
 test "VPNOT and VPSEL use the architectural UAL syntax" {
@@ -11,7 +11,7 @@ test "VPNOT and VPSEL use the architectural UAL syntax" {
         .{ .hw1 = 0xFE33, .hw2 = 0x0F05, .text = "vpsel q0, q1, q2" },
         .{ .hw1 = 0xFE3F, .hw2 = 0xEF01, .text = "vpsel q7, q7, q0" },
     });
-    const hit = ra8.core.cpu.decode.decode(.{
+    const hit = ra8.chip.core.cpu.decode.decode(.{
         .address = 0x0200_0100,
         .hw1 = 0xFE33,
         .hw2 = 0x0F05,

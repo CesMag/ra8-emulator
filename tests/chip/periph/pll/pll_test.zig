@@ -1,9 +1,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const pll = ra8.periph.pll;
-const pll_div = ra8.periph.pll_div;
-const prcr = ra8.periph.prcr;
-const oscsf = ra8.periph.oscsf;
+const pll = ra8.chip.periph.pll;
+const pll_div = ra8.chip.periph.pll_div;
+const prcr = ra8.chip.periph.prcr;
+const oscsf = ra8.chip.periph.oscsf;
 
 const Fixture = struct {
     protection: prcr.Prcr,

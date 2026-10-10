@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/ldrd_strd.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const regs = ra8.core.cpu.regs;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const ldrd_strd = ra8.core.cpu.ops.ldrd_strd;
+const bus = ra8.chip.core.cpu.bus;
+const regs = ra8.chip.core.cpu.regs;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const ldrd_strd = ra8.chip.core.cpu.ops.ldrd_strd;
 
 /// 64 bytes of RAM at 0x2000_0000.
 const Ram = struct {
@@ -32,13 +32,13 @@ const Ram = struct {
 };
 
 fn run(cpu: *Cpu, hw1: u16, hw2: u16) !void {
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
     const exec = ldrd_strd.group.decode(instr) orelse return error.NotClaimed;
     try exec(cpu, instr);
 }
 
 fn claimed(hw1: u16, hw2: u16) bool {
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
     return ldrd_strd.group.decode(instr) != null;
 }
 

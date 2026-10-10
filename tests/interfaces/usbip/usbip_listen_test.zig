@@ -1,9 +1,9 @@
 //! Covers src/interfaces/usbip/usbip_listen.zig: a loopback host that lists
 //! on one connection and imports on the next gets the export back.
 const std = @import("std");
-const ra8 = @import("ra8");
-const wire = ra8.core.cli.usbip_wire;
-const exp = ra8.core.cli.usbip_export;
+const cli_app = @import("cli_app");
+const wire = cli_app.cli.usbip_wire;
+const exp = cli_app.cli.usbip_export;
 
 /// A CDC ACM device: class 0xEF/2/1 (IAD), VID 0x045B PID 0x5310, bcd 1.00.
 const device = [_]u8{ 18, 1, 0x00, 0x02, 0xEF, 0x02, 0x01, 64, 0x5B, 0x04, 0x10, 0x53, 0x00, 0x01, 1, 2, 3, 1 };

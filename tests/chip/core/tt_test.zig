@@ -2,8 +2,8 @@
 //! the board's SAU.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sau = ra8.periph.sau;
-const tt = ra8.core.csel.tt;
+const sau = ra8.chip.periph.sau;
+const tt = ra8.chip.core.csel.tt;
 const field = tt.field;
 
 const enable: u32 = 1 << 0;

@@ -11,7 +11,7 @@ const bx_lr: u16 = 0x4770;
 
 /// Thread code is a run of NOPs; PendSV and SysTick both go to a handler
 /// that is a NOP and BX LR.
-fn setup(ram: *fixture.Ram, fake: *Fake) !ra8.core.cpu.cpu.Cpu {
+fn setup(ram: *fixture.Ram, fake: *Fake) !ra8.chip.core.cpu.cpu.Cpu {
     var at = fixture.code;
     while (at < fixture.code + 0x40) : (at += 2) ram.putHalf(at, nop);
     ram.putHalf(fixture.handler, nop);
@@ -115,17 +115,17 @@ const WithAircr = struct {
     ram: *fixture.Ram,
     aircr: u32,
 
-    fn view(self: *WithAircr) ra8.core.cpu.bus.Bus {
+    fn view(self: *WithAircr) ra8.chip.core.cpu.bus.Bus {
         return .{ .ctx = self, .vtable = &.{ .read = read, .write = write } };
     }
 
-    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.core.cpu.bus.Error!void {
+    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *WithAircr = @ptrCast(@alignCast(ctx));
-        if (address != ra8.core.memmap.scb.aircr or into.len != 4) return self.ram.view().read(address, into);
+        if (address != ra8.chip.core.memmap.scb.aircr or into.len != 4) return self.ram.view().read(address, into);
         std.mem.writeInt(u32, into[0..4], self.aircr, .little);
     }
 
-    fn write(ctx: *anyopaque, address: u32, bytes: []const u8) ra8.core.cpu.bus.Error!void {
+    fn write(ctx: *anyopaque, address: u32, bytes: []const u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *WithAircr = @ptrCast(@alignCast(ctx));
         return self.ram.view().write(address, bytes);
     }

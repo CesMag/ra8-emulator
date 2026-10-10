@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/gather.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const gather = ra8.core.mve.gather;
+const gather = ra8.chip.core.cpu.mve.gather;
 
 fn form(msize: anytype, esize: anytype, signed: bool, store: bool, os: bool) gather.Form {
     return .{ .msize = msize, .esize = esize, .signed = signed, .store = store, .os = os };

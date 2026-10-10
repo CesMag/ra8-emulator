@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const store_memory = @import("../store_memory.zig");
-const mram = ra8.periph.mram;
+const mram = ra8.chip.periph.mram;
 const option_window = mram.option_window;
 
 test "the span is page aligned and covers the whole Program window" {

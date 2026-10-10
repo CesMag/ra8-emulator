@@ -2,8 +2,8 @@
 //! machine the gateway is held to.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.periph.eth_regs;
-const gateway = ra8.periph.eth_gateway;
+const regs = ra8.chip.periph.eth_regs;
+const gateway = ra8.chip.periph.eth_gateway;
 
 test "GWMS reports the gateway's mode" {
     var agent = gateway.Gateway{};

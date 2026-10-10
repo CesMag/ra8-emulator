@@ -2,16 +2,16 @@
 //! switch, what an image without ThreadX gets, and what the report prints.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_hook = ra8.core.step_hook.rtos_hook;
+const rtos_hook = ra8.session.step_hook.rtos_hook;
 
-fn bareImage(buffer: *[@sizeOf(ra8.image.elf.Header)]u8) !ra8.image.elf.Image {
+fn bareImage(buffer: *[@sizeOf(ra8.board.image.elf.Header)]u8) !ra8.board.image.elf.Image {
     @memset(buffer, 0);
-    const head: *align(1) ra8.image.elf.Header = std.mem.bytesAsValue(ra8.image.elf.Header, buffer);
+    const head: *align(1) ra8.board.image.elf.Header = std.mem.bytesAsValue(ra8.board.image.elf.Header, buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    return ra8.image.elf.Image.init(buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    return ra8.board.image.elf.Image.init(buffer);
 }
 
 test "a full word to the pointer is a switch, anything else is not" {
@@ -34,7 +34,7 @@ test "each switch is stamped from the run's clock as it lands" {
 }
 
 test "no flag traces nothing, and an image without ThreadX traces nothing" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     const image = try bareImage(&buffer);
     try std.testing.expect(rtos_hook.resolve(image, null) == null);
     try std.testing.expect(rtos_hook.resolve(image, .{}) == null);
@@ -147,7 +147,7 @@ test "a CPU1 tracer tags its events and its header cpu1" {
 }
 
 test "a CPU1 image without ThreadX traces nothing, and no flag traces nothing" {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     const image = try bareImage(&buffer);
     try std.testing.expect(rtos_hook.resolveOn(image, .{}, 1) == null);
     try std.testing.expect(rtos_hook.resolveOn(image, null, 1) == null);

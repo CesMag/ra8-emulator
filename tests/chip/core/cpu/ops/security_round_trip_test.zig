@@ -4,11 +4,11 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("../exception/ram.zig");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Profile = ra8.core.cpu.decode.profile.Profile;
-const Attribution = ra8.core.cpu.cpu.attribution.Attribution;
-const State = ra8.core.cpu.cpu.attribution.State;
-const Bank = ra8.core.banked.Bank;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Profile = ra8.chip.core.cpu.decode.profile.Profile;
+const Attribution = ra8.chip.core.cpu.cpu.attribution.Attribution;
+const State = ra8.chip.core.cpu.cpu.attribution.State;
+const Bank = ra8.chip.core.banked.Bank;
 
 const entry: u32 = fixture.code + 0x20;
 
@@ -68,14 +68,14 @@ fn roundTrip(profile: Profile) !void {
     cpu.banked.other = non_secure;
     cpu.regs.low[0] = entry; // bit 0 clear: a Non-secure target
 
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
-    try std.testing.expectEqual(ra8.core.banked.State.non_secure, cpu.banked.current);
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(ra8.chip.core.banked.State.non_secure, cpu.banked.current);
     try std.testing.expectEqual(entry, cpu.regs.pc);
     try std.testing.expectEqual(non_secure, running(&cpu));
     try std.testing.expectEqual(secure, cpu.banked.other);
 
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
-    try std.testing.expectEqual(ra8.core.banked.State.secure, cpu.banked.current);
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(ra8.chip.core.banked.State.secure, cpu.banked.current);
     try std.testing.expectEqual(entry + 4, cpu.regs.pc);
     try std.testing.expectEqual(secure, running(&cpu));
     try std.testing.expectEqual(non_secure, cpu.banked.other);

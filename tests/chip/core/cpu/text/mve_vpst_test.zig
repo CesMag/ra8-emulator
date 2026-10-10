@@ -1,9 +1,9 @@
 //! Covers MVE printers and the DDI0553 B5.5 VPT/VPST suffix table.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Instr = ra8.core.cpu.instr.Instr;
-const disasm = ra8.core.cpu.decode.text.disasm;
-const vpst_text = ra8.core.cpu.decode.text.mve_vpst;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
+const vpst_text = ra8.chip.core.cpu.decode.text.mve_vpst;
 const v81m = @import("v81m.zig");
 
 const Pattern = struct { mask: u4, name: []const u8, suffixes: []const u8 };

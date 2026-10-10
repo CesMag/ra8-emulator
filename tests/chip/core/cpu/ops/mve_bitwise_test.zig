@@ -2,11 +2,11 @@
 //! assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const mve_bitwise = ra8.core.cpu.ops.mve_bitwise;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const mve_bitwise = ra8.chip.core.cpu.ops.mve_bitwise;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 const q1: u128 = 0xFFFF_0000_FF00_FF00_F0F0_F0F0_1234_5678;
 const q2: u128 = 0x0F0F_0F0F_FFFF_0000_0000_FFFF_FFFF_0000;
@@ -51,12 +51,12 @@ test "vmov q4, q1 is vorr q4, q1, q1" {
 
 test "inside vpste the first veor writes P0 lanes and the second the rest" {
     var cpu = loaded();
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0x00FF }, 0b1100);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0x00FF }, 0b1100);
     try run(&cpu, 0xFF02, 0x0154);
     try std.testing.expectEqual((q1 ^ q2) & 0xFFFF_FFFF_FFFF_FFFF, qreg.read(&cpu.fp.bank, 0));
     try run(&cpu, 0xFF02, 0x0154);
     try std.testing.expectEqual(q1 ^ q2, qreg.read(&cpu.fp.bank, 0));
-    try std.testing.expect(!ra8.core.mve.vpt.inBlock(cpu.fp.vpr));
+    try std.testing.expect(!ra8.chip.core.cpu.mve.vpt.inBlock(cpu.fp.vpr));
 }
 
 test "the table routes the T1 encodings here" {

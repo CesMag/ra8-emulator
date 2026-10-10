@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const blend = ra8.periph.glcdc_blend;
+const blend = ra8.chip.periph.glcdc_blend;
 
 fn layer() blend.Layer {
     var stage = blend.Layer{};

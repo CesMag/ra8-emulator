@@ -4,21 +4,21 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const server = ra8.interfaces.rpc.server;
-const files = ra8.interfaces.rpc.files;
-const memmap = ra8.core.memmap;
+const server = ra8.rpc.session_server;
+const files = ra8.rpc.session_files;
+const memmap = ra8.chip.core.memmap;
 
 const image = "tests/fixtures/uart/uart_irq_echo.elf";
 /// A word in SRAM the fixture never touches, so it reads zero when saved.
 const spare = memmap.sram_base + 0x0004_0000;
 
-fn runFor(harness: *ra8.harness.Harness, instructions: u64) !void {
+fn runFor(harness: *ra8.session.harness.Harness, instructions: u64) !void {
     const session = harness.session();
     session.live.budget = instructions;
     _ = try session.run(.cpu0, .cont);
 }
 
-fn word(harness: *ra8.harness.Harness) !u32 {
+fn word(harness: *ra8.session.harness.Harness) !u32 {
     var bytes: [4]u8 = undefined;
     try harness.session().read(.cpu0, spare, &bytes);
     return std.mem.readInt(u32, &bytes, .little);
@@ -32,7 +32,7 @@ test "restore puts pc, guest memory and virtual time back where snapshot left th
     const path = try std.fs.path.join(std.testing.allocator, &.{ dir, "run.ra8snap" });
     defer std.testing.allocator.free(path);
 
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch, .state = opened.stateFiles() };
@@ -58,7 +58,7 @@ test "restore puts pc, guest memory and virtual time back where snapshot left th
 }
 
 test "snapshot and restore are refused with no state hook or no such file" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var bare: server.Context = .{ .session = opened.session(), .scratch = &scratch };

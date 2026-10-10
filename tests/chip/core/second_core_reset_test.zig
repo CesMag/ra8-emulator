@@ -2,14 +2,14 @@
 //! and seeding CPU1 with no engine open (RA8EMU-571).
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.core.second_core;
-const memmap = ra8.core.memmap;
-const Board = ra8.board.Board;
-const scb = ra8.periph.scb;
-const cpu_ctrl = ra8.periph.cpu_ctrl;
-const elf = ra8.image.elf;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const mod = ra8.chip.core.second_core;
+const memmap = ra8.chip.core.memmap;
+const Board = ra8.board.board.Board;
+const scb = ra8.chip.periph.scb;
+const cpu_ctrl = ra8.chip.periph.cpu_ctrl;
+const elf = ra8.board.image.elf;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 
 /// CPU1's own store beside CPU0's, sharing its SRAM, as the Zig run
 /// builds them. Closed with `part`.
@@ -44,7 +44,7 @@ test "a reset CPU1 asks for latches SWRF and reboots the part, as CPU0's does" {
     var cpu1: mod.Second = .{};
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
-    var pending: ra8.core.reboot.Reboot = .{};
+    var pending: ra8.chip.core.reboot.Reboot = .{};
     board.reboot = &pending;
     cpu1.control = scb.Scb.init();
     try cpu1.control.prime(pair.second());
@@ -56,7 +56,7 @@ test "a reset CPU1 asks for latches SWRF and reboots the part, as CPU0's does" {
     try pair.second().writeWord(memmap.scb.aircr, keyed | scb.field.sysresetreq);
     cpu1.takeResetRequest(pair.second());
     try std.testing.expect(pending.requested);
-    try std.testing.expect(board.causes.rstsr1 & ra8.periph.reset.cause.swrf != 0);
+    try std.testing.expect(board.causes.rstsr1 & ra8.chip.periph.reset.cause.swrf != 0);
     try std.testing.expectEqual(@as(u32, 1), board.causes.requests);
 }
 
@@ -67,7 +67,7 @@ test "a reset the board performs holds CPU1 until it is released" {
     var cpu1: mod.Second = .{};
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
-    var pending: ra8.core.reboot.Reboot = .{};
+    var pending: ra8.chip.core.reboot.Reboot = .{};
     board.reboot = &pending;
     cpu1.state.wiring = ra8.board.wiring.cpu1(&board);
     try std.testing.expect(!cpu1.state.heldInReset(pair.second()));
@@ -84,7 +84,7 @@ test "a fresh release after a reset brings CPU1 up out of CPU1INITVTOR" {
     var cpu1: mod.Second = .{};
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
-    var pending: ra8.core.reboot.Reboot = .{};
+    var pending: ra8.chip.core.reboot.Reboot = .{};
     board.reboot = &pending;
     cpu1.state.wiring = ra8.board.wiring.cpu1(&board);
     const table: u32 = memmap.sram_base + 0x400;
@@ -154,7 +154,7 @@ test "CPU1's image and VTOR are seeded into a store with no engine open" {
     var store = try Store.init(null);
     defer store.deinit();
     const memory: Guest = .{ .store = &store };
-    const loaded = try ra8.image.load.read(image);
+    const loaded = try ra8.board.image.load.read(image);
     const seeded = try mod.seedImage(memory, loaded.image());
     try std.testing.expectEqual(@as(u32, 8), seeded.written);
     try std.testing.expectEqual(memmap.mram_base, seeded.vector_base);

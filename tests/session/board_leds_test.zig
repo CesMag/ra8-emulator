@@ -2,11 +2,11 @@
 //! and it is lit only while its pin drives it on.
 const std = @import("std");
 const ra8 = @import("ra8");
-const board_leds = ra8.board.board_leds;
-const gpio = ra8.periph.gpio;
+const board_leds = ra8.session.board_leds;
+const gpio = ra8.chip.periph.gpio;
 
 test "a fresh board has every LED dark in its own colour" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     const lit = board_leds.of(&board);
     for (lit, gpio.leds) |led, want| {

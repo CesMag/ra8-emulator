@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/mve/int_width.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const width = ra8.core.mve.int_width;
+const width = ra8.chip.core.cpu.mve.int_width;
 
 test "wider doubles the lane size" {
-    try std.testing.expectEqual(ra8.core.mve.qreg.Size.half, width.wider(.byte));
-    try std.testing.expectEqual(ra8.core.mve.qreg.Size.word, width.wider(.half));
+    try std.testing.expectEqual(ra8.chip.core.cpu.mve.qreg.Size.half, width.wider(.byte));
+    try std.testing.expectEqual(ra8.chip.core.cpu.mve.qreg.Size.word, width.wider(.half));
 }
 
 test "narrow keeps the half of Qd it does not write" {

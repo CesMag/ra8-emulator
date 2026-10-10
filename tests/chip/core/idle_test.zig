@@ -6,8 +6,8 @@
 //! including the cases a real image would take hours to reach.
 const std = @import("std");
 const ra8 = @import("ra8");
-const idle = ra8.core.idle;
-const fault = ra8.core.fault;
+const idle = ra8.chip.core.idle;
+const fault = ra8.chip.core.fault;
 
 /// A core that hands out scripted register states, one per step. Enough of
 /// the engine's surface for the seam: a register read, a one-instruction

@@ -2,8 +2,8 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const afsr = ra8.periph.afsr;
-const memmap = ra8.core.memmap;
+const afsr = ra8.chip.periph.afsr;
+const memmap = ra8.chip.core.memmap;
 
 test "a data access in the ITCM window raises PPOISON, bit 19" {
     try std.testing.expectEqual(@as(u32, 0x0008_0000), afsr.ppoison);

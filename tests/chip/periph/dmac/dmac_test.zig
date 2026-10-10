@@ -3,11 +3,11 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const dmac = ra8.periph.dmac;
-const dma_bank = ra8.periph.dma_bank;
-const xfer = ra8.periph.dmac_xfer;
+const dmac = ra8.chip.periph.dmac;
+const dma_bank = ra8.chip.periph.dma_bank;
+const xfer = ra8.chip.periph.dmac_xfer;
 const store_memory = @import("../store_memory.zig");
-const memmap = ra8.core.memmap;
+const memmap = ra8.chip.core.memmap;
 
 const source_at: u32 = memmap.sram_base + 0x100;
 const dest_at: u32 = memmap.sram_base + 0x200;

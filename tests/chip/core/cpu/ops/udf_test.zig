@@ -2,9 +2,9 @@
 //! through Cpu.step.
 const std = @import("std");
 const ra8 = @import("ra8");
-const udf = ra8.core.cpu.ops.udf;
-const memmap = ra8.core.memmap;
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const udf = ra8.chip.core.cpu.ops.udf;
+const memmap = ra8.chip.core.memmap;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const fixture = @import("../exception/ram.zig");
 
 const usage_handler: u32 = fixture.base + 0x1C0;
@@ -42,7 +42,7 @@ test "UDF T2 claims its 16-bit immediate and nothing beside it" {
 }
 
 test "the decode table reaches UDF for both encodings" {
-    const decode = ra8.core.cpu.decode.decode;
+    const decode = ra8.chip.core.cpu.decode.decode;
     try std.testing.expectEqualStrings("udf", decode(.{ .address = 0, .hw1 = 0xDE12, .size = 2 }).?.group);
     try std.testing.expectEqualStrings("udf", decode(.{ .address = 0, .hw1 = 0xF7F1, .hw2 = 0xA234, .size = 4 }).?.group);
 }
@@ -51,7 +51,7 @@ test "UDF T1 is taken as UsageFault UNDEFINSTR with the UDF stacked" {
     var ram: fixture.Ram = .{};
     ram.putWord(memmap.scb.shcsr, usgfaultena);
     var cpu = try booted(&ram, 0x0000_DE07);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(usage_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 6), cpu.regs.xpsr & 0x1FF);
     try std.testing.expectEqual(undefinstr, ram.word(memmap.scb.cfsr));
@@ -62,7 +62,7 @@ test "UDF T1 is taken as UsageFault UNDEFINSTR with the UDF stacked" {
 test "UDF T2 with USGFAULTENA clear escalates to HardFault with HFSR.FORCED" {
     var ram: fixture.Ram = .{};
     var cpu = try booted(&ram, 0xA000_F7F0);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(hard_handler, cpu.regs.pc);
     try std.testing.expectEqual(undefinstr, ram.word(memmap.scb.cfsr));
     try std.testing.expectEqual(forced, ram.word(memmap.scb.hfsr));

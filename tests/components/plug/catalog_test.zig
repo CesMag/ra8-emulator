@@ -5,7 +5,7 @@ const ra8 = @import("ra8");
 const model = ra8.components.model;
 const catalog = model.catalog;
 const endpoint = model.endpoint;
-const riic_bus = ra8.periph.riic_bus;
+const riic_bus = ra8.chip.periph.riic_bus;
 
 /// A one-register I2C part: a write stores the byte, a read returns it.
 const Latch = struct {

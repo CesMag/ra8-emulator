@@ -2,7 +2,7 @@
 //! and the gate it puts on every later transmit request.
 const std = @import("std");
 const ra8 = @import("ra8");
-const tx_status = ra8.periph.canfd_tx_status;
+const tx_status = ra8.chip.periph.canfd_tx_status;
 
 test "a fresh mailbox is idle and takes a request" {
     var st = tx_status.Status{};

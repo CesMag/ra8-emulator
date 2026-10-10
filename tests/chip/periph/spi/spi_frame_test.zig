@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const frame = ra8.periph.spi.frame;
+const frame = ra8.chip.periph.spi.frame;
 
 test "a cleared SPCMD0 is an eight-bit MSB-first frame" {
     const f = frame.of(0);

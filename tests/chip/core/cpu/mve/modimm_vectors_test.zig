@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/mve/modimm_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const modimm = ra8.core.mve.modimm;
-const vectors = ra8.core.mve.modimm_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const modimm = ra8.chip.core.cpu.mve.modimm;
+const vectors = ra8.chip.core.cpu.mve.modimm_vectors;
 
 fn run(in: vectors.Case) u128 {
     return modimm.run(in.op, in.cmode, in.imm8, in.qd).?;

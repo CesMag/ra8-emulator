@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/held.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.periph.held;
+const mod = ra8.chip.periph.held;
 
 test "a controller that refused nothing is quiet" {
     const held = mod.Held{};

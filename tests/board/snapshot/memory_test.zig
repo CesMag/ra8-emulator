@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const file = ra8.snapshot.file;
-const memory = ra8.snapshot.memory;
-const memmap = ra8.core.memmap;
+const memory = ra8.board.snapshot.memory;
+const memmap = ra8.chip.core.memmap;
 
 const window_base: u32 = 0x9000_0000;
 

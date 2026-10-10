@@ -4,8 +4,8 @@
 //! stack, clears S0-S31 and FPSCR, and the return restores them.
 const std = @import("std");
 const ra8 = @import("ra8");
-const exception = ra8.core.cpu.exception;
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const exception = ra8.chip.core.cpu.exception;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const fixture = @import("ram.zig");
 
 const bx_lr: u16 = 0x4770;
@@ -56,7 +56,7 @@ test "TS set: the Non-secure handler sees S0-S31 and FPSCR cleared" {
 test "TS set: the return restores S0-S31 and the Secure stack" {
     var ram: fixture.Ram = .{};
     var cpu = try preempted(&ram, 1);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(.secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.code, cpu.regs.pc);
     try std.testing.expectEqual(fixture.msp_top, cpu.regs.msp);
@@ -70,7 +70,7 @@ test "TS clear: the basic 0x68-byte frame, S16-S31 left in place" {
     const at = fixture.msp_top - 0x68;
     try std.testing.expectEqual(at - 0x28, cpu.banked.other.msp);
     try std.testing.expectEqual(sValue(16), cpu.fp.bank.readS(16));
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.msp_top, cpu.regs.msp);
     try std.testing.expectEqual(sValue(0), cpu.fp.bank.readS(0));
 }

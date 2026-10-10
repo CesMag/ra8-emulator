@@ -2,8 +2,8 @@
 //! one core.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bank = ra8.core.systick_bank;
-const clocks = ra8.periph.clocks;
+const bank = ra8.chip.core.systick_bank;
+const clocks = ra8.chip.periph.clocks;
 
 const run = clocks.csr_enable | clocks.csr_tickint;
 
@@ -108,9 +108,9 @@ test "the Non-secure time base counts at the alias and pends only its own ICSR" 
     const words = bank.non_secure_words;
     try std.testing.expectEqual(@as(u32, 0xE002_E010), words.csr);
     try std.testing.expectEqual(@as(u32, 0xE002_ED04), words.icsr);
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    const core: ra8.core.cpu.memory.guest.Guest = .{ .store = &store };
+    const core: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &store };
     try core.writeWord(words.rvr, 9);
     try core.writeWord(words.cvr, 3);
     try core.writeWord(words.csr, run);

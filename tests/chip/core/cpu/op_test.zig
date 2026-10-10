@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/op.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const op = ra8.core.cpu.op;
-const Instr = ra8.core.cpu.instr.Instr;
+const op = ra8.chip.core.cpu.op;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 fn none(instr: Instr) ?op.Exec {
     _ = instr;

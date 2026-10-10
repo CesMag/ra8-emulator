@@ -3,8 +3,8 @@
 //! and by the report tests that resolve a global through it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const elf = ra8.image.elf;
-const symbols = ra8.core.symbols;
+const elf = ra8.board.image.elf;
+const symbols = ra8.session.symbols;
 
 /// A minimal ELF32 ARM image with one symbol table and one string table,
 /// built byte by byte so the test owns every offset in it.

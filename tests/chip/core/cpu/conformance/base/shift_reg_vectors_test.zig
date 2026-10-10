@@ -2,9 +2,9 @@
 //! runs through the `shift_reg` group on a bare core.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.shift_reg_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.shift_reg_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 const nzcv: u32 = 0xF000_0000;
 
 fn settable(n: u4) bool {

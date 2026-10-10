@@ -3,11 +3,11 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const due = ra8.periph.clocks.systick_due;
-const rate = ra8.periph.sysclk.rate;
-const TimeBase = ra8.periph.clocks.timebase.TimeBase;
-const Timer = ra8.core.systick_bank.Timer;
-const clocks = ra8.periph.clocks;
+const due = ra8.chip.periph.clocks.systick_due;
+const rate = ra8.chip.periph.sysclk.rate;
+const TimeBase = ra8.chip.periph.clocks.timebase.TimeBase;
+const Timer = ra8.chip.core.systick_bank.Timer;
+const clocks = ra8.chip.periph.clocks;
 
 const running = clocks.csr_enable | clocks.csr_tickint;
 const quickstart_pll1 = rate.PllConfig{ .ccr = 0xFA02, .ccr2 = 0x451 };

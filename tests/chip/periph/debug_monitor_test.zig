@@ -4,9 +4,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const FakeCore = @import("fake_core.zig").FakeCore;
-const memmap = ra8.core.memmap;
-const debug_monitor = ra8.periph.nvic.debug_monitor;
-const Nvic = ra8.periph.nvic.Nvic;
+const memmap = ra8.chip.core.memmap;
+const debug_monitor = ra8.chip.periph.nvic.debug_monitor;
+const Nvic = ra8.chip.periph.nvic.Nvic;
 
 const entry: u32 = memmap.sram_base + 0x2000;
 const table: u32 = memmap.sram_base + 0x6000;

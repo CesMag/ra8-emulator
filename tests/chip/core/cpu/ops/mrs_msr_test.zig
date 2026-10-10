@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/ops/mrs_msr.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const regs = ra8.core.cpu.regs;
-const mrs_msr = ra8.core.cpu.ops.mrs_msr;
-const branch_wide = ra8.core.cpu.ops.branch_wide;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const regs = ra8.chip.core.cpu.regs;
+const mrs_msr = ra8.chip.core.cpu.ops.mrs_msr;
+const branch_wide = ra8.chip.core.cpu.ops.branch_wide;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -102,7 +102,7 @@ test "nsAlias names the banked.zig codes and nothing between them" {
 
 test "M33 CONTROL reads zero for PACBTI enables and ignores writes to them" {
     var cpu = fresh();
-    cpu.profile = ra8.core.cpu.decode.profile.Profile.m33;
+    cpu.profile = ra8.chip.core.cpu.decode.profile.Profile.m33;
     const enables = regs.control_bits.bti_en | regs.control_bits.ubti_en |
         regs.control_bits.pac_en | regs.control_bits.upac_en;
     cpu.regs.low[1] = enables;

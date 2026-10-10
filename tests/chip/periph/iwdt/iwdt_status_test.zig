@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const status = ra8.periph.iwdt_status;
+const status = ra8.chip.periph.iwdt_status;
 
 test "a read packs the live counter under the latched flags" {
     try std.testing.expectEqual(@as(u16, 0x4123), status.value(0x0123, status.field.undff));

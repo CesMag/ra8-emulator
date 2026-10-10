@@ -3,10 +3,10 @@
 //! too_long when the parts do not fit one reply.
 const std = @import("std");
 const ra8 = @import("ra8");
-const proto = ra8.interfaces.rpc.session;
-const server = ra8.interfaces.rpc.server;
-const parts = ra8.interfaces.rpc.parts;
-const api = ra8.core.session_api;
+const proto = ra8.rpc.session_rpc;
+const server = ra8.rpc.session_server;
+const parts = ra8.rpc.session_parts;
+const api = ra8.session.session_api;
 
 const Stub = struct {
     text: []const u8,

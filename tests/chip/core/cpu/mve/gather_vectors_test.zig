@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/mve/gather_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const gather = ra8.core.mve.gather;
-const vectors = ra8.core.mve.gather_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const gather = ra8.chip.core.cpu.mve.gather;
+const vectors = ra8.chip.core.cpu.mve.gather_vectors;
 
 test "gather/scatter addresses match the pseudocode" {
     try vector.expectAll(gather.Address, u32, gather.address, &vectors.vectors);

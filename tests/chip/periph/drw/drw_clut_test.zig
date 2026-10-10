@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const clut = ra8.periph.drw_clut;
+const clut = ra8.chip.periph.drw_clut;
 
 test "a fresh palette is quiet and reads back black" {
     const table = clut.Clut{};

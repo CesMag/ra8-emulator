@@ -3,7 +3,7 @@
 //! (tests/interfaces/cli/report/undefined_test.zig).
 const std = @import("std");
 const ra8 = @import("ra8");
-const elf = ra8.image.elf;
+const elf = ra8.board.image.elf;
 
 /// An ELF32 ARM image carrying one executable segment of the given bytes.
 pub fn imageWith(buffer: []u8, code: []const u8, vaddr: u32) elf.Image {

@@ -1,7 +1,7 @@
 //! The R-Switch mode machine: reset state and silicon-supported transitions.
 const std = @import("std");
 const ra8 = @import("ra8");
-const eth_mode = ra8.periph.eth_mode;
+const eth_mode = ra8.chip.periph.eth_mode;
 
 test "the machine starts in the reset default disable mode" {
     const machine = eth_mode.Machine{};

@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/bitwise.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bitwise = ra8.core.mve.bitwise;
+const bitwise = ra8.chip.core.cpu.mve.bitwise;
 
 const ones: u128 = ~@as(u128, 0);
 const x: u128 = 0xF0F0_F0F0_0000_FFFF_1234_5678_AAAA_5555;

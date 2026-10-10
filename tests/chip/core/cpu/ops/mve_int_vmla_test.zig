@@ -2,11 +2,11 @@
 //! LLVM's assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const vmla = ra8.core.cpu.ops.mve_int_vmla;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const vmla = ra8.chip.core.cpu.ops.mve_int_vmla;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -53,7 +53,7 @@ test "vmla.i32 q0, q7, r12 takes Qn from hw1 and Rm from hw2" {
 
 test "a masked-off lane keeps its accumulator" {
     var cpu = loaded(0x11_11, 0x01_01, 0x1);
-    cpu.fp.vpr = ra8.core.mve.vpt.open(.{ .p0 = 0xFFFD }, 0b1000);
+    cpu.fp.vpr = ra8.chip.core.cpu.mve.vpt.open(.{ .p0 = 0xFFFD }, 0b1000);
     try run(&cpu, 0xEE03, 0x0E42);
     try std.testing.expectEqual(@as(u128, 0x11_12), q0(&cpu) & 0xFFFF);
 }

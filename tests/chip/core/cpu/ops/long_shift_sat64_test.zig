@@ -3,9 +3,9 @@
 //! follow the DDI0553 pseudocode, round half up and saturation setting Q.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const sat = ra8.core.cpu.ops.long_shift_sat64;
-const table = ra8.core.cpu.ops.table;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const sat = ra8.chip.core.cpu.ops.long_shift_sat64;
+const table = ra8.chip.core.cpu.ops.table;
 const q_bit: u32 = 1 << 27;
 
 const hw1: u16 = 0xEA53;
@@ -25,7 +25,7 @@ const min64: u64 = 0x8000_0000_0000_0000;
 const max64: u64 = 0x7FFF_FFFF_FFFF_FFFF;
 const all: u64 = ~@as(u64, 0);
 
-fn wide(first: u16, second: u16) ra8.core.cpu.instr.Instr {
+fn wide(first: u16, second: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = first, .hw2 = second, .size = 4 };
 }
 
@@ -154,10 +154,10 @@ test "the group has a lockstep oracle" {
 }
 
 test "seam port: uqshll r2, r3, #5 clamps the pair and sets Q" {
-    var cpu: ra8.core.cpu.cpu.Cpu = .{ .bus = undefined };
+    var cpu: ra8.chip.core.cpu.cpu.Cpu = .{ .bus = undefined };
     cpu.regs.low[3] = 0x0800_0000;
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xEA53, .hw2 = 0x134F, .size = 4 };
-    const exec = ra8.core.cpu.ops.long_shift_sat64.group.decode(instr) orelse return error.NotClaimed;
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xEA53, .hw2 = 0x134F, .size = 4 };
+    const exec = ra8.chip.core.cpu.ops.long_shift_sat64.group.decode(instr) orelse return error.NotClaimed;
     try exec(&cpu, instr);
     try std.testing.expectEqual(@as(u32, 0xFFFF_FFFF), cpu.regs.low[2]);
     try std.testing.expectEqual(@as(u32, 0xFFFF_FFFF), cpu.regs.low[3]);

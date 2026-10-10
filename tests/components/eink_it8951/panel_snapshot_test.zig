@@ -5,7 +5,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const eink = ra8.components.eink;
 const file = ra8.snapshot.file;
-const panel = ra8.snapshot.panel;
+const panel = ra8.components.panel_snapshot;
 
 const Stand = struct { panel: eink.Panel };
 

@@ -2,10 +2,10 @@
 //! arm-none-eabi-as -march=armv8.1-m.main+mve.fp+fp.dp.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vscclrm = ra8.core.cpu.ops.vscclrm;
-const table = ra8.core.cpu.ops.table;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
+const vscclrm = ra8.chip.core.cpu.ops.vscclrm;
+const table = ra8.chip.core.cpu.ops.table;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const fixture = @import("../exception/ram.zig");
 
 fn wide(hw1: u16, hw2: u16) Instr {
@@ -16,7 +16,7 @@ fn exec(cpu: *Cpu, hw1: u16, hw2: u16) !void {
     try vscclrm.group.decode(wide(hw1, hw2)).?(cpu, wide(hw1, hw2));
 }
 
-const sfpa = ra8.core.cpu.regs.control_bits.sfpa;
+const sfpa = ra8.chip.core.cpu.regs.control_bits.sfpa;
 
 /// A core with every S register non-zero, VPR set, and an active Secure FP
 /// context (CONTROL.SFPA), so VSCCLRM has something to clear.

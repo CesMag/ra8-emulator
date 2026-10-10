@@ -4,12 +4,12 @@
 //! (RA8EMU-709).
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Board = ra8.board.Board;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_boundary = ra8.core.step_hook.zig_boundary;
-const board_boundary = ra8.board.board_boundary;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Board = ra8.board.board.Board;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_boundary = ra8.session.step_hook.zig_boundary;
+const board_boundary = ra8.session.board_boundary;
 const pacing = ra8.board.run.pacing;
 
 /// 64 bytes of RAM at address 0, the vector table first.
@@ -64,9 +64,9 @@ const FakeWall = struct {
 };
 
 test "a debugger run moves board time by what retired and paces it, across a speed change" {
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    const memory: ra8.core.cpu.memory.guest.Guest = .{ .store = &store };
+    const memory: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &store };
     var unit = Board.init(std.testing.allocator);
     defer unit.deinit();
     try ra8.board.wiring.attachBlocks(&unit, memory);

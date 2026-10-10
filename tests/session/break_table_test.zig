@@ -1,7 +1,7 @@
 //! The table every breakpoint in a session lives in.
 const std = @import("std");
 const ra8 = @import("ra8");
-const break_table = ra8.core.break_table;
+const break_table = ra8.session.break_table;
 
 test "an empty table stops nowhere" {
     var table = break_table.Table{};

@@ -1,9 +1,9 @@
 //! Tests for src/session/zig_core.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const zig_core = ra8.core.step_hook.zig_core;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const zig_core = ra8.session.step_hook.zig_core;
 
 /// 64 bytes of RAM at address 0, the vector table first.
 const Ram = struct {
@@ -102,7 +102,7 @@ test "a step retires one instruction" {
     var cpu: Cpu = .{ .bus = memory.view() };
     try cpu.reset(0);
     const core: zig_core.ZigCore = .{ .cpu = &cpu };
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), core.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), core.step());
     try std.testing.expectEqual(@as(u32, 0x0A), core.register(.pc));
     try std.testing.expectEqual(@as(u64, 1), cpu.retired);
 }

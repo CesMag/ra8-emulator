@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const lanes = ra8.periph.lanes;
+const lanes = ra8.chip.periph.lanes;
 
 test "an offset lands in the word below it, at the lane it names" {
     try std.testing.expectEqual(@as(u32, 0x20), lanes.word(0x22));

@@ -1,12 +1,12 @@
 //! Covers src/chip/core/cpu/ops/pac.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const qarma = ra8.core.cpu.ops.qarma;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const bus = ra8.core.cpu.bus;
-const memmap = ra8.core.memmap;
-const pac = ra8.core.cpu.ops.pac;
+const qarma = ra8.chip.core.cpu.ops.qarma;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const bus = ra8.chip.core.cpu.bus;
+const memmap = ra8.chip.core.memmap;
+const pac = ra8.chip.core.cpu.ops.pac;
 
 fn instr(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0x100, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -20,7 +20,7 @@ fn execute(cpu: *Cpu, hw1: u16, hw2: u16) !void {
 
 fn enabledCpu() Cpu {
     var cpu: Cpu = .{ .bus = undefined };
-    cpu.regs.control = ra8.core.cpu.regs.control_bits.pac_en;
+    cpu.regs.control = ra8.chip.core.cpu.regs.control_bits.pac_en;
     cpu.regs.pac_key_p = .{ 1, 2, 3, 4 };
     cpu.regs.lr = 0x0800_1235;
     cpu.regs.msp = 0x2000_1000;
@@ -85,8 +85,8 @@ test "a failed AUT reaches the UsageFault INVSTATE latch" {
     var memory: FaultBus = .{};
     var cpu: Cpu = .{ .bus = memory.view() };
     cpu.regs.pc = 0x100;
-    cpu.regs.xpsr = ra8.core.cpu.regs.xpsr_bits.thumb;
-    cpu.regs.control = ra8.core.cpu.regs.control_bits.pac_en;
+    cpu.regs.xpsr = ra8.chip.core.cpu.regs.xpsr_bits.thumb;
+    cpu.regs.control = ra8.chip.core.cpu.regs.control_bits.pac_en;
     cpu.regs.lr = 0x0800_1235;
     cpu.regs.low[12] = 0x1234;
     const stopped = cpu.step().?;
@@ -162,15 +162,15 @@ test "bxaut ip, lr, sp returns through an authenticated LR and faults on a bad c
 }
 
 test "PAC enable is selected from the active security and privilege CONTROL bank" {
-    const State = ra8.core.banked.State;
+    const State = ra8.chip.core.banked.State;
     const states = [_]State{ .secure, .non_secure };
     for (states) |state| {
         for ([_]bool{ true, false }) |privileged| {
             var cpu = enabledCpu();
             cpu.regs.control = 0;
             if (state == .non_secure) cpu.banked.switchTo(&cpu.regs, state);
-            const bit = if (privileged) ra8.core.cpu.regs.control_bits.pac_en else ra8.core.cpu.regs.control_bits.upac_en;
-            cpu.regs.control = bit | (if (privileged) 0 else ra8.core.cpu.regs.control_bits.npriv);
+            const bit = if (privileged) ra8.chip.core.cpu.regs.control_bits.pac_en else ra8.chip.core.cpu.regs.control_bits.upac_en;
+            cpu.regs.control = bit | (if (privileged) 0 else ra8.chip.core.cpu.regs.control_bits.npriv);
             cpu.regs.low[12] = 0xA5A5_5A5A;
             try execute(&cpu, 0xF3AF, 0x801D);
             const key = if (privileged) cpu.regs.pac_key_p else cpu.regs.pac_key_u;

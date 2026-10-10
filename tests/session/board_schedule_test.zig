@@ -5,16 +5,17 @@
 //! event was applied at and the session's event stream.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("../interfaces/cli/store_board.zig");
 
-const api = ra8.core.session_api;
-const boot = ra8.core.cpu.boot;
-const elf = ra8.image.elf;
-const loader = ra8.core.cpu.memory.load;
-const zig_run = ra8.board.zig_run;
-const session_plug = ra8.board.session_plug;
-const session_faults = ra8.board.session_faults;
-const session_schedule = ra8.board.session_schedule;
+const api = ra8.session.session_api;
+const boot = ra8.chip.core.cpu.boot;
+const elf = ra8.board.image.elf;
+const loader = ra8.chip.core.cpu.memory.load;
+const zig_run = cli_app.zig_run;
+const session_plug = ra8.session.board_plug;
+const session_faults = ra8.session.board_faults;
+const session_schedule = ra8.session.board_schedule;
 const fault_schedule = ra8.components.model.fault_schedule;
 
 const image_bytes = @embedFile("../fixtures/plug/gauge_poll.elf");
@@ -40,10 +41,10 @@ test "a fault schedule applies every event at its exact virtual time" {
     var store = try store_board.Store.init(null);
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
-    const loaded = try ra8.image.load.read(image);
+    const loaded = try ra8.board.image.load.read(image);
     _ = try loader.image(core, loaded.image());
 
     var plugs = session_plug.Plugs.init(&board, arena.allocator());
@@ -54,7 +55,7 @@ test "a fault schedule applies every event at its exact virtual time" {
     session.attachTimeBase(&board.time.base);
     const subscription = try session.subscribe();
 
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase };
     var applied: [5]u64 = .{ 0, 0, 0, 0, 0 };
     var applier: session_schedule.Applier = .{
@@ -113,7 +114,7 @@ test "a fault schedule converts its cycle edge to an instruction width" {
     defer plan.deinit(std.testing.allocator);
     var marker: u8 = 0;
     var session: api.Session = .{ .live = undefined };
-    var clock: ra8.periph.clocks.timebase.TimeBase = .{};
+    var clock: ra8.chip.periph.clocks.timebase.TimeBase = .{};
     var applier: session_schedule.Applier = .{
         .events = plan.events,
         .session = &session,

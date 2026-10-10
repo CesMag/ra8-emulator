@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/fp_convert.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const fp_convert = ra8.core.cpu.ops.fp_convert;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const fp_convert = ra8.chip.core.cpu.ops.fp_convert;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -97,7 +97,7 @@ test "operand widths and fixed-point fields" {
     try std.testing.expectEqual(fp_convert.Widths{ .d = false, .m = true }, fp_convert.widths(.precision, true));
     try std.testing.expectEqual(fp_convert.Fixed{ .width = 32, .fbits = 16 }, fp_convert.fixedOf(wide(0xEEBE, 0x0AC8)).?);
     try std.testing.expect(fp_convert.fixedOf(wide(0xEEBA, 0x0A68)) == null);
-    try std.testing.expectEqual(@as(u64, 0x0000_0000_FFFF_FFFF), fp_convert.extend(ra8.core.fpu.format.double, 0xFFFF_FFFF, true));
+    try std.testing.expectEqual(@as(u64, 0x0000_0000_FFFF_FFFF), fp_convert.extend(ra8.chip.core.cpu.fpu.format.double, 0xFFFF_FFFF, true));
 }
 
 test "unclaimed: opc2 0111 with o clear, imm5 too wide, D16+, VCMP and VRINT space, bit 4" {

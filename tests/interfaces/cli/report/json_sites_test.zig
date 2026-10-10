@@ -2,13 +2,14 @@
 //! `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const json_run = ra8.board.report.json_run;
+const json_run = cli_app.report.json_run;
 const json_sites = json_run.json_sites;
 const Value = std.json.Value;
 const Fixture = @import("json_board.zig").Fixture;
 
-fn render(board: *ra8.board.Board, sites: ?*const json_sites.Sites, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
+fn render(board: *ra8.board.board.Board, sites: ?*const json_sites.Sites, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
     try json_run.document(&buf.writer, board, .{ .engine = "zig", .elapsed = 1, .sites = sites });
     return std.json.parseFromSlice(Value, std.testing.allocator, buf.written(), .{});
 }
@@ -44,7 +45,7 @@ test "taken-from lists every kept site" {
     try fix.open();
     defer fix.close();
     var of = json_sites.Sites{};
-    var taken: ra8.core.tally.Tally = .{};
+    var taken: ra8.session.tally.Tally = .{};
     taken.record(0x300, 15);
     taken.record(0x300, 15);
     taken.record(0x400, 11);

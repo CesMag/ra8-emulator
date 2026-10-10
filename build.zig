@@ -34,18 +34,18 @@ pub fn build(b: *std.Build) void {
     _ = b.option([]const u8, "deps-prefix", "Ignored; kept so existing invocations still build");
     const gui = b.option(bool, "gui", "Fetch SDL3 and build ra8_gui and the GUI tests") orelse false;
 
-    // One library module, reached as "ra8" by the executable and by the
-    // tests, so neither has to walk relative paths into src/.
+    const firmware = b.dependency("ra8_firmware", .{});
+    const libs = libraries(b, target, optimize, firmware);
+    // The umbrella over the libraries, reached as "ra8" by the tests and by
+    // a build that embeds the emulator, so neither walks paths into src/.
     const emu = b.addModule("ra8", .{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
     });
-    const firmware = b.dependency("ra8_firmware", .{});
-    libraries(b, target, optimize, firmware).importInto(emu);
-    emu.addImport("ra8_rpc_wire", firmware.module("ra8_rpc"));
-    emu.addImport("ra8_widget", firmware.module("ra8_widget"));
+    libs.importInto(emu);
+    const apps = applications(b, target, optimize, libs, firmware);
 
     const exe = b.addExecutable(.{
         .name = "ra8_emulator",
@@ -54,9 +54,9 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{ .{ .name = "cli_app", .module = apps.cli }, .{ .name = "ra8_host", .module = libs.host } },
         }),
     });
-    exe.root_module.addImport("ra8", emu);
     b.installArtifact(exe);
 
     const run = b.addRunArtifact(exe);
@@ -79,11 +79,11 @@ pub fn build(b: *std.Build) void {
     b.step("examples", "Print the example pass table: -- EMULATOR DIR [INSTRUCTIONS]").dependOn(&table.step);
 
     usbipAttach(b, target, optimize);
-    const sdl_mod = sdlModule(b, target, optimize, emu, gui);
-    const gui_exe = if (sdl_mod) |mod| guiExe(b, target, optimize, emu, mod) else null;
+    const sdl_mod = sdlModule(b, target, optimize, apps.gui, libs.render, gui);
+    const gui_exe = if (sdl_mod) |mod| guiExe(b, target, optimize, apps.gui, libs.host, mod) else null;
     guiTest(b, target, optimize, emu, gui, sdl_mod, gui_exe);
 
-    const imports: TestImports = .{ .emu = emu, .widget = firmware.module("ra8_widget"), .gate = gate_mod, .terms = terms_mod, .table = table_mod };
+    const imports: TestImports = .{ .emu = emu, .cli = apps.cli, .gui = apps.gui, .widget = firmware.module("ra8_widget"), .gate = gate_mod, .terms = terms_mod, .table = table_mod };
     // Two roots, compiled one after the other under -j1, so the peak memory of
     // a test build is the larger half's (RA8EMU-785).
     const tests = [_]*std.Build.Step.Compile{
@@ -98,8 +98,7 @@ pub fn build(b: *std.Build) void {
 /// The libraries that are build modules of their own (ADR 0004 section 1,
 /// RA8EMU-1031). Each is rooted in its own directory, so Zig refuses an
 /// import that leaves it, and is given exactly the modules it may import:
-/// only ones below it, and the host only where the ADR allows it. What is
-/// not carved out yet is still part of `emu`.
+/// only ones below it, and the host only where the ADR allows it.
 const Libraries = struct {
     host: *std.Build.Module,
     snapshot: *std.Build.Module,
@@ -166,6 +165,33 @@ fn library(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builti
     return b.addModule(name, .{ .root_source_file = b.path(root), .target = target, .optimize = optimize, .link_libc = true, .imports = imports });
 }
 
+/// The two applications' own files, each a module so that its executable and
+/// the tests import the same code (ADR 0004 section 1, RA8EMU-1031).
+const Apps = struct {
+    cli: *std.Build.Module,
+    gui: *std.Build.Module,
+};
+
+/// The CLI is given every library. The GUI is given the session, the
+/// adapters it talks and draws through, and the host, and neither ra8_board
+/// nor ra8_chip, so the compiler keeps it on the Session API (RA8EMU-984).
+fn applications(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, libs: Libraries, firmware: *std.Build.Dependency) Apps {
+    const wire = firmware.module("ra8_rpc");
+    const cli = b.createModule(.{ .root_source_file = b.path("src/interfaces/cli/root.zig"), .target = target, .optimize = optimize, .link_libc = true });
+    libs.importInto(cli);
+    cli.addImport("ra8_rpc_wire", wire);
+    const gui = b.createModule(.{ .root_source_file = b.path("src/interfaces/gui/root.zig"), .target = target, .optimize = optimize, .link_libc = true, .imports = &.{
+        .{ .name = "ra8_session", .module = libs.session },
+        .{ .name = "ra8_rpc", .module = libs.rpc },
+        .{ .name = "ra8_render", .module = libs.render },
+        .{ .name = "ra8_components", .module = libs.components },
+        .{ .name = "ra8_host", .module = libs.host },
+        .{ .name = "ra8_rpc_wire", .module = wire },
+        .{ .name = "ra8_widget", .module = firmware.module("ra8_widget") },
+    } });
+    return .{ .cli = cli, .gui = gui };
+}
+
 /// A tools/ program's module, shared by its executable and its tests.
 fn toolModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, path: []const u8) *std.Build.Module {
     return b.createModule(.{ .root_source_file = b.path(path), .target = target, .optimize = optimize });
@@ -174,6 +200,8 @@ fn toolModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.bui
 /// The modules every unit test root imports.
 const TestImports = struct {
     emu: *std.Build.Module,
+    cli: *std.Build.Module,
+    gui: *std.Build.Module,
     widget: *std.Build.Module,
     gate: *std.Build.Module,
     terms: *std.Build.Module,
@@ -184,6 +212,8 @@ const TestImports = struct {
 fn testBinary(b: *std.Build, name: []const u8, root: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, imports: TestImports, exe: *std.Build.Step.Compile) *std.Build.Step.Compile {
     const tests = b.addTest(.{ .name = name, .root_module = b.createModule(.{ .root_source_file = b.path(root), .target = target, .optimize = optimize, .link_libc = true }) });
     tests.root_module.addImport("ra8", imports.emu);
+    tests.root_module.addImport("cli_app", imports.cli);
+    tests.root_module.addImport("gui_app", imports.gui);
     tests.root_module.addImport("ra8_widget", imports.widget);
     tests.root_module.addImport("gate", imports.gate);
     tests.root_module.addImport("terms", imports.terms);
@@ -285,14 +315,16 @@ fn usbipAttach(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.bu
 }
 
 /// The SDL3 backend module (src/interfaces/gui/sdl.zig, RA8EMU-616, ADR 0001 in the
-/// knowledge base, RA8EMU-A-8) that the emulator and gui-test take under
-/// -Dgui. SDL is a lazy dependency asked for only under -Dgui, so test and
+/// knowledge base, RA8EMU-A-8) that ra8_gui and gui-test take under
+/// -Dgui. It draws what gui_app hands it and imports nothing else of ours
+/// but the render library. SDL is a lazy dependency asked for only under -Dgui, so test and
 /// gate never fetch or compile it.
-fn sdlModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module, enabled: bool) ?*std.Build.Module {
+fn sdlModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, gui_app: *std.Build.Module, render: *std.Build.Module, enabled: bool) ?*std.Build.Module {
     if (!enabled) return null;
     const sdl_dep = b.lazyDependency("sdl", .{ .target = target, .optimize = optimize }) orelse return null;
     const sdl_mod = b.createModule(.{ .root_source_file = b.path("src/interfaces/gui/sdl.zig"), .target = target, .optimize = optimize });
-    sdl_mod.addImport("ra8", emu);
+    sdl_mod.addImport("gui_app", gui_app);
+    sdl_mod.addImport("ra8_render", render);
     sdl_mod.linkLibrary(sdl_dep.artifact("SDL3"));
     sdl_mod.addImport("sdl3", sdlTranslation(b, target, optimize, sdl_dep.artifact("SDL3")));
     return sdl_mod;
@@ -309,7 +341,7 @@ fn sdlTranslation(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std
 
 /// ra8_gui (RA8EMU-1087, ADR 0004 step 6): the debugger shell in its SDL
 /// window, installed next to ra8_emulator in a -Dgui build.
-fn guiExe(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module, sdl: *std.Build.Module) *std.Build.Step.Compile {
+fn guiExe(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, gui_app: *std.Build.Module, host: *std.Build.Module, sdl: *std.Build.Module) *std.Build.Step.Compile {
     const exe = b.addExecutable(.{
         .name = "ra8_gui",
         .root_module = b.createModule(.{
@@ -317,10 +349,9 @@ fn guiExe(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{ .{ .name = "gui_app", .module = gui_app }, .{ .name = "gui_sdl", .module = sdl }, .{ .name = "ra8_host", .module = host } },
         }),
     });
-    exe.root_module.addImport("ra8", emu);
-    exe.root_module.addImport("gui_sdl", sdl);
     b.installArtifact(exe);
     return exe;
 }

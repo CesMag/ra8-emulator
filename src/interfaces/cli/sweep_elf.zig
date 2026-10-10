@@ -9,7 +9,7 @@ const external = @import("ra8_board").external_memory;
 const matrix = @import("ra8_board").sizing.matrix;
 const sweep = @import("ra8_board").sizing.sweep;
 
-const ek_profile = @embedFile("../../board/ek_ra8d2.board");
+const ek_profile = @import("ra8_board").profile.ek_ra8d2;
 const max_report_bytes = 64 * 1024 * 1024;
 
 /// What each child run is told: the image, the part, and how the run ends

@@ -2,15 +2,15 @@
 //! served Session with a fake panel, joined over the in-memory loopback.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Bounded = ra8.core.bounded.Bounded;
+const Bounded = ra8.chip.core.bounded.Bounded;
 const rpc = served.rpc_lib;
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const api = ra8.core.session_api;
-const Machine = ra8.core.stop_machine.Machine;
-const proto = ra8.interfaces.rpc.session;
-const served = ra8.interfaces.rpc.server;
-const feed = ra8.interfaces.rpc.lcd_feed;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const api = ra8.session.session_api;
+const Machine = ra8.session.stop_machine.Machine;
+const proto = ra8.rpc.session_rpc;
+const served = ra8.rpc.session_server;
+const feed = ra8.rpc.session_lcd_feed;
 
 const Env = proto.Client.Env;
 

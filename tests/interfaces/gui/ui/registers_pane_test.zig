@@ -9,12 +9,13 @@
 //! nothing.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const api = ra8.core.session_api;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane = ra8.gui.registers_pane;
+const api = ra8.session.session_api;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane = gui_app.registers_pane;
 
 const Rect = draw_list.Rect;
 /// Eight rows down, eight columns across: room for the core, system and

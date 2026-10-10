@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const fpscr = ra8.core.fpu.fpscr;
+const fpscr = ra8.chip.core.cpu.fpu.fpscr;
 const Fpscr = fpscr.Fpscr;
 
 test "each field sits on the bit the Arm ARM gives it" {

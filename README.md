@@ -82,7 +82,7 @@ The harness owns the ELF bytes, CPU0, the board and the display wiring:
 ```zig
 const ra8 = @import("ra8");
 
-var emulator = try ra8.harness.open(allocator, io, .{
+var emulator = try ra8.session.harness.open(allocator, io, .{
     .elf_path = "zig-out/image/ra8_ui.elf",
     .input_script = "flows/shell.input",
 });

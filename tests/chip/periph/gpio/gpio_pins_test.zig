@@ -4,7 +4,7 @@
 //! level across a port reset.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.periph.gpio;
+const mod = ra8.chip.periph.gpio;
 
 const Gpio = mod.Gpio;
 const Button = ra8.components.button.Button;

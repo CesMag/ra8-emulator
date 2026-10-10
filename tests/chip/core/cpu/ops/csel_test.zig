@@ -6,15 +6,15 @@
 //! stays with the seam.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const csel = ra8.core.cpu.ops.csel;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const csel = ra8.chip.core.cpu.ops.csel;
 
 const n_flag: u32 = 1 << 31;
 const z_flag: u32 = 1 << 30;
 const c_flag: u32 = 1 << 29;
 const v_flag: u32 = 1 << 28;
 
-fn wide(hw1: u16, hw2: u16) ra8.core.cpu.instr.Instr {
+fn wide(hw1: u16, hw2: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 

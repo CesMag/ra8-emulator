@@ -1,7 +1,7 @@
 //! Tests for src/session/tally.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const tally_mod = ra8.core.tally;
+const tally_mod = ra8.session.tally;
 
 test "the same site and value fold into one row" {
     var tally = tally_mod.Tally{};

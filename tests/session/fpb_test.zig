@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const fpb = ra8.core.fpb;
+const fpb = ra8.session.fpb;
 
 test "FP_CTRL reads version 2 with eight code comparators and no literals" {
     var unit = fpb.Fpb{};

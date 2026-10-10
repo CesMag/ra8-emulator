@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const memmap = ra8.core.memmap;
-const scb = ra8.periph.scb;
+const memmap = ra8.chip.core.memmap;
+const scb = ra8.chip.periph.scb;
 
 /// One PPB word, which is all AIRCR needs. The real engine is a heavier
 /// fixture than this test wants and the model only ever touches one address.

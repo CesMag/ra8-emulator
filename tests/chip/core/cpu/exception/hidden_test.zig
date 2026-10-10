@@ -6,7 +6,7 @@
 //! left when the signature was corrupted (RA8EMU-411).
 const std = @import("std");
 const ra8 = @import("ra8");
-const exception = ra8.core.cpu.exception;
+const exception = ra8.chip.core.cpu.exception;
 const fixture = @import("ram.zig");
 
 const bx_lr: u16 = 0x4770;
@@ -17,7 +17,7 @@ const ns_msp: u32 = fixture.psp_top;
 /// Where the signature lands: below the caller frame and the callee frame.
 const signature_at: u32 = fixture.msp_top - 0x20 - 0x28;
 
-fn preempted(ram: *fixture.Ram) !ra8.core.cpu.cpu.Cpu {
+fn preempted(ram: *fixture.Ram) !ra8.chip.core.cpu.cpu.Cpu {
     ram.putWord(fixture.base + 16 * 4, fixture.handler | 1);
     ram.putWord(fixture.base + 3 * 4, fixture.handler | 1);
     ram.putWord(fixture.base + 7 * 4, fixture.handler | 1);
@@ -47,7 +47,7 @@ test "an ITNS interrupt over Secure code is taken Non-secure with the callee reg
 test "the return puts Secure Thread code back intact" {
     var ram: fixture.Ram = .{};
     var cpu = try preempted(&ram);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(.secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.code, cpu.regs.pc);
     try std.testing.expect(!cpu.regs.handlerMode());
@@ -61,7 +61,7 @@ test "a corrupted signature raises SecureFault INVIS" {
     var ram: fixture.Ram = .{};
     var cpu = try preempted(&ram);
     ram.putWord(signature_at, 0);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(@as(u32, 1), cpu.secure_faults);
     try std.testing.expect(ram.word(sfsr) & 2 != 0);
     try std.testing.expectEqual(.secure, cpu.banked.current);
@@ -70,10 +70,10 @@ test "a corrupted signature raises SecureFault INVIS" {
 test "INVIS chains over the callee frame instead of stacking a new one" {
     var ram: fixture.Ram = .{};
     var cpu = try preempted(&ram);
-    ram.putWord(ra8.core.memmap.scb.shcsr, 1 << 19);
+    ram.putWord(ra8.chip.core.memmap.scb.shcsr, 1 << 19);
     ram.putWord(signature_at, 0);
     const below = ram.word(signature_at - 4);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(.secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 7), cpu.regs.xpsr & 0x1FF);

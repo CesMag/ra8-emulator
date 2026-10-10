@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const cac = ra8.periph.cac;
-const periph = ra8.periph.registry;
+const cac = ra8.chip.periph.cac;
+const periph = ra8.chip.periph.registry;
 
 fn unit() cac.Cac {
     return cac.Cac.init();

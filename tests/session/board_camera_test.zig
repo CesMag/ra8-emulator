@@ -4,9 +4,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Board = ra8.board.Board;
-const board_camera = ra8.board.board_camera;
-const gradient = ra8.periph.ceu.camera.gradient;
+const Board = ra8.board.board.Board;
+const board_camera = ra8.session.board_camera;
+const gradient = ra8.chip.periph.ceu.camera.gradient;
 
 /// A host input that hands over one fixed pixel and counts its closes.
 const Input = struct {

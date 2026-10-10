@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const frame = ra8.core.dwarf_frame;
+const frame = ra8.session.dwarf_frame;
 
 /// A version 4 CIE at offset 0 (code align 2, data align -4, return
 /// address in r14, CFA = r13) and one FDE over 0x1000..0x1020.

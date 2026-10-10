@@ -3,9 +3,9 @@
 //! directly under NOINIT at the top of SRAM.
 const std = @import("std");
 const ra8 = @import("ra8");
-const elf = ra8.image.elf;
-const sections = ra8.core.sections;
-const region_map = ra8.core.region_map;
+const elf = ra8.board.image.elf;
+const sections = ra8.session.sections;
+const region_map = ra8.session.region_map;
 
 const image_bytes = @embedFile("../fixtures/sections/fault_crashlog_hil.elf");
 

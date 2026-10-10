@@ -1,9 +1,9 @@
 //! `info breakpoints` in gdb's layout.
 const std = @import("std");
 const ra8 = @import("ra8");
-const break_list = ra8.core.break_list;
-const break_table = ra8.core.break_table;
-const watch_table = ra8.core.watch_table;
+const break_list = ra8.session.break_list;
+const break_table = ra8.session.break_table;
+const watch_table = ra8.session.watch_table;
 
 fn listed(view: break_list.View) ![]u8 {
     var text: std.Io.Writer.Allocating = .init(std.testing.allocator);

@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const oscsf = ra8.periph.oscsf;
-const prcr = ra8.periph.prcr;
+const oscsf = ra8.chip.periph.oscsf;
+const prcr = ra8.chip.periph.prcr;
 
 const base = oscsf.win_base;
 

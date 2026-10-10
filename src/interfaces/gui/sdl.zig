@@ -5,14 +5,14 @@
 //! fallback: RA8_GUI_CPU forces it and a geometry failure falls back to it.
 //!
 //! This file is its own module, built only under -Dgui (the emulator and gui-test).
-//! It reaches the rest of the GUI through "ra8", never by relative import,
+//! It reaches the rest of the GUI through "gui_app", never by relative import,
 //! and `zig build test` never compiles it, so the tests need no SDL.
 const std = @import("std");
-const ra8 = @import("ra8");
+const gui = @import("gui_app");
+const render = @import("ra8_render");
 pub const c = @import("sdl_c.zig").c;
 pub const geometry = @import("sdl_geometry.zig");
 
-const gui = ra8.gui;
 const Event = gui.platform.Event;
 const Size = gui.platform.Size;
 
@@ -93,7 +93,7 @@ pub const Sdl = struct {
         return if (s > 0) s else 1.0;
     }
 
-    fn present(ctx: *anyopaque, frame: *const gui.raster.Framebuffer) anyerror!void {
+    fn present(ctx: *anyopaque, frame: *const render.raster.Framebuffer) anyerror!void {
         const self = from(ctx);
         const texture = try self.textureFor(frame.width, frame.height);
         const pitch: c_int = @intCast(frame.width * 4);
@@ -110,7 +110,7 @@ pub const Sdl = struct {
         return if (self.vsync) 0 else gui.present_gate.default_interval_ns;
     }
 
-    fn show(ctx: *anyopaque, list: *const gui.draw_list.DrawList, atlas: ?gui.raster.Atlas) anyerror!bool {
+    fn show(ctx: *anyopaque, list: *const render.draw_list.DrawList, atlas: ?render.raster.Atlas) anyerror!bool {
         const self = from(ctx);
         const presenter = if (self.presenter) |*p| p else return false;
         presenter.frame(list, atlas) catch {

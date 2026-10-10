@@ -3,11 +3,11 @@
 //! -mcpu=cortex-m85 with MVE floating point.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const ops = ra8.core.cpu.ops;
-const qreg = ra8.core.mve.qreg;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const ops = ra8.chip.core.cpu.ops;
+const qreg = ra8.chip.core.cpu.mve.qreg;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -23,7 +23,7 @@ fn run(cpu: *Cpu, hw1: u16, hw2: u16) !void {
 // pairs (1+2i, 3+4i) times (5+6i, 7+8i), accumulated onto (10+20i, 30+40i).
 fn loaded() Cpu {
     var cpu: Cpu = .{ .bus = undefined };
-    cpu.fp.cpacr = ra8.core.fpu.cpacr.full_access;
+    cpu.fp.cpacr = ra8.chip.core.cpu.fpu.cpacr.full_access;
     qreg.write(&cpu.fp.bank, 0, 0x42200000_41F00000_41A00000_41200000);
     qreg.write(&cpu.fp.bank, 1, 0x40800000_40400000_40000000_3F800000);
     qreg.write(&cpu.fp.bank, 2, 0x41000000_40E00000_40C00000_40A00000);
@@ -57,7 +57,7 @@ test "every F32 VCADD, VCMLA and VCMUL rotation on q0, q1, q2" {
 
 test "F16 forms: vcadd.f16 #90, vcmla.f16 #90 and vcmul.f16 #180" {
     var cpu: Cpu = .{ .bus = undefined };
-    cpu.fp.cpacr = ra8.core.fpu.cpacr.full_access;
+    cpu.fp.cpacr = ra8.chip.core.cpu.fpu.cpacr.full_access;
     const ones: u128 = 0x3C00_3C00_3C00_3C00_3C00_3C00_3C00_3C00;
     const twos: u128 = 0x4000_4000_4000_4000_4000_4000_4000_4000;
     const neg_one_three: u128 = 0x4200_BC00_4200_BC00_4200_BC00_4200_BC00;

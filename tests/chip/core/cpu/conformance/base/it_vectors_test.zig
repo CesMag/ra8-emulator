@@ -2,9 +2,9 @@
 //! through the `it` group on a bare register file.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.it_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.it_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 const it = cpu_ns.ops.it;
 const it_state = cpu_ns.it_state;
 

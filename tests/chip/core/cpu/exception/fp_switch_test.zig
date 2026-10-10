@@ -4,9 +4,9 @@
 //! it triggers, and ret.zig restoring each thread's S0-S31 and FPSCR.
 const std = @import("std");
 const ra8 = @import("ra8");
-const exception = ra8.core.cpu.exception;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Stop = ra8.core.cpu.cpu.Stop;
+const exception = ra8.chip.core.cpu.exception;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
 const fixture = @import("ram.zig");
 
 /// tx_thread_schedule's PendSV for an FPU core, assembled for cortex_m85:

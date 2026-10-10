@@ -1,7 +1,7 @@
 //! Tests for src/session/taken_in.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const taken_in = ra8.core.taken_in;
+const taken_in = ra8.session.taken_in;
 
 test "a window holds its own range and nothing either side" {
     const window = taken_in.Window{ .base = 0x0200_22A6, .size = 0x20 };
@@ -45,6 +45,6 @@ test "a busy window keeps the first entries and counts the rest" {
 
 test "a window nobody asked for resolves to nothing" {
     const headless: [64]u8 = @splat(0);
-    const image = ra8.image.elf.Image{ .bytes = &headless };
+    const image = ra8.board.image.elf.Image{ .bytes = &headless };
     try std.testing.expectEqual(@as(?taken_in.Window, null), taken_in.resolve(image, null));
 }

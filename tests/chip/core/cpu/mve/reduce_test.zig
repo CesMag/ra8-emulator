@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/reduce.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const reduce = ra8.core.mve.reduce;
+const reduce = ra8.chip.core.cpu.mve.reduce;
 
 test "VADDV of zero lanes returns the accumulator" {
     try std.testing.expectEqual(@as(u32, 42), reduce.addv(42, 0, .byte, false));

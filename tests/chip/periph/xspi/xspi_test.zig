@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const xspi = ra8.periph.xspi;
+const xspi = ra8.chip.periph.xspi;
 const nor_flash = ra8.components.nor_flash;
 
 fn cdt(opcode: u8, size: u32) u32 {

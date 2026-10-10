@@ -4,10 +4,10 @@
 //! back to 0x00, lctp at 0x2E, and the wlstp target at 0x32.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const tp = ra8.core.cpu.ops.mve_lob_tp;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const tp = ra8.chip.core.cpu.ops.mve_lob_tp;
+const decode = ra8.chip.core.cpu.decode;
 
 fn at(address: u32, hw1: u16, hw2: u16) Instr {
     return .{ .address = address, .hw1 = hw1, .hw2 = hw2, .size = 4 };

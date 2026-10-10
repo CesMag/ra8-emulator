@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const refresh = ra8.periph.iwdt_refresh;
+const refresh = ra8.chip.periph.iwdt_refresh;
 
 test "the two bytes in order reload the counter" {
     var seq = refresh.Sequence{};

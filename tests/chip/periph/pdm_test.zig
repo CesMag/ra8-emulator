@@ -2,7 +2,7 @@
 //! fill before a capture loop can drain it, and the registers dev shadows
 //! that are status or triggers here.
 const std = @import("std");
-const pdm = @import("ra8").periph.pdm;
+const pdm = @import("ra8").chip.periph.pdm;
 
 fn channel(index: usize, offset: u32) u32 {
     return pdm.channelAddress(index) + offset;

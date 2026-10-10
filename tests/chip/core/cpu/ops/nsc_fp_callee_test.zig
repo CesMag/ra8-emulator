@@ -12,12 +12,12 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("../exception/ram.zig");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Attribution = ra8.core.cpu.cpu.attribution.Attribution;
-const State = ra8.core.cpu.cpu.attribution.State;
-const Banked = ra8.core.banked.State;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Attribution = ra8.chip.core.cpu.cpu.attribution.Attribution;
+const State = ra8.chip.core.cpu.cpu.attribution.State;
+const Banked = ra8.chip.core.banked.State;
 
-const sfpa = ra8.core.cpu.regs.control_bits.sfpa;
+const sfpa = ra8.chip.core.cpu.regs.control_bits.sfpa;
 const ns_sp: u32 = fixture.base + 0x280;
 const veneer = [_]u16{ 0xE97F, 0xE97F, 0xEE30, 0x0A81, 0xEC9F, 0x0A10, 0x4774 };
 const one: u32 = 0x3F80_0000;

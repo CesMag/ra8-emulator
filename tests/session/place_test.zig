@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const place = ra8.core.place;
+const place = ra8.session.place;
 
 test "a bare hex address is a literal base" {
     const found = try place.parse("0x22000058");

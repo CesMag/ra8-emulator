@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/exc_return.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.periph.exc_return;
+const mod = ra8.chip.periph.exc_return;
 
 test "an address in the EXC_RETURN range is a return, and ordinary code is not" {
     try std.testing.expect(mod.is(mod.to.thread_main));

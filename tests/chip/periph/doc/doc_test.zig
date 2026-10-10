@@ -1,12 +1,12 @@
 //! Tests for src/chip/periph/doc.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const periph = ra8.periph.registry;
-const mod = ra8.periph.doc;
+const periph = ra8.chip.periph.registry;
+const mod = ra8.chip.periph.doc;
 
 const Doc = mod.Doc;
 const Mode = mod.Mode;
-const dcsel_shift = ra8.periph.doc_compare.field.shift;
+const dcsel_shift = ra8.chip.periph.doc_compare.field.shift;
 const dobw_32 = mod.dobw_32;
 const dopcf = mod.dopcf;
 const off_docr = mod.off_docr;

@@ -1,13 +1,13 @@
 //! Covers the Branch Future NOP implementation and its fallback branch points.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const regs = ra8.core.cpu.regs;
-const branch_future = ra8.core.cpu.ops.branch_future;
-const branch_wide = ra8.core.cpu.ops.branch_wide;
-const special_data = ra8.core.cpu.ops.special_data;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const regs = ra8.chip.core.cpu.regs;
+const branch_future = ra8.chip.core.cpu.ops.branch_future;
+const branch_wide = ra8.chip.core.cpu.ops.branch_wide;
+const special_data = ra8.chip.core.cpu.ops.special_data;
+const decode = ra8.chip.core.cpu.decode;
 
 const Form = struct {
     name: []const u8,
@@ -97,7 +97,7 @@ test "non-branch-future encodings and zero branch offsets stay unclaimed" {
 
 test "no earlier group claims a Branch Future encoding" {
     const instr = wide(0, forms[0].hw1, forms[0].hw2);
-    for (ra8.core.cpu.ops.table.groups) |group| {
+    for (ra8.chip.core.cpu.ops.table.groups) |group| {
         if (group.decode(instr) == null) continue;
         try std.testing.expectEqualStrings("branch_future", group.name);
         return;

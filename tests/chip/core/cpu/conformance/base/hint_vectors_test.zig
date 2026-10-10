@@ -2,9 +2,9 @@
 //! through the `hint` group on a bare M85 core with no exception source.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.hint_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.hint_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 const bti_bit = cpu_ns.regs.xpsr_bits.bti;
 const hint = cpu_ns.ops.hint;
 

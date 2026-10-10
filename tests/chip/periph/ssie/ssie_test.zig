@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/ssie.zig.
 const std = @import("std");
-const ssie = @import("ra8").periph.ssie;
+const ssie = @import("ra8").chip.periph.ssie;
 
 const ch0 = ssie.channelAddress(0);
 const ch1 = ssie.channelAddress(1);

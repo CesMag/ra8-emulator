@@ -7,7 +7,7 @@
 //! backwards and a real assembler does not.
 const std = @import("std");
 const ra8 = @import("ra8");
-const lob = ra8.core.lob;
+const lob = ra8.chip.core.lob;
 
 test "DLS decodes with its source register" {
     // f040 e001  dls lr, r0

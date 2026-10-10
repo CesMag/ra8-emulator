@@ -3,9 +3,9 @@
 //! commits comes back.
 const std = @import("std");
 const ra8 = @import("ra8");
-const usbfs = ra8.periph.usbfs;
+const usbfs = ra8.chip.periph.usbfs;
 const pipe = usbfs.pipe;
-const regs = ra8.periph.usbhs_regs;
+const regs = ra8.chip.periph.usbhs_regs;
 const Loop = ra8.components.usb_loop_cable.Loop;
 
 fn at(offset: u32) u32 {

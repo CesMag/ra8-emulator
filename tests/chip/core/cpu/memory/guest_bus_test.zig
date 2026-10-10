@@ -1,12 +1,12 @@
 //! Covers src/chip/core/cpu/memory/guest_bus.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const registry = ra8.periph.registry;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const GuestBus = ra8.core.cpu.memory.guest_bus.GuestBus;
-const BoardBus = ra8.core.cpu.board_bus.BoardBus;
+const memmap = ra8.chip.core.memmap;
+const registry = ra8.chip.periph.registry;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const GuestBus = ra8.chip.core.cpu.memory.guest_bus.GuestBus;
+const BoardBus = ra8.chip.core.cpu.board_bus.BoardBus;
 
 test "a store guest gives a bus over the store, with no engine open" {
     var store = try Store.init(null);

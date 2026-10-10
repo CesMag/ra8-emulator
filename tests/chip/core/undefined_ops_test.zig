@@ -1,8 +1,8 @@
 //! The sweep for encodings the architecture leaves undefined.
 const std = @import("std");
 const ra8 = @import("ra8");
-const undefined_ops = ra8.core.undefined_ops;
-const elf = ra8.image.elf;
+const undefined_ops = ra8.chip.core.undefined_ops;
+const elf = ra8.board.image.elf;
 const imageWith = @import("undefined_image.zig").imageWith;
 
 /// The program counter shifted into an AND: and.w r3, r2, pc, lsl #2.
@@ -167,6 +167,6 @@ test "a site past the watch limit can neither be armed nor stop anything" {
 }
 
 fn sweep(image: elf.Image) undefined_ops.Found {
-    const loaded = ra8.image.load.read(image) catch unreachable;
+    const loaded = ra8.board.image.load.read(image) catch unreachable;
     return undefined_ops.sweep(loaded.image());
 }

@@ -3,9 +3,9 @@
 //! section changes nothing.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const file = ra8.snapshot.file;
-const signals = ra8.snapshot.signals;
+const signals = ra8.chip.snapshot.signals;
 
 fn Unit(comptime name: []const u8) type {
     return @FieldType(Board, name);

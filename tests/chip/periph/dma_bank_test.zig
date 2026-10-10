@@ -2,7 +2,7 @@
 //! and the shadow behind it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dma_bank = ra8.periph.dma_bank;
+const dma_bank = ra8.chip.periph.dma_bank;
 
 test "the module is stopped out of reset" {
     var bank = dma_bank.Bank.init();

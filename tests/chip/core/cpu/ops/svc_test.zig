@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/ops/svc.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const svc = ra8.core.cpu.ops.svc;
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const svc = ra8.chip.core.cpu.ops.svc;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const fixture = @import("../exception/ram.zig");
 
 fn claims(hw1: u16) bool {
@@ -23,7 +23,7 @@ test "SVC raises exception 11 for the core to take once it retires" {
     var cpu = try fixture.boot(&ram);
     const exec = svc.group.decode(.{ .address = 0, .hw1 = 0xDF05, .size = 2 }).?;
     try exec(&cpu, .{ .address = 0, .hw1 = 0xDF05, .size = 2 });
-    try std.testing.expectEqual(@as(?ra8.core.cpu.exception.entry.Number, 11), cpu.raised);
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.exception.entry.Number, 11), cpu.raised);
     try std.testing.expectEqual(fixture.code, cpu.regs.pc);
 }
 

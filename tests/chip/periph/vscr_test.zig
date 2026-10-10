@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const vscr = ra8.periph.vscr;
-const prcr = ra8.periph.prcr;
+const vscr = ra8.chip.periph.vscr;
+const prcr = ra8.chip.periph.prcr;
 
 const Fixture = struct {
     protection: prcr.Prcr,

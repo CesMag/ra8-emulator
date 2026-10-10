@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const protocol = ra8.interfaces.rpc.session;
+const protocol = ra8.rpc.session_rpc;
 
 fn roundTrip(comptime T: type, value: T) !void {
     var bytes: [protocol.max_payload]u8 = undefined;

@@ -5,7 +5,7 @@
 //! encodings arm-none-eabi-as 13.3.rel1 produced for armv8.1-m.main.
 const std = @import("std");
 const ra8 = @import("ra8");
-const csel = ra8.core.csel;
+const csel = ra8.chip.core.csel;
 
 const z_set: u32 = csel.flag.zero;
 const nothing_set: u32 = 0;

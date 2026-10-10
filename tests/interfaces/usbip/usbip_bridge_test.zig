@@ -2,8 +2,9 @@
 //! enumeration, binds, takes an import and serves URBs without blocking.
 const std = @import("std");
 const ra8 = @import("ra8");
-const wire = ra8.core.cli.usbip_wire;
-const exp = ra8.core.cli.usbip_export;
+const cli_app = @import("cli_app");
+const wire = cli_app.cli.usbip_wire;
+const exp = cli_app.cli.usbip_export;
 
 /// A CDC ACM device: class 0xEF/2/1 (IAD), VID 0x045B PID 0x5310, bcd 1.00.
 const device = [_]u8{ 18, 1, 0x00, 0x02, 0xEF, 0x02, 0x01, 64, 0x5B, 0x04, 0x10, 0x53, 0x00, 0x01, 1, 2, 3, 1 };
@@ -22,9 +23,9 @@ const config = [_]u8{
     1,  1,  0,    0x0A, 0,    0, 0,
 };
 
-const usbfs = ra8.periph.usbfs;
+const usbfs = ra8.chip.periph.usbfs;
 const pipe = usbfs.pipe;
-const regs = ra8.periph.usbhs_regs;
+const regs = ra8.chip.periph.usbhs_regs;
 const bridge = exp.bridge;
 
 fn enumerated() usbfs.host.Host {

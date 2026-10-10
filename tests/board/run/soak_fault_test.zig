@@ -1,10 +1,10 @@
 //! Tests for src/board/run/soak_fault.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const clocks = ra8.periph.clocks;
+const clocks = ra8.chip.periph.clocks;
 const time_policy = ra8.board.run;
 const soak_fault = time_policy.soak_fault;
-const status = ra8.periph.fault_status;
+const status = ra8.chip.periph.fault_status;
 const Kind = time_policy.soak.Kind;
 
 test "clear words are no event" {
@@ -32,9 +32,9 @@ const Fake = struct {
 
     pub fn readWord(self: *const Fake, address: u32) error{Unmapped}!u32 {
         return switch (address) {
-            ra8.core.memmap.scb.cfsr => self.cfsr,
-            ra8.core.memmap.scb.cfsr + soak_fault.ns_offset => self.cfsr_ns,
-            ra8.core.memmap.scb.hfsr => self.hfsr,
+            ra8.chip.core.memmap.scb.cfsr => self.cfsr,
+            ra8.chip.core.memmap.scb.cfsr + soak_fault.ns_offset => self.cfsr_ns,
+            ra8.chip.core.memmap.scb.hfsr => self.hfsr,
             else => error.Unmapped,
         };
     }

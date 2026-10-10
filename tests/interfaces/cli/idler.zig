@@ -2,7 +2,7 @@
 //! reset handler that sleeps in `wfi; b .-2` forever and a SysTick handler
 //! that adds one to a RAM counter, with SysTick slower than a chunk so a
 //! sleeping stretch can really be widened.
-const memmap = @import("ra8").core.memmap;
+const memmap = @import("ra8").chip.core.memmap;
 
 pub const base = memmap.sram_base;
 pub const reset_at = base + 0x40;

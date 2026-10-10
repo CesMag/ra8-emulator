@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/int_insert.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const insert = ra8.core.mve.int_insert;
+const insert = ra8.chip.core.cpu.mve.int_insert;
 
 test "VSRI keeps the top n bits of each Qd lane" {
     try std.testing.expectEqual(@as(u128, 0xF0F0_F0F0), insert.sri(0xFFFF_FFFF, 0x0000_0000, .byte, 4) & 0xFFFF_FFFF);

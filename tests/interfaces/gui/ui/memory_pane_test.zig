@@ -4,11 +4,12 @@
 //! draws nothing and rows stop at what was captured.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane = ra8.gui.memory_pane;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane = gui_app.memory_pane;
 
 const Rect = draw_list.Rect;
 /// Exactly one row wide and four rows deep.

@@ -2,9 +2,9 @@
 //! what does not take outside it, and what PRCR eats before either.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ckcr = ra8.periph.ckcr;
-const ckdiv = ra8.periph.ckdiv;
-const prcr = ra8.periph.prcr;
+const ckcr = ra8.chip.periph.ckcr;
+const ckdiv = ra8.chip.periph.ckdiv;
+const prcr = ra8.chip.periph.prcr;
 
 /// A protection model with PRC0 already open, the state a driver reaches
 /// through RA8_PROTECTED_WRITE before it touches any of these.

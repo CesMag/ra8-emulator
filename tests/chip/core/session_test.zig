@@ -1,7 +1,7 @@
 //! Tests for src/chip/core/session.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Session = ra8.core.session.Session;
+const Session = ra8.chip.core.session.Session;
 
 test "a bare session runs one uninterrupted stretch" {
     const bare = Session{};

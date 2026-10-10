@@ -5,8 +5,8 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const store_memory = @import("../store_memory.zig");
-const tsn_cal = ra8.periph.adc.tsn_cal;
-const adc_scan = ra8.periph.adc_scan;
+const tsn_cal = ra8.chip.periph.adc.tsn_cal;
+const adc_scan = ra8.chip.periph.adc_scan;
 
 test "map seeds both calibration words where adc_diag_tsn_demo stopped" {
     const core = try store_memory.open();

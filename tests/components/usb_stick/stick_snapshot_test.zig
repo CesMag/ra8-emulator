@@ -5,7 +5,7 @@
 //! not fit.
 const std = @import("std");
 const ra8 = @import("ra8");
-const half = ra8.snapshot.usb_stick;
+const half = ra8.components.stick_snapshot;
 const fields = ra8.snapshot.fields;
 const stick = ra8.components.usb_stick;
 const Target = stick.Target;

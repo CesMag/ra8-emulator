@@ -1,9 +1,9 @@
 //! Covers src/interfaces/gui/camera_open.zig: the panel's pick and its argument make
 //! the same spec `--camera-source` would.
 const std = @import("std");
-const ra8 = @import("ra8");
-const camera_open = ra8.gui.camera_open;
-const Panel = ra8.gui.camera_panel.Panel;
+const gui_app = @import("gui_app");
+const camera_open = gui_app.camera_open;
+const Panel = gui_app.camera_panel.Panel;
 
 test "the gradient needs no argument" {
     const panel = Panel{};

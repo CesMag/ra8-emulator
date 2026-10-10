@@ -2,7 +2,7 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const itns = ra8.periph.nvic.itns;
+const itns = ra8.chip.periph.nvic.itns;
 
 /// The ITNS words as plain memory.
 const Words = struct {
@@ -53,9 +53,9 @@ test "a line past this part's lines is refused" {
 // Non-secure vector table. The exception fixture's RAM sits behind the Zig
 // core's real SCS routing, so VTOR reads the bank of the core's state.
 const fixture = @import("../core/cpu/exception/ram.zig");
-const scs_route = ra8.core.cpu.board_bus.scs_route;
-const cpu_bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const scs_route = ra8.chip.core.cpu.board_bus.scs_route;
+const cpu_bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 
 const vtor_ns: u32 = 0xE002_ED08;
 const ns_table: u32 = fixture.base + 0x200;
@@ -63,7 +63,7 @@ const ns_handler: u32 = fixture.base + 0x1C0;
 
 const Routed = struct {
     ram: fixture.Ram = .{},
-    state: ?*const ra8.core.banked.Banked = null,
+    state: ?*const ra8.chip.core.banked.Banked = null,
 
     fn view(self: *Routed) cpu_bus.Bus {
         return .{ .ctx = self, .vtable = &.{ .read = read, .write = write } };
@@ -107,7 +107,7 @@ test "an ITNS interrupt enters its handler from the Non-secure vector table" {
     var cpu = try bootRouted(&routed, 1);
     routed.state = &cpu.banked;
     cpu.bus = routed.view();
-    _ = try ra8.core.cpu.exception.entry.take(&cpu, 16, fixture.code);
+    _ = try ra8.chip.core.cpu.exception.entry.take(&cpu, 16, fixture.code);
     try std.testing.expectEqual(.non_secure, cpu.banked.current);
     try std.testing.expectEqual(ns_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 16), cpu.regs.xpsr & 0x1FF);
@@ -118,7 +118,7 @@ test "a Secure interrupt still takes the Secure table with VTOR_NS set" {
     var cpu = try bootRouted(&routed, 0);
     routed.state = &cpu.banked;
     cpu.bus = routed.view();
-    _ = try ra8.core.cpu.exception.entry.take(&cpu, 16, fixture.code);
+    _ = try ra8.chip.core.cpu.exception.entry.take(&cpu, 16, fixture.code);
     try std.testing.expectEqual(.secure, cpu.banked.current);
     try std.testing.expectEqual(fixture.handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 16), cpu.regs.xpsr & 0x1FF);

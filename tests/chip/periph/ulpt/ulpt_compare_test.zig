@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const compare = ra8.periph.ulpt_compare;
+const compare = ra8.chip.periph.ulpt_compare;
 
 test "an untouched pair is quiet" {
     const pair = compare.Pair{};

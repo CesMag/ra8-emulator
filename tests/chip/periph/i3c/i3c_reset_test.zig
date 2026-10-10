@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const rstctl = ra8.periph.i3c_reset;
+const rstctl = ra8.chip.periph.i3c_reset;
 
 test "the two whole-block resets take the channel back to idle" {
     try std.testing.expect(rstctl.resetsChannel(rstctl.mask.ri3crst));

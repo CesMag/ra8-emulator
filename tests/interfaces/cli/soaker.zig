@@ -1,7 +1,7 @@
 //! A built-in soak image for RA8EMU-186's done tests: idler.zig's counting
 //! SysTick handler at its longest period, and a reset handler that sleeps
 //! until the handler has run `wakes` times, then pushes past MSPLIM.
-const memmap = @import("ra8").core.memmap;
+const memmap = @import("ra8").chip.core.memmap;
 const idler = @import("idler.zig");
 
 pub const base = idler.base;

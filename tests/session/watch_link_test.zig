@@ -2,8 +2,8 @@
 //! machine's watch table, recorded, and never stopping the run.
 const std = @import("std");
 const ra8 = @import("ra8");
-const watchpoint = ra8.core.watchpoint;
-const watch_link = ra8.core.step_hook.watch_link;
+const watchpoint = ra8.session.watchpoint;
+const watch_link = ra8.session.step_hook.watch_link;
 
 test "a store in the window is recorded with its pc and lr" {
     var watched = watchpoint.Watched{ .address = 0x2200_0040 };
@@ -22,7 +22,7 @@ test "a matching store leaves the machine running" {
     var made = watch_link.link(&watched);
     made.store(0x0200_0100, 0, 0x2200_0042, 2, 0xBEEF);
     try std.testing.expect(made.machine.watch_pending == null);
-    const event = ra8.core.stop_machine.Event{ .pc = 0x0200_0104, .size = 2, .sp = 0 };
+    const event = ra8.session.stop_machine.Event{ .pc = 0x0200_0104, .size = 2, .sp = 0 };
     try std.testing.expect(made.machine.onInstruction(event) == null);
 }
 

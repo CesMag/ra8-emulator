@@ -3,11 +3,11 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const FakeCore = @import("fake_core.zig").FakeCore;
-const memmap = ra8.core.memmap;
-const fault_status = ra8.periph.fault_status;
+const memmap = ra8.chip.core.memmap;
+const fault_status = ra8.chip.periph.fault_status;
 const secure = fault_status.secure;
 const route = fault_status.route;
-const Nvic = ra8.periph.nvic.Nvic;
+const Nvic = ra8.chip.periph.nvic.Nvic;
 
 const entry: u32 = memmap.sram_base + 0x2000;
 const table: u32 = memmap.sram_base + 0x6000;

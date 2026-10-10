@@ -3,10 +3,10 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const mem_dump = ra8.core.mem_dump;
-const registry = ra8.periph.registry;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const mem_dump = ra8.session.mem_dump;
+const registry = ra8.chip.periph.registry;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 
 const sram: u32 = 0x2200_0000;
 

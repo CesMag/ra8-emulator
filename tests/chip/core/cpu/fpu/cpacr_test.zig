@@ -2,7 +2,7 @@
 //! IsCPEnabled() pseudocode, row by row.
 const std = @import("std");
 const ra8 = @import("ra8");
-const cpacr = ra8.core.fpu.cpacr;
+const cpacr = ra8.chip.core.cpu.fpu.cpacr;
 
 const Row = struct {
     cpacr: u32,

@@ -1,9 +1,9 @@
 //! Tests for src/session/stack_low.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const stack_low = ra8.core.stack_low;
-const region_map = ra8.core.region_map;
-const StackMarks = ra8.core.step_hook.zig_core.StackMarks;
+const stack_low = ra8.session.stack_low;
+const region_map = ra8.session.region_map;
+const StackMarks = ra8.session.step_hook.zig_core.StackMarks;
 
 /// An 8 KiB reservation like fault_crashlog_hil.elf's.
 const reserved: region_map.Stack = .{ .base = 0x220F_DF00, .size = 0x2000, .region = null };

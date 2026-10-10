@@ -2,7 +2,7 @@
 //! the application paired with the context word.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ByteSource = ra8.periph.byte_source.ByteSource;
+const ByteSource = ra8.chip.periph.byte_source.ByteSource;
 
 /// Hands back `context` bytes of 'a', or null for nothing waiting at 0.
 fn fill(context: usize, into: []u8) ?usize {

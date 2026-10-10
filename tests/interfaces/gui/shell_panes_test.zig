@@ -3,13 +3,14 @@
 //! ink inside every non-empty leaf's body of the two-core layout.
 const std = @import("std");
 const ra8 = @import("ra8");
-const status_capture = ra8.gui.status_capture;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane_layout = ra8.gui.pane_layout;
-const frame = ra8.gui.shell_frame;
-const panes = ra8.gui.shell_panes;
+const gui_app = @import("gui_app");
+const status_capture = gui_app.status_capture;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane_layout = gui_app.pane_layout;
+const frame = gui_app.shell_frame;
+const panes = gui_app.shell_panes;
 
 const width: i32 = 480;
 const height: i32 = 320;
@@ -49,7 +50,7 @@ test "the two-core shell shows each leaf's note in muted ink in its body" {
     defer list.deinit();
     var pixels = try raster.Framebuffer.init(gpa, width, height);
     defer pixels.deinit(gpa);
-    const status: ra8.gui.status_bar.Status = .{};
+    const status: gui_app.status_bar.Status = .{};
     var painter: panes.Panes = .{};
     try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = width, .height = height, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);

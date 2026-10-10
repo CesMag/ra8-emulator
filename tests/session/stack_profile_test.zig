@@ -4,14 +4,15 @@
 //! named from its own image (RA8EMU-972).
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const memmap = ra8.core.memmap;
-const stack_profile = ra8.board.zig_run.stack_profile;
-const profile = ra8.core.functions.profile;
-const profile_report = ra8.board.report.profile;
-const stack_samples = ra8.core.step_hook.stack_samples;
-const cpu_boot = ra8.core.cpu.boot;
-const symbols = ra8.core.symbols;
+const memmap = ra8.chip.core.memmap;
+const stack_profile = cli_app.zig_run.stack_profile;
+const profile = ra8.session.functions.profile;
+const profile_report = cli_app.report.profile;
+const stack_samples = ra8.session.step_hook.stack_samples;
+const cpu_boot = ra8.chip.core.cpu.boot;
+const symbols = ra8.session.symbols;
 const Builder = @import("symbol_image.zig").Builder;
 const store_board = @import("../interfaces/cli/store_board.zig");
 const Store = store_board.Store;
@@ -59,7 +60,7 @@ fn call(bytes: []u8, at: u32, target: u32) void {
 const names0 = [_][]const u8{ "outer", "middle", "leaf" };
 
 /// An image whose only content is the three function symbols.
-fn image(buffer: []u8, names: [3][]const u8) !ra8.image.elf.Image {
+fn image(buffer: []u8, names: [3][]const u8) !ra8.board.image.elf.Image {
     const encoded = Builder.build(buffer, &names, &.{ base + outer + 1, base + middle + 1, base + leaf + 1 });
     for (0..names.len) |index| {
         const at = Builder.sym_off + @sizeOf(symbols.Symbol) * index;
@@ -67,7 +68,7 @@ fn image(buffer: []u8, names: [3][]const u8) !ra8.image.elf.Image {
         symbol.st_info = symbols.symbol_type.func;
         symbol.st_size = 0x10;
     }
-    return ra8.image.elf.Image.init(encoded);
+    return ra8.board.image.elf.Image.init(encoded);
 }
 
 test "a --profile-folded run folds CPU0's sampled stacks into cpu0-rooted rows" {
@@ -86,7 +87,7 @@ test "a --profile-folded run folds CPU0's sampled stacks into cpu0-rooted rows" 
     samples.* = .{};
     table.samples = samples;
 
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try attach(&board, core);
     const budget: u64 = 4096;
@@ -97,7 +98,7 @@ test "a --profile-folded run folds CPU0's sampled stacks into cpu0-rooted rows" 
     var stream: std.Io.Writer = .fixed(&output);
     const status = try cpu_boot.start(&stream, .zig, core, &board.bus, base, budget, &ran, .{ .retire_listener = stacks.listener(null), .core = stacks.lend(null) });
     try std.testing.expectEqual(@as(u8, 0), status);
-    try std.testing.expectEqual(@as(?*ra8.core.cpu.cpu.Cpu, null), stacks.core);
+    try std.testing.expectEqual(@as(?*ra8.chip.core.cpu.cpu.Cpu, null), stacks.core);
     try std.testing.expectEqual(@as(usize, budget / 2), samples.count);
 
     // Rows merge on names and sort on them; each caller frame is named
@@ -105,7 +106,7 @@ test "a --profile-folded run folds CPU0's sampled stacks into cpu0-rooted rows" 
     try expectRows(elf, table, &.{ "cpu0;outer", "cpu0;outer;middle", "cpu0;outer;middle;leaf" }, samples.count);
 }
 
-fn expectRows(elf: ra8.image.elf.Image, table: profile.Table, want: []const []const u8, count: usize) !void {
+fn expectRows(elf: ra8.board.image.elf.Image, table: profile.Table, want: []const []const u8, count: usize) !void {
     var folded: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer folded.deinit();
     try profile_report.folded(&folded.writer, elf, table);
@@ -127,21 +128,21 @@ fn expectRows(elf: ra8.image.elf.Image, table: profile.Table, want: []const []co
 const Ram = struct {
     bytes: [0x400]u8 = @splat(0),
 
-    fn view(self: *Ram) ra8.core.cpu.bus.Bus {
+    fn view(self: *Ram) ra8.chip.core.cpu.bus.Bus {
         return .{ .ctx = self, .vtable = &.{ .read = read, .write = write } };
     }
 
-    fn span(self: *Ram, address: u32, len: usize) ra8.core.cpu.bus.Error![]u8 {
+    fn span(self: *Ram, address: u32, len: usize) ra8.chip.core.cpu.bus.Error![]u8 {
         if (address < base or address - base + len > self.bytes.len) return error.Unmapped;
         return self.bytes[address - base ..][0..len];
     }
 
-    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.core.cpu.bus.Error!void {
+    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *Ram = @ptrCast(@alignCast(ctx));
         @memcpy(into, try self.span(address, into.len));
     }
 
-    fn write(ctx: *anyopaque, address: u32, from: []const u8) ra8.core.cpu.bus.Error!void {
+    fn write(ctx: *anyopaque, address: u32, from: []const u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *Ram = @ptrCast(@alignCast(ctx));
         @memcpy(try self.span(address, from.len), from);
     }
@@ -152,7 +153,7 @@ test "CPU1's sampled stacks fold as cpu1 rows named from CPU1's image" {
     const bytes = code();
     @memcpy(ram.bytes[0..bytes.len], &bytes);
     std.mem.writeInt(u32, ram.bytes[0..4], base + ram.bytes.len, .little);
-    var cpu1: ra8.core.cpu.cpu.Cpu = .{ .bus = ram.view() };
+    var cpu1: ra8.chip.core.cpu.cpu.Cpu = .{ .bus = ram.view() };
     try cpu1.reset(base);
     var first: [768]u8 = undefined;
     var second: [768]u8 = undefined;
@@ -177,8 +178,8 @@ test "CPU1's sampled stacks fold as cpu1 rows named from CPU1's image" {
 
 test "with no samples the folded file is the per-function rows it always was" {
     var stacks = stack_profile.Run.of(null, undefined, 4096, &@as(u64, 0), null);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.RetireListener, null), stacks.listener(null));
-    try std.testing.expectEqual(@as(?*?*ra8.core.cpu.cpu.Cpu, null), stacks.lend(null));
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.RetireListener, null), stacks.listener(null));
+    try std.testing.expectEqual(@as(?*?*ra8.chip.core.cpu.cpu.Cpu, null), stacks.lend(null));
 }
 
 test "the period spreads a bounded run over the store's slots" {

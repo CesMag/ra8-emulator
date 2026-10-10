@@ -2,7 +2,7 @@
 //! DEMCR reaches the models the way a firmware store does.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dispatch = ra8.core.rsp_dispatch;
+const dispatch = ra8.gdb.rsp_dispatch;
 const Rig = @import("../../session/view_ram.zig").Rig;
 
 const demcr: u32 = 0xE000_EDFC;
@@ -22,7 +22,7 @@ fn store(stub: dispatch.Dispatch, address: u32, value: u32) !void {
 test "a debugger store to DEMCR sets and clears TRCENA in the model" {
     var rig: Rig = .{};
     rig.wire();
-    var machine = ra8.core.stop_machine.Machine{};
+    var machine = ra8.session.stop_machine.Machine{};
     const stub = dispatch.Dispatch{ .machine = &machine, .view = rig.view() };
     try store(stub, demcr, 1 << 24);
     try std.testing.expect(machine.dwt.trcena);
@@ -33,7 +33,7 @@ test "a debugger store to DEMCR sets and clears TRCENA in the model" {
 test "a debugger store to a comparator reaches the model" {
     var rig: Rig = .{};
     rig.wire();
-    var machine = ra8.core.stop_machine.Machine{};
+    var machine = ra8.session.stop_machine.Machine{};
     const stub = dispatch.Dispatch{ .machine = &machine, .view = rig.view() };
     try store(stub, demcr, 1 << 24);
     try store(stub, comp0, 40);
@@ -45,7 +45,7 @@ test "a debugger store to a comparator reaches the model" {
 test "a debugger store over DWT_CTRL keeps NUMCOMP" {
     var rig: Rig = .{};
     rig.wire();
-    var machine = ra8.core.stop_machine.Machine{};
+    var machine = ra8.session.stop_machine.Machine{};
     machine.dwt.numcomp = 4;
     const stub = dispatch.Dispatch{ .machine = &machine, .view = rig.view() };
     try store(stub, dwt_ctrl, 1);
@@ -57,9 +57,9 @@ test "a debugger store over DWT_CTRL keeps NUMCOMP" {
 test "a store outside the units leaves the model alone" {
     var rig: Rig = .{};
     rig.wire();
-    var machine = ra8.core.stop_machine.Machine{};
+    var machine = ra8.session.stop_machine.Machine{};
     const stub = dispatch.Dispatch{ .machine = &machine, .view = rig.view() };
-    try store(stub, ra8.core.memmap.sram_base, 0xffff_ffff);
+    try store(stub, ra8.chip.core.memmap.sram_base, 0xffff_ffff);
     try std.testing.expect(!machine.dwt.trcena);
     try std.testing.expectEqual(@as(u32, 0), machine.dwt.comps[0]);
 }

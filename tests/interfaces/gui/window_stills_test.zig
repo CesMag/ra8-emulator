@@ -2,11 +2,13 @@
 //! window through untouched and keeps every n-th frame as a numbered PNG.
 const std = @import("std");
 const ra8 = @import("ra8");
-const stills = ra8.board.window_stills;
-const png = ra8.board.report.png;
-const raster = ra8.gui.raster;
-const Headless = ra8.gui.headless.Headless;
-const Color = ra8.gui.draw_list.Color;
+const cli_app = @import("cli_app");
+const gui_app = @import("gui_app");
+const stills = gui_app.window_stills;
+const png = cli_app.report.png;
+const raster = ra8.render.raster;
+const Headless = gui_app.headless.Headless;
+const Color = ra8.render.draw_list.Color;
 
 fn frameOf(shade: u8) !raster.Framebuffer {
     const frame = try raster.Framebuffer.init(std.testing.allocator, 4, 3);

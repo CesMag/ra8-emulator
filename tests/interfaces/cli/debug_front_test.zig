@@ -1,8 +1,8 @@
 //! Which command lines the debugger front end takes over.
 const std = @import("std");
-const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const debug_front = ra8.core.debug_front;
+const debug_front = cli_app.debug_front;
 
 test "an ordinary run is left to the ordinary parser" {
     try std.testing.expectEqual(null, debug_front.wanted(&.{ "ra8_emulator", "fw.elf", "--ms", "2" }));

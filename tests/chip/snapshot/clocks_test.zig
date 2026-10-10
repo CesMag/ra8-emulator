@@ -3,9 +3,9 @@
 //! and a missing or short section changes nothing.
 const std = @import("std");
 const ra8 = @import("ra8");
-const p = ra8.periph;
+const p = ra8.chip.periph;
 const file = ra8.snapshot.file;
-const clocks = ra8.snapshot.clocks;
+const clocks = ra8.chip.snapshot.clocks;
 
 /// What the units point at. Two sets, so a load can be seen to keep its own.
 const Live = struct {

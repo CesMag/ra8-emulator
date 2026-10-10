@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/ssie_reset.zig.
 const std = @import("std");
-const reset = @import("ra8").periph.ssie_reset;
+const reset = @import("ra8").chip.periph.ssie_reset;
 
 test "only a rising edge of SSIRST asks for the reset" {
     try std.testing.expect(reset.asserted(0, reset.mask.ssirst));

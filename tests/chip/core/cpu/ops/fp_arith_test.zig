@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/fp_arith.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const fp_arith = ra8.core.cpu.ops.fp_arith;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const fp_arith = ra8.chip.core.cpu.ops.fp_arith;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };

@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci = ra8.periph.sci;
-const sci_lin = ra8.periph.sci_lin;
+const sci = ra8.chip.periph.sci;
+const sci_lin = ra8.chip.periph.sci_lin;
 
 const channel_base = sci.win_base + sci.stride * 3;
 

@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const mram = ra8.periph.mram;
-const init_reg = ra8.periph.mram_init;
+const mram = ra8.chip.periph.mram;
+const init_reg = ra8.chip.periph.mram_init;
 
 const full_init: u32 = 0xAA01;
 const msuinitr = mram.regs.base + init_reg.off;

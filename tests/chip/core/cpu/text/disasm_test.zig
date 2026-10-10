@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/text/disasm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const disasm = ra8.core.cpu.decode.text.disasm;
-const Instr = ra8.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 test "a decoded instruction with a printer comes back as text" {
     const instr: Instr = .{ .address = 0x0200_0100, .hw1 = 0x1888, .size = 2 };

@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/fp_regs.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const fp_regs = ra8.core.cpu.ops.fp_regs;
-const Bank = ra8.core.fpu.bank.Bank;
-const format = ra8.core.fpu.format;
+const fp_regs = ra8.chip.core.cpu.ops.fp_regs;
+const Bank = ra8.chip.core.cpu.fpu.bank.Bank;
+const format = ra8.chip.core.cpu.fpu.format;
 
 test "single registers are V:X and doubles X:V" {
     try std.testing.expectEqual(@as(u5, 31), fp_regs.index(15, 1, false));

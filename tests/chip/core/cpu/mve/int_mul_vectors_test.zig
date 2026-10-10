@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/mve/int_mul_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const int = ra8.core.mve.int;
-const mul = ra8.core.mve.int_mul;
-const vectors = ra8.core.mve.int_mul_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const int = ra8.chip.core.cpu.mve.int;
+const mul = ra8.chip.core.cpu.mve.int_mul;
+const vectors = ra8.chip.core.cpu.mve.int_mul_vectors;
 
 fn high(in: vectors.HighCase) int.Sat {
     return mul.multiplyHigh(in.a, in.b, in.size, in.high);

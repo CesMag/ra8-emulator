@@ -2,8 +2,8 @@
 //! charged to, how the window cuts it, and that cores are kept apart.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_load = ra8.core.step_hook.rtos_hook.load;
-const Event = ra8.core.step_hook.rtos_hook.rtos_trace.Event;
+const rtos_load = ra8.session.step_hook.rtos_hook.load;
+const Event = ra8.session.step_hook.rtos_hook.rtos_trace.Event;
 
 const blink_a: u32 = 0x2200_10F0;
 const blink_b: u32 = 0x2200_11A0;

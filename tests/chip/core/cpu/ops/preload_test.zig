@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/ops/preload.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const preload = ra8.core.cpu.ops.preload;
-const Instr = ra8.core.cpu.instr.Instr;
+const preload = ra8.chip.core.cpu.ops.preload;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const fixture = @import("../exception/ram.zig");
 
 fn wide(hw1: u16, hw2: u16) Instr {

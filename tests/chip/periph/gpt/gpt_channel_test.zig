@@ -10,7 +10,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const gpt = ra8.periph.gpt;
+const gpt = ra8.chip.periph.gpt;
 
 const ch0 = gpt.win_base;
 

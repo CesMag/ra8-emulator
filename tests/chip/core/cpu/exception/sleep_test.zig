@@ -3,7 +3,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
 const Fake = @import("fake_source.zig").Fake;
-const sleep = ra8.core.cpu.exception.sleep;
+const sleep = ra8.chip.core.cpu.exception.sleep;
 
 const pendsv: u9 = 14;
 const nop: u16 = 0xBF00;
@@ -12,7 +12,7 @@ const wfe: u16 = 0xBF20;
 const bx_lr: u16 = 0x4770;
 
 /// Thread code is `first` and then NOPs; PendSV goes to a NOP and BX LR.
-fn setup(ram: *fixture.Ram, fake: *Fake, first: u16) !ra8.core.cpu.cpu.Cpu {
+fn setup(ram: *fixture.Ram, fake: *Fake, first: u16) !ra8.chip.core.cpu.cpu.Cpu {
     var at = fixture.code + 2;
     while (at < fixture.code + 0x40) : (at += 2) ram.putHalf(at, nop);
     ram.putHalf(fixture.code, first);
@@ -28,7 +28,7 @@ test "wfi with nothing pending sleeps and the rest of the stretch goes by" {
     var ram: fixture.Ram = .{};
     var fake: Fake = .{};
     var cpu = try setup(&ram, &fake, wfi);
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, cpu.run(100));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, cpu.run(100));
     try std.testing.expectEqual(@as(u64, 1), cpu.retired);
     try std.testing.expectEqual(@as(?sleep.Wait, .interrupt), cpu.waiting);
     try std.testing.expectEqual(fixture.code + 2, cpu.regs.pc);

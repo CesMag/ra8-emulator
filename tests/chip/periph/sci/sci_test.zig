@@ -1,7 +1,7 @@
 //! Covers SCI_B registers and transmit gate; line capture is tested separately.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci = ra8.periph.sci;
+const sci = ra8.chip.periph.sci;
 comptime {
     _ = @import("sci_input_test.zig");
     _ = @import("sci_reply_test.zig");

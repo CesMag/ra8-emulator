@@ -2,7 +2,7 @@
 //! seen through the I2C registry and the RIIC address phase.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.periph.riic_bus;
+const bus = ra8.chip.periph.riic_bus;
 const fault = ra8.components.model.fault;
 const gauge_mod = ra8.components.max17048;
 
@@ -95,7 +95,7 @@ test "a disconnected gauge stays on the bus but answers no address phase" {
 }
 
 test "a slow gauge NACKs after a write until its virtual deadline" {
-    var clock = ra8.periph.clocks.timebase.TimeBase{};
+    var clock = ra8.chip.periph.clocks.timebase.TimeBase{};
     var gauge = gauge_mod.Gauge{};
     var wrapper = fault.I2c.timed(gauge.device(), &clock);
     wrapper.set(.{ .slow_ns = 5_000 });
@@ -113,7 +113,7 @@ test "a slow gauge NACKs after a write until its virtual deadline" {
 }
 
 test "a slow gauge stays ready across reads, and without a clock" {
-    var clock = ra8.periph.clocks.timebase.TimeBase{};
+    var clock = ra8.chip.periph.clocks.timebase.TimeBase{};
     var gauge = gauge_mod.Gauge{};
     var wrapper = fault.I2c.timed(gauge.device(), &clock);
     wrapper.set(.{ .slow_ns = 5_000 });

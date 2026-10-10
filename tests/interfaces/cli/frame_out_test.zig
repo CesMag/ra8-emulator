@@ -1,8 +1,9 @@
 //! Tests for src/interfaces/cli/frame_out.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const frame_out = ra8.board.report.frame_out;
-const cli = ra8.core.cli;
+const cli_app = @import("cli_app");
+const frame_out = cli_app.report.frame_out;
+const cli = cli_app.cli;
 
 test "a saved frame goes out opaque whatever alpha the mixer left" {
     const pixels = [_]u32{ 0x0012_3456, 0x80AB_CDEF };
@@ -35,7 +36,7 @@ test "no path means no line and no file" {
 }
 
 test "a run with no panel frame still writes the board view with its LEDs" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var dir = std.testing.tmpDir(.{});
     defer dir.cleanup();
@@ -55,7 +56,7 @@ test "a run with no panel frame still writes the board view with its LEDs" {
 }
 
 test "--panel-only writes the dark fallback panel at its own size" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var dir = std.testing.tmpDir(.{});
     defer dir.cleanup();
@@ -80,7 +81,7 @@ test "--panel-only writes the dark fallback panel at its own size" {
 
 test "attached e-ink frame-out writes the refreshed glass as grey PNG pixels" {
     const proto = ra8.components.eink_wire;
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.asks.attached_eink = &board.panel;
     board.panel.planes.resize(.{ .width = 128, .height = 128 });
@@ -111,7 +112,7 @@ test "attached e-ink frame-out writes the refreshed glass as grey PNG pixels" {
 
     const bytes = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, path, std.testing.allocator, .limited(1024 * 1024));
     defer std.testing.allocator.free(bytes);
-    try std.testing.expectEqualSlices(u8, &ra8.board.report.png.signature, bytes[0..8]);
+    try std.testing.expectEqualSlices(u8, &cli_app.report.png.signature, bytes[0..8]);
     const idat_len = std.mem.readInt(u32, bytes[33..37], .big);
     try std.testing.expectEqualStrings("IDAT", bytes[37..41]);
     var compressed: std.Io.Reader = .fixed(bytes[41 .. 41 + idat_len]);
@@ -131,7 +132,7 @@ fn word(panel: anytype, value: u16) void {
 
 test "with no attach and no GLCDC frame, frame-out saves the board's refreshed e-ink glass" {
     const proto = ra8.components.eink_wire;
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.panel.planes.resize(.{ .width = 16, .height = 8 });
     const panel = &board.panel;
@@ -162,7 +163,7 @@ test "with no attach and no GLCDC frame, frame-out saves the board's refreshed e
 }
 
 test "an unrefreshed board panel leaves frame-out on the board view" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var dir = std.testing.tmpDir(.{});
     defer dir.cleanup();

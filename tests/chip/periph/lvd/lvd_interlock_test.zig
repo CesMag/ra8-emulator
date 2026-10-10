@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const interlock = ra8.periph.lvd_interlock;
-const regs = ra8.periph.lvd_regs;
+const interlock = ra8.chip.periph.lvd_interlock;
+const regs = ra8.chip.periph.lvd_regs;
 
 test "the rise-detect band needs the reset path armed first" {
     var locked = interlock.Locked{};

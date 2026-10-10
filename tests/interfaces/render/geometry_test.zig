@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const geometry = ra8.gui.geometry;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const geometry = ra8.render.geometry;
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 

@@ -4,10 +4,10 @@ const std = @import("std");
 const testing = std.testing;
 
 const ra8 = @import("ra8");
-const buf = ra8.periph.gpt_buffer;
-const compare = ra8.periph.gpt_compare;
-const gpt = ra8.periph.gpt;
-const md = ra8.periph.gpt_mode;
+const buf = ra8.chip.periph.gpt_buffer;
+const compare = ra8.chip.periph.gpt_compare;
+const gpt = ra8.chip.periph.gpt;
+const md = ra8.chip.periph.gpt_mode;
 
 const ch0 = gpt.win_base;
 

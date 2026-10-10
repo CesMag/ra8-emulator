@@ -1,10 +1,10 @@
 //! A Zig core over a little board memory for the remote-protocol tests:
 //! SRAM at its board address and the PPB, where the debug units live.
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const memmap = ra8.core.memmap;
-const View = ra8.core.step_hook.core_view.View;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const memmap = ra8.chip.core.memmap;
+const View = ra8.session.step_hook.core_view.View;
 
 const ppb_base: u32 = 0xE000_0000;
 

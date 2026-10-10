@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const ceu = ra8.periph.ceu;
+const ceu = ra8.chip.periph.ceu;
 const gradient = ceu.camera.gradient;
 
 test "the gradient is (column + row + index) & 0xFF and ignores the time" {

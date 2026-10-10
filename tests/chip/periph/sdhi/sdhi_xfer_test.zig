@@ -1,7 +1,7 @@
 //! Covers src/chip/periph/sdhi_xfer.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const xfer = ra8.periph.sdhi_xfer;
+const xfer = ra8.chip.periph.sdhi_xfer;
 
 test "a fresh transfer has no phase in flight" {
     const data = xfer.Transfer{};

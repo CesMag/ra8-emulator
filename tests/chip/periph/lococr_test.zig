@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/lococr.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const loco = ra8.periph.subclock.loco;
-const prcr = ra8.periph.prcr;
+const loco = ra8.chip.periph.subclock.loco;
+const prcr = ra8.chip.periph.prcr;
 
 const Fixture = struct {
     protection: prcr.Prcr,
@@ -66,7 +66,7 @@ test "the driver's read-modify-write of bit 0 round-trips" {
 }
 
 test "the block puts LOCOCR on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var fix: Fixture = undefined;
     fix.init();

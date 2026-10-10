@@ -3,14 +3,14 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const commands = ra8.core.commands;
-const memmap = ra8.core.memmap;
-const session = ra8.core.debug_session;
-const stop_machine = ra8.core.stop_machine;
-const Session = ra8.core.session_api.Session;
-const step_hook = ra8.core.step_hook;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const commands = ra8.session.commands;
+const memmap = ra8.chip.core.memmap;
+const session = ra8.session.session;
+const stop_machine = ra8.session.stop_machine;
+const Session = ra8.session.session_api.Session;
+const step_hook = ra8.session.step_hook;
 const zig_script = step_hook.zig_script;
 
 const image = struct {
@@ -84,7 +84,7 @@ fn zig(into: *std.Io.Writer) !void {
     var memory: Sram = .{};
     @memcpy(memory.bytes[0..image.bytes.len], &image.bytes);
     var cpu: Cpu = .{ .bus = memory.view() };
-    cpu.regs.xpsr = ra8.core.cpu.regs.xpsr_bits.thumb;
+    cpu.regs.xpsr = ra8.chip.core.cpu.regs.xpsr_bits.thumb;
     var machine: stop_machine.Machine = .{};
     var live: Session = .{ .live = .{ .core = .{ .cpu = &cpu }, .machine = &machine, .budget = image.budget } };
     var target: zig_script.ZigScript = .{ .session = &live };
@@ -155,11 +155,11 @@ test "plug and unplug wire a part in and out through the board mid-script" {
     var machine: stop_machine.Machine = .{};
     var live: Session = .{ .live = .{ .core = .{ .cpu = &cpu }, .machine = &machine, .budget = 1 } };
     var target: zig_script.ZigScript = .{ .session = &live };
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
-    var plugs = ra8.board.session_plug.Plugs.init(&board, arena.allocator());
+    var plugs = ra8.session.board_plug.Plugs.init(&board, arena.allocator());
     target.session.attachPlugs(plugs.hook());
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();
@@ -204,11 +204,11 @@ test "speed moves the board's pacer mid-script and refuses a bad factor" {
     var machine: stop_machine.Machine = .{};
     var live: Session = .{ .live = .{ .core = .{ .cpu = &cpu }, .machine = &machine, .budget = 1 } };
     var target: zig_script.ZigScript = .{ .session = &live };
-    var time = ra8.periph.clocks.Time{};
+    var time = ra8.chip.periph.clocks.Time{};
     time.base.advance(1000);
     var wall = FakeWall{};
     var paced: ?ra8.board.run.pacing.Pacing = null;
-    var speed: ra8.board.board_speed.BoardSpeed = .{ .time = &time, .paced = &paced, .clock = wall.clock() };
+    var speed: ra8.session.board_speed.BoardSpeed = .{ .time = &time, .paced = &paced, .clock = wall.clock() };
     target.session.speed = speed.hook();
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();

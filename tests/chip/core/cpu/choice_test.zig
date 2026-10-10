@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/choice.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Choice = ra8.core.cpu.choice.Choice;
+const Choice = ra8.chip.core.cpu.choice.Choice;
 
 test "--cpu takes zig and nothing else (RA8EMU-606)" {
     try std.testing.expectEqual(Choice.zig, Choice.parse("zig").?);

@@ -2,7 +2,7 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const alias = ra8.periph.scs_alias;
+const alias = ra8.chip.periph.scs_alias;
 
 const vtor: u32 = 0xE000_ED08;
 const vtor_ns: u32 = 0xE002_ED08;
@@ -80,6 +80,6 @@ test "the words either side of NVIC_ITNS stay registers for Non-secure code" {
 }
 
 test "the ITNS span is the one src/chip/periph/itns.zig names" {
-    try std.testing.expectEqual(ra8.periph.nvic.itns.base, alias.itns.first);
-    try std.testing.expectEqual(ra8.periph.nvic.itns.last + 3, alias.itns.last);
+    try std.testing.expectEqual(ra8.chip.periph.nvic.itns.base, alias.itns.first);
+    try std.testing.expectEqual(ra8.chip.periph.nvic.itns.last + 3, alias.itns.last);
 }

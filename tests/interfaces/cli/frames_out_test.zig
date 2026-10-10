@@ -1,13 +1,14 @@
 //! Tests for numbered P6 output in src/interfaces/cli/frames_out.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const frames_out = ra8.board.report.frames_out;
+const cli_app = @import("cli_app");
+const frames_out = cli_app.report.frames_out;
 const store_board = @import("store_board.zig");
-const glcdc = ra8.periph.glcdc;
-const tcon = ra8.periph.glcdc_tcon;
-const glcdc_sys = ra8.periph.glcdc_sys;
-const pdctr = ra8.periph.pdctr;
-const prcr = ra8.periph.prcr;
+const glcdc = ra8.chip.periph.glcdc;
+const tcon = ra8.chip.periph.glcdc_tcon;
+const glcdc_sys = ra8.chip.periph.glcdc_sys;
+const pdctr = ra8.chip.periph.pdctr;
+const prcr = ra8.chip.periph.prcr;
 
 test "a small panel writes exact P6 bytes and skips an identical scan" {
     var temp = std.testing.tmpDir(.{});
@@ -58,7 +59,7 @@ test "capture records the panel pixels from a completed GLCDC scan" {
     var store = try store_board.Store.init(null);
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
 
@@ -103,7 +104,7 @@ test "an armed run keeps one frame per period with its emulated time" {
     var store = try store_board.Store.init(null);
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
 
@@ -118,7 +119,7 @@ test "an armed run keeps one frame per period with its emulated time" {
 
     const armed = (try frames_out.Armed.armOutputs(std.testing.allocator, std.testing.io, &board, path, gif_path, 1)).?;
     defer armed.deinit();
-    const period = ra8.periph.glcdc_out.vsync.default_period_ns;
+    const period = ra8.chip.periph.glcdc_out.vsync.default_period_ns;
     board.protection.write(prcr.win_base, 2, prcr.unlockWord(pdctr.guard));
     board.domains.graphics.write(pdctr.Domain.graphics.base(), 1, 0);
     board.display.write(glcdc.win_base + tcon.off.sthb1, 4, 2);
@@ -144,7 +145,7 @@ test "an armed run keeps one frame per period with its emulated time" {
 
 test "an attached e-ink refresh records its grey glass plane once per refresh" {
     const proto = ra8.components.eink_wire;
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.asks.attached_eink = &board.panel;
     board.panel.planes.resize(.{ .width = 128, .height = 128 });
@@ -179,7 +180,7 @@ test "an attached e-ink refresh records its grey glass plane once per refresh" {
 
 test "with no attach, the board's own e-ink refreshes become the sequence" {
     const proto = ra8.components.eink_wire;
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.panel.planes.resize(.{ .width = 16, .height = 8 });
 
@@ -246,7 +247,7 @@ test "GIF output follows the sampled sequence when no PPM directory is requested
 }
 
 test "an overlapping e-ink refresh burst produces one settled frame" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.panel.planes.resize(.{ .width = 2, .height = 1 });
     try std.testing.expect(board.panel.planes.ready());
@@ -257,7 +258,7 @@ test "an overlapping e-ink refresh burst produces one settled frame" {
     defer std.testing.allocator.free(root);
     const path = try std.fs.path.join(std.testing.allocator, &.{ root, "settled" });
     defer std.testing.allocator.free(path);
-    const options = try ra8.core.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", path, "--settle-window-ms", "1" });
+    const options = try cli_app.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", path, "--settle-window-ms", "1" });
     const armed = (try frames_out.Armed.armForCli(std.testing.allocator, std.testing.io, &board, options.frames)).?;
     defer armed.deinit();
 
@@ -270,7 +271,7 @@ test "an overlapping e-ink refresh burst produces one settled frame" {
 }
 
 test "a GLCDC burst settles once the picture holds for the window, and only once" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var temp = std.testing.tmpDir(.{});
     defer temp.cleanup();
@@ -278,7 +279,7 @@ test "a GLCDC burst settles once the picture holds for the window, and only once
     defer std.testing.allocator.free(root);
     const path = try std.fs.path.join(std.testing.allocator, &.{ root, "settled" });
     defer std.testing.allocator.free(path);
-    const options = try ra8.core.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", path });
+    const options = try cli_app.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", path });
     const armed = (try frames_out.Armed.armForCli(std.testing.allocator, std.testing.io, &board, options.frames)).?;
     defer armed.deinit();
     const a = [_]u32{ 1, 2 };
@@ -294,7 +295,7 @@ test "a GLCDC burst settles once the picture holds for the window, and only once
 }
 
 test "frame-on-settle can share a run with ordinary frames" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var temp = std.testing.tmpDir(.{});
     defer temp.cleanup();
@@ -304,7 +305,7 @@ test "frame-on-settle can share a run with ordinary frames" {
     defer std.testing.allocator.free(settled);
     const frames = try std.fs.path.join(std.testing.allocator, &.{ root, "b" });
     defer std.testing.allocator.free(frames);
-    const options = try ra8.core.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", settled, "--frames-out", frames });
+    const options = try cli_app.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", settled, "--frames-out", frames });
     const armed = (try frames_out.Armed.armForCli(std.testing.allocator, std.testing.io, &board, options.frames)).?;
     defer armed.deinit();
     try std.testing.expect(!armed.settle_only);

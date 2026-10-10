@@ -2,9 +2,9 @@
 //! bytes to the file it opens, the same bytes for the same frames, and a
 //! size the format cannot hold is refused before the file is created.
 const std = @import("std");
-const ra8 = @import("ra8");
-const gif_out = ra8.core.gif_out;
-const gif = ra8.board.report.gif;
+const cli_app = @import("cli_app");
+const gif_out = cli_app.gif_out;
+const gif = cli_app.report.gif;
 
 const first = [_]u32{ 0xFF11_2233, 0xFFAA_BBCC };
 const second = [_]u32{ 0xFFFF_0000, 0xFF00_FFFF };

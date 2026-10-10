@@ -1,8 +1,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
-const platform = ra8.gui.platform;
-const shell_field = ra8.gui.shell_field;
+const gui_app = @import("gui_app");
+const draw_list = ra8.render.draw_list;
+const platform = gui_app.platform;
+const shell_field = gui_app.shell_field;
 
 fn typed(bytes: []const u8) platform.Event {
     return .{ .text = platform.Text.of(bytes) };

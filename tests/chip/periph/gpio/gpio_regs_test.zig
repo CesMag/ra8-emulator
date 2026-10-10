@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/gpio_regs.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.periph.gpio_regs;
+const mod = ra8.chip.periph.gpio_regs;
 
 test "every half lands in the word that carries it" {
     try std.testing.expectEqual(mod.off.pcntr1, mod.word(mod.off.pdr));

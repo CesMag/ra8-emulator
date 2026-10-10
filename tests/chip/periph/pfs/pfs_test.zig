@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const pfs = ra8.periph.pfs;
-const protect = ra8.periph.pfs_protect;
+const pfs = ra8.chip.periph.pfs;
+const protect = ra8.chip.periph.pfs_protect;
 
 const pwpr = pfs.win_base + pfs.region.pmisc + protect.off.pwpr;
 const pwprs = pfs.win_base + pfs.region.pmisc + protect.off.pwprs;

@@ -2,8 +2,8 @@
 //! and what it refuses before then.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.periph.usbhs_regs;
-const usbhs_phy = ra8.periph.usbhs_phy;
+const regs = ra8.chip.periph.usbhs_regs;
+const usbhs_phy = ra8.chip.periph.usbhs_phy;
 
 fn poweredHost() usbhs_phy.Phy {
     var phy = usbhs_phy.Phy{};

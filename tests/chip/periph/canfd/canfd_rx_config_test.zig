@@ -2,7 +2,7 @@
 //! about the FIFO once it has.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rx_config = ra8.periph.canfd_rx_config;
+const rx_config = ra8.chip.periph.canfd_rx_config;
 
 const depth_4: u32 = 1 << 8;
 

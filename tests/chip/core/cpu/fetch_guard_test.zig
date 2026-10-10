@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
-const cpu_mod = ra8.core.cpu.cpu;
+const cpu_mod = ra8.chip.core.cpu.cpu;
 
 /// Holds at one address, and counts every time it is asked about it.
 const Watch = struct {

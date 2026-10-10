@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const texel = ra8.periph.drw_texel;
-const tex = ra8.periph.drw_tex;
+const texel = ra8.chip.periph.drw_texel;
+const tex = ra8.chip.periph.drw_tex;
 
 fn readFormat(code: u32) u32 {
     const high = code >> texel.field.high_position & texel.field.high_mask;

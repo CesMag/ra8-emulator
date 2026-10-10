@@ -86,9 +86,9 @@ fn setBattery(board: *Board, options: cli.Options) !void {
     };
 }
 
-/// Load a selected profile, or the shipped EK-RA8D2 default from the repo.
+/// Load a selected profile, or the shipped EK-RA8D2 default.
 fn loadProfile(allocator: std.mem.Allocator, io: std.Io, path: ?[]const u8) !profile.Profile {
-    const profile_path = path orelse return profile.parse(@embedFile("../../board/ek_ra8d2.board"));
+    const profile_path = path orelse return profile.parse(profile.ek_ra8d2);
     const contents = try std.Io.Dir.cwd().readFileAlloc(io, profile_path, allocator, .limited(64 * 1024));
     return profile.parse(contents);
 }

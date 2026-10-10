@@ -7,7 +7,7 @@
 //! it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const npu_vela = ra8.periph.npu_vela;
+const npu_vela = ra8.chip.periph.npu_vela;
 const conv = npu_vela.conv;
 
 fn bytes(comptime hex: []const u8) [hex.len / 2]u8 {

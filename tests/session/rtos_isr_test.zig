@@ -2,9 +2,9 @@
 //! exception entry and return events.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_hook = ra8.core.step_hook.rtos_hook;
+const rtos_hook = ra8.session.step_hook.rtos_hook;
 const isr = rtos_hook.isr;
-const rtos_trace = ra8.core.step_hook.rtos_trace;
+const rtos_trace = ra8.session.step_hook.rtos_trace;
 
 fn enter(controller: *isr.Nvic, number: u16) void {
     controller.active[controller.depth] = .{ .number = number, .priority = 0xFF };

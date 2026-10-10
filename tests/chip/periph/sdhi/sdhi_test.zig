@@ -1,7 +1,7 @@
 //! Covers src/chip/periph/sdhi.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sdhi = ra8.periph.sdhi;
+const sdhi = ra8.chip.periph.sdhi;
 const card = ra8.components.sd_bus_card;
 const bus_line = ra8.components.sd_bus_line;
 

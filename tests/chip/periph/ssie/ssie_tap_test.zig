@@ -1,7 +1,7 @@
 //! Covers src/chip/periph/ssie/ssie_tap.zig and the listener hook in
 //! src/chip/periph/ssie/ssie.zig.
 const std = @import("std");
-const ssie = @import("ra8").periph.ssie;
+const ssie = @import("ra8").chip.periph.ssie;
 const tap = ssie.tap;
 
 const ch0 = ssie.channelAddress(0);

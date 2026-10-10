@@ -2,8 +2,9 @@
 const std = @import("std");
 const io = std.testing.io;
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const usb = ra8.board.usb;
-const option = ra8.core.cli_usb_disk_option;
+const option = cli_app.usb_disk_option;
 
 test "blank needs no file" {
     const disk = try option.load(std.testing.allocator, io, ra8.board.usb_plug.blank_spec);

@@ -5,14 +5,15 @@
 //! cycles, with idle fast-forward on.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const soaker = @import("../../../interfaces/cli/soaker.zig");
 const store_board = @import("../../../interfaces/cli/store_board.zig");
 
-const zig_run = ra8.board.zig_run;
-const cpu_boot = ra8.core.cpu.boot;
+const zig_run = cli_app.zig_run;
+const cpu_boot = ra8.chip.core.cpu.boot;
 const pacing = ra8.board.run.pacing;
 const pacer = ra8.board.run.pacer;
-const Calendar = ra8.periph.rtc_clock.Calendar;
+const Calendar = ra8.chip.periph.rtc_clock.Calendar;
 
 const hz: u64 = 1_000_000;
 const day_s: u64 = 24 * 3600;
@@ -44,14 +45,14 @@ fn runDay(start: Calendar) !Day {
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
     try soaker.load(core, false);
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
     board.time.base.setRate(hz);
     board.clock.seed(start);
     var wall: FakeWall = .{};
     board.run.pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), hundred_x);
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .idle_skip = true };
     var ran: u64 = 0;
     var output: [1024]u8 = undefined;

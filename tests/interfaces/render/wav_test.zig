@@ -1,8 +1,8 @@
 //! Tests for src/interfaces/render/wav.zig: the header, a tone read back from
 //! the file, and silence where the stream underran.
 const std = @import("std");
-const ra8 = @import("ra8");
-const wav = ra8.board.report.wav;
+const cli_app = @import("cli_app");
+const wav = cli_app.report.wav;
 
 const allocator = std.testing.allocator;
 

@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/memory/guest.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const Error = ra8.core.cpu.memory.guest.Error;
+const memmap = ra8.chip.core.memmap;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const Error = ra8.chip.core.cpu.memory.guest.Error;
 
 test "a store guest reads back what it wrote, bytes and words" {
     var store = try Store.init(null);

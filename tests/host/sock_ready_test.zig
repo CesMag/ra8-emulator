@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const sock_ready = @import("ra8").interfaces.sock_ready;
+const sock_ready = @import("ra8").host.sock_ready;
 
 fn pair() ![2]std.posix.fd_t {
     var fds: [2]std.posix.fd_t = undefined;

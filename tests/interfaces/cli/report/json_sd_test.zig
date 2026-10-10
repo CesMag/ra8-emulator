@@ -3,14 +3,15 @@
 //! parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const json_sd = ra8.board.report.json_run.json_dumps.json_sd;
+const json_sd = cli_app.report.json_run.json_dumps.json_sd;
 const geometry = json_sd.geometry;
 const Value = std.json.Value;
 const Fixture = @import("json_board.zig").Fixture;
 
-fn render(board: *ra8.board.Board, asked: ?u32, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
-    var j = ra8.board.report.json.Json(@TypeOf(&buf.writer)).init(&buf.writer);
+fn render(board: *ra8.board.board.Board, asked: ?u32, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
+    var j = cli_app.report.json.Json(@TypeOf(&buf.writer)).init(&buf.writer);
     try j.open(null, '{');
     try json_sd.block(&j, board, asked);
     try j.close('}');

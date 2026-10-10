@@ -4,13 +4,14 @@
 //! window that cuts the text to whole cells inside the strip.
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const status_bar = ra8.gui.status_bar;
-const strip = ra8.gui.status_strip;
-const capture = ra8.gui.status_capture;
-const State = ra8.gui.session_link.State;
+const gui_app = @import("gui_app");
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const status_bar = gui_app.status_bar;
+const strip = gui_app.status_strip;
+const capture = gui_app.status_capture;
+const State = gui_app.session_link.State;
 
 const up: State = .{ .connected = .{ .version = 1, .caps = 0 } };
 

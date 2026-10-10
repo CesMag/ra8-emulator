@@ -1,7 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const gui = ra8.gui;
-const Color = gui.draw_list.Color;
+const gui = @import("gui_app");
+const render = ra8.render;
+const Color = render.draw_list.Color;
 
 test "events come back in the order they were fed, then null" {
     var window = gui.headless.Headless.init(std.testing.allocator, 640, 480);
@@ -32,13 +33,13 @@ test "present keeps a copy of the frame, so later drawing does not change it" {
     var window = gui.headless.Headless.init(std.testing.allocator, 2, 2);
     defer window.deinit();
     const platform = window.platform();
-    var list = gui.draw_list.DrawList.init(std.testing.allocator, 2, 2);
+    var list = render.draw_list.DrawList.init(std.testing.allocator, 2, 2);
     defer list.deinit();
-    var frame = try gui.raster.Framebuffer.init(std.testing.allocator, 2, 2);
+    var frame = try render.raster.Framebuffer.init(std.testing.allocator, 2, 2);
     defer frame.deinit(std.testing.allocator);
 
     try list.fill(.{ .x = 0, .y = 0, .w = 1, .h = 2 }, Color.rgb(255, 0, 0));
-    gui.raster.draw(&frame, &list, null);
+    render.raster.draw(&frame, &list, null);
     try platform.present(&frame);
     @memset(frame.pixels, Color.rgb(0, 255, 0));
     const shown = window.last.?;
@@ -51,9 +52,9 @@ test "presenting a frame of another size replaces the copy" {
     var window = gui.headless.Headless.init(std.testing.allocator, 2, 2);
     defer window.deinit();
     const platform = window.platform();
-    var small = try gui.raster.Framebuffer.init(std.testing.allocator, 2, 2);
+    var small = try render.raster.Framebuffer.init(std.testing.allocator, 2, 2);
     defer small.deinit(std.testing.allocator);
-    var large = try gui.raster.Framebuffer.init(std.testing.allocator, 4, 3);
+    var large = try render.raster.Framebuffer.init(std.testing.allocator, 4, 3);
     defer large.deinit(std.testing.allocator);
     try platform.present(&small);
     try platform.present(&large);

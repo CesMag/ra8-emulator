@@ -1,9 +1,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const div = ra8.core.fpu.div;
-const format = ra8.core.fpu.format;
+const div = ra8.chip.core.cpu.fpu.div;
+const format = ra8.chip.core.cpu.fpu.format;
 const Real = format.Real;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
 
 test "an exact quotient has no sticky bit" {
     const q = div.quotient(.{ .sign = 0, .mant = 6, .exp = 0 }, .{ .sign = 1, .mant = 3, .exp = 0 });

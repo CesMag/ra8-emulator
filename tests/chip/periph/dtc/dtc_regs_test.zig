@@ -2,8 +2,8 @@
 //! the bytes it names.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dtc = ra8.periph.dtc;
-const regs = ra8.periph.dtc_regs;
+const dtc = ra8.chip.periph.dtc;
+const regs = ra8.chip.periph.dtc_regs;
 
 fn unit() dtc.Dtc {
     return dtc.Dtc.init();
@@ -127,7 +127,7 @@ test "the register map matches the block's own offsets" {
 test "CPU1 reaches DTC1 and CPU0 reaches DTC0 at the same address" {
     var dtc0 = unit();
     var dtc1 = unit();
-    var issuer: ra8.periph.registry.Issuer = .cpu0;
+    var issuer: ra8.chip.periph.registry.Issuer = .cpu0;
     dtc0.twin = &dtc1;
     dtc0.issuer = &issuer;
     const window = dtc0.block();
@@ -147,7 +147,7 @@ test "CPU1 reaches DTC1 and CPU0 reaches DTC0 at the same address" {
 
 test "with no twin the window is DTC0 whoever asks" {
     var dtc0 = unit();
-    var issuer: ra8.periph.registry.Issuer = .cpu1;
+    var issuer: ra8.chip.periph.registry.Issuer = .cpu1;
     dtc0.issuer = &issuer;
     const window = dtc0.block();
     window.writeFn(window.context, dtc.win_base + regs.at.dtcvbr, 4, 0x2200_0400);

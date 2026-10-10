@@ -1,9 +1,9 @@
 //! Tests for src/chip/periph/gpio.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const periph = ra8.periph.registry;
-const mod = ra8.periph.gpio;
-const regs = ra8.periph.gpio_regs;
+const periph = ra8.chip.periph.registry;
+const mod = ra8.chip.periph.gpio;
+const regs = ra8.chip.periph.gpio_regs;
 
 const Gpio = mod.Gpio;
 const pcntr1 = mod.pcntr1;

@@ -5,8 +5,8 @@
 //! entry falls back to the table the core reset from.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 
 pub const base: u32 = 0x2000_0000;
 pub const code: u32 = base + 0x100;

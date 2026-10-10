@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/interleave.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const interleave = ra8.core.mve.interleave;
+const interleave = ra8.chip.core.cpu.mve.interleave;
 
 test "the patterns of a set cover every word exactly once" {
     for ([_]u3{ 2, 4 }) |regs| {

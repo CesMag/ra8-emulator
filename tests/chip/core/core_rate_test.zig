@@ -2,7 +2,7 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const rate = ra8.core.second_core.rate;
+const rate = ra8.chip.core.second_core.rate;
 
 test "at reset both cores run the same clock and CPU1 gets the whole round" {
     try std.testing.expectEqual(@as(u32, 500_000), rate.turn(500_000, 0));

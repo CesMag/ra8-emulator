@@ -1,8 +1,8 @@
 //! Tests for the GLCDC output stage.
 const std = @import("std");
 const ra8 = @import("ra8");
-const out = ra8.periph.glcdc_out;
-const gam = ra8.periph.glcdc_gamma;
+const out = ra8.chip.periph.glcdc_out;
+const gam = ra8.chip.periph.glcdc_gamma;
 
 const white: u32 = 0xFF_FF_FF_FF;
 const grey: u32 = 0xFF_80_80_80;

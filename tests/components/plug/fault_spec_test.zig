@@ -6,7 +6,7 @@ const model = ra8.components.model;
 const spec = model.fault_spec;
 const endpoint = model.endpoint;
 const parts = model.parts;
-const TimeBase = ra8.periph.clocks.timebase.TimeBase;
+const TimeBase = ra8.chip.periph.clocks.timebase.TimeBase;
 
 test "a fault splits at the last '=' and keeps the endpoint whole" {
     const ask = try spec.parse("max17048@i2c:riic@0x37=nack:3");

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const rtc = ra8.periph.rtc;
+const rtc = ra8.chip.periph.rtc;
 const pace = rtc.pace;
 
 fn read8(unit: *rtc.Rtc, offset: u32) u8 {

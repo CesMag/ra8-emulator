@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/mve/vpt.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vpt = ra8.core.mve.vpt;
-const Vpr = ra8.core.mve.predicate.Vpr;
+const vpt = ra8.chip.core.cpu.mve.vpt;
+const Vpr = ra8.chip.core.cpu.mve.predicate.Vpr;
 
 fn runs(start: Vpr, count: usize) [4]u16 {
     var out = @as([4]u16, @splat(0));

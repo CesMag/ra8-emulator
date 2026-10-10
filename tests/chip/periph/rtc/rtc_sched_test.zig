@@ -3,9 +3,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const rtc = ra8.periph.rtc;
+const rtc = ra8.chip.periph.rtc;
 const sched = rtc.sched;
-const EventQueue = ra8.periph.clocks.event_queue.EventQueue;
+const EventQueue = ra8.chip.periph.clocks.event_queue.EventQueue;
 
 fn write8(unit: *rtc.Rtc, offset: u32, value: u8) void {
     unit.write(rtc.win_base + offset, 1, value);

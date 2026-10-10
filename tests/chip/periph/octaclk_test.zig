@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const ckcr = ra8.periph.ckcr;
-const octaclk = ra8.periph.octaclk;
-const prcr = ra8.periph.prcr;
+const ckcr = ra8.chip.periph.ckcr;
+const octaclk = ra8.chip.periph.octaclk;
+const prcr = ra8.chip.periph.prcr;
 
 /// OCTACKCR's own window, unlocked, with the select sitting at its reset
 /// value: MOCO picked and no handshake behind it.

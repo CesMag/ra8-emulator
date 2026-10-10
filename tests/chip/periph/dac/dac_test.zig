@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/dac.zig.
 const std = @import("std");
-const dac = @import("ra8").periph.dac;
+const dac = @import("ra8").chip.periph.dac;
 
 const ch0 = dac.channelAddress(0);
 const ch1 = dac.channelAddress(1);

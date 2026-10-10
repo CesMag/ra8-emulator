@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const rtc = ra8.periph.rtc;
+const rtc = ra8.chip.periph.rtc;
 
 fn read8(unit: *rtc.Rtc, offset: u32) u8 {
     return @truncate(unit.read(rtc.win_base + offset, 1));

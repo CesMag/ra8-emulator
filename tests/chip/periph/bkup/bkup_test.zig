@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const bkup = ra8.periph.bkup;
-const prcr = ra8.periph.prcr;
+const bkup = ra8.chip.periph.bkup;
+const prcr = ra8.chip.periph.prcr;
 
 fn unlocked() prcr.Prcr {
     var protection = prcr.Prcr.init();
@@ -93,7 +93,7 @@ test "an untouched unit stays out of the report" {
 }
 
 test "the #131 sequence end to end through the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var protection = prcr.Prcr.init();
     var unit = bkup.Bkup.init(&protection);

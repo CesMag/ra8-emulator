@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/exception/callee.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const callee = ra8.core.cpu.exception.callee;
+const callee = ra8.chip.core.cpu.exception.callee;
 const fixture = @import("ram.zig");
 
 const sample: callee.Callee = .{ 4, 5, 6, 7, 8, 9, 10, 11 };

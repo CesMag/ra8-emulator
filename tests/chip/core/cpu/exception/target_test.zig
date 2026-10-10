@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/exception/target.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const target = ra8.core.cpu.exception.target;
+const target = ra8.chip.core.cpu.exception.target;
 const fixture = @import("ram.zig");
 
 const aircr: u32 = 0xE000_ED0C;

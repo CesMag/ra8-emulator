@@ -1,11 +1,11 @@
 //! Covers src/chip/core/cpu/memory/load.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const elf = ra8.image.elf;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const load = ra8.core.cpu.memory.load;
+const memmap = ra8.chip.core.memmap;
+const elf = ra8.board.image.elf;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const load = ra8.chip.core.cpu.memory.load;
 
 const page: usize = 0x1000;
 
@@ -53,7 +53,7 @@ test "an image loads into the Zig core's store with no engine open" {
     var store = try Store.init(null);
     defer store.deinit();
     const memory: Guest = .{ .store = &store };
-    const loaded = try ra8.image.load.read(image);
+    const loaded = try ra8.board.image.load.read(image);
     try std.testing.expectEqual(@as(u32, 16), try load.image(memory, loaded.image()));
     try std.testing.expectEqual(memmap.sram_base + 0x8000, try memory.readWord(memmap.mram_base));
     try std.testing.expectEqual(memmap.mram_base + 0x101, try memory.readWord(memmap.mram_base + 4));
@@ -65,6 +65,6 @@ test "an image with nothing to load is refused" {
     const image = try elf.Image.init(&file);
     var store = try Store.init(null);
     defer store.deinit();
-    const loaded = try ra8.image.load.read(image);
+    const loaded = try ra8.board.image.load.read(image);
     try std.testing.expectError(load.Error.WriteFailed, load.image(.{ .store = &store }, loaded.image()));
 }

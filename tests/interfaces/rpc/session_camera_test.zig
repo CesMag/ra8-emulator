@@ -5,9 +5,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const proto = ra8.interfaces.rpc.session;
-const handlers = ra8.interfaces.rpc.server;
-const camera = ra8.interfaces.rpc.camera;
+const proto = ra8.rpc.session_rpc;
+const handlers = ra8.rpc.session_server;
+const camera = ra8.rpc.session_camera;
 const source_spec = ra8.host.camera.source_spec;
 
 const Hook = struct {

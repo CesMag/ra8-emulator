@@ -7,19 +7,20 @@
 //! and the current line with a mark rasterises to a pinned golden frame.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_session = ra8.core.step_hook.zig_session;
-const api = ra8.core.session_api;
-const elf = ra8.image.elf;
-const dwarf_line = ra8.core.dwarf_line;
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane = ra8.gui.source_pane;
-const capture = ra8.gui.source_capture;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_session = ra8.session.step_hook.zig_session;
+const api = ra8.session.session_api;
+const elf = ra8.board.image.elf;
+const dwarf_line = ra8.session.dwarf_line;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane = gui_app.source_pane;
+const capture = gui_app.source_capture;
 
 const Rect = draw_list.Rect;
 /// Room for 40 characters of text and twelve rows.

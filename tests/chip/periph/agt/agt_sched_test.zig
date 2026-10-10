@@ -3,9 +3,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const agt = ra8.periph.agt;
-const sched = ra8.periph.agt_clock.sched;
-const cadence = ra8.core.cadence;
+const agt = ra8.chip.periph.agt;
+const sched = ra8.chip.periph.agt_clock.sched;
+const cadence = ra8.chip.core.cadence;
 
 /// One boundary of virtual time at the time base's default 1 GHz.
 const boundary_ns: u64 = cadence.instructions;
@@ -52,7 +52,7 @@ test "a stopped or cascaded channel has nothing due" {
     timer.channels[1] = timer.channels[0];
     try std.testing.expectEqual(@as(?u64, null), sched.dueAt(timer.channels[1], 1, 0));
     // AGT0 cannot cascade, so the same byte counts undivided there.
-    const undivided = ra8.periph.agt_clock.underflowInNs(100, .pclkb, sched.pclkb_hz).?;
+    const undivided = ra8.chip.periph.agt_clock.underflowInNs(100, .pclkb, sched.pclkb_hz).?;
     try std.testing.expectEqual(@as(?u64, 2_000_000 + undivided), sched.dueAt(timer.channels[0], 0, 2_000_000));
 }
 
@@ -91,7 +91,7 @@ test "an AGT underflow fires at its virtual time" {
 }
 
 test "arm puts each running channel's underflow on the queue under its own id" {
-    var queue = ra8.periph.clocks.event_queue.EventQueue{};
+    var queue = ra8.chip.periph.clocks.event_queue.EventQueue{};
     var timer = started(0x0100, 0);
     try sched.arm(&timer, &queue, 5_000);
     try std.testing.expectEqual(@as(usize, 1), queue.count);

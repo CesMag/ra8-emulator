@@ -2,7 +2,7 @@
 //! decoded into, and the counts it latches.
 const std = @import("std");
 const ra8 = @import("ra8");
-const xfer = ra8.periph.dmac_xfer;
+const xfer = ra8.chip.periph.dmac_xfer;
 
 /// DMTMD for a given mode and width, the fields a driver actually sets.
 fn tmd(mode: u16, width: u16) u16 {

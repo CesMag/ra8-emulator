@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const file = ra8.snapshot.file;
-const stretch = ra8.snapshot.stretch;
+const stretch = ra8.board.snapshot.stretch;
 
 test "what a run owed comes back from its section" {
     var buf: [64]u8 = undefined;

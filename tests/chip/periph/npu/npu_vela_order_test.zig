@@ -4,7 +4,7 @@
 //! unpacking one must give that volume back.
 const std = @import("std");
 const ra8 = @import("ra8");
-const npu_vela = ra8.periph.npu_vela;
+const npu_vela = ra8.chip.periph.npu_vela;
 const order = npu_vela.order;
 
 /// The test volume: each weight a function of its OHWI position.

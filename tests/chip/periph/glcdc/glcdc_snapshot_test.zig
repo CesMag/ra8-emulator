@@ -2,11 +2,11 @@
 //! byte for byte and keeps the fresh controller's domain and vsync hook.
 const std = @import("std");
 const ra8 = @import("ra8");
-const glcdc = ra8.periph.glcdc;
-const pdctr = ra8.periph.pdctr;
-const prcr = ra8.periph.prcr;
+const glcdc = ra8.chip.periph.glcdc;
+const pdctr = ra8.chip.periph.pdctr;
+const prcr = ra8.chip.periph.prcr;
 const file = ra8.snapshot.file;
-const display = ra8.snapshot.display;
+const display = ra8.chip.periph.glcdc_snapshot;
 
 const Stand = struct { display: glcdc.Glcdc };
 

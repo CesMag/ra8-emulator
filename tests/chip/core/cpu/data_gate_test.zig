@@ -3,12 +3,12 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
-const memmap = ra8.core.memmap;
-const cpu_mod = ra8.core.cpu.cpu;
+const memmap = ra8.chip.core.memmap;
+const cpu_mod = ra8.chip.core.cpu.cpu;
 const attribution = cpu_mod.attribution;
 const Gate = cpu_mod.data_gate.Gate;
 const Cpu = cpu_mod.Cpu;
-const Profile = ra8.core.cpu.decode.profile.Profile;
+const Profile = ra8.chip.core.cpu.decode.profile.Profile;
 
 const secure_handler: u32 = fixture.base + 0x1C0;
 const securefaultena: u32 = 1 << 19;
@@ -122,7 +122,7 @@ test "a Secure core reaches Secure memory unchecked" {
 
 test "the gate refuses nothing while disarmed and checks both ends of an access" {
     var split: Split = .{};
-    var current: ra8.core.banked.State = .non_secure;
+    var current: ra8.chip.core.banked.State = .non_secure;
     var gate: Gate = .{ .source = split.source(), .current = &current };
     try std.testing.expect(!gate.refuses(secure_word, 4));
     gate.armed = true;

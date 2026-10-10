@@ -3,14 +3,14 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const icu = ra8.periph.icu;
+const icu = ra8.chip.periph.icu;
 const pin_irq = icu.pin_irq;
-const pfs = ra8.periph.pfs;
-const gpio = ra8.periph.gpio;
+const pfs = ra8.chip.periph.pfs;
+const gpio = ra8.chip.periph.gpio;
 const gt911 = ra8.components.gt911;
 const switches = ra8.board.switches;
 const sw1 = switches.user[0];
-const memmap = ra8.core.memmap;
+const memmap = ra8.chip.core.memmap;
 
 /// The ICU only reaches the NVIC pending words, so a word map is enough.
 const FakeCore = struct {

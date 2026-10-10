@@ -1,9 +1,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const fma = ra8.core.fpu.fma;
-const format = ra8.core.fpu.format;
-const nan = ra8.core.fpu.nan;
-const Fpscr = ra8.core.fpu.fpscr.Fpscr;
+const fma = ra8.chip.core.cpu.fpu.fma;
+const format = ra8.chip.core.cpu.fpu.format;
+const nan = ra8.chip.core.cpu.fpu.nan;
+const Fpscr = ra8.chip.core.cpu.fpu.fpscr.Fpscr;
 
 fn w(sign: u1, mant: u256, exp: i32) fma.Wide {
     return .{ .sign = sign, .mant = mant, .exp = exp };

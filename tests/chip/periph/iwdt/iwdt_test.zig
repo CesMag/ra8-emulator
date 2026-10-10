@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const iwdt = ra8.periph.iwdt;
+const iwdt = ra8.chip.periph.iwdt;
 
 fn refreshed(unit: *iwdt.Iwdt) void {
     unit.write(iwdt.win_base + iwdt.off.rr, 1, iwdt.refresh.byte.first);
@@ -186,7 +186,7 @@ test "the IWDT counts the virtual ns that passed, not the boundaries" {
 }
 
 test "an armed IWDT puts its underflow on the queue, and only once" {
-    var queue = ra8.periph.clocks.event_queue.EventQueue{};
+    var queue = ra8.chip.periph.clocks.event_queue.EventQueue{};
     var unit = iwdt.Iwdt.init();
     try unit.arm(&queue, 0);
     try std.testing.expectEqual(@as(?u64, null), queue.next());
@@ -195,7 +195,7 @@ test "an armed IWDT puts its underflow on the queue, and only once" {
     try unit.arm(&queue, 1_000);
     try std.testing.expectEqual(@as(usize, 1), queue.count);
     try std.testing.expectEqual(unit.underflowDueAt(1_000), queue.next());
-    try std.testing.expectEqual(ra8.periph.wdt.clock.queue_id.iwdt, queue.items[0].id);
+    try std.testing.expectEqual(ra8.chip.periph.wdt.clock.queue_id.iwdt, queue.items[0].id);
 }
 
 test "the IWDT's due time takes off the ns already carried toward its next tick" {

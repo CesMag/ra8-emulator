@@ -1,9 +1,9 @@
 const std = @import("std");
 const testing = std.testing;
 
-const sync = @import("ra8").periph.gpt_sync;
-const win = @import("ra8").periph.gpt_window;
-const clk = @import("ra8").periph.gpt_clock;
+const sync = @import("ra8").chip.periph.gpt_sync;
+const win = @import("ra8").chip.periph.gpt_window;
+const clk = @import("ra8").chip.periph.gpt_clock;
 
 /// Just enough of a channel for the dispatch to act on: the control byte it
 /// sets CST in and the counter it zeroes.

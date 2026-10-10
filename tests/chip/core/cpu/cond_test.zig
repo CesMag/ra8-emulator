@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/cond.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const cond = ra8.core.cpu.cond;
-const flags = ra8.core.cpu.flags;
+const cond = ra8.chip.core.cpu.cond;
+const flags = ra8.chip.core.cpu.flags;
 
 const N = flags.bits.n;
 const Z = flags.bits.z;

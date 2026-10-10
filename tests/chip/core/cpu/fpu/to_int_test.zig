@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const to_int = ra8.core.fpu.to_int;
+const to_int = ra8.chip.core.cpu.fpu.to_int;
 
 test "saturation picks the nearest end of each range" {
     try std.testing.expectEqual(@as(u32, 0x7FFF_FFFF), to_int.saturate(0, false));

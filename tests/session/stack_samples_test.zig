@@ -1,7 +1,7 @@
 //! Tests for src/session/stack_samples.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const stack_samples = ra8.core.step_hook.stack_samples;
+const stack_samples = ra8.session.step_hook.stack_samples;
 const Store = stack_samples.Store;
 
 const main_fn: u32 = 0x100;

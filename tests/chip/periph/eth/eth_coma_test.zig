@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/eth/eth_coma.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const coma = ra8.periph.eth.coma;
+const coma = ra8.chip.periph.eth.coma;
 
 fn reg(unit: *const coma.Coma, offset: u32) u32 {
     return unit.base + offset;
@@ -44,7 +44,7 @@ test "RIC reads back what was written" {
 }
 
 test "the block puts RRC on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit: coma.Coma = .{};
     try bus.add(unit.block());

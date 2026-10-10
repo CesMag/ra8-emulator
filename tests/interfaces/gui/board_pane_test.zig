@@ -4,12 +4,13 @@
 //! golden with LED1 on and the others off.
 const std = @import("std");
 const ra8 = @import("ra8");
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const pane = ra8.gui.board_pane;
-const capture = ra8.gui.board_capture;
-const proto = ra8.interfaces.rpc.session;
+const gui_app = @import("gui_app");
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const pane = gui_app.board_pane;
+const capture = gui_app.board_capture;
+const proto = ra8.rpc.session_rpc;
 const Rect = draw_list.Rect;
 const Color = draw_list.Color;
 
@@ -93,7 +94,7 @@ test "the board pane frame with LED1 on is pinned" {
 }
 
 test "the pane's LED count and lamp colours are the chip's" {
-    const gpio = ra8.periph.gpio;
+    const gpio = ra8.chip.periph.gpio;
     try std.testing.expectEqual(gpio.led_count, pane.led_count);
     for (gpio.leds, pane.led_rgb565) |led, rgb565| try std.testing.expectEqual(led.rgb565, rgb565);
 }

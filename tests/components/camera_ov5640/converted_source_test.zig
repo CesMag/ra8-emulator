@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const camera = ra8.periph.ceu.camera;
+const camera = ra8.chip.periph.ceu.camera;
 
 test "a converted source fills lines in RGB565, scaled to the shape" {
     const pixels = [_]u8{ 255, 0, 0, 0, 0, 255 };

@@ -2,8 +2,8 @@
 //! poll take the traced path (RA8EMU-602).
 const std = @import("std");
 const ra8 = @import("ra8");
-const td = ra8.core.cpu.cpu.trip_decode;
-const cb = ra8.core.cpu.cpu.counted_bound;
+const td = ra8.chip.core.cpu.cpu.trip_decode;
+const cb = ra8.chip.core.cpu.cpu.counted_bound;
 
 const max = 8;
 

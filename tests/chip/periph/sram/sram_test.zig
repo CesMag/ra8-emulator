@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/sram.zig.
 const std = @import("std");
-const sram = @import("ra8").periph.sram;
+const sram = @import("ra8").chip.periph.sram;
 
 const esr = sram.win_base + sram.off_esr;
 const esclr = sram.win_base + sram.off_esclr;

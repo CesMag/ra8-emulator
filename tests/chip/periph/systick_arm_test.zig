@@ -2,9 +2,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const memmap = ra8.core.memmap;
-const mod = ra8.periph.systick_arm;
-const clocks = ra8.periph.clocks;
+const memmap = ra8.chip.core.memmap;
+const mod = ra8.chip.periph.systick_arm;
+const clocks = ra8.chip.periph.clocks;
 
 const Observed = mod.Observed;
 const observe = mod.observe;

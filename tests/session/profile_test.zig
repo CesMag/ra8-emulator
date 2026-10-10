@@ -1,5 +1,5 @@
 const std = @import("std");
-const profile = @import("ra8").core.functions.profile;
+const profile = @import("ra8").session.functions.profile;
 
 test "profile ranks functions by cycles and keeps instruction counts" {
     var table = profile.Table{ .image = .{ .bytes = &.{} } };

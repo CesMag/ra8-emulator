@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const pdctr = ra8.periph.pdctr;
-const prcr = ra8.periph.prcr;
+const pdctr = ra8.chip.periph.pdctr;
+const prcr = ra8.chip.periph.prcr;
 
 const reg = pdctr.Domain.graphics.base();
 

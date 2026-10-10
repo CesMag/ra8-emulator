@@ -2,7 +2,7 @@
 //! writing its registers through the Zig core's bus.
 const std = @import("std");
 const ra8 = @import("ra8");
-const NvicSource = ra8.core.cpu.exception.nvic_source.NvicSource;
+const NvicSource = ra8.chip.core.cpu.exception.nvic_source.NvicSource;
 const fixture = @import("ram.zig");
 
 const icsr: u32 = 0xE000_ED04;
@@ -107,9 +107,9 @@ test "a Non-secure PendSV wins from its own copy and taking it clears only that 
 /// lands on the Non-secure copy.
 const Routed = struct {
     ram: *fixture.Ram,
-    state: *ra8.core.banked.Banked,
+    state: *ra8.chip.core.banked.Banked,
 
-    fn view(self: *Routed) ra8.core.cpu.bus.Bus {
+    fn view(self: *Routed) ra8.chip.core.cpu.bus.Bus {
         return .{ .ctx = self, .vtable = &.{ .read = read, .write = write } };
     }
 
@@ -118,12 +118,12 @@ const Routed = struct {
         return if (normal and self.state.current == .non_secure) address + 0x2_0000 else address;
     }
 
-    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.core.cpu.bus.Error!void {
+    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *Routed = @ptrCast(@alignCast(ctx));
         return self.ram.view().read(self.land(address), into);
     }
 
-    fn write(ctx: *anyopaque, address: u32, from: []const u8) ra8.core.cpu.bus.Error!void {
+    fn write(ctx: *anyopaque, address: u32, from: []const u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *Routed = @ptrCast(@alignCast(ctx));
         return self.ram.view().write(self.land(address), from);
     }
@@ -131,7 +131,7 @@ const Routed = struct {
 
 test "a Non-secure SysTick pended while Non-secure runs is taken Non-secure only" {
     var ram: fixture.Ram = .{};
-    var state: ra8.core.banked.Banked = .{};
+    var state: ra8.chip.core.banked.Banked = .{};
     state.current = .non_secure;
     var routed: Routed = .{ .ram = &ram, .state = &state };
     var nvic: NvicSource = .{ .banked = &state };
@@ -141,7 +141,7 @@ test "a Non-secure SysTick pended while Non-secure runs is taken Non-secure only
     const found = (try source.winner(routed.view())).?;
     try std.testing.expectEqual(@as(u9, 15), found.number);
     try std.testing.expect(found.non_secure);
-    try std.testing.expectEqual(ra8.core.banked.State.non_secure, state.current);
+    try std.testing.expectEqual(ra8.chip.core.banked.State.non_secure, state.current);
     try source.taken(routed.view(), 15);
     try std.testing.expectEqual(@as(u32, 0), ram.word(icsr + 0x2_0000));
     try std.testing.expect((try source.winner(routed.view())) == null);

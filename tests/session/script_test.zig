@@ -2,9 +2,9 @@
 //! behind the prompt, a bad line reported, and `quit` ending the script.
 const std = @import("std");
 const ra8 = @import("ra8");
-const script = ra8.core.script;
-const commands = ra8.core.commands;
-const session = ra8.core.debug_session;
+const script = ra8.session.script;
+const commands = ra8.session.commands;
+const session = ra8.session.session;
 
 /// Answers each command with its name, the way a session answers with
 /// what happened; `quit` ends the script.

@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/candidate.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const candidate = ra8.periph.candidate;
+const candidate = ra8.chip.periph.candidate;
 
 test "the first candidate wins against nothing" {
     const won = candidate.better(null, .{ .number = 15, .priority = 0x40 });

@@ -1,8 +1,8 @@
 //! The arrival counter behind --break-sym, and where a break resolves to.
 const std = @import("std");
 const ra8 = @import("ra8");
-const breakpoint = ra8.core.breakpoint;
-const elf = ra8.image.elf;
+const breakpoint = ra8.session.breakpoint;
+const elf = ra8.board.image.elf;
 
 /// An ELF32 ARM header and nothing else: enough for `elf.Image.init` to
 /// accept it, and carrying no symbol table, which is the shape that makes

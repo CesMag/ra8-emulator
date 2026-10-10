@@ -2,7 +2,7 @@
 //! current-thread pointer turned into switch and idle events.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_trace = ra8.core.step_hook.rtos_trace;
+const rtos_trace = ra8.session.step_hook.rtos_trace;
 
 test "a new thread pointer is a switch, zero is idle" {
     var trace = rtos_trace.Trace{};

@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const csi = ra8.periph.mipi_csi;
-const short = ra8.periph.mipi_csi_short;
+const csi = ra8.chip.periph.mipi_csi;
+const short = ra8.chip.periph.mipi_csi_short;
 
 fn at(offset: u32) u32 {
     return csi.win_base + offset;

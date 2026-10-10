@@ -1,8 +1,8 @@
 const std = @import("std");
 const testing = std.testing;
 
-const gpt = @import("ra8").periph.gpt;
-const period = @import("ra8").periph.gpt_period;
+const gpt = @import("ra8").chip.periph.gpt;
+const period = @import("ra8").chip.periph.gpt_period;
 
 const base = gpt.win_base;
 

@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/int.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const int = ra8.core.mve.int;
+const int = ra8.chip.core.cpu.mve.int;
 
 test "extend reads a lane signed or unsigned" {
     try std.testing.expectEqual(@as(i64, -1), int.extend(0xFF, .byte, false));

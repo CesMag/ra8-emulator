@@ -1,7 +1,7 @@
 //! Telling a call from every other Thumb instruction by its bytes.
 const std = @import("std");
 const ra8 = @import("ra8");
-const call_decode = ra8.core.call_decode;
+const call_decode = ra8.session.call_decode;
 
 test "BL is a call" {
     try std.testing.expect(call_decode.isCall(&.{ 0x00, 0xF0, 0x0C, 0xF8 }));

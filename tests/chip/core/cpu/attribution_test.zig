@@ -3,10 +3,10 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
-const memmap = ra8.core.memmap;
-const attribution = ra8.core.cpu.cpu.attribution;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
+const memmap = ra8.chip.core.memmap;
+const attribution = ra8.chip.core.cpu.cpu.attribution;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const State = attribution.State;
 
 const secure_handler: u32 = fixture.base + 0x1C0;
@@ -65,7 +65,7 @@ fn nonSecure(ram: *fixture.Ram, fixed: *Fixed) !Cpu {
 }
 
 fn expectInvep(ram: *fixture.Ram, cpu: *Cpu) !void {
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(secure_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 7), cpu.regs.xpsr & 0x1FF);
     try std.testing.expectEqual(invep, ram.word(sfsr));
@@ -94,7 +94,7 @@ test "a Non-secure fetch from Non-secure memory runs as before" {
     var ram: fixture.Ram = .{};
     var fixed: Fixed = .{ .state = .non_secure };
     var cpu = try nonSecure(&ram, &fixed);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.code + 2, cpu.regs.pc);
     try std.testing.expectEqual(@as(u64, 1), cpu.retired);
     try std.testing.expectEqual(@as(u32, 0), ram.word(sfsr));
@@ -105,7 +105,7 @@ test "a Secure core is never checked" {
     var fixed: Fixed = .{ .state = .secure };
     var cpu = try nonSecure(&ram, &fixed);
     cpu.banked.switchTo(&cpu.regs, .secure);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(fixture.code + 2, cpu.regs.pc);
 }
 
@@ -116,7 +116,7 @@ test "a Secure core fetching Non-secure memory takes INVTRAN instead of running 
     var fixed: Fixed = .{ .state = .non_secure };
     var cpu = try nonSecure(&ram, &fixed);
     cpu.banked.switchTo(&cpu.regs, .secure);
-    try std.testing.expectEqual(@as(?ra8.core.cpu.cpu.Stop, null), cpu.step());
+    try std.testing.expectEqual(@as(?ra8.chip.core.cpu.cpu.Stop, null), cpu.step());
     try std.testing.expectEqual(secure_handler, cpu.regs.pc);
     try std.testing.expectEqual(@as(u32, 7), cpu.regs.xpsr & 0x1FF);
     try std.testing.expectEqual(invtran, ram.word(sfsr));

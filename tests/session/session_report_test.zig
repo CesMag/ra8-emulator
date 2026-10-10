@@ -1,9 +1,9 @@
 //! Tests for src/session/session_report.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const session_report = ra8.core.step_hook.session_report;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const session_report = ra8.session.step_hook.session_report;
 
 /// 64 bytes of RAM at address 0, the vector table first.
 const Ram = struct {

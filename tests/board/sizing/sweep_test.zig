@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const sizing = ra8.core.sizing;
+const sizing = ra8.board.sizing;
 const workload = sizing.workload;
 const matrix = sizing.matrix;
 const sweep = sizing.sweep;

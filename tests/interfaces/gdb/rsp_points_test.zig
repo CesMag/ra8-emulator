@@ -2,8 +2,8 @@
 //! in the break table, watches in the watch table.
 const std = @import("std");
 const ra8 = @import("ra8");
-const points = ra8.core.rsp_dispatch.points;
-const Machine = ra8.core.stop_machine.Machine;
+const points = ra8.gdb.rsp_dispatch.points;
+const Machine = ra8.session.stop_machine.Machine;
 
 // Z0 and Z1 both set a break, a second set is already true, and z0 clears it.
 test "Z0 and Z1 set breaks and z0 clears them" {
@@ -28,10 +28,10 @@ test "Z2, Z3 and Z4 set watches of the right kind and span" {
     try std.testing.expectEqualStrings("OK", try points.answer(&machine, "Z4,22000070,2", &out));
     const set = machine.watches.entries();
     try std.testing.expectEqual(@as(usize, 3), set.len);
-    try std.testing.expectEqual(ra8.core.watch_table.Kind.write, set[0].watch.kind);
+    try std.testing.expectEqual(ra8.session.watch_table.Kind.write, set[0].watch.kind);
     try std.testing.expectEqual(@as(u32, 0x2200_0057), set[0].watch.last);
-    try std.testing.expectEqual(ra8.core.watch_table.Kind.read, set[1].watch.kind);
-    try std.testing.expectEqual(ra8.core.watch_table.Kind.access, set[2].watch.kind);
+    try std.testing.expectEqual(ra8.session.watch_table.Kind.read, set[1].watch.kind);
+    try std.testing.expectEqual(ra8.session.watch_table.Kind.access, set[2].watch.kind);
 }
 
 // z2 only clears the watch with the same address, length and kind.
@@ -44,7 +44,7 @@ test "z2 clears the matching watch and nothing else" {
     try std.testing.expectEqualStrings("OK", try points.answer(&machine, "z2,22000054,4", &out));
     const left = machine.watches.entries();
     try std.testing.expectEqual(@as(usize, 1), left.len);
-    try std.testing.expectEqual(ra8.core.watch_table.Kind.read, left[0].watch.kind);
+    try std.testing.expectEqual(ra8.session.watch_table.Kind.read, left[0].watch.kind);
 }
 
 // An unknown type is unsupported; a malformed request or empty span is an error.

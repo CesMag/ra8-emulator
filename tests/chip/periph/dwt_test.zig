@@ -1,7 +1,7 @@
 //! The DWT comparator registers and the matches they make.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dwt = ra8.core.dwt;
+const dwt = ra8.chip.periph.dwt;
 
 const word_size: u32 = 2 << dwt.function_bits.size_shift;
 const halts: u32 = dwt.function_bits.action_debug << dwt.function_bits.action_shift;
@@ -192,7 +192,7 @@ test "a read Data Value comparator matches the value a load brings back" {
 }
 
 test "NUMCOMP is 8 on the Cortex-M85 and 4 on the Cortex-M33" {
-    const cpuid = ra8.periph.cpuid;
+    const cpuid = ra8.chip.periph.cpuid;
     try std.testing.expectEqual(@as(u4, 8), dwt.numcompOf(cpuid.cpu0));
     try std.testing.expectEqual(@as(u4, 4), dwt.numcompOf(cpuid.cpu1));
     try std.testing.expectEqual(@as(u32, 0x8000_0000), dwt.ctrlReset(cpuid.cpu0));

@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/mrms_ecc.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ecc = ra8.periph.mrms.ecc;
+const ecc = ra8.chip.periph.mrms.ecc;
 
 const at = struct {
     fn reg(offset: u32) u32 {
@@ -56,7 +56,7 @@ test "the irq enables and MRPSC hold their own bits" {
 }
 
 test "attach claims the three windows the driver writes" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit: ecc.Ecc = .{};
     try unit.attach(&bus);

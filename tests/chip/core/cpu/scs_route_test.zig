@@ -3,11 +3,11 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const scs_route = ra8.core.cpu.board_bus.scs_route;
-const Banked = ra8.core.banked.Banked;
-const registry = ra8.periph.registry;
-const BoardBus = ra8.core.cpu.board_bus.BoardBus;
-const Store = ra8.core.cpu.memory.store.Store;
+const scs_route = ra8.chip.core.cpu.board_bus.scs_route;
+const Banked = ra8.chip.core.banked.Banked;
+const registry = ra8.chip.periph.registry;
+const BoardBus = ra8.chip.core.cpu.board_bus.BoardBus;
+const Store = ra8.chip.core.cpu.memory.store.Store;
 
 const vtor: u32 = 0xE000_ED08;
 const vtor_alias: u32 = 0xE002_ED08;
@@ -90,12 +90,12 @@ test "VTOR round trip from each state and through the alias on CPU1" {
     try roundTrip(.cpu1);
 }
 
-const SysTicks = ra8.periph.scb_bank.SysTicks;
+const SysTicks = ra8.chip.periph.scb_bank.SysTicks;
 const icsr: u32 = 0xE000_ED04;
 const scr: u32 = 0xE000_ED10;
 const ccr: u32 = 0xE000_ED14;
 
-fn splitOf(address: u32, view: ra8.periph.scs_alias.View, systicks: SysTicks) scs_route.Split {
+fn splitOf(address: u32, view: ra8.chip.periph.scs_alias.View, systicks: SysTicks) scs_route.Split {
     return scs_route.split(.{ .address = address, .view = view }, systicks).?;
 }
 
@@ -216,7 +216,7 @@ fn cfsrRoundTrip(issuer: registry.Issuer) !void {
     defer store.deinit();
     var periph = registry.Bus.init(std.testing.allocator);
     defer periph.deinit();
-    var clears = ra8.core.cpu.board_bus.fault_clear.Clears.init();
+    var clears = ra8.chip.core.cpu.board_bus.fault_clear.Clears.init();
     var state: Banked = .{};
     var board: BoardBus = .{ .memory = .{ .store = .{ .store = &store } }, .periph = &periph, .issuer = issuer, .security = &state, .scs = .{ .clears = &clears } };
     const bus = board.view();

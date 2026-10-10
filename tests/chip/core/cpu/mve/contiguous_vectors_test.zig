@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/mve/contiguous_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const contiguous = ra8.core.mve.contiguous;
-const vectors = ra8.core.mve.contiguous_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const contiguous = ra8.chip.core.cpu.mve.contiguous;
+const vectors = ra8.chip.core.cpu.mve.contiguous_vectors;
 
 fn run(in: contiguous.Form) contiguous.Plan {
     return contiguous.plan(in);

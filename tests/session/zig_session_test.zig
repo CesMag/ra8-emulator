@@ -1,11 +1,11 @@
 //! Tests for src/session/zig_session.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Machine = ra8.core.stop_machine.Machine;
-const session_view = ra8.core.session_view;
-const zig_session = ra8.core.step_hook.zig_session;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Machine = ra8.session.stop_machine.Machine;
+const session_view = ra8.session.session_view;
+const zig_session = ra8.session.step_hook.zig_session;
 
 /// 64 bytes of RAM at address 0, the vector table first.
 const Ram = struct {

@@ -2,16 +2,16 @@
 //! MDIO window it brings the link up through.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Store = ra8.core.cpu.memory.store.Store;
-const periph = ra8.periph.registry;
-const regs = ra8.periph.eth_regs;
-const eth = ra8.periph.eth;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const periph = ra8.chip.periph.registry;
+const regs = ra8.chip.periph.eth_regs;
+const eth = ra8.chip.periph.eth;
 const eth_phy = ra8.components.eth_phy;
-const eth_mac = ra8.periph.eth_mac;
-const eth_mode = ra8.periph.eth_mode;
+const eth_mac = ra8.chip.periph.eth_mac;
+const eth_mode = ra8.chip.periph.eth_mode;
 const net = ra8.board.net;
-const pdctr = ra8.periph.pdctr;
-const prcr = ra8.periph.prcr;
+const pdctr = ra8.chip.periph.pdctr;
+const prcr = ra8.chip.periph.prcr;
 
 fn portZero() eth.Port {
     return eth.Port.init(regs.cluster.etha0, regs.cluster.rmac0);

@@ -2,8 +2,8 @@
 //! pseudocode for LE/LETP, VCTP and the tail-predication element mask.
 const std = @import("std");
 const ra8 = @import("ra8");
-const tail = ra8.core.mve.tail;
-const Vpr = ra8.core.mve.predicate.Vpr;
+const tail = ra8.chip.core.cpu.mve.tail;
+const Vpr = ra8.chip.core.cpu.mve.predicate.Vpr;
 
 test "elements per vector for each LTPSIZE" {
     const want = [_]u32{ 16, 8, 4, 2, 1 };

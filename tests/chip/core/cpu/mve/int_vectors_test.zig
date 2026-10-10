@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/mve/int_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const int = ra8.core.mve.int;
-const vectors = ra8.core.mve.int_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const int = ra8.chip.core.cpu.mve.int;
+const vectors = ra8.chip.core.cpu.mve.int_vectors;
 const Operands = vectors.Operands;
 
 fn vadd(in: Operands) u128 {

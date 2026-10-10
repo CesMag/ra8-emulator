@@ -1,20 +1,20 @@
 //! Host tests for the core-addressed session API.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const api = ra8.core.session_api;
-const breakpoint = ra8.core.breakpoint;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_session = ra8.core.step_hook.zig_session;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const api = ra8.session.session_api;
+const breakpoint = ra8.session.breakpoint;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_session = ra8.session.step_hook.zig_session;
 const input_script = ra8.components.input_script;
 const gt911 = ra8.components.gt911;
-const gpio = ra8.periph.gpio;
+const gpio = ra8.chip.periph.gpio;
 const touch_input = ra8.components.touch_input;
 const switches = ra8.board.switches;
-const timebase = ra8.periph.clocks.timebase;
+const timebase = ra8.chip.periph.clocks.timebase;
 
 /// A small RAM image with an initial vector table and three Thumb instructions.
 const Ram = struct {
@@ -272,7 +272,7 @@ test "session lists widgets and taps the named widget center" {
     try std.testing.expectEqualStrings("settings_button", widgets[0].nameSlice());
     try std.testing.expectEqualStrings("button", widgets[0].kindSlice());
     try std.testing.expectEqualStrings("ready", widgets[0].stateSlice());
-    try std.testing.expectEqual(ra8.core.widget_tree.Rect{ .x = 200, .y = 300, .w = 100, .h = 50 }, widgets[0].rect);
+    try std.testing.expectEqual(ra8.session.widget_tree.Rect{ .x = 200, .y = 300, .w = 100, .h = 50 }, widgets[0].rect);
 
     try session.tapWidget(std.testing.allocator, .cpu0, 50_000_000, "settings_button");
     _ = try session.step(.cpu0);

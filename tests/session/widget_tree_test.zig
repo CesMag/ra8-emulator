@@ -2,7 +2,7 @@
 //! v2 (256 records, RA8FW-782) and rejects anything else.
 const std = @import("std");
 const ra8 = @import("ra8");
-const tree = ra8.core.widget_tree;
+const tree = ra8.session.widget_tree;
 
 fn header(version: u16, count: u16, truncated: bool) [tree.records_offset]u8 {
     var bytes: [tree.records_offset]u8 = @splat(0);

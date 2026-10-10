@@ -3,8 +3,8 @@
 const std = @import("std");
 
 const ra8 = @import("ra8");
-const compare = ra8.periph.gpt_compare;
-const gpt = ra8.periph.gpt;
+const compare = ra8.chip.periph.gpt_compare;
+const gpt = ra8.chip.periph.gpt;
 
 /// A channel started with a period, so a test only has to say what to compare.
 fn running(period: u32) gpt.Channel {

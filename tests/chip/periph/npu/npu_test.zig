@@ -3,14 +3,14 @@
 //! it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const npu = ra8.periph.npu;
-const cmd = ra8.periph.npu_cmd;
+const npu = ra8.chip.periph.npu;
+const cmd = ra8.chip.periph.npu_cmd;
 const store_memory = @import("../store_memory.zig");
 const Guest = store_memory.Guest;
 
 /// The arenas and command stream sit in the top 16 KiB of DTCM, so a walk
 /// off the arena's end reaches memory nothing backs.
-const arena_base: u32 = ra8.core.memmap.dtcm_end - arena_size;
+const arena_base: u32 = ra8.chip.core.memmap.dtcm_end - arena_size;
 const arena_size: u32 = 0x4000;
 const stream_at: u32 = arena_base;
 const source_at: u32 = arena_base + 0x100;

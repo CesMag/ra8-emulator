@@ -5,8 +5,8 @@
 //! disassembler printed it (RA8EMU-708).
 const std = @import("std");
 const ra8 = @import("ra8");
-const Instr = ra8.core.cpu.instr.Instr;
-const disasm = ra8.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
 const digests = @import("../../../../fixtures/disasm/digests.zig");
 
 pub const Sweep = struct {

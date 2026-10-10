@@ -4,17 +4,17 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const server = ra8.interfaces.rpc.server;
-const stack = ra8.interfaces.rpc.stack;
-const region_map = ra8.core.region_map;
+const server = ra8.rpc.session_server;
+const stack = ra8.rpc.session_stack;
+const region_map = ra8.session.region_map;
 
 const image = "tests/fixtures/sections/fault_crashlog_hil.elf";
 const base: u32 = 0x220F_DF00;
 const size: u32 = 0x2000;
 
 fn stackOf(context: *anyopaque, core: usize) ?region_map.Stack {
-    const harness: *ra8.harness.Harness = @ptrCast(@alignCast(context));
-    const which: ra8.core.session_api.Core = if (core == 0) .cpu0 else .cpu1;
+    const harness: *ra8.session.harness.Harness = @ptrCast(@alignCast(context));
+    const which: ra8.session.session_api.Core = if (core == 0) .cpu0 else .cpu1;
     const loaded = harness.loadedImage(which) orelse return null;
     return region_map.stackOf(loaded, &region_map.ek_ra8d2);
 }
@@ -23,7 +23,7 @@ fn noMap(_: *anyopaque, _: usize, _: bool, _: []u8) anyerror![]const u8 {
     return error.NoImage;
 }
 
-fn ask(context: *server.Context) !ra8.interfaces.rpc.session.StackReport {
+fn ask(context: *server.Context) !ra8.rpc.session_rpc.StackReport {
     return switch (stack.stack(context, .{ .core = .cpu0 })) {
         .ok => |report| report,
         .err => error.Refused,
@@ -31,7 +31,7 @@ fn ask(context: *server.Context) !ra8.interfaces.rpc.session.StackReport {
 }
 
 test "a run keeps the low MSP inside the image's reservation" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
@@ -47,7 +47,7 @@ test "a run keeps the low MSP inside the image's reservation" {
 }
 
 test "an MSP set under the base reports the overflow in bytes" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
@@ -60,7 +60,7 @@ test "an MSP set under the base reports the overflow in bytes" {
 }
 
 test "with no stack hook the report carries no reservation" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };

@@ -2,12 +2,13 @@
 //! no engine opened (RA8EMU-592).
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const memmap = ra8.core.memmap;
-const elf = ra8.image.elf;
-const main_path = ra8.board.zig_run.main_path;
+const memmap = ra8.chip.core.memmap;
+const elf = ra8.board.image.elf;
+const main_path = cli_app.zig_run.main_path;
 const Cpu0 = ra8.board.cpu0_store.Cpu0;
-const Parts = ra8.board.parts.Parts;
+const Parts = cli_app.parts.Parts;
 
 const page: usize = 0x1000;
 const vectors: u32 = memmap.mram_base;
@@ -48,7 +49,7 @@ fn image() [page * 2]u8 {
 }
 
 test "prepare loads CPU0 onto its own store with no engine behind it" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     var file = image();
     var cpu0: Cpu0 = .{};
@@ -59,13 +60,13 @@ test "prepare loads CPU0 onto its own store with no engine behind it" {
     const memory = cpu0.own();
     try std.testing.expectEqual(stack, try memory.readWord(vectors));
     try std.testing.expectEqual(vectors + 9, try memory.readWord(vectors + 4));
-    try std.testing.expectEqual(ra8.periph.cpuid.cpu0, try memory.readWord(ra8.periph.cpuid.address));
+    try std.testing.expectEqual(ra8.chip.periph.cpuid.cpu0, try memory.readWord(ra8.chip.periph.cpuid.address));
 }
 
 test "fit puts the command line's part on the board" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
-    const options: ra8.core.cli.Options = .{ .path = "cpu0.elf", .cpu = .zig };
+    const options: cli_app.cli.Options = .{ .path = "cpu0.elf", .cpu = .zig };
     try main_path.fit(&board, std.testing.allocator, std.testing.io, options);
     try std.testing.expectEqual(options.part, board.part);
 }

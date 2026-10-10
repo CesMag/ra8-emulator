@@ -4,11 +4,11 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const plug = Board.plug;
 const model = ra8.components.model;
-const api = ra8.core.session_api;
-const session_faults = ra8.board.session_faults;
+const api = ra8.session.session_api;
+const session_faults = ra8.session.board_faults;
 
 const spec = "max17048@i2c:riic@0x37";
 
@@ -37,11 +37,11 @@ const Rig = struct {
         self.arena.deinit();
     }
 
-    fn registry(self: *Rig) *ra8.periph.riic_bus.Registry {
+    fn registry(self: *Rig) *ra8.chip.periph.riic_bus.Registry {
         return &self.board.wire.controller.devices;
     }
 
-    fn part(self: *Rig) ra8.periph.riic_bus.Device {
+    fn part(self: *Rig) ra8.chip.periph.riic_bus.Device {
         return self.registry().find(0x37).?.*;
     }
 

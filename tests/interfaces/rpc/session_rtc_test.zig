@@ -4,13 +4,13 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const server = ra8.interfaces.rpc.server;
-const rtc = ra8.interfaces.rpc.rtc;
-const board_rtc = ra8.board.session_rtc;
+const server = ra8.rpc.session_server;
+const rtc = ra8.rpc.session_rtc;
+const board_rtc = ra8.session.board_rtc;
 
 const image = "tests/fixtures/fpu/fp_basic.elf";
 
-fn ask(context: *server.Context) !ra8.interfaces.rpc.session.RtcReport {
+fn ask(context: *server.Context) !ra8.rpc.session_rpc.RtcReport {
     return switch (rtc.rtc(context, .{ .core = .cpu0 })) {
         .ok => |report| report,
         .err => error.Refused,
@@ -18,7 +18,7 @@ fn ask(context: *server.Context) !ra8.interfaces.rpc.session.RtcReport {
 }
 
 test "a seeded clock reports its date and that it runs" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
@@ -36,7 +36,7 @@ test "a seeded clock reports its date and that it runs" {
 }
 
 test "a clock nobody started reports the reset date, stopped" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
@@ -50,19 +50,19 @@ test "a clock nobody started reports the reset date, stopped" {
 }
 
 test "counters firmware left invalid report no date" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
     context.clock = board_rtc.clock(opened.board());
-    opened.board().clock.reg[ra8.periph.rtc.off.moncnt] = 0x13;
+    opened.board().clock.reg[ra8.chip.periph.rtc.off.moncnt] = 0x13;
     const report = try ask(&context);
     try std.testing.expectEqual(@as(u8, 0), report.valid);
     try std.testing.expectEqual(@as(u16, 0), report.year);
 }
 
 test "a server without a clock refuses rtc" {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image });
     defer opened.deinit();
     var scratch: [64]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };

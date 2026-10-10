@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/block_cache.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const decode = ra8.core.cpu.decode;
+const bus = ra8.chip.core.cpu.bus;
+const decode = ra8.chip.core.cpu.decode;
 const BlockCache = decode.block_cache.BlockCache;
 
 const Ram = struct {
@@ -109,7 +109,7 @@ test "an exception mid-block leaves it and resumes at the interrupted instructio
 
 const SramRam = struct {
     bytes: [64]u8 = @splat(0),
-    const base = ra8.core.memmap.sram_base;
+    const base = ra8.chip.core.memmap.sram_base;
 
     fn view(self: *SramRam) bus.Bus {
         return .{ .ctx = self, .vtable = &.{ .read = read, .write = write } };

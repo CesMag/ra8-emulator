@@ -2,8 +2,8 @@
 //! their emulated delay, writes the same bytes for the same frames, and
 //! refuses a size the format cannot hold.
 const std = @import("std");
-const ra8 = @import("ra8");
-const gif = ra8.board.report.gif;
+const cli_app = @import("cli_app");
+const gif = cli_app.report.gif;
 const lzw_decode = @import("gif_lzw_decode.zig");
 
 const Decoded = struct {

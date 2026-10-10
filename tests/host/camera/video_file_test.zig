@@ -6,7 +6,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const video = ra8.host.camera.video_file;
-const camera = ra8.periph.ceu.camera;
+const camera = ra8.chip.periph.ceu.camera;
 const allocator = std.testing.allocator;
 const ms = std.time.ns_per_ms;
 

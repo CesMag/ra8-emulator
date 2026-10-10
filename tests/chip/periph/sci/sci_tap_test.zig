@@ -2,7 +2,7 @@
 //! every byte any channel sends, with its channel, and none it drops.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci = ra8.periph.sci;
+const sci = ra8.chip.periph.sci;
 
 const Seen = struct {
     bytes: [32]u8 = undefined,

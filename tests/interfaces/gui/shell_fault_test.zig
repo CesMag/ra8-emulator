@@ -3,14 +3,15 @@
 //! test, and the mode moving only on the session's ok.
 const std = @import("std");
 const ra8 = @import("ra8");
-const proto = ra8.interfaces.rpc.session;
-const draw_list = ra8.gui.draw_list;
-const font = ra8.gui.font;
-const frame = ra8.gui.shell_frame;
-const shell_devices = ra8.gui.shell_devices;
-const fault = ra8.gui.shell_fault;
-const Stdio = ra8.interfaces.rpc.stdio.Stdio;
-const session_link = ra8.gui.session_link;
+const gui_app = @import("gui_app");
+const proto = ra8.rpc.session_rpc;
+const draw_list = ra8.render.draw_list;
+const font = ra8.render.font;
+const frame = gui_app.shell_frame;
+const shell_devices = gui_app.shell_devices;
+const fault = gui_app.shell_fault;
+const Stdio = ra8.rpc.stdio_transport.Stdio;
+const session_link = gui_app.session_link;
 const Env = proto.Client.Env;
 
 /// A link that has finished its greeting, writing into a pipe nobody answers.

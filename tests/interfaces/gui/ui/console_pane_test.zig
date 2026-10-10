@@ -3,9 +3,10 @@
 //! too short for a row draws nothing, and the strip sits under the board.
 const std = @import("std");
 const ra8 = @import("ra8");
-const console_log = ra8.gui.console_log;
-const console_pane = ra8.gui.console_pane;
-const draw_list = ra8.gui.draw_list;
+const gui_app = @import("gui_app");
+const console_log = gui_app.console_log;
+const console_pane = gui_app.console_pane;
+const draw_list = ra8.render.draw_list;
 
 /// Glyph commands in `list`.
 fn glyphs(list: *const draw_list.DrawList) usize {

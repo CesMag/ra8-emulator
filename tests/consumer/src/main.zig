@@ -7,7 +7,7 @@ pub fn main(init: std.process.Init) !void {
     const args = try init.minimal.args.toSlice(init.arena.allocator());
     const image = if (args.len > 1) args[1] else "../fixtures/plug/gauge_poll.elf";
     const input: ?[]const u8 = if (args.len > 2) args[2] else null;
-    var opened = try ra8.harness.open(allocator, io, .{ .elf_path = image, .input_script = input });
+    var opened = try ra8.session.harness.open(allocator, io, .{ .elf_path = image, .input_script = input });
     defer opened.deinit();
     if (input == null) {
         if (opened.session().currentCore() != .cpu0) return error.WrongCore;
@@ -17,7 +17,7 @@ pub fn main(init: std.process.Init) !void {
     try smokeFrames(allocator, io, &opened, if (args.len > 3) args[3] else null);
 }
 
-fn smokeFrames(allocator: std.mem.Allocator, io: std.Io, opened: *ra8.harness.Harness, output: ?[]const u8) !void {
+fn smokeFrames(allocator: std.mem.Allocator, io: std.Io, opened: *ra8.session.harness.Harness, output: ?[]const u8) !void {
     try opened.session().waitSettled(2_000_000_000);
     var before = try opened.session().frame(allocator);
     defer before.deinit(allocator);

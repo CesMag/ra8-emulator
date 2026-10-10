@@ -2,8 +2,8 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const fault_clear = ra8.periph.fault_status.clear;
-const memmap = ra8.core.memmap;
+const fault_clear = ra8.chip.periph.fault_status.clear;
+const memmap = ra8.chip.core.memmap;
 
 /// The two status words as plain memory, standing in for a core's PPB.
 const Words = struct {

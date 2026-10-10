@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const i2c = ra8.board.i2c;
 const file = ra8.snapshot.file;
-const wire = ra8.snapshot.wire;
+const wire = ra8.board.snapshot.wire;
 
 const Stand = struct { wire: i2c.Wire = .{} };
 

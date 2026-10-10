@@ -3,9 +3,9 @@
 //! r7 frame records and no table, and every sample must name the chain.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const hook = ra8.core.step_hook;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const hook = ra8.session.step_hook;
 const stack_samples = hook.stack_samples;
 const Sampler = hook.stack_sampler.Sampler;
 

@@ -2,8 +2,8 @@
 //! time they ended at, carriage returns drop, long lines stop growing, the
 //! scrollback drops its oldest line, and a save writes stamped text.
 const std = @import("std");
-const ra8 = @import("ra8");
-const console_log = ra8.gui.console_log;
+const gui_app = @import("gui_app");
+const console_log = gui_app.console_log;
 
 test "a newline finishes the line at the time it arrived" {
     var log = console_log.Log.init(std.testing.allocator, 8);

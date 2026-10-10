@@ -2,8 +2,8 @@
 //! non-leaves without it walked along the r7 frame records.
 const std = @import("std");
 const ra8 = @import("ra8");
-const unwind = ra8.core.unwind;
-const stack_walk = ra8.core.step_hook.stack_walk;
+const unwind = ra8.session.unwind;
+const stack_walk = ra8.session.step_hook.stack_walk;
 
 /// Words at a few places; anything else is unreadable.
 const Memory = struct {

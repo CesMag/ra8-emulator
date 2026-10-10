@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const ipc = ra8.periph.ipc;
+const ipc = ra8.chip.periph.ipc;
 
 fn unit() ipc.Ipc {
     return ipc.Ipc.init();

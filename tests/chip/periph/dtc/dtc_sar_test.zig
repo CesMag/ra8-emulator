@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const sar = ra8.periph.dtc.attribution;
-const prcr = ra8.periph.prcr;
+const sar = ra8.chip.periph.dtc.attribution;
+const prcr = ra8.chip.periph.prcr;
 
 fn gate(open: bool) prcr.Prcr {
     var unit = prcr.Prcr.init();

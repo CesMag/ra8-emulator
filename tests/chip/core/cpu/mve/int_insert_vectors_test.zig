@@ -1,12 +1,12 @@
 //! Covers src/chip/core/cpu/mve/int_insert_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const int = ra8.core.mve.int;
-const insert = ra8.core.mve.int_insert;
-const shift = ra8.core.mve.int_shift;
-const shift_vectors = ra8.core.mve.int_shift_vectors;
-const vectors = ra8.core.mve.int_insert_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const int = ra8.chip.core.cpu.mve.int;
+const insert = ra8.chip.core.cpu.mve.int_insert;
+const shift = ra8.chip.core.cpu.mve.int_shift;
+const shift_vectors = ra8.chip.core.cpu.mve.int_shift_vectors;
+const vectors = ra8.chip.core.cpu.mve.int_insert_vectors;
 
 fn byInsert(in: vectors.InsertCase) u128 {
     return if (in.right) insert.sri(in.d, in.m, in.size, in.n) else insert.sli(in.d, in.m, in.size, in.n);

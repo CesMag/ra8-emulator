@@ -1,7 +1,7 @@
 //! The RIIC device seam: who may sit on the bus, and who answers an address.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.periph.riic_bus;
+const bus = ra8.chip.periph.riic_bus;
 
 /// A device that only records what it was given.
 const Echo = struct {

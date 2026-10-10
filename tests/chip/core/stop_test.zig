@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const stop = ra8.core.stop;
+const stop = ra8.chip.core.stop;
 
 test "a counter below the floor is not a stop" {
     var watch = stop.Stop{ .address = 0x2200_0000, .reaches = 5 };

@@ -3,14 +3,15 @@
 //! capture reads CPU0 and CPU1 separately through a real session.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_session = ra8.core.step_hook.zig_session;
-const api = ra8.core.session_api;
-const pane = ra8.gui.registers_pane;
-const capture = ra8.gui.registers_capture;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_session = ra8.session.step_hook.zig_session;
+const api = ra8.session.session_api;
+const pane = gui_app.registers_pane;
+const capture = gui_app.registers_capture;
 
 test "each shown register is the one the pane names" {
     for (capture.shown, pane.names) |which, name| try std.testing.expectEqualStrings(name, @tagName(which));

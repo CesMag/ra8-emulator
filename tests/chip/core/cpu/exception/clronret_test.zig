@@ -3,8 +3,8 @@
 //! that restores them from the frame does not.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Stop = ra8.core.cpu.cpu.Stop;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
 const fixture = @import("ram.zig");
 
 const svc: u16 = 0xDF00;

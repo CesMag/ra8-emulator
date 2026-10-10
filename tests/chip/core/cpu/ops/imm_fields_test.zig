@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/ops/imm_fields.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Fields = ra8.core.cpu.ops.imm_fields.Fields;
-const Instr = ra8.core.cpu.instr.Instr;
+const Fields = ra8.chip.core.cpu.ops.imm_fields.Fields;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };

@@ -4,14 +4,14 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
 const Fake = @import("exception/fake_source.zig").Fake;
-const QuietSource = ra8.core.cpu.exception.quiet_source.QuietSource;
-const BlockCache = ra8.core.cpu.decode.block_cache.BlockCache;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const memmap = ra8.core.memmap;
-const bus_fault = ra8.periph.fault_status.bus;
-const status = ra8.periph.fault_status;
-const Stop = ra8.core.cpu.cpu.Stop;
-const fixed_trip = ra8.core.cpu.cpu.fixed_trip;
+const QuietSource = ra8.chip.core.cpu.exception.quiet_source.QuietSource;
+const BlockCache = ra8.chip.core.cpu.decode.block_cache.BlockCache;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const memmap = ra8.chip.core.memmap;
+const bus_fault = ra8.chip.periph.fault_status.bus;
+const status = ra8.chip.periph.fault_status;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
+const fixed_trip = ra8.chip.core.cpu.cpu.fixed_trip;
 
 /// A core on the fixture RAM polling through a settled quiet source, with
 /// formed blocks, as park_test.zig builds it.
@@ -145,25 +145,25 @@ test "only RAM is writable, flash is readable too, and address zero is neither" 
 /// held by the other core. `repeats` says whether its bus offers RA8EMU-595's
 /// repeat; without it every trip is stepped.
 const Held = struct {
-    inner: ra8.core.cpu.bus.Bus,
+    inner: ra8.chip.core.cpu.bus.Bus,
     reads: u64 = 0,
 
     const at: u32 = 0x4040_0000;
-    const with = ra8.core.cpu.bus.Bus.VTable{ .read = read, .write = write, .repeat = repeat };
-    const without = ra8.core.cpu.bus.Bus.VTable{ .read = read, .write = write };
+    const with = ra8.chip.core.cpu.bus.Bus.VTable{ .read = read, .write = write, .repeat = repeat };
+    const without = ra8.chip.core.cpu.bus.Bus.VTable{ .read = read, .write = write };
 
-    fn view(self: *Held, repeats: bool) ra8.core.cpu.bus.Bus {
+    fn view(self: *Held, repeats: bool) ra8.chip.core.cpu.bus.Bus {
         return .{ .ctx = self, .vtable = if (repeats) &with else &without };
     }
 
-    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.core.cpu.bus.Error!void {
+    fn read(ctx: *anyopaque, address: u32, into: []u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *Held = @ptrCast(@alignCast(ctx));
         if (address != at) return self.inner.read(address, into);
         self.reads += 1;
         @memset(into, 0);
     }
 
-    fn write(ctx: *anyopaque, address: u32, bytes: []const u8) ra8.core.cpu.bus.Error!void {
+    fn write(ctx: *anyopaque, address: u32, bytes: []const u8) ra8.chip.core.cpu.bus.Error!void {
         const self: *Held = @ptrCast(@alignCast(ctx));
         return self.inner.write(address, bytes);
     }

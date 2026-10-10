@@ -3,12 +3,12 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const memmap = ra8.core.memmap;
-const registry = ra8.periph.registry;
-const mpu_ns = ra8.periph.mpu.ns;
-const BoardBus = ra8.core.cpu.board_bus.BoardBus;
+const memmap = ra8.chip.core.memmap;
+const registry = ra8.chip.periph.registry;
+const mpu_ns = ra8.chip.periph.mpu.ns;
+const BoardBus = ra8.chip.core.cpu.board_bus.BoardBus;
 const store_memory = @import("../store_memory.zig");
-const Banked = ra8.core.banked.Banked;
+const Banked = ra8.chip.core.banked.Banked;
 
 const rbar_alias: u32 = memmap.mpu.rbar + mpu_ns.offset;
 const rnr_alias: u32 = memmap.mpu.rnr + mpu_ns.offset;
@@ -48,8 +48,8 @@ test "Secure and Non-secure MPU programming stay apart on the Zig bus" {
     defer store_memory.close(memory);
     var periph = registry.Bus.init(std.testing.allocator);
     defer periph.deinit();
-    var secure_mpu = ra8.periph.mpu.Mpu.init();
-    var ns_mpu = ra8.periph.mpu.Mpu.init();
+    var secure_mpu = ra8.chip.periph.mpu.Mpu.init();
+    var ns_mpu = ra8.chip.periph.mpu.Mpu.init();
     var state: Banked = .{};
     var board: BoardBus = .{
         .memory = .{ .store = .{ .store = memory.store } },
@@ -79,7 +79,7 @@ test "with no Non-secure MPU wired the alias keeps its old path" {
     defer store_memory.close(memory);
     var periph = registry.Bus.init(std.testing.allocator);
     defer periph.deinit();
-    var secure_mpu = ra8.periph.mpu.Mpu.init();
+    var secure_mpu = ra8.chip.periph.mpu.Mpu.init();
     var board: BoardBus = .{ .memory = .{ .store = .{ .store = memory.store } }, .periph = &periph, .scs = .{ .regions = &secure_mpu } };
     try region(&board, memmap.mpu.rnr, 4, memmap.mpu.rbar, 0x2200_0000);
     try std.testing.expectEqual(@as(u32, 0x2200_0000), secure_mpu.table[4].rbar);

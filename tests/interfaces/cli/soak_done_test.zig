@@ -7,10 +7,11 @@
 //! (RA8EMU-657).
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 
-const zig_run = ra8.board.zig_run;
-const cpu_boot = ra8.core.cpu.boot;
+const zig_run = cli_app.zig_run;
+const cpu_boot = ra8.chip.core.cpu.boot;
 const soak = ra8.board.run.soak;
 
 const soaker = @import("soaker.zig");
@@ -32,12 +33,12 @@ fn runSoak(overflow: bool) !Ended {
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
     try soaker.load(core, overflow);
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
     board.time.base.setRate(hz);
     board.run.soak.armed = true;
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .idle_skip = true };
     var ran: u64 = 0;
     var final: cpu_boot.Regs = .{};

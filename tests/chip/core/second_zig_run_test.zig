@@ -2,16 +2,17 @@
 //! (RA8EMU-234).
 const std = @import("std");
 const ra8 = @import("ra8");
-const second_core = ra8.core.second_core;
+const cli_app = @import("cli_app");
+const second_core = ra8.chip.core.second_core;
 const Driver = second_core.zig_run.Driver;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const Units = second_core.zig.Units;
-const memmap = ra8.core.memmap;
-const Board = ra8.board.Board;
-const icu = ra8.periph.icu;
-const dtc = ra8.periph.dtc;
-const xfer = ra8.periph.dtc_xfer;
+const memmap = ra8.chip.core.memmap;
+const Board = ra8.board.board.Board;
+const icu = ra8.chip.periph.icu;
+const dtc = ra8.chip.periph.dtc;
+const xfer = ra8.chip.periph.dtc_xfer;
 
 const vectors: u32 = memmap.sram_base + 0x1000;
 const code: u32 = vectors + 0x200;
@@ -51,7 +52,7 @@ test "a round runs CPU1's share on its Zig core and counts it by core rate" {
     try std.testing.expectEqual(@as(usize, 2), driver.second.state.turns);
     try std.testing.expectEqual(@as(usize, 200), driver.second.state.ran);
     try std.testing.expectEqual(code, driver.second.state.pc);
-    try std.testing.expectEqual(@as(?ra8.core.fault.Fault, null), driver.second.state.fault);
+    try std.testing.expectEqual(@as(?ra8.chip.core.fault.Fault, null), driver.second.state.fault);
 }
 
 test "a CPU1 that stops is reported where it stopped and takes no more turns" {
@@ -173,7 +174,7 @@ test "cpu1_pingpong_ipc reaches its Non-secure target without a forced HardFault
     const cpu1_path = try tmp.dir.realPathFileAlloc(std.testing.io, "cpu1.elf", std.testing.allocator);
     defer std.testing.allocator.free(cpu1_path);
 
-    const image = try ra8.image.elf.Image.init(pingpong_bytes);
+    const image = try ra8.board.image.elf.Image.init(pingpong_bytes);
     var store = try Store.init(null);
     defer store.deinit();
     const memory: Guest = .{ .store = &store };
@@ -181,21 +182,21 @@ test "cpu1_pingpong_ipc reaches its Non-secure target without a forced HardFault
     defer board.deinit();
     try ra8.board.wiring.attachBlocks(&board, memory);
     try ra8.board.wiring.primeWindows(&board, memory, ra8.board.wiring.cpu0Windows(&board));
-    const loaded = try ra8.image.load.read(image);
-    _ = try ra8.core.cpu.memory.load.image(memory, loaded.image());
+    const loaded = try ra8.board.image.load.read(image);
+    _ = try ra8.chip.core.cpu.memory.load.image(memory, loaded.image());
 
     var driver: Driver = undefined;
-    const cpu1_bytes = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, cpu1_path, std.testing.allocator, .limited(ra8.core.second_core.limits.image_bytes));
+    const cpu1_bytes = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, cpu1_path, std.testing.allocator, .limited(ra8.chip.core.second_core.limits.image_bytes));
     defer std.testing.allocator.free(cpu1_bytes);
-    const cpu1 = try ra8.image.load.read(try ra8.image.elf.Image.init(cpu1_bytes));
+    const cpu1 = try ra8.board.image.load.read(try ra8.board.image.elf.Image.init(cpu1_bytes));
     try driver.open(ra8.board.wiring.cpu1(&board), cpu1.image(), memory);
     defer driver.close();
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 50_000 };
-    var clock: ra8.board.zig_run.Clock = .{ .io = std.testing.io, .memory = memory, .board = &board, .timebase = &timebase, .cpu1 = &driver };
-    var final: ra8.core.cpu.boot.Regs = .{};
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 50_000 };
+    var clock: cli_app.zig_run.Clock = .{ .io = std.testing.io, .memory = memory, .board = &board, .timebase = &timebase, .cpu1 = &driver };
+    var final: ra8.chip.core.cpu.boot.Regs = .{};
     const vector_base = image.vectorBase() orelse return error.MissingVectorTable;
     var discard: std.Io.Writer.Discarding = .init(&.{});
-    _ = try ra8.core.cpu.boot.start(&discard.writer, .zig, memory, &board.bus, vector_base, 100_000, &timebase.ticks, .{
+    _ = try ra8.chip.core.cpu.boot.start(&discard.writer, .zig, memory, &board.bus, vector_base, 100_000, &timebase.ticks, .{
         .boundary = clock.boundary(),
         .partitions = &board.partitions,
         .idau = &board.idau,
@@ -206,15 +207,15 @@ test "cpu1_pingpong_ipc reaches its Non-secure target without a forced HardFault
     });
 
     try std.testing.expect(final.pc >= 0x1208_0000 and final.pc < 0x1209_0000);
-    try std.testing.expectEqual(@as(?ra8.core.fault.Fault, null), driver.second.state.fault);
-    const words: ra8.periph.fault_status.Words = .{
+    try std.testing.expectEqual(@as(?ra8.chip.core.fault.Fault, null), driver.second.state.fault);
+    const words: ra8.chip.periph.fault_status.Words = .{
         .cfsr = try memory.readWord(memmap.scb.cfsr),
         .hfsr = try memory.readWord(memmap.scb.hfsr),
-        .sfsr = try memory.readWord(ra8.periph.fault_status.secure.sfsr),
+        .sfsr = try memory.readWord(ra8.chip.periph.fault_status.secure.sfsr),
     };
     var fault_line: [128]u8 = undefined;
     var stream: std.Io.Writer = .fixed(&fault_line);
-    try ra8.periph.fault_status.line(&stream, words);
+    try ra8.chip.periph.fault_status.line(&stream, words);
     try std.testing.expectEqualStrings("", stream.buffered());
 }
 
@@ -227,7 +228,7 @@ test "a divided CPU1 charges cycles for the CPU0 boundary duration" {
 
     var dividers: u16 = 0x2020;
     driver.second.state.dividers = &dividers;
-    driver.roundAt(1000, ra8.periph.clocks.timebase.default_hz);
+    driver.roundAt(1000, ra8.chip.periph.clocks.timebase.default_hz);
     try std.testing.expectEqual(@as(usize, 250), driver.second.state.ran);
     try std.testing.expectEqual(@as(u64, 250), driver.second.state.timebase.elapsed);
 }

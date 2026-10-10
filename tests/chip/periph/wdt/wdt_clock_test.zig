@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const clock = ra8.periph.wdt.clock;
+const clock = ra8.chip.periph.wdt.clock;
 
 test "CKS /4 counts at the bench's 40 Hz: 500 ticks of 50000 instructions" {
     try std.testing.expectEqual(@as(u32, 500), clock.ticksPerCount(0x1));
@@ -23,7 +23,7 @@ test "a prohibited encoding counts at the bench rate" {
 }
 
 test "a WDT underflow lands on the tick its due time names" {
-    const wdt = ra8.periph.wdt;
+    const wdt = ra8.chip.periph.wdt;
     try std.testing.expectEqual(@as(u64, 50_000), clock.ns_per_tick);
     var unit = wdt.Wdt.init();
     try std.testing.expectEqual(@as(?u64, null), unit.underflowDueAt(0));
@@ -55,7 +55,7 @@ test "short boundaries carry their ns until they add up to one tick" {
 }
 
 test "the WDT counts the virtual ns that passed, not the boundaries" {
-    const wdt = ra8.periph.wdt;
+    const wdt = ra8.chip.periph.wdt;
     var unit = wdt.Wdt.init();
     unit.wdtcr = wdt.controlWord(0, 0x1, 3, 3);
     unit.armed = true;
@@ -67,8 +67,8 @@ test "the WDT counts the virtual ns that passed, not the boundaries" {
 }
 
 test "an armed WDT puts its underflow on the queue under its own id, a disarmed one takes it off" {
-    const wdt = ra8.periph.wdt;
-    var queue = ra8.periph.clocks.event_queue.EventQueue{};
+    const wdt = ra8.chip.periph.wdt;
+    var queue = ra8.chip.periph.clocks.event_queue.EventQueue{};
     var unit = wdt.Wdt.init();
     try unit.arm(&queue, 0);
     try std.testing.expectEqual(@as(?u64, null), queue.next());
@@ -88,8 +88,8 @@ test "an armed WDT puts its underflow on the queue under its own id, a disarmed 
     try std.testing.expectEqual(@as(usize, 0), queue.count);
 }
 
-fn windowed(pace: u32) ra8.periph.wdt.Wdt {
-    const wdt = ra8.periph.wdt;
+fn windowed(pace: u32) ra8.chip.periph.wdt.Wdt {
+    const wdt = ra8.chip.periph.wdt;
     var unit = wdt.Wdt.init();
     // wdt_window_demo's window: 1024 counts, /4, open 768 down to 256.
     unit.wdtcr = wdt.controlWord(0, 0x1, 2, 2);
@@ -114,7 +114,7 @@ test "the WDT window opens and closes at the virtual ns its edges name" {
 }
 
 test "a window open to underflow has no closing edge, and a disarmed WDT has neither" {
-    const wdt = ra8.periph.wdt;
+    const wdt = ra8.chip.periph.wdt;
     var unit = windowed(0);
     unit.wdtcr = wdt.controlWord(0, 0x1, 2, 3);
     try std.testing.expect(unit.windowEdgesAt(0).opens_at != null);
@@ -126,7 +126,7 @@ test "a window open to underflow has no closing edge, and a disarmed WDT has nei
 }
 
 test "the WDT queues its next window edge beside its underflow" {
-    var queue = ra8.periph.clocks.event_queue.EventQueue{};
+    var queue = ra8.chip.periph.clocks.event_queue.EventQueue{};
     var unit = windowed(0);
     try unit.arm(&queue, 0);
     try std.testing.expectEqual(@as(usize, 2), queue.count);

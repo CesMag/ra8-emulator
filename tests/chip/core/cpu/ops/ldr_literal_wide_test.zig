@@ -1,15 +1,15 @@
 //! Covers src/chip/core/cpu/ops/ldr_literal_wide.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const lit = ra8.core.cpu.ops.ldr_literal_wide;
-const Instr = ra8.core.cpu.instr.Instr;
+const lit = ra8.chip.core.cpu.ops.ldr_literal_wide;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const fixture = @import("../exception/ram.zig");
 
 fn wide(address: u32, hw1: u16, hw2: u16) Instr {
     return .{ .address = address, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 
-fn run(ram: *fixture.Ram, instr: Instr) !ra8.core.cpu.cpu.Cpu {
+fn run(ram: *fixture.Ram, instr: Instr) !ra8.chip.core.cpu.cpu.Cpu {
     var cpu = try fixture.boot(ram);
     try lit.group.decode(instr).?(&cpu, instr);
     return cpu;

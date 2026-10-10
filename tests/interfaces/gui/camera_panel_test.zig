@@ -1,8 +1,8 @@
 //! Covers src/interfaces/gui/camera_panel.zig: the selection state and the consent
 //! gate the webcam passes before it becomes the source.
 const std = @import("std");
-const ra8 = @import("ra8");
-const Panel = ra8.gui.camera_panel.Panel;
+const gui_app = @import("gui_app");
+const Panel = gui_app.camera_panel.Panel;
 
 test "a run starts on the gradient with the camera off" {
     const panel = Panel{};

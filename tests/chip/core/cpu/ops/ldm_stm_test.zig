@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/ldm_stm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const regs = ra8.core.cpu.regs;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const ldm_stm = ra8.core.cpu.ops.ldm_stm;
+const bus = ra8.chip.core.cpu.bus;
+const regs = ra8.chip.core.cpu.regs;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const ldm_stm = ra8.chip.core.cpu.ops.ldm_stm;
 
 /// 64 bytes of RAM at 0x2000_0000.
 const Ram = struct {
@@ -32,7 +32,7 @@ const Ram = struct {
 };
 
 fn run(cpu: *Cpu, hw1: u16) !void {
-    const instr: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
+    const instr: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };
     const exec = ldm_stm.group.decode(instr) orelse return error.NotClaimed;
     try exec(cpu, instr);
 }
@@ -73,8 +73,8 @@ test "ldm r0, {r0, r3} keeps the loaded base and skips writeback" {
 }
 
 test "an empty list and the 32-bit space stay unclaimed" {
-    const empty: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xC800, .size = 2 };
+    const empty: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xC800, .size = 2 };
     try std.testing.expect(ldm_stm.group.decode(empty) == null);
-    const wide: ra8.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xC0FF, .hw2 = 0, .size = 4 };
+    const wide: ra8.chip.core.cpu.instr.Instr = .{ .address = 0, .hw1 = 0xC0FF, .hw2 = 0, .size = 4 };
     try std.testing.expect(ldm_stm.group.decode(wide) == null);
 }

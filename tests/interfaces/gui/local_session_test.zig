@@ -3,9 +3,10 @@
 //! sets its own camera hook.
 const std = @import("std");
 const ra8 = @import("ra8");
+const gui_app = @import("gui_app");
 
-const local_session = ra8.core.local_session;
-const proto = ra8.interfaces.rpc.session;
+const local_session = gui_app.local_session;
+const proto = ra8.rpc.session_rpc;
 
 const image = "tests/fixtures/fpu/fp_basic.elf";
 

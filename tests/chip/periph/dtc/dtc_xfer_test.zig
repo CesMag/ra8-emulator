@@ -2,7 +2,7 @@
 //! memory, and what one activation leaves behind in it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const xfer = ra8.periph.dtc_xfer;
+const xfer = ra8.chip.periph.dtc_xfer;
 
 /// MRA: MD[7:6], SZ[5:4], SM[3:2]. MRB: DM[3:2], DISEL b5, CHNE b7.
 fn mode(mra: u8, mrb: u8) u32 {

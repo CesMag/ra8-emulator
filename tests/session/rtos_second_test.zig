@@ -4,8 +4,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const memmap = ra8.core.memmap;
-const rtos_hook = ra8.core.step_hook.rtos_hook;
+const memmap = ra8.chip.core.memmap;
+const rtos_hook = ra8.session.step_hook.rtos_hook;
 
 const pointer: u32 = memmap.sram_base + 0x1ABC;
 const thread: u32 = memmap.sram_base + 0x10F0;
@@ -13,8 +13,8 @@ const code: u32 = memmap.sram_base + 0x40;
 // str r1, [r0]   then   b .
 const store_then_park = [_]u8{ 0x01, 0x60, 0xfe, 0xe7 };
 
-const Board = ra8.board.Board;
-const Driver = ra8.core.second_core.zig_run.Driver;
+const Board = ra8.board.board.Board;
+const Driver = ra8.chip.core.second_core.zig_run.Driver;
 const vectors: u32 = memmap.sram_base + 0x1000;
 const zig_code: u32 = vectors + 0x200;
 
@@ -23,13 +23,13 @@ fn bring(driver: *Driver, board: *Board) !void {
     driver.second = .{ .state = .{ .vector_base = vectors } };
     driver.wiring = null;
     driver.cycle_remainder = 0;
-    driver.store = try ra8.core.cpu.memory.store.Store.init(null);
+    driver.store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     errdefer driver.close();
-    const memory: ra8.core.cpu.memory.guest.Guest = .{ .store = &driver.store.? };
+    const memory: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &driver.store.? };
     try memory.writeWord(vectors, vectors + 0x800);
     try memory.writeWord(vectors + 4, zig_code | 1);
     try memory.write(zig_code, &store_then_park);
-    try driver.core.openOn(memory, ra8.core.second_core.zig.Units.of(&driver.second), &board.bus);
+    try driver.core.openOn(memory, ra8.chip.core.second_core.zig.Units.of(&driver.second), &board.bus);
     driver.core.cpu.regs.set(0, pointer);
     driver.core.cpu.regs.set(1, thread);
 }

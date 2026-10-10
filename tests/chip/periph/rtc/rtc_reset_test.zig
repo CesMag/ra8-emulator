@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const reset = ra8.periph.rtc_reset;
-const rtc = ra8.periph.rtc;
+const reset = ra8.chip.periph.rtc_reset;
+const rtc = ra8.chip.periph.rtc;
 
 test "RCR2 sits where the register file puts it" {
     try std.testing.expectEqual(@as(u32, 0x24), reset.off_rcr2);

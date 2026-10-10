@@ -1,7 +1,7 @@
 //! Tests for src/chip/core/second_wait.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const parking = ra8.core.second_core.parking;
+const parking = ra8.chip.core.second_core.parking;
 
 test "a WFE with no event parks until the spurious wake" {
     var wait: parking.Wait = .{};

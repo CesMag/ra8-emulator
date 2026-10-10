@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const sign = ra8.core.fpu.sign;
-const vectors = ra8.core.fpu.sign_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const sign = ra8.chip.core.cpu.fpu.sign;
+const vectors = ra8.chip.core.cpu.fpu.sign_vectors;
 
 test "VNEG.F32 matches FPNeg" {
     try vector.expectAll(u32, u32, sign.neg32, &vectors.neg32);

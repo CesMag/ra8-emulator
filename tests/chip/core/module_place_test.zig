@@ -1,8 +1,8 @@
 //! A parsed module is placed on granule boundaries and copied into its region.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ra8app = ra8.image.ra8app;
-const place = ra8.core.module_place;
+const ra8app = ra8.board.image.ra8app;
+const place = ra8.chip.core.module_place;
 
 const code_len = 40;
 const data_len = 8;

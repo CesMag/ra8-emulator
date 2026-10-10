@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/sci/sci_peek.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci = ra8.periph.sci;
-const sci_peek = ra8.periph.sci_peek;
+const sci = ra8.chip.periph.sci;
+const sci_peek = ra8.chip.periph.sci_peek;
 
 const channel: usize = 3;
 

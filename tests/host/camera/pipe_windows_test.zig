@@ -4,7 +4,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const ra8 = @import("ra8");
 
-const camera = ra8.periph.ceu.camera;
+const camera = ra8.chip.periph.ceu.camera;
 const pipe = ra8.host.camera.pipe_input;
 const win = ra8.host.pipe_windows;
 const Win32Error = std.os.windows.Win32Error;

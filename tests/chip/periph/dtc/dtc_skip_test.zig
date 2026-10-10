@@ -2,8 +2,8 @@
 //! re-read, and what drops a held descriptor.
 const std = @import("std");
 const ra8 = @import("ra8");
-const skip = ra8.periph.dtc_skip;
-const xfer = ra8.periph.dtc_xfer;
+const skip = ra8.chip.periph.dtc_skip;
+const xfer = ra8.chip.periph.dtc_xfer;
 
 /// A plain normal-mode descriptor: byte units, both addresses incrementing.
 fn info(sar: u32, dar: u32, units: u16) xfer.Info {

@@ -3,9 +3,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const ra8 = @import("ra8");
-const boot_slots = ra8.core.boot_slots;
+const boot_slots = ra8.session.boot_slots;
 const layout = boot_slots.layout;
-const sci = ra8.periph.sci;
+const sci = ra8.chip.periph.sci;
 
 const elf_path = "tests/fixtures/dfu/dfu_bootloader.elf";
 const signed_a = @embedFile("../fixtures/dfu/signed_a.bin");
@@ -58,7 +58,7 @@ const Outcome = struct {
 };
 
 fn boot(console: *Console, corrupt: Corrupt) !Outcome {
-    var opened = try ra8.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = elf_path });
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = elf_path });
     defer opened.deinit();
     const guest = opened.guest();
     try stage(guest, .a, signed_a, 1, false);

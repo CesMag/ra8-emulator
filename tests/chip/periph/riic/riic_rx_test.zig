@@ -2,8 +2,8 @@
 //! bytes served after it, and the reads past the end of what was staged.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rx = ra8.periph.riic_rx;
-const flag = ra8.periph.riic_flags;
+const rx = ra8.chip.periph.riic_rx;
+const flag = ra8.chip.periph.riic_flags;
 
 test "a fresh path holds nothing and is quiet" {
     var path = rx.Rx{};
@@ -70,7 +70,7 @@ test "an empty answer holds nothing at all" {
 }
 
 test "a stretched byte raises RDRF at its virtual deadline and not before" {
-    var clock = ra8.periph.clocks.timebase.TimeBase{};
+    var clock = ra8.chip.periph.clocks.timebase.TimeBase{};
     var path = rx.Rx{ .clock = &clock };
     path.staged[0] = 0x11;
     path.staged[1] = 0x22;
@@ -84,7 +84,7 @@ test "a stretched byte raises RDRF at its virtual deadline and not before" {
 }
 
 test "each byte of a stretched read waits its own stretch" {
-    var clock = ra8.periph.clocks.timebase.TimeBase{};
+    var clock = ra8.chip.periph.clocks.timebase.TimeBase{};
     var path = rx.Rx{ .clock = &clock };
     path.staged[0] = 0x11;
     path.staged[1] = 0x22;
@@ -101,7 +101,7 @@ test "each byte of a stretched read waits its own stretch" {
 }
 
 test "reading ICDRR before the stretched byte lands keeps it and counts" {
-    var clock = ra8.periph.clocks.timebase.TimeBase{};
+    var clock = ra8.chip.periph.clocks.timebase.TimeBase{};
     var path = rx.Rx{ .clock = &clock };
     path.staged[0] = 0x5A;
     path.stage(1, 200);

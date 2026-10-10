@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/icu/icu_nmi.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const nmi = ra8.periph.icu.nmi;
+const nmi = ra8.chip.periph.icu.nmi;
 
 fn reg(offset: u32) u32 {
     return nmi.base + offset;
@@ -44,7 +44,7 @@ test "WUPEN0 and WUPEN1 hold what was written" {
 }
 
 test "the board ICU puts the block on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit: nmi.Nmi = .{};
     try bus.add(unit.block());

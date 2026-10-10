@@ -3,10 +3,10 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
 const Fake = @import("exception/fake_source.zig").Fake;
-const QuietSource = ra8.core.cpu.exception.quiet_source.QuietSource;
-const BlockCache = ra8.core.cpu.decode.block_cache.BlockCache;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const RetireListener = ra8.core.cpu.cpu.RetireListener;
+const QuietSource = ra8.chip.core.cpu.exception.quiet_source.QuietSource;
+const BlockCache = ra8.chip.core.cpu.decode.block_cache.BlockCache;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const RetireListener = ra8.chip.core.cpu.cpu.RetireListener;
 
 /// A core on the fixture RAM polling through a settled quiet source, with
 /// formed blocks.
@@ -39,7 +39,7 @@ fn plain(code: []const u16, count: u64) !Cpu {
     var ram: fixture.Ram = .{};
     for (code, 0..) |half, i| ram.putHalf(fixture.code + @as(u32, @intCast(2 * i)), half);
     var cpu = try fixture.boot(&ram);
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, cpu.run(count));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, cpu.run(count));
     return cpu;
 }
 
@@ -52,7 +52,7 @@ test "a park loop retires whole trips at once and ends where stepping would" {
     var rig: Rig = .{};
     try rig.init(&park_loop);
     defer rig.deinit();
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, rig.cpu.run(1001));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, rig.cpu.run(1001));
     const stepped = try plain(&park_loop, 1001);
     try std.testing.expectEqual(stepped.retired, rig.cpu.retired);
     try std.testing.expectEqual(stepped.regs.pc, rig.cpu.regs.pc);
@@ -64,7 +64,7 @@ test "a b-to-itself loop is a park loop of one" {
     var rig: Rig = .{};
     try rig.init(&.{0xE7FE});
     defer rig.deinit();
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, rig.cpu.run(777));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, rig.cpu.run(777));
     try std.testing.expectEqual(@as(u64, 777), rig.cpu.retired);
     try std.testing.expectEqual(fixture.code, rig.cpu.regs.pc);
     try std.testing.expect(rig.cache.reused < 8);
@@ -75,11 +75,11 @@ test "a loop that stores is not a park loop" {
     try rig.init(&store_loop);
     defer rig.deinit();
     rig.cpu.regs.set(1, fixture.base + 0x200);
-    const found = ra8.core.cpu.cpu.fixed_trip.park.calmHead(&rig.cpu);
-    try std.testing.expect(found == null or ra8.core.cpu.cpu.fixed_trip.park.tripLength(found.?) == null);
+    const found = ra8.chip.core.cpu.cpu.fixed_trip.park.calmHead(&rig.cpu);
+    try std.testing.expect(found == null or ra8.chip.core.cpu.cpu.fixed_trip.park.tripLength(found.?) == null);
     // RA8EMU-463 may still retire it once a trip stores the value already
     // there; the count and the PC come out as stepping leaves them.
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, rig.cpu.run(1000));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, rig.cpu.run(1000));
     try std.testing.expectEqual(@as(u64, 1000), rig.cpu.retired);
     try std.testing.expectEqual(fixture.code, rig.cpu.regs.pc);
 }
@@ -101,7 +101,7 @@ test "a retire listener hears every trip" {
     defer rig.deinit();
     var counter: Counter = .{};
     rig.cpu.retire_listener = counter.listener();
-    try std.testing.expectEqual(ra8.core.cpu.cpu.Stop.count, rig.cpu.run(1000));
+    try std.testing.expectEqual(ra8.chip.core.cpu.cpu.Stop.count, rig.cpu.run(1000));
     try std.testing.expectEqual(@as(u64, 1000), counter.seen);
 }
 

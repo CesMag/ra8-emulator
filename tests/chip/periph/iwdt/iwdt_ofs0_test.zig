@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const ofs0 = ra8.periph.iwdt_ofs0;
+const ofs0 = ra8.chip.periph.iwdt_ofs0;
 
 test "an erased option word leaves the IWDT stopped" {
     try std.testing.expect(!ofs0.autoStarts(ofs0.erased));

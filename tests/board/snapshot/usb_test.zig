@@ -4,9 +4,9 @@
 //! or a cursor the target cannot hold, changes nothing.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Board = ra8.board.Board;
+const Board = ra8.board.board.Board;
 const file = ra8.snapshot.file;
-const usb = ra8.snapshot.usb;
+const usb = ra8.board.snapshot.usb;
 
 const Usb = @FieldType(Board, "usb");
 const Hook = @typeInfo(@FieldType(Usb, "bridge")).optional.child;

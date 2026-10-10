@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/text/table.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const table = ra8.core.cpu.decode.text.table;
-const groups = ra8.core.cpu.ops.table.groups;
+const table = ra8.chip.core.cpu.decode.text.table;
+const groups = ra8.chip.core.cpu.ops.table.groups;
 
 test "every printer names a group the decode table has" {
     for (table.entries) |entry| {

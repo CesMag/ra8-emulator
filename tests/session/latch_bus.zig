@@ -1,7 +1,7 @@
 //! A bus that counts stores and latches apart, for the tests that check a
 //! wrapper passes the core's fault latch through as a latch (RA8EMU-634).
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
+const bus = ra8.chip.core.cpu.bus;
 
 pub const Latches = struct {
     writes: u32 = 0,

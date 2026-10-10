@@ -5,12 +5,13 @@
 //! from each.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 
-const elf = ra8.image.elf;
-const zig_run = ra8.board.zig_run;
-const cpu_boot = ra8.core.cpu.boot;
-const loader = ra8.core.cpu.memory.load;
+const elf = ra8.board.image.elf;
+const zig_run = cli_app.zig_run;
+const cpu_boot = ra8.chip.core.cpu.boot;
+const loader = ra8.chip.core.cpu.memory.load;
 
 const secure_bytes = @embedFile("../../fixtures/trustzone/tz_nsc_cgc_usb.elf");
 const ns_bytes = @embedFile("../../fixtures/trustzone/tz_nsc_cgc_usb_ns.elf");
@@ -28,15 +29,15 @@ test "the Non-secure image calls every NSC veneer and gets back" {
     var store = try store_board.Store.init(null);
     defer store.deinit();
     const core: store_board.Guest = .{ .store = &store };
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     try store_board.attach(&board, core);
     // As cpu0_store.Cpu0: the Secure image after the board, then the `--ns` half.
-    const secure_loaded = try ra8.image.load.read(secure);
+    const secure_loaded = try ra8.board.image.load.read(secure);
     _ = try loader.image(core, secure_loaded.image());
-    const ns_loaded = try ra8.image.load.read(ns);
+    const ns_loaded = try ra8.board.image.load.read(ns);
     _ = try loader.image(core, ns_loaded.image());
-    var timebase: ra8.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
+    var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase };
     var ran: u64 = 0;
     var output: [1024]u8 = undefined;

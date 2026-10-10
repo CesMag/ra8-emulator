@@ -2,11 +2,11 @@
 //! matches byte for byte and keeps the fresh engine's own domain.
 const std = @import("std");
 const ra8 = @import("ra8");
-const drw = ra8.periph.drw;
-const pdctr = ra8.periph.pdctr;
-const prcr = ra8.periph.prcr;
+const drw = ra8.chip.periph.drw;
+const pdctr = ra8.chip.periph.pdctr;
+const prcr = ra8.chip.periph.prcr;
 const file = ra8.snapshot.file;
-const raster = ra8.snapshot.raster;
+const raster = ra8.chip.periph.drw_snapshot;
 
 const Stand = struct { raster: drw.Drw };
 

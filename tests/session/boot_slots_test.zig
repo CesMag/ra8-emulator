@@ -2,7 +2,7 @@
 //! lays a slot out: body at the base, 32-byte header in the last page.
 const std = @import("std");
 const ra8 = @import("ra8");
-const boot_slots = ra8.core.boot_slots;
+const boot_slots = ra8.session.boot_slots;
 const layout = boot_slots.layout;
 
 const trigger_at: u32 = 0x220F_FF00;

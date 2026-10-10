@@ -2,8 +2,9 @@
 //! lines a Zig run prints about the sites the sweep found.
 const std = @import("std");
 const ra8 = @import("ra8");
-const undefined_ops = ra8.core.undefined_ops;
-const report = ra8.board.report.undefined_sites;
+const cli_app = @import("cli_app");
+const undefined_ops = ra8.chip.core.undefined_ops;
+const report = cli_app.report.undefined_sites;
 const imageWith = @import("../../../chip/core/undefined_image.zig").imageWith;
 
 test "nothing found prints nothing" {

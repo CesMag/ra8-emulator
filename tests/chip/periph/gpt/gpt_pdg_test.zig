@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/gpt/gpt_pdg.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const pdg = ra8.periph.gpt.pdg;
+const pdg = ra8.chip.periph.gpt.pdg;
 
 test "the PDG comes up idle and every register reads zero" {
     const unit = pdg.Pdg.init();
@@ -61,7 +61,7 @@ test "the gap between GTDLYCR2 and the first delay cell reads zero" {
 }
 
 test "the block puts the PDG on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit = pdg.Pdg.init();
     try bus.add(unit.block());

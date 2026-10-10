@@ -2,9 +2,10 @@
 //! DCP stage by stage and end on the driver's CCPL or STALL.
 const std = @import("std");
 const ra8 = @import("ra8");
-const usbfs = ra8.periph.usbfs;
-const regs = ra8.periph.usbhs_regs;
-const urb = ra8.core.cli.usbip_export.urb;
+const cli_app = @import("cli_app");
+const usbfs = ra8.chip.periph.usbfs;
+const regs = ra8.chip.periph.usbhs_regs;
+const urb = cli_app.cli.usbip_export.urb;
 
 fn at(offset: u32) u32 {
     return usbfs.window.base + offset;

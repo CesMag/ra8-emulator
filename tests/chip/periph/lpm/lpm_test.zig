@@ -1,8 +1,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const lpm = ra8.periph.lpm;
-const lpm_mode = ra8.periph.lpm_mode;
-const prcr = ra8.periph.prcr;
+const lpm = ra8.chip.periph.lpm;
+const lpm_mode = ra8.chip.periph.lpm_mode;
+const prcr = ra8.chip.periph.prcr;
 
 const Fixture = struct {
     protection: prcr.Prcr,

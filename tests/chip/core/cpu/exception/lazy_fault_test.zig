@@ -4,9 +4,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
-const memmap = ra8.core.memmap;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Stop = ra8.core.cpu.cpu.Stop;
+const memmap = ra8.chip.core.memmap;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Stop = ra8.chip.core.cpu.cpu.Stop;
 
 const hard_handler: u32 = fixture.base + 0x1E0;
 const bus_handler: u32 = fixture.base + 0x1C0;

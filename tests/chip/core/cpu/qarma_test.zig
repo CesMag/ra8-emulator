@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/qarma.zig against DDI0553B ComputePAC.
 const std = @import("std");
 const ra8 = @import("ra8");
-const qarma = ra8.core.cpu.ops.qarma;
+const qarma = ra8.chip.core.cpu.ops.qarma;
 
 test "QARMA5 matches the 64-bit published known-answer vector" {
     const key: qarma.Key = .{ 0xE0A4_88E9, 0xEC28_02D4, 0x9804_E94B, 0x84BE_85CE };

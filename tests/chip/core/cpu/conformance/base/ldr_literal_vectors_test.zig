@@ -3,9 +3,9 @@
 //! RAM at 0x2000_0000.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const vectors = ra8.core.conformance_base.ldr_literal_vectors;
-const cpu_ns = ra8.core.cpu;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const vectors = ra8.chip.core.cpu.conformance_base.ldr_literal_vectors;
+const cpu_ns = ra8.chip.core.cpu;
 const fixture = @import("../../exception/ram.zig");
 
 fn observe(cpu: *const cpu_ns.cpu.Cpu, rt: u3, ended: vectors.Fault) vectors.Out {

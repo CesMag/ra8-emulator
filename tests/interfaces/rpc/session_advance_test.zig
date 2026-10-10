@@ -8,16 +8,16 @@ const ra8 = @import("ra8");
 const idler = @import("../cli/idler.zig");
 const store_board = @import("../cli/store_board.zig");
 
-const memmap = ra8.core.memmap;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const GuestBus = ra8.core.cpu.memory.guest_bus.GuestBus;
-const NvicSource = ra8.core.cpu.exception.nvic_source.NvicSource;
-const Machine = ra8.core.stop_machine.Machine;
-const api = ra8.core.session_api;
-const BoardBoundary = ra8.board.board_boundary.BoardBoundary;
-const server = ra8.interfaces.rpc.server;
-const advance = ra8.interfaces.rpc.advance;
-const proto = ra8.interfaces.rpc.session;
+const memmap = ra8.chip.core.memmap;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const GuestBus = ra8.chip.core.cpu.memory.guest_bus.GuestBus;
+const NvicSource = ra8.chip.core.cpu.exception.nvic_source.NvicSource;
+const Machine = ra8.session.stop_machine.Machine;
+const api = ra8.session.session_api;
+const BoardBoundary = ra8.session.board_boundary.BoardBoundary;
+const server = ra8.rpc.session_server;
+const advance = ra8.rpc.session_advance;
+const proto = ra8.rpc.session_rpc;
 
 const hz: u64 = 25_000;
 const period: u64 = 600 * hz;
@@ -28,7 +28,7 @@ const ns_per_s: u64 = std.time.ns_per_s;
 const Rig = struct {
     store: store_board.Store = undefined,
     guest: store_board.Guest = undefined,
-    board: ra8.board.Board = undefined,
+    board: ra8.board.board.Board = undefined,
     memory: GuestBus = undefined,
     pending: NvicSource = .{},
     cpu: Cpu = undefined,
@@ -44,7 +44,7 @@ const Rig = struct {
         self.guest = .{ .store = &self.store };
         try idler.load(self.guest);
         try self.guest.writeWord(memmap.syst.rvr, @intCast(period - 1));
-        self.board = ra8.board.Board.init(std.testing.allocator);
+        self.board = ra8.board.board.Board.init(std.testing.allocator);
         errdefer self.board.deinit();
         try store_board.attach(&self.board, self.guest);
         self.board.time.base.setRate(hz);

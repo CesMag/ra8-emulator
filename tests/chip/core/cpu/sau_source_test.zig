@@ -2,11 +2,11 @@
 //! IDAU map (RA8EMU-277).
 const std = @import("std");
 const ra8 = @import("ra8");
-const sau = ra8.periph.sau;
-const cpu_mod = ra8.core.cpu.cpu;
+const sau = ra8.chip.periph.sau;
+const cpu_mod = ra8.chip.core.cpu.cpu;
 const SauSource = cpu_mod.sau_source.SauSource;
 const State = cpu_mod.attribution.State;
-const SramUnit = ra8.periph.cpscu.sram.Unit;
+const SramUnit = ra8.chip.periph.cpscu.sram.Unit;
 
 const enable: u32 = 1 << 0;
 const tt_s: u32 = 1 << 22;

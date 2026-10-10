@@ -2,11 +2,11 @@
 //! assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const mve_vpst = ra8.core.cpu.ops.mve_vpst;
-const it_state = ra8.core.cpu.it_state;
-const decode = ra8.core.cpu.decode;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const mve_vpst = ra8.chip.core.cpu.ops.mve_vpst;
+const it_state = ra8.chip.core.cpu.it_state;
+const decode = ra8.chip.core.cpu.decode;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
@@ -50,7 +50,7 @@ test "vpst resumed after beat A0 opens the remaining VPT mask and retires ECI" {
 
 test "the table permits ECI for VPST" {
     const hit = decode.decode(wide(0xFE71, 0x8F4D)) orelse return error.NotClaimed;
-    try std.testing.expectEqual(ra8.core.cpu.op.Eci.beat_wise, hit.eci);
+    try std.testing.expectEqual(ra8.chip.core.cpu.op.Eci.beat_wise, hit.eci);
 }
 
 test "unclaimed: a zero mask, other hw2 bits, the narrow size" {

@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/mpu_check.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mpu = ra8.periph.mpu;
-const mpu_check = ra8.core.cpu.board_bus.mpu_check;
+const mpu = ra8.chip.periph.mpu;
+const mpu_check = ra8.chip.core.cpu.board_bus.mpu_check;
 
 const ram_rw: [2]u32 = .{ 0x2000_0000, 0x2000_03FF };
 const ram_ro: [2]u32 = .{ 0x2000_0200, 0x2000_023F };
@@ -128,7 +128,7 @@ test "the Non-secure MPU judges accesses made in Non-secure state" {
     const secure_unit = unitOf(on);
     var ns_unit = mpu.Mpu{};
     ns_unit.ctrl = on;
-    var state: ra8.core.banked.State = .secure;
+    var state: ra8.chip.core.banked.State = .secure;
     var check: mpu_check.Check = .{ .unit = &secure_unit, .unit_ns = &ns_unit, .state = &state };
     check.arm(true, false);
     try std.testing.expect(!check.allows(ram_ro[0], .store));
@@ -143,7 +143,7 @@ test "the Non-secure MPU judges accesses made in Non-secure state" {
 
 test "with no Non-secure MPU wired, Non-secure state keeps the one unit" {
     const unit = unitOf(on);
-    const state: ra8.core.banked.State = .non_secure;
+    const state: ra8.chip.core.banked.State = .non_secure;
     var check: mpu_check.Check = .{ .unit = &unit, .state = &state };
     check.arm(true, false);
     try std.testing.expect(!check.allows(ram_ro[0], .store));
@@ -153,7 +153,7 @@ test "with no Non-secure MPU wired, Non-secure state keeps the one unit" {
 test "a disabled Non-secure MPU leaves Non-secure accesses unchecked" {
     const secure_unit = unitOf(on);
     const ns_unit = mpu.Mpu{};
-    const state: ra8.core.banked.State = .non_secure;
+    const state: ra8.chip.core.banked.State = .non_secure;
     var check: mpu_check.Check = .{ .unit = &secure_unit, .unit_ns = &ns_unit, .state = &state };
     check.arm(false, false);
     try std.testing.expect(!check.armed);

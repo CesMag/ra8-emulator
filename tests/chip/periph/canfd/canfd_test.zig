@@ -2,9 +2,9 @@
 //! controllers, their mode machines, and the internal loopback.
 const std = @import("std");
 const ra8 = @import("ra8");
-const canfd = ra8.periph.canfd;
-const fifo = ra8.periph.canfd_fifo;
-const rx_config = ra8.periph.canfd_rx_config;
+const canfd = ra8.chip.periph.canfd;
+const fifo = ra8.chip.periph.canfd_fifo;
+const rx_config = ra8.chip.periph.canfd_rx_config;
 
 /// CFDRFCC.RFDC = 001b, the four-message depth ra8_canfd.c programs.
 const depth_4: u32 = 1 << 8;
@@ -47,12 +47,12 @@ test "both machines power up in reset, and the FIFO powers up empty" {
     var model = canfd.Canfd.init();
     // Unit 0 was never started, so it is still asleep beside its reset status.
     try std.testing.expectEqual(
-        canfd.field.grststs | ra8.periph.canfd_sleep.status,
+        canfd.field.grststs | ra8.chip.periph.canfd_sleep.status,
         model.read(unit0 + canfd.off_gsts, 4),
     );
     // Power-up: in reset and asleep, the pair the JTAG dump showed.
     try std.testing.expectEqual(
-        canfd.field.crststs | ra8.periph.canfd_sleep.status,
+        canfd.field.crststs | ra8.chip.periph.canfd_sleep.status,
         model.read(unit0 + canfd.off_cnsts, 4),
     );
     try std.testing.expectEqual(canfd.field.rfemp, model.read(unit0 + canfd.off_rfsts0, 4));
@@ -255,7 +255,7 @@ test "the two controllers keep their own state" {
     try std.testing.expectEqual(@as(u32, 0x0AA), model.read(unit1 + canfd.off_rf0, 4));
     // Unit 0 was never started, so it is still asleep beside its reset status.
     try std.testing.expectEqual(
-        canfd.field.grststs | ra8.periph.canfd_sleep.status,
+        canfd.field.grststs | ra8.chip.periph.canfd_sleep.status,
         model.read(unit0 + canfd.off_gsts, 4),
     );
 }

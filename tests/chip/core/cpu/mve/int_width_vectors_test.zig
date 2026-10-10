@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/mve/int_width_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.core.conformance_vector;
-const int = ra8.core.mve.int;
-const width = ra8.core.mve.int_width;
-const vectors = ra8.core.mve.int_width_vectors;
+const vector = ra8.chip.core.cpu.conformance_vector;
+const int = ra8.chip.core.cpu.mve.int;
+const width = ra8.chip.core.cpu.mve.int_width;
+const vectors = ra8.chip.core.cpu.mve.int_width_vectors;
 
 fn narrow(in: vectors.NarrowCase) int.Sat {
     return width.narrow(in.d, in.m, in.size, in.half, in.spec);

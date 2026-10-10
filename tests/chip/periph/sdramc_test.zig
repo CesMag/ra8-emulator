@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/sdramc.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sdram = ra8.periph.clocks.sdram;
+const sdram = ra8.chip.periph.clocks.sdram;
 
 fn reg(offset: u32) u32 {
     return sdram.base + offset;
@@ -59,7 +59,7 @@ test "SDCKOCR holds its byte" {
 }
 
 test "attach claims both windows on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit: sdram.Sdramc = .{};
     try unit.attach(&bus);

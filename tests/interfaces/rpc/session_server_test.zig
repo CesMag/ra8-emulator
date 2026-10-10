@@ -2,16 +2,16 @@
 //! served Session joined over the library's in-memory loopback.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Bounded = ra8.core.bounded.Bounded;
+const Bounded = ra8.chip.core.bounded.Bounded;
 const rpc = served.rpc_lib;
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const api = ra8.core.session_api;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_session = ra8.core.step_hook.zig_session;
-const timebase = ra8.periph.clocks.timebase;
-const proto = ra8.interfaces.rpc.session;
-const served = ra8.interfaces.rpc.server;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const api = ra8.session.session_api;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_session = ra8.session.step_hook.zig_session;
+const timebase = ra8.chip.periph.clocks.timebase;
+const proto = ra8.rpc.session_rpc;
+const served = ra8.rpc.session_server;
 
 /// Vector table (SP 0x40, reset 0x09) then nop, nop.w, nop at 0x08.
 const Ram = struct {

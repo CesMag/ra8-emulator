@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const pend_clear = ra8.core.pend_clear;
+const pend_clear = ra8.chip.core.pend_clear;
 
 test "a fresh counter is quiet" {
     const cleared = pend_clear.Cleared{};

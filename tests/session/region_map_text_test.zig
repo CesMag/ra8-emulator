@@ -2,9 +2,9 @@
 //! fixture, checked line by line.
 const std = @import("std");
 const ra8 = @import("ra8");
-const elf = ra8.image.elf;
-const region_map_text = ra8.core.region_map_text;
-const region_map = ra8.core.region_map;
+const elf = ra8.board.image.elf;
+const region_map_text = ra8.session.region_map_text;
+const region_map = ra8.session.region_map;
 
 const image_bytes = @embedFile("../fixtures/sections/fault_crashlog_hil.elf");
 

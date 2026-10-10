@@ -2,10 +2,10 @@
 //! arm-none-eabi-as 13.3 emits for r0 = Rd, r1 = Rn, r2 = Rm, r3 = Ra.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const dsp_mulhi = ra8.core.cpu.ops.dsp_mulhi;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const dsp_mulhi = ra8.chip.core.cpu.ops.dsp_mulhi;
 
-fn wide(hw1: u16, hw2: u16) ra8.core.cpu.instr.Instr {
+fn wide(hw1: u16, hw2: u16) ra8.chip.core.cpu.instr.Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };
 }
 

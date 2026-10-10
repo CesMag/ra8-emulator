@@ -3,17 +3,18 @@
 //! back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const json_run = ra8.board.report.json_run;
+const json_run = cli_app.report.json_run;
 const json_dumps = json_run.json_dumps;
-const Regs = ra8.core.cpu.regs.Regs;
-const Options = ra8.core.cli.Options;
+const Regs = ra8.chip.core.cpu.regs.Regs;
+const Options = cli_app.cli.Options;
 const Value = std.json.Value;
 const Fixture = @import("json_board.zig").Fixture;
 
-const base: u32 = ra8.core.memmap.sram_base;
+const base: u32 = ra8.chip.core.memmap.sram_base;
 
-fn render(board: *ra8.board.Board, dumps: ?*const json_dumps.Dumps, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
+fn render(board: *ra8.board.board.Board, dumps: ?*const json_dumps.Dumps, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
     try json_run.document(&buf.writer, board, .{ .engine = "zig", .elapsed = 1, .dumps = dumps });
     return std.json.parseFromSlice(Value, std.testing.allocator, buf.written(), .{});
 }

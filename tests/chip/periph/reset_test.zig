@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const reset = ra8.periph.reset;
+const reset = ra8.chip.periph.reset;
 
 const r0 = reset.rstsr0.base;
 const r1 = reset.rstsr1.base;

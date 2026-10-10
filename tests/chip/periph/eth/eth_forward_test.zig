@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/eth/eth_forward.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const forward = ra8.periph.eth.forward;
+const forward = ra8.chip.periph.eth.forward;
 
 fn reg(offset: u32) u32 {
     return forward.base + offset;
@@ -54,7 +54,7 @@ test "the driver's read-modify-write keeps the bits above PBDV" {
 }
 
 test "the blocks put every slot on the bus" {
-    var bus = ra8.periph.registry.Bus.init(std.testing.allocator);
+    var bus = ra8.chip.periph.registry.Bus.init(std.testing.allocator);
     defer bus.deinit();
     var unit: forward.Forward = .{};
     for (unit.blocks()) |block| try bus.add(block);

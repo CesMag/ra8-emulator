@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/spi.zig.
 const std = @import("std");
-const spi = @import("ra8").periph.spi;
+const spi = @import("ra8").chip.periph.spi;
 
 const ch0 = spi.channelAddress(0);
 const ch1 = spi.channelAddress(1);

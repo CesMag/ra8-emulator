@@ -3,11 +3,11 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const fixture = @import("ram.zig");
 const Fake = @import("fake_source.zig").Fake;
-const QuietSource = ra8.core.cpu.exception.quiet_source.QuietSource;
-const Key = ra8.core.cpu.exception.quiet_source.Key;
-const bus = ra8.core.cpu.bus;
+const QuietSource = ra8.chip.core.cpu.exception.quiet_source.QuietSource;
+const Key = ra8.chip.core.cpu.exception.quiet_source.Key;
+const bus = ra8.chip.core.cpu.bus;
 
-const systick: ra8.core.cpu.exception.active.Entry = .{ .number = 15, .priority = 0x80 };
+const systick: ra8.chip.core.cpu.exception.active.Entry = .{ .number = 15, .priority = 0x80 };
 
 const LatchProbe = struct {
     writes: u32 = 0,
@@ -120,7 +120,7 @@ test "the bus it hands out preserves the direct-memory view" {
     quiet.memory.direct = &direct;
 
     try std.testing.expect(quiet.bus().direct == &direct);
-    try std.testing.expectEqual(@as(u32, 0x0403_0201), try quiet.bus().readWord(ra8.core.memmap.mram_base));
+    try std.testing.expectEqual(@as(u32, 0x0403_0201), try quiet.bus().readWord(ra8.chip.core.memmap.mram_base));
 }
 
 test "taking or leaving an exception stirs and forwards" {
@@ -196,7 +196,7 @@ test "the wrapped bus preserves status latches" {
     var probe: LatchProbe = .{};
     var fake: Fake = .{};
     var quiet: QuietSource = .{ .inner = fake.source(), .memory = probe.view() };
-    try quiet.bus().latch(ra8.core.memmap.scb.cfsr, 1 << 25);
+    try quiet.bus().latch(ra8.chip.core.memmap.scb.cfsr, 1 << 25);
     try std.testing.expectEqual(@as(u32, 1), probe.latches);
     try std.testing.expectEqual(@as(u32, 0), probe.writes);
     try std.testing.expectEqual(@as(u32, 1 << 25), probe.value);

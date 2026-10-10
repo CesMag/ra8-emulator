@@ -1,14 +1,14 @@
 //! Session display calls wait on virtual panel time and return raw frames.
 const std = @import("std");
 const ra8 = @import("ra8");
-const api = ra8.core.session_api;
-const Host = ra8.board.session_display.Host;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const bus = ra8.core.cpu.bus;
-const Store = ra8.core.cpu.memory.store.Store;
-const Guest = ra8.core.cpu.memory.guest.Guest;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_session = ra8.core.step_hook.zig_session;
+const api = ra8.session.session_api;
+const Host = ra8.session.board_display.Host;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const bus = ra8.chip.core.cpu.bus;
+const Store = ra8.chip.core.cpu.memory.store.Store;
+const Guest = ra8.chip.core.cpu.memory.guest.Guest;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_session = ra8.session.step_hook.zig_session;
 const gt911 = ra8.components.gt911;
 const eink = ra8.components.eink;
 const eink_wire = ra8.components.eink_wire;
@@ -43,7 +43,7 @@ const Ram = struct {
 /// A tiny host-side screen reacts only after the board delivered the tap to GT911.
 const TapScreen = struct {
     session: *api.Session,
-    board: *ra8.board.Board,
+    board: *ra8.board.board.Board,
     contact: ?gt911.Contact = null,
     started: bool = false,
 
@@ -63,7 +63,7 @@ const TapScreen = struct {
 };
 
 const Idle = struct {
-    board: *ra8.board.Board,
+    board: *ra8.board.board.Board,
 
     fn advance(context: *anyopaque, amount_ns: u64) anyerror!void {
         const self: *Idle = @ptrCast(@alignCast(context));
@@ -72,7 +72,7 @@ const Idle = struct {
 };
 
 test "tap reaches GT911, settles e-ink, and returns a changed native grayscale frame" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.asks.attached_eink = &board.panel;
     board.panel.planes.resize(.{ .width = 1072, .height = 1448 });
@@ -84,7 +84,7 @@ test "tap reaches GT911, settles e-ink, and returns a changed native grayscale f
     var machine = Machine{};
     const live: zig_session.ZigSession = .{ .core = .{ .cpu = &cpu }, .machine = &machine, .budget = 1000 };
     var session: api.Session = .{ .live = live };
-    ra8.board.session_events.attach(&board, &session);
+    ra8.session.board_events.attach(&board, &session);
     const event_id = try session.subscribe();
 
     var guest_store = try Store.init(null);
@@ -130,7 +130,7 @@ test "tap reaches GT911, settles e-ink, and returns a changed native grayscale f
 }
 
 test "session display reports a timeout when no refresh settles" {
-    var board = ra8.board.Board.init(std.testing.allocator);
+    var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.asks.attached_eink = &board.panel;
     board.panel.planes.resize(.{ .width = 1, .height = 1 });

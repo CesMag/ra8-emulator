@@ -1,9 +1,9 @@
 //! Bounded session event stream tests (RA8EMU-192).
 const std = @import("std");
-const stream_api = @import("ra8").core.session_event_stream;
-const api = @import("ra8").core.session_api;
-const sci = @import("ra8").periph.sci;
-const gpio = @import("ra8").periph.gpio;
+const stream_api = @import("ra8").session.session_event_stream;
+const api = @import("ra8").session.session_api;
+const sci = @import("ra8").chip.periph.sci;
+const gpio = @import("ra8").chip.periph.gpio;
 
 test "a stalled subscriber cannot backpressure the producer and keeps the newest window" {
     var stream: stream_api.Stream = .{};
@@ -130,7 +130,7 @@ test "each hardware event kind carries a virtual timestamp and source data" {
 }
 
 test "SCI, GPIO and LED taps publish timestamped source events" {
-    var base: @import("ra8").periph.clocks.timebase.TimeBase = .{};
+    var base: @import("ra8").chip.periph.clocks.timebase.TimeBase = .{};
     var session: api.Session = .{ .live = undefined };
     session.attachTimeBase(&base);
     const subscription = try session.subscribe();

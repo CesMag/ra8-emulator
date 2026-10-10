@@ -1,9 +1,9 @@
 //! Covers src/interfaces/cli/state_args.zig: `--save-state` and
 //! `--load-state` (RA8EMU-696), `--snapshot-at` and `--restore` (RA8EMU-769).
 const std = @import("std");
-const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const state_args = ra8.board.zig_run.state_args;
+const state_args = cli_app.zig_run.state_args;
 
 test "both flags take a path and leave the index on it" {
     var options: state_args.Options = .{};

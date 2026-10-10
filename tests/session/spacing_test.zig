@@ -2,7 +2,7 @@
 //! gap, and the shape a run of bursts prints as.
 const std = @import("std");
 const ra8 = @import("ra8");
-const spacing = ra8.core.spacing;
+const spacing = ra8.session.spacing;
 
 test "one store opens no gap at all" {
     var gaps = spacing.Spacing{};

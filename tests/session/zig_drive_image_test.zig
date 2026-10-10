@@ -7,12 +7,12 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const memmap = ra8.core.memmap;
-const stop_machine = ra8.core.stop_machine;
-const step_hook = ra8.core.step_hook;
-const watch_table = ra8.core.watch_table;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const memmap = ra8.chip.core.memmap;
+const stop_machine = ra8.session.stop_machine;
+const step_hook = ra8.session.step_hook;
+const watch_table = ra8.session.watch_table;
 const watch_bus = step_hook.watch_bus;
 const zig_drive = step_hook.zig_drive;
 const ZigCore = step_hook.zig_core.ZigCore;
@@ -75,7 +75,7 @@ const Fixture = struct {
         self.driver = .{ .machine = &self.machine };
         self.watching = .{ .inner = self.sram.view(), .driver = &self.driver };
         self.cpu = .{ .bus = self.watching.view() };
-        self.cpu.regs.xpsr = ra8.core.cpu.regs.xpsr_bits.thumb;
+        self.cpu.regs.xpsr = ra8.chip.core.cpu.regs.xpsr_bits.thumb;
         const core: ZigCore = .{ .cpu = &self.cpu };
         core.setRegister(.sp, image.stack);
         return core;

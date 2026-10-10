@@ -3,11 +3,12 @@
 //! instruction that made it (RA8EMU-639).
 const std = @import("std");
 const ra8 = @import("ra8");
+const cli_app = @import("cli_app");
 
-const bus = ra8.core.cpu.bus;
-const boot = ra8.core.cpu.boot;
-const cpu = ra8.core.cpu.cpu;
-const zig_watch = ra8.board.zig_run.zig_watch;
+const bus = ra8.chip.core.cpu.bus;
+const boot = ra8.chip.core.cpu.boot;
+const cpu = ra8.chip.core.cpu.cpu;
+const zig_watch = cli_app.zig_run.zig_watch;
 const Recorder = zig_watch.Recorder;
 
 const place: u32 = 0x2204_00A0;
@@ -40,19 +41,19 @@ const Floor = struct {
 };
 
 /// An ELF header with no sections: enough for a literal place.
-fn blankImage(buffer: *[@sizeOf(ra8.image.elf.Header)]u8) !ra8.image.elf.Image {
+fn blankImage(buffer: *[@sizeOf(ra8.board.image.elf.Header)]u8) !ra8.board.image.elf.Image {
     @memset(buffer, 0);
-    const head: *align(1) ra8.image.elf.Header = std.mem.bytesAsValue(ra8.image.elf.Header, buffer);
+    const head: *align(1) ra8.board.image.elf.Header = std.mem.bytesAsValue(ra8.board.image.elf.Header, buffer);
     head.magic = .{ 0x7F, 'E', 'L', 'F' };
     head.class = 1;
     head.data = 1;
-    head.e_machine = ra8.image.elf.em_arm;
-    return ra8.image.elf.Image.init(buffer);
+    head.e_machine = ra8.board.image.elf.em_arm;
+    return ra8.board.image.elf.Image.init(buffer);
 }
 
 /// A recorder armed on `place`, its bus over `floor`, with `regs` lent.
 fn armed(recorder: *Recorder, floor: *Floor, regs: *const boot.Regs, ticks: *const u64) !bus.Bus {
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     const image = try blankImage(&buffer);
     const wrap = recorder.arm(image, "0x220400A0", null, ticks) orelse return error.NotArmed;
     if (wrap.regsFn) |lend| lend(wrap.context, regs);
@@ -122,7 +123,7 @@ test "a status latch passes straight through and is no store" {
 
 test "nothing watched leaves the run's wrap and retire listener as they were" {
     var recorder: Recorder = .{};
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     const image = try blankImage(&buffer);
     const ticks: u64 = 0;
     try std.testing.expect(recorder.arm(image, null, null, &ticks) == null);
@@ -146,7 +147,7 @@ const Behind = struct {
         return inner;
     }
 
-    fn sourceFn(_: *anyopaque, inner: ra8.core.cpu.exception.source.Source) ra8.core.cpu.exception.source.Source {
+    fn sourceFn(_: *anyopaque, inner: ra8.chip.core.cpu.exception.source.Source) ra8.chip.core.cpu.exception.source.Source {
         return inner;
     }
 
@@ -166,7 +167,7 @@ test "the recorder chains over the listener behind it and the retire listener af
     var behind: Behind = .{};
     var floor: Floor = .{};
     var regs: boot.Regs = .{};
-    var buffer: [@sizeOf(ra8.image.elf.Header)]u8 = undefined;
+    var buffer: [@sizeOf(ra8.board.image.elf.Header)]u8 = undefined;
     const image = try blankImage(&buffer);
     const ticks: u64 = 0;
     const wrap = recorder.arm(image, "0x220400A0", behind.wrap(), &ticks) orelse return error.NotArmed;

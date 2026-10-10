@@ -4,13 +4,13 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const Board = ra8.board.Board;
-const memmap = ra8.core.memmap;
-const scb = ra8.periph.scb;
-const icu = ra8.periph.icu;
-const reboot = ra8.core.reboot;
-const reset = ra8.periph.reset;
-const wdt = ra8.periph.wdt;
+const Board = ra8.board.board.Board;
+const memmap = ra8.chip.core.memmap;
+const scb = ra8.chip.periph.scb;
+const icu = ra8.chip.periph.icu;
+const reboot = ra8.chip.core.reboot;
+const reset = ra8.chip.periph.reset;
+const wdt = ra8.chip.periph.wdt;
 
 /// A board with a bus but no CPU behind it. attach() needs an engine, so the
 /// tests that only ask about the peripheral state build the board directly.
@@ -188,14 +188,14 @@ test "a software reset takes the interrupt latches down" {
 }
 
 test "an AGT underflow is raised on the boundary that closes at its due time" {
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    const memory: ra8.core.cpu.memory.guest.Guest = .{ .store = &store };
+    const memory: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &store };
     var unit = board();
     defer unit.deinit();
     try ra8.board.wiring.attachBlocks(&unit, memory);
-    const agt = ra8.periph.agt;
-    const sched = ra8.periph.agt_clock.sched;
+    const agt = ra8.chip.periph.agt;
+    const sched = ra8.chip.periph.agt_clock.sched;
     // 0x1100 counts at the AGT's PCLKB lands a few thousand ns past the
     // second whole boundary, wide enough that the floor does not round it.
     unit.interval.channels[0] = .{ .counter = 0x1100, .reload = 0xFFFF, .cr = agt.control.tstart };
@@ -217,9 +217,9 @@ test "an AGT underflow is raised on the boundary that closes at its due time" {
 }
 
 test "a WDT underflow lands on the boundary that closes at its due time, carry included" {
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    const memory: ra8.core.cpu.memory.guest.Guest = .{ .store = &store };
+    const memory: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &store };
     var unit = board();
     defer unit.deinit();
     try ra8.board.wiring.attachBlocks(&unit, memory);
@@ -245,28 +245,28 @@ test "a WDT underflow lands on the boundary that closes at its due time, carry i
 
 /// `width`, narrowed to end on the board's next queued event when that is
 /// closer, as the run loop sizes a stretch.
-fn toDue(tick: ra8.core.tick.Tick, width: u32) u32 {
+fn toDue(tick: ra8.chip.core.tick.Tick, width: u32) u32 {
     const cycles = tick.cyclesToDue();
     if (cycles == 0 or cycles > std.math.maxInt(u32)) return width;
-    const configured: ra8.core.cadence.Cadence = .{ .per_boundary = width };
+    const configured: ra8.chip.core.cadence.Cadence = .{ .per_boundary = width };
     return configured.narrowedTo(@intCast(cycles)).per_boundary;
 }
 
 /// A bare board with its blocks attached, ready for one boundary.
-fn attached(unit: *Board, memory: ra8.core.cpu.memory.guest.Guest) !void {
+fn attached(unit: *Board, memory: ra8.chip.core.cpu.memory.guest.Guest) !void {
     try ra8.board.wiring.attachBlocks(unit, memory);
 }
 
 test "a boundary retunes the time base to CPU0's clock from the tree" {
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    const memory: ra8.core.cpu.memory.guest.Guest = .{ .store = &store };
+    const memory: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &store };
     var unit = board();
     defer unit.deinit();
     try attached(&unit, memory);
     // The EK-RA8D2 quickstart: PLL1 at 1 GHz, CPU0 /2 and CPU1 /4.
     unit.plls.pll1 = .{ .ccr = 0xFA02, .ccr2 = 0x451 };
-    unit.tree.cksel = @backingInt(ra8.periph.sysclk.Source.pll1);
+    unit.tree.cksel = @backingInt(ra8.chip.periph.sysclk.Source.pll1);
     unit.tree.divcr2 = 0x2021;
     unit.tree.selects = 1;
     try unit.tick(memory, 1_000);
@@ -274,18 +274,18 @@ test "a boundary retunes the time base to CPU0's clock from the tree" {
 }
 
 test "an untouched tree and one the rate table cannot price leave the time base alone" {
-    var store = try ra8.core.cpu.memory.store.Store.init(null);
+    var store = try ra8.chip.core.cpu.memory.store.Store.init(null);
     defer store.deinit();
-    const memory: ra8.core.cpu.memory.guest.Guest = .{ .store = &store };
+    const memory: ra8.chip.core.cpu.memory.guest.Guest = .{ .store = &store };
     var unit = board();
     defer unit.deinit();
     try attached(&unit, memory);
     try unit.tick(memory, 1_000);
-    try std.testing.expectEqual(ra8.periph.clocks.timebase.default_hz, unit.time.base.hz);
-    unit.tree.cksel = @backingInt(ra8.periph.sysclk.Source.loco);
+    try std.testing.expectEqual(ra8.chip.periph.clocks.timebase.default_hz, unit.time.base.hz);
+    unit.tree.cksel = @backingInt(ra8.chip.periph.sysclk.Source.loco);
     unit.tree.selects = 1;
     try unit.tick(memory, 1_000);
-    try std.testing.expectEqual(ra8.periph.clocks.timebase.default_hz, unit.time.base.hz);
+    try std.testing.expectEqual(ra8.chip.periph.clocks.timebase.default_hz, unit.time.base.hz);
 }
 
 test "a soak run notes a watchdog reset as its event at the virtual time it came" {

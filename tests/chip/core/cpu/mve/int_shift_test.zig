@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/int_shift.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const shift = ra8.core.mve.int_shift;
+const shift = ra8.chip.core.cpu.mve.int_shift;
 
 test "shiftLane shifts left, right and rounds" {
     try std.testing.expectEqual(@as(i128, 8), shift.shiftLane(1, 3, false));

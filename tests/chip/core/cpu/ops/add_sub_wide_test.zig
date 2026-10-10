@@ -1,10 +1,10 @@
 //! Covers src/chip/core/cpu/ops/add_sub_wide.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const regs = ra8.core.cpu.regs;
-const add_sub_wide = ra8.core.cpu.ops.add_sub_wide;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const regs = ra8.chip.core.cpu.regs;
+const add_sub_wide = ra8.chip.core.cpu.ops.add_sub_wide;
 
 fn wide(address: u32, hw1: u16, hw2: u16) Instr {
     return .{ .address = address, .hw1 = hw1, .hw2 = hw2, .size = 4 };

@@ -1,10 +1,10 @@
 //! Tests for src/session/zig_cycles.zig, through the Zig session that runs it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.core.cpu.bus;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Machine = ra8.core.stop_machine.Machine;
-const zig_session = ra8.core.step_hook.zig_session;
+const bus = ra8.chip.core.cpu.bus;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Machine = ra8.session.stop_machine.Machine;
+const zig_session = ra8.session.step_hook.zig_session;
 
 const cyccnt: u32 = 0xE000_1004;
 const dfsr: u32 = 0xE000_ED30;

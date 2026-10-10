@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/extend.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const extend = ra8.core.cpu.ops.extend;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const extend = ra8.chip.core.cpu.ops.extend;
 
 fn run(cpu: *Cpu, hw1: u16) !void {
     const instr: Instr = .{ .address = 0, .hw1 = hw1, .size = 2 };

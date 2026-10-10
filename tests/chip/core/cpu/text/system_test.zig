@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const parity = @import("parity.zig");
-const Instr = ra8.core.cpu.instr.Instr;
-const disasm = ra8.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
 
 test "SG matches its parity digest" {
     try parity.expectWideGroupMatches("sg", 0xFFFF, 0xE97F, &.{ 0xE97F, 0xE97E });

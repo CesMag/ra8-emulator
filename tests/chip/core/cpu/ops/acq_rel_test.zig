@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/acq_rel.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const ar = ra8.core.cpu.ops.acq_rel;
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
+const ar = ra8.chip.core.cpu.ops.acq_rel;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
 const fixture = @import("../exception/ram.zig");
 
 const data: u32 = fixture.base + 0x200;

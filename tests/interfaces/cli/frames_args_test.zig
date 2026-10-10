@@ -1,7 +1,7 @@
 //! Tests for CLI frame capture arguments in src/interfaces/cli/frames_args.zig.
 const std = @import("std");
-const ra8 = @import("ra8");
-const cli = ra8.core.cli;
+const cli_app = @import("cli_app");
+const cli = cli_app.cli;
 
 test "frame sequence flags are optional and validate the scan interval" {
     const defaults = try cli.parse(&.{ "emu", "a.elf" });
@@ -20,7 +20,7 @@ test "frame sequence flags are optional and validate the scan interval" {
 }
 
 test "frame-on-settle captures to its own directory with a virtual stability window" {
-    const parsed = try ra8.core.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", "settled", "--settle-window-ms", "75" });
+    const parsed = try cli_app.cli.parse(&.{ "emu", "image.elf", "--frame-on-settle", "settled", "--settle-window-ms", "75" });
     try std.testing.expectEqualStrings("settled", parsed.frames.frame_on_settle.?);
     try std.testing.expectEqual(@as(u64, 75_000_000), parsed.frames.settle_window_ns);
 }

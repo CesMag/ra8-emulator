@@ -1,8 +1,8 @@
 //! Covers src/chip/core/cpu/text/mve_vmaxv.zig against DDI0553 syntax.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Instr = ra8.core.cpu.instr.Instr;
-const disasm = ra8.core.cpu.decode.text.disasm;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const disasm = ra8.chip.core.cpu.decode.text.disasm;
 const v81m = @import("v81m.zig");
 
 test "VMAXV, VMINV, VMAXAV and VMINAV print signedness and widths" {

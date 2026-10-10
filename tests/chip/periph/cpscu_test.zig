@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const cpscu = ra8.periph.cpscu;
-const prcr = ra8.periph.prcr;
+const cpscu = ra8.chip.periph.cpscu;
+const prcr = ra8.chip.periph.prcr;
 
 /// A gate with PRC4 open, and one with everything locked.
 fn gate(open: bool) prcr.Prcr {

@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/crc.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const periph = ra8.periph.registry;
-const mod = ra8.periph.crc;
+const periph = ra8.chip.periph.registry;
+const mod = ra8.chip.periph.crc;
 
 const Crc = mod.Crc;
 const Gps = mod.Gps;

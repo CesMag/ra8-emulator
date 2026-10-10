@@ -1,7 +1,7 @@
 //! TCON: the panel timing, and which pin carries which sync signal.
 const std = @import("std");
 const ra8 = @import("ra8");
-const tcon = ra8.periph.glcdc_tcon;
+const tcon = ra8.chip.periph.glcdc_tcon;
 
 /// The timing the in-tree driver programs for the ER-TFT070-6 panel, the
 /// numbers internal_program_tcon writes out of the board's panel table.

@@ -1,9 +1,9 @@
 //! Covers src/chip/core/cpu/ops/table_branch.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Cpu = ra8.core.cpu.cpu.Cpu;
-const Instr = ra8.core.cpu.instr.Instr;
-const table_branch = ra8.core.cpu.ops.table_branch;
+const Cpu = ra8.chip.core.cpu.cpu.Cpu;
+const Instr = ra8.chip.core.cpu.instr.Instr;
+const table_branch = ra8.chip.core.cpu.ops.table_branch;
 const ram_mod = @import("../exception/ram.zig");
 
 const here: u32 = ram_mod.code;

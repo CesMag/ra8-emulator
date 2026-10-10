@@ -1,10 +1,10 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const widget = @import("ra8_widget");
-const draw_list = ra8.gui.draw_list;
-const raster = ra8.gui.raster;
-const font = ra8.gui.font;
-const widget_paint = ra8.gui.widget_paint;
+const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
+const font = ra8.render.font;
+const widget_paint = ra8.render.widget_paint;
 
 fn bare(rect: widget.types.Rect) widget.types.Widget {
     return .{ .vt = null, .ctx = null, .rect = rect, .fixed = 0, .flex = 0, .action_id = 0, .refresh = 0, .visible = false, .dirty = false };

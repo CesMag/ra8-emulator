@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const pscu = ra8.periph.pscu;
-const mstp = ra8.periph.mstp;
+const pscu = ra8.chip.periph.pscu;
+const mstp = ra8.chip.periph.mstp;
 
 const psarb = pscu.win_base + 0x04;
 const psare = pscu.win_base + 0x10;
@@ -94,8 +94,8 @@ test "the monitors drop stores and count them" {
 test "the CMS area a monitor reads is the one the IDAU narrows code by" {
     const unit = samon.Unit{ .cms = 2 };
     const area: u9 = @intCast(unit.read(samon.cms_address, 4) >> samon.area_shift);
-    const map = ra8.periph.sau.idau.Map{ .code_secure = ra8.periph.sau.idau.cmsBytes(area) };
-    const State = ra8.periph.sau.attribution.State;
+    const map = ra8.chip.periph.sau.idau.Map{ .code_secure = ra8.chip.periph.sau.idau.cmsBytes(area) };
+    const State = ra8.chip.periph.sau.attribution.State;
     try std.testing.expectEqual(State.secure, map.answer(0x1200_FFFF).state);
     try std.testing.expectEqual(State.non_secure, map.answer(0x1201_0000).state);
 }
