@@ -25,7 +25,7 @@
 //! first channel window and drops every write there, so a driver that
 //! claims a semaphore and reads it back to see whether it won reads zero
 //! forever and can spin without end. Here IPCSEMn and the two NMI
-//! doorbells are a model of their own in ipc_sync.zig: a read of a
+//! doorbells are a model of their own in sync.zig: a read of a
 //! semaphore takes the lock as a side effect and hands back the value from
 //! before it, the way HUM Ch 3.2.3 p 210 specifies, so the second claimant
 //! is told it lost. What is left of the region below 0xC0 is still shadow.
@@ -50,7 +50,7 @@
 //! THE SEMAPHORES BELOW THE CHANNELS take the same question and answer it
 //! differently, because LOCK is one bit rather than a message: an access
 //! that names bit 0 carries the lock whatever its width, and one that does
-//! not carries nothing and must not take it. ipc_sync.zig owns that rule;
+//! not carries nothing and must not take it. sync.zig owns that rule;
 //! this file's job is to hand it the lanes the access actually named
 //! instead of only the offset it landed on.
 //!
@@ -64,9 +64,9 @@ const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 const prcr = @import("../prcr.zig");
-const sync = @import("ipc_sync.zig");
-const attr = @import("ipc_attr.zig");
-const repeating = @import("ipc_repeat.zig");
+const sync = @import("sync.zig");
+const attr = @import("attr.zig");
+const repeating = @import("repeat.zig");
 
 /// IPC geometry (ra8_ipc_regs.h). The bus folds the Non-secure alias onto
 /// this base before it arrives.
@@ -74,7 +74,7 @@ pub const win_base: u32 = 0x4002_0000;
 pub const win_span: u32 = 0x140;
 
 /// The channel windows: four of them, 0x20 apart, starting at 0xC0. Below
-/// 0xC0 are the semaphores and the NMI windows, which ipc_sync.zig owns.
+/// 0xC0 are the semaphores and the NMI windows, which sync.zig owns.
 pub const ch0_offset: u32 = 0xC0;
 pub const ch_stride: u32 = 0x20;
 pub const ch_count: usize = 4;

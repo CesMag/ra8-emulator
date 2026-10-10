@@ -3,8 +3,8 @@
 //!
 //! This file only keeps the order, which is the format: the option MRAM,
 //! the xSPI controller, the NOR flash. The MRAM and the flash save their own
-//! halves (chip/periph/mram/mram_snapshot.zig,
-//! components/nor_flash/flash_snapshot.zig, RA8EMU-1104). The controller is
+//! halves (chip/periph/mram/snapshot.zig,
+//! components/nor_flash/snapshot.zig, RA8EMU-1104). The controller is
 //! plain state apart from its wiring to the part and the OCTACLK watch.
 const std = @import("std");
 const file = @import("ra8_snapshot").file;

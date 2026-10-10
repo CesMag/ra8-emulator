@@ -8,7 +8,7 @@
 //!
 //! What runs is not Vela. The driver's submit, run, poll, read-output
 //! protocol is real, and the program behind QBASE is the documented stand-in
-//! in npu_cmd.zig, so an image can prove the whole path end to end without
+//! in cmd.zig, so an image can prove the whole path end to end without
 //! this model pretending to do inference. Ported from board_periph_npu.c on
 //! dev, with five things that model does not do.
 //!
@@ -59,8 +59,8 @@ const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const periph = @import("../registry.zig");
-const cmd = @import("npu_cmd.zig");
-const vela_hook = @import("npu_vela_hook.zig");
+const cmd = @import("cmd.zig");
+const vela_hook = @import("vela_hook.zig");
 
 /// The window, from ra8_npu_regs.h on dev.
 pub const win_base: u32 = 0x4014_0000;

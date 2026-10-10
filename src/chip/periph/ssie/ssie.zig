@@ -30,7 +30,7 @@
 //! neither set a flag nor clear one and cannot tell which happened. Here the
 //! register is computed on read and a write to it changes nothing.
 //!
-//! THE FIFO ITSELF lives in src/chip/periph/ssie/ssie_fifo.zig: the part's 32 stages,
+//! THE FIFO ITSELF lives in src/chip/periph/ssie/fifo.zig: the part's 32 stages,
 //! SSIFSR's TDC count, and the SSIFCR resets that empty it. That file carries
 //! the register fields and what is deliberately left alone in them.
 //!
@@ -59,7 +59,7 @@
 //! restart the channel. Here the rising edge empties the transmit FIFO and
 //! takes REN and TEN down, leaving the mode bits above them alone, which is
 //! what ra8_ssie.h states as the post-condition of that call. The rule and
-//! its evidence live in src/chip/periph/ssie/ssie_reset.zig.
+//! its evidence live in src/chip/periph/ssie/reset.zig.
 //!
 //! NOT MODELLED, AND NOT GUESSED: SSIFSR's receive flags, and the write-0-to
 //! -clear the header describes for RDF and TDE. TDE is computed from what the
@@ -70,11 +70,11 @@
 //! SSIFRDR reads zero and RDC reads zero, as they do on dev.
 const std = @import("std");
 
-const fifo = @import("ssie_fifo.zig");
+const fifo = @import("fifo.zig");
 const lanes = @import("../lanes.zig");
 const periph = @import("../registry.zig");
-const soft_reset = @import("ssie_reset.zig");
-const audio_tap = @import("ssie_tap.zig");
+const soft_reset = @import("reset.zig");
+const audio_tap = @import("tap.zig");
 
 /// The staging FIFO, reached as `ssie.stage` the way the other split blocks
 /// in this tree re-export their halves.

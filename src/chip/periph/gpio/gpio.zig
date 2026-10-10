@@ -26,10 +26,10 @@
 //! pin reads high with nothing driving it.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const regs = @import("gpio_regs.zig");
+const regs = @import("regs.zig");
 
 /// Pin models (RA8EMU-497), reached through here because root.zig is full.
-pub const pins = @import("gpio_pins.zig");
+pub const pins = @import("pins.zig");
 
 /// PORT geometry (HUM Ch 20.2 p 730). The Non-secure alias is folded onto this
 /// base by the bus before anything here sees it.

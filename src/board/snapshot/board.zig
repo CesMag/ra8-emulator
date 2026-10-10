@@ -5,7 +5,7 @@
 //! them saves them beside this (RA8EMU-660). Each section loads all or
 //! nothing on its own, but a failure in a later section leaves the earlier
 //! ones loaded: load into a freshly built board and drop it on error, the
-//! same rule as cpu_snapshot.zig. A file from another part is refused before any
+//! same rule as cpu/snapshot.zig. A file from another part is refused before any
 //! section is touched.
 const std = @import("std");
 const file = @import("ra8_snapshot").file;

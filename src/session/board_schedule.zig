@@ -9,7 +9,7 @@
 //! boundary converts its cycle edge when instructions and cycles differ.
 const std = @import("std");
 const boot = @import("ra8_chip").core.cpu.boot;
-const api = @import("session_api.zig");
+const api = @import("api.zig");
 const fault_schedule = @import("ra8_components").fault_schedule;
 const timebase = @import("ra8_chip").periph.timebase;
 

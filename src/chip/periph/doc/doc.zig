@@ -22,7 +22,7 @@
 //!   subtract DODSR0 -= DODIR, masked, DOPCF on borrow
 //!   compare  DODSR0 is left alone, DOPCF latches when the relation holds,
 //!            and which relation that is comes from DOCR.DCSEL: see
-//!            doc_compare.zig, which owns the six encodings and reads DODSR1
+//!            compare.zig, which owns the six encodings and reads DODSR1
 //!            as the upper bound for the two window ones.
 //!
 //! DOPCF latches: once set it stays set until DOSCR clears it, which is what
@@ -42,11 +42,11 @@
 //! operand DOCR.DOBW selects; anything narrower carries no operation, is
 //! refused and counted, and DODSR0 keeps what it had. The rule and what it
 //! deliberately does not claim about silicon live in
-//! src/chip/periph/doc/doc_operand.zig.
+//! src/chip/periph/doc/operand.zig.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const doc_compare = @import("doc_compare.zig");
-const dodir = @import("doc_operand.zig");
+const doc_compare = @import("compare.zig");
+const dodir = @import("operand.zig");
 
 /// The detection condition DOCR.DCSEL selects, in its own file.
 pub const compare = doc_compare;

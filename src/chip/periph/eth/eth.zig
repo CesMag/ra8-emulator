@@ -29,26 +29,26 @@
 const std = @import("std");
 const lanes = @import("../lanes.zig");
 const periph = @import("../registry.zig");
-const regs = @import("eth_regs.zig");
-const eth_mode = @import("eth_mode.zig");
-const eth_line = @import("eth_line.zig");
-const eth_mac = @import("eth_mac.zig");
-const eth_tas = @import("eth_tas.zig");
-const eth_cbs = @import("eth_cbs.zig");
+const regs = @import("regs.zig");
+const eth_mode = @import("mode.zig");
+const eth_line = @import("line.zig");
+const eth_mac = @import("mac.zig");
+const eth_tas = @import("tas.zig");
+const eth_cbs = @import("cbs.zig");
 const pdctr = @import("../pdctr.zig");
 
 /// The perfect-match address, reached as `eth.mac_address` by a caller that
 /// already has the port.
 pub const mac_address = eth_mac;
-/// EATDQDC and the error-interrupt groups: eth_agent.zig.
-pub const agent = @import("eth_agent.zig");
-/// MFWD control and per-port forwarding words: eth_forward.zig.
-pub const forward = @import("eth_forward.zig");
+/// EATDQDC and the error-interrupt groups: agent.zig.
+pub const agent = @import("agent.zig");
+/// MFWD control and per-port forwarding words: forward.zig.
+pub const forward = @import("forward.zig");
 /// Ancillary Ethernet setup words touched by GWCA open.
-pub const open_regs = @import("eth_open_regs.zig");
-/// COMA RIC, RRC and RCEC: eth_coma.zig.
-pub const coma = @import("eth_coma.zig");
-/// The MDIO bus and the wire the board connects: eth_line.zig.
+pub const open_regs = @import("open_regs.zig");
+/// COMA RIC, RRC and RCEC: coma.zig.
+pub const coma = @import("coma.zig");
+/// The MDIO bus and the wire the board connects: line.zig.
 pub const line = eth_line;
 /// TAS gate-list RAM and indirect access registers.
 pub const tas = eth_tas;

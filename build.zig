@@ -318,7 +318,7 @@ fn usbipAttach(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.bu
         .target = target,
         .optimize = optimize,
     });
-    usbip_mod.addImport("usbip_client", b.createModule(.{ .root_source_file = b.path("src/interfaces/usbip/usbip_client.zig") }));
+    usbip_mod.addImport("usbip_client", b.createModule(.{ .root_source_file = b.path("src/interfaces/usbip/client.zig") }));
     const usbip = b.addRunArtifact(b.addExecutable(.{ .name = "usbip_attach", .root_module = usbip_mod }));
     usbip.addPassthruArgs();
     b.step("usbip-attach", "Attach --usbip PORT and check it end to end: -- PORT").dependOn(&usbip.step);

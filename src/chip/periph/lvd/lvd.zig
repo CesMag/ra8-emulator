@@ -15,13 +15,13 @@
 //! THE RESET BAND AND ITS NEGATION INTERLOCK. RHSEL = 1 needs PVDmCR0.RI
 //! already set, and RN = 1 is prohibited while RHSEL = 1 (HUM Ch 8.2.8
 //! p 308, Ch 8.2.4 p 305). Both rules, why only m channels are gated and
-//! why a standing bit is left alone, live in src/chip/periph/lvd/lvd_interlock.zig.
+//! why a standing bit is left alone, live in src/chip/periph/lvd/interlock.zig.
 //!
 //! THE FILTER DIVIDER IS LOCKED WHILE THE FILTER RUNS. FSAMP only takes a
 //! store while that channel's DFDIS is set (HUM Ch 8.2.4 p 305, Ch 8.2.5
 //! p 306). The rule, its citation, why a read-modify-write that carries the
 //! divider along unchanged is not a violation, and why the matching PVDLVL
-//! rule is not modelled yet, all live in src/chip/periph/lvd/lvd_field_lock.zig.
+//! rule is not modelled yet, all live in src/chip/periph/lvd/field_lock.zig.
 //!
 //! Ported from board_periph_lvd.c on dev, which models the four status bytes
 //! and nothing else: it answers every PVDmSR read with MON = above and DET = 0
@@ -47,9 +47,9 @@ pub const filter_span: u32 = 0x18;
 /// emulator, so this is the one number the whole block is measured against.
 pub const rail_millivolts: u16 = 3300;
 
-/// The register fields and the Vdet table, in src/chip/periph/lvd/lvd_regs.zig.
-const regs = @import("lvd_regs.zig");
-const field_lock = @import("lvd_field_lock.zig");
+/// The register fields and the Vdet table, in src/chip/periph/lvd/regs.zig.
+const regs = @import("regs.zig");
+const field_lock = @import("field_lock.zig");
 
 pub const compare = regs.compare;
 pub const control = regs.control;
@@ -62,7 +62,7 @@ pub const level_min = regs.level_min;
 pub const level_max = regs.level_max;
 pub const detect_millivolts = regs.detect_millivolts;
 pub const detectVoltage = regs.detectVoltage;
-const interlock = @import("lvd_interlock.zig");
+const interlock = @import("interlock.zig");
 
 pub const Series = regs.Series;
 

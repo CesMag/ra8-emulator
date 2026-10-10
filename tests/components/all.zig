@@ -2,7 +2,7 @@
 //! src/components.
 
 test {
-    _ = @import("camera_ov5640/ov5640_sccb_test.zig");
+    _ = @import("camera_ov5640/sccb_test.zig");
     _ = @import("camera_ov5640/pixel_convert_test.zig");
     _ = @import("camera_ov5640/converted_source_test.zig");
     _ = @import("camera_ov5640/hosted_test.zig");
@@ -41,6 +41,6 @@ test {
     _ = @import("eink_it8951/image_test.zig");
     _ = @import("eink_it8951/ghost_test.zig");
     _ = @import("eink_it8951/wire_test.zig");
-    _ = @import("esp32c6_hosted/esp_hosted_test.zig");
+    _ = @import("esp32c6_hosted/hosted_test.zig");
     _ = @import("plug/all.zig");
 }

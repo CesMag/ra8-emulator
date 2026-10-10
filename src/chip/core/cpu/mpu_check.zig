@@ -11,7 +11,7 @@
 //!   - the highest-numbered enabled region covering the address decides,
 //!     through Region.refuses (privilege first, then read-only for a store);
 //!   - an address no region covers falls to the background
-//!     (src/chip/periph/mpu/mpu_background.zig: refused to unprivileged code, and
+//!     (src/chip/periph/mpu/background.zig: refused to unprivileged code, and
 //!     to privileged code unless PRIVDEFENA);
 //!   - a disabled MPU refuses nothing.
 //! Two more architecture rules are kept here
@@ -22,8 +22,8 @@
 //! A multi-byte access is checked at its first byte.
 
 const mpu = @import("../../periph/mpu/mpu.zig");
-const mpu_fault = @import("../../periph/mpu/mpu_fault.zig");
-const background = @import("../../periph/mpu/mpu_background.zig");
+const mpu_fault = @import("../../periph/mpu/fault.zig");
+const background = @import("../../periph/mpu/background.zig");
 const banked = @import("../banked.zig");
 
 /// The Private Peripheral Bus, which the MPU never checks.

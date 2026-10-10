@@ -17,13 +17,13 @@
 //!   REG00      (+0x080, 32b) AES enable, key size, mode, self-test
 //!   REG03      (+0x08C, 32b) key and IV staging window, write-only
 //!
-//! The address rules are in src/chip/periph/dotf/dotf_region.zig and the REG00 rule in
-//! src/chip/periph/dotf/dotf_control.zig, each of which states what it does not model.
+//! The address rules are in src/chip/periph/dotf/region.zig and the REG00 rule in
+//! src/chip/periph/dotf/control.zig, each of which states what it does not model.
 //! Two conversion-area configurations silicon does not allow are counted
 //! rather than refused, because the HUM records each as a requirement on the
 //! driver without saying what the hardware does when it is broken: a
 //! reversed pair (start above end) and an area moved while the AES core is
-//! decrypting. dotf_region.zig carries both citations.
+//! decrypting. region.zig carries both citations.
 //!
 //! REG03 IS A STAGING WINDOW, NOT A REGISTER. The driver pushes four words
 //! of IV, or four to eight words of wrapped key, big-endian, one after the
@@ -33,8 +33,8 @@
 //! stored. Every other offset in the window is reserved padding in FSP's own
 //! struct; it is shadowed so a read-modify-write survives, and never read.
 const periph = @import("../registry.zig");
-const control = @import("dotf_control.zig");
-const region = @import("dotf_region.zig");
+const control = @import("control.zig");
+const region = @import("region.zig");
 
 /// DOTF geometry. The bus folds the Non-secure alias onto this base.
 pub const win_base: u32 = 0x4026_8800;

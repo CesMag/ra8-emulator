@@ -10,7 +10,7 @@
 //! of a 512-byte block.
 //!
 //! The card itself, its blocks and the state it is in, is a part outside
-//! the MCU behind the line sdhi_line.zig declares. This file owns the window, the command engine and the
+//! the MCU behind the line line.zig declares. This file owns the window, the command engine and the
 //! FIFO.
 //!
 //! Ported from board_periph_sdhi.c on dev, with five things that model does
@@ -53,10 +53,10 @@
 //! CMD6. They are shadowed so a read-modify-write survives, never read.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const sd_line = @import("sdhi_line.zig");
-const fifo = @import("sdhi_fifo.zig");
+const sd_line = @import("line.zig");
+const fifo = @import("fifo.zig");
 const bus_lanes = @import("../lanes.zig");
-const xfer = @import("sdhi_xfer.zig");
+const xfer = @import("xfer.zig");
 
 pub const win_base: u32 = 0x4025_2000;
 pub const win_span: u32 = 0x200;

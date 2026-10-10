@@ -38,7 +38,7 @@
 //!
 //! RCR2.RESET IS A COMMAND, NOT A SETTING. The bit auto-clears on silicon
 //! and the driver polls it until it falls, so a shadow that answers 1 is an
-//! image that never leaves bring-up. It is interpreted in rtc_reset.zig,
+//! image that never leaves bring-up. It is interpreted in reset.zig,
 //! which carries the rule and says what the reset does and does not touch.
 //!
 //! NOT MODELLED, AND NOT GUESSED: RCR1.PES, so a periodic-enabled clock
@@ -46,19 +46,19 @@
 //! selected (ra8_rtc_regs.h names PES[3:0] at bits 4..7 and gives no
 //! encoding table, and the driver only ever writes the register as zero);
 //! the day-of-week counter and its alarm, which dev does not maintain
-//! either; RCR2's adjustment and output bits, for the reasons rtc_reset.zig
+//! either; RCR2's adjustment and output bits, for the reasons reset.zig
 //! gives. Those are shadowed for readback and never interpreted. RCR4's
 //! count source used to sit on that list and no longer does: it is read in
-//! rtc_source.zig, which carries the rule and says what is still not
+//! source.zig, which carries the rule and says what is still not
 //! modelled there.
 const std = @import("std");
 
 const periph = @import("../registry.zig");
-const clock = @import("rtc_clock.zig");
-const reset = @import("rtc_reset.zig");
-const frequency = @import("rtc_frequency.zig");
-const rtc_source = @import("rtc_source.zig");
-const rtc_pace = @import("rtc_pace.zig");
+const clock = @import("clock.zig");
+const reset = @import("reset.zig");
+const frequency = @import("frequency.zig");
+const rtc_source = @import("source.zig");
+const rtc_pace = @import("pace.zig");
 
 /// RTC geometry (ra8_rtc_regs.h). The bus folds the Non-secure alias onto
 /// this base before it arrives.
@@ -99,7 +99,7 @@ pub const freq = frequency;
 pub const pace = rtc_pace;
 
 /// The second edge a virtual-time clock queues.
-pub const sched = @import("rtc_sched.zig");
+pub const sched = @import("sched.zig");
 
 /// RCR1 interrupt enables and the RCR2 run bit.
 pub const control = struct {

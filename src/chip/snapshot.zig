@@ -1,6 +1,6 @@
 //! The snapshot sections that save several on-chip blocks, as
 //! `ra8_chip.snapshot` (RA8EMU-1023). A section that saves one block sits
-//! beside that block instead (cpu_snapshot.zig, sci_snapshot.zig and so on).
+//! beside that block instead (cpu/snapshot.zig, sci/snapshot.zig and so on).
 //! The index file for src/chip/snapshot.
 pub const channels = @import("snapshot/channels.zig");
 pub const clocks = @import("snapshot/clocks.zig");

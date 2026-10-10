@@ -18,7 +18,7 @@
 //!
 //! CMPMON IS READ-ONLY AND DERIVED. The sparse file let a store land in it;
 //! here the store is refused and counted, the same line the RTC file draws
-//! around R64CNT. What it reads comes from src/chip/periph/acmphs/acmphs_output.zig,
+//! around R64CNT. What it reads comes from src/chip/periph/acmphs/output.zig,
 //! which carries the monitor rule and states what it does not model.
 //!
 //! NOT MODELLED, AND NOT GUESSED: the ACMPHS interrupt. CPINTCTL and
@@ -27,7 +27,7 @@
 //! channel window besides the seven named above is shadowed so a
 //! read-modify-write survives, and never interpreted.
 const periph = @import("../registry.zig");
-const output = @import("acmphs_output.zig");
+const output = @import("output.zig");
 
 /// ACMPHS geometry. The bus folds the Non-secure alias onto this base.
 pub const win_base: u32 = 0x4023_6000;

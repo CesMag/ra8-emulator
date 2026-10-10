@@ -109,10 +109,10 @@ test {
     _ = @import("chip/core/part_test.zig");
     _ = @import("chip/core/part_map_test.zig");
     _ = @import("chip/core/part_clock_test.zig");
-    _ = @import("chip/core/core_rate_test.zig");
+    _ = @import("chip/core/rate_test.zig");
     _ = @import("board/image/ra8app_test.zig");
     _ = @import("chip/core/module_place_test.zig");
-    _ = @import("chip/core/core_event_test.zig");
+    _ = @import("chip/core/event_test.zig");
     _ = @import("chip/core/second_wait_test.zig");
     _ = @import("chip/core/module_fault_seam_test.zig");
     _ = @import("tools/all_test.zig");

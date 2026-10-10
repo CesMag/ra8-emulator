@@ -1,6 +1,6 @@
 //! Windows outside src/chip/core/memmap.zig that a peripheral maps at attach
-//! (RA8EMU-487): the MRAM option window (mram_window.zig) and the TSN
-//! calibration page (adc_tsn_cal.zig). The engine maps them on demand; the
+//! (RA8EMU-487): the MRAM option window (mram/window.zig) and the TSN
+//! calibration page (adc/tsn_cal.zig). The engine maps them on demand; the
 //! store keeps them here so both backends answer the same addresses.
 //!
 //! A RANGE IS MAPPED ONCE. Mapping a range that touches one already held
@@ -11,7 +11,7 @@ const std = @import("std");
 pub const Error = error{ Mapped, Full, OutOfMemory };
 
 /// Room for every page the board maps. The MRAM option window maps one
-/// window per page (17 of them, mram_window.zig), the TSN page is one more,
+/// window per page (17 of them, mram/window.zig), the TSN page is one more,
 /// and an image's segments outside memmap take the rest. At 8 the option
 /// window alone filled it, so an image page there failed to map (RA8EMU-580).
 pub const capacity = 32;

@@ -3,8 +3,8 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const sci = ra8.chip.periph.sci;
 comptime {
-    _ = @import("sci_input_test.zig");
-    _ = @import("sci_reply_test.zig");
+    _ = @import("input_test.zig");
+    _ = @import("reply_test.zig");
 }
 
 /// Open a channel the way ra8_sci_open does: receiver and transmitter on.

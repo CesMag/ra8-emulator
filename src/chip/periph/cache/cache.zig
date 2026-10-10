@@ -43,7 +43,7 @@
 //!   DCCISW   0xE000EF74  write-only, D-cache clean+invalidate by set/way
 const memmap = @import("../../core/memmap.zig");
 
-pub const geometry = @import("cache_geometry.zig");
+pub const geometry = @import("geometry.zig");
 
 /// The word primed into every maintenance register, and what one still
 /// reading it means: nothing was written to it this chunk.

@@ -5,7 +5,7 @@
 //! It carries no traffic: two free-running counters advance at the rate
 //! PTPTIVCt programs, an additive 78-bit offset puts them on network time,
 //! and the driver reads the pair back through a latched three-register
-//! view. The arithmetic is next door in gptp_timer.zig; this file is the
+//! view. The arithmetic is next door in timer.zig; this file is the
 //! register window, the enable bits, and what the run should be told
 //! happened.
 //!
@@ -49,7 +49,7 @@
 const std = @import("std");
 
 const periph = @import("../registry.zig");
-const gptp_timer = @import("gptp_timer.zig");
+const gptp_timer = @import("timer.zig");
 
 /// GPTP geometry (ra8_ether_regs.h): the whole aperture of HUM Table 35.3.
 /// The ESWM media mux above it stays in the sparse fallback.

@@ -30,7 +30,7 @@
 //! self-clearing strobe that starts a break field, so reading it back clear
 //! is exactly what ra8_sci_lin_send_break polls for, and the call returned
 //! success for a break that never happened. The rule and its evidence live
-//! in src/chip/periph/sci/sci_lin.zig.
+//! in src/chip/periph/sci/lin.zig.
 //!
 //! RDR AND TDR ARE A DATA PORT, AND THE PORT IS THE BYTE RDAT/TDAT SITS IN.
 //! An access that does not name byte 0 of the word carries no character in
@@ -44,12 +44,12 @@
 const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
-const sci_status = @import("sci_status.zig");
-const sci_lin = @import("sci_lin.zig");
-const sci_spi = @import("sci_spi.zig");
-const sci_device = @import("sci_device.zig");
-const sci_ring = @import("sci_ring.zig");
-const sci_error = @import("sci_error.zig");
+const sci_status = @import("status.zig");
+const sci_lin = @import("lin.zig");
+const sci_spi = @import("spi.zig");
+const sci_device = @import("device.zig");
+const sci_ring = @import("ring.zig");
+const sci_error = @import("error_latches.zig");
 const lanes = @import("../lanes.zig");
 
 /// SCI_B geometry. The Non-secure alias is folded onto this base by the bus
@@ -65,9 +65,9 @@ pub const console_channel: usize = 8;
 pub const off_rdr: u32 = 0x00;
 pub const off_tdr: u32 = 0x04;
 pub const off_ccr0: u32 = 0x08;
-/// CCR3's mode field, and what a Simple-SPI frame clocks back: sci_spi.zig.
+/// CCR3's mode field, and what a Simple-SPI frame clocks back: spi.zig.
 pub const off_ccr3: u32 = sci_spi.off_ccr3;
-/// The status words and the clear strobes live in src/chip/periph/sci/sci_status.zig,
+/// The status words and the clear strobes live in src/chip/periph/sci/status.zig,
 /// which owns what they answer and what a store to one does.
 pub const off_csr: u32 = sci_status.off.csr;
 pub const off_frsr: u32 = sci_status.off.frsr;
@@ -111,7 +111,7 @@ pub const Due = Bounded(u16, 3);
 
 pub const data_mask: u32 = 0xFF;
 
-/// Model sizing, and the receive ring itself: src/chip/periph/sci/sci_ring.zig.
+/// Model sizing, and the receive ring itself: src/chip/periph/sci/ring.zig.
 pub const limits = sci_ring.limits;
 pub const Ring = sci_ring.Ring;
 
@@ -136,7 +136,7 @@ pub const Channel = struct {
     /// Stores to TDR that named a byte above TDAT. They send nothing.
     unnamed_stores: u32 = 0,
     rx: Ring = .{},
-    /// The CSR flags firmware has to clear: src/chip/periph/sci/sci_error.zig.
+    /// The CSR flags firmware has to clear: src/chip/periph/sci/error_latches.zig.
     errors: sci_error.Errors = .{},
     /// CCR3, kept whole so the mode field can be read out of it.
     ccr3: u32 = 0,
@@ -160,7 +160,7 @@ pub const Channel = struct {
     }
 
     /// CSR as this channel answers it. What those bits mean, and why they
-    /// read the way they do, is src/chip/periph/sci/sci_status.zig's.
+    /// read the way they do, is src/chip/periph/sci/status.zig's.
     pub fn status(self: *const Channel) u32 {
         return sci_status.common(self.readable()) | self.errors.flags();
     }
@@ -177,11 +177,11 @@ pub const Channel = struct {
 };
 
 /// The captured console line, and what it does with one that never ends,
-/// live in src/chip/periph/sci/sci_line.zig.
-pub const Line = @import("sci_line.zig").Line;
+/// live in src/chip/periph/sci/line.zig.
+pub const Line = @import("line.zig").Line;
 
 /// What a watcher outside the run sees of every sent byte (RA8EMU-206).
-pub const Tap = @import("sci_tap.zig").Tap;
+pub const Tap = @import("tap.zig").Tap;
 
 /// The block: ten channels and the console line capture.
 pub const Sci = struct {
@@ -344,7 +344,7 @@ pub const Sci = struct {
         const channel = &self.channels[index];
         const on_line = channel.device orelse return self.clockIdle(index);
         // A device wired to the channel's SPI pins is not on the line while
-        // the channel is running as a UART (src/chip/periph/sci/sci_device.zig).
+        // the channel is running as a UART (src/chip/periph/sci/device.zig).
         if (on_line.spi_only and !sci_spi.simpleSpi(channel.ccr3)) return self.clockIdle(index);
         const reply = on_line.feed(byte);
         if (reply.len == 0) return self.clockIdle(index);
@@ -377,7 +377,7 @@ pub const Sci = struct {
             .context = self,
             .readFn = readThunk,
             .writeFn = writeThunk,
-            .peekFn = @import("sci_peek.zig").thunk,
+            .peekFn = @import("peek.zig").thunk,
         };
     }
 };

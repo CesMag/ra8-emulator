@@ -4,7 +4,7 @@
 //! is not part of what a panel shows and is not compared.
 const std = @import("std");
 
-pub const Rect = @import("session_event_stream.zig").Event.Rect;
+pub const Rect = @import("event_stream.zig").Event.Rect;
 
 const colour: u32 = 0x00FF_FFFF;
 

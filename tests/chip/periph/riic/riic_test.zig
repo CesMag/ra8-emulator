@@ -324,5 +324,5 @@ test "a device may not be attached twice at one address" {
 }
 
 test {
-    _ = @import("riic_sensor_bus_test.zig");
+    _ = @import("sensor_bus_test.zig");
 }

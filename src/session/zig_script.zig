@@ -9,11 +9,11 @@ const break_table = @import("break_table.zig");
 const commands = @import("commands.zig");
 const elf = @import("ra8_board").image.elf;
 const session = @import("session.zig");
-const session_place = @import("session_place.zig");
-const session_report = @import("session_report.zig");
-const session_view = @import("session_view.zig");
+const session_place = @import("place_address.zig");
+const session_report = @import("report.zig");
+const session_view = @import("view.zig");
 const watch_table = @import("watch_table.zig");
-const session_api = @import("session_api.zig");
+const session_api = @import("api.zig");
 const endpoint = @import("ra8_components").endpoint;
 
 pub const Error = error{ Unsupported, MissingPart };

@@ -1,6 +1,6 @@
 //! The far end of the wire: what the firmware has sent, and what is waiting
 //! to be delivered to it. A board part (RA8EMU-1042): the DMA reaches it
-//! through the wire line in src/chip/periph/eth/eth_line.zig.
+//! through the wire line in src/chip/periph/eth/line.zig.
 //!
 //! dev's peer is a state machine that answers ARP, pings back, and runs a TCP
 //! echo (board_net.c, 849 lines). None of that is here yet. What the

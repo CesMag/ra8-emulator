@@ -12,7 +12,7 @@
 //!   model cannot see, such as a SEV CPU1 itself ran before its WFE.
 //!
 //! src/chip/core/second_core.zig routes a WFE stop here.
-const core_event = @import("core_event.zig");
+const core_event = @import("event.zig");
 
 pub const limits = struct {
     /// Idle turns before a parked core wakes on its own.

@@ -50,7 +50,7 @@ test "an enabled comparator in an enabled unit matches its address" {
 
 test {
     _ = @import("dwarf_line_test.zig");
-    _ = @import("session_source_test.zig");
+    _ = @import("source_test.zig");
     _ = @import("dwarf_line_find_test.zig");
     _ = @import("dwarf_frame_test.zig");
     _ = @import("unwind_test.zig");

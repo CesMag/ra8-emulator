@@ -7,7 +7,7 @@
 //! in CDBUF (CDT, address, then two data words), set CDCTL0.TRREQ, poll
 //! INTS.CMDCMP, clear it through INTC, and read the data words back. This
 //! model decodes the descriptor, runs the opcode against the NOR array in
-//! the part (xspi_nor.zig), raises CMDCMP and drops TRREQ.
+//! the part (nor.zig), raises CMDCMP and drops TRREQ.
 //!
 //! Ported from board_periph_xspi.c on dev, with four things that model does
 //! not do.
@@ -62,8 +62,8 @@
 const std = @import("std");
 const octaclk = @import("../octaclk.zig");
 const periph = @import("../registry.zig");
-const xspi_nor = @import("xspi_nor.zig");
-pub const reset = @import("xspi_reset.zig");
+const xspi_nor = @import("nor.zig");
+pub const reset = @import("reset.zig");
 const lanes = @import("../lanes.zig");
 
 /// XSPI0 geometry.
@@ -120,7 +120,7 @@ pub const descriptor = struct {
 };
 
 /// The JEDEC opcodes the engine decodes. The software reset pair is
-/// sequenced in xspi_reset.zig; everything else (mode switches) completes
+/// sequenced in reset.zig; everything else (mode switches) completes
 /// without touching the part, as it does on dev.
 pub const Opcode = enum(u8) {
     page_program = 0x02,

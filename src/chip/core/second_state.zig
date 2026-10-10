@@ -6,7 +6,7 @@ const memmap = @import("memmap.zig");
 const nvic = @import("../periph/nvic.zig");
 const clocks = @import("../periph/clocks.zig");
 const second_wait = @import("second_wait.zig");
-const rate = @import("core_rate.zig");
+const rate = @import("rate.zig");
 const Wiring = @import("second_wiring.zig").Wiring;
 const Guest = @import("cpu/memory/guest.zig").Guest;
 

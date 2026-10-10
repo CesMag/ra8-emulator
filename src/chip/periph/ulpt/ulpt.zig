@@ -42,15 +42,15 @@
 //!
 //! Four: neither tree compared the compare values. ULPTCMA and ULPTCMB were
 //! storage on both, so a count could run straight past one and nothing said
-//! so. The comparison lives in ulpt_compare.zig now, and the flags it raises
+//! so. The comparison lives in compare.zig now, and the flags it raises
 //! are AGTCR's TCMAF and TCMBF, which ULPTCR mirrors.
 const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 
 const bytelanes = @import("../bytelanes.zig");
 const periph = @import("../registry.zig");
-const compare = @import("ulpt_compare.zig");
-const regs = @import("ulpt_regs.zig");
+const compare = @import("compare.zig");
+const regs = @import("regs.zig");
 
 /// The compare pair, re-exported so a caller reaches it through the block.
 pub const match = compare;

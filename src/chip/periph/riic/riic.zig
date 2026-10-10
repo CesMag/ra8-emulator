@@ -3,28 +3,28 @@
 //!
 //! Three channels, one transfer machine each: START, the address byte, the
 //! payload either way, then STOP. What answers on the line comes from the
-//! device registry in riic_bus.zig, so this file is only about transfers.
+//! device registry in bus.zig, so this file is only about transfers.
 //!
 //! The thing dev never checked is the interface itself, so a block nobody
 //! enabled ran a whole transaction here and nothing at all on the bench.
-//! Which accesses ICE and IICRST allow is its own rule in riic_reset.zig.
+//! Which accesses ICE and IICRST allow is its own rule in reset.zig.
 //!
 //! The restart window, where an address written too early is dropped, is its
-//! own rule in riic_restart.zig.
+//! own rule in restart.zig.
 //!
 //! ICMR3's ACKBT write protection, the one bit in the file that needs its
-//! enable in force first, is its own rule in riic_ack.zig.
+//! enable in force first, is its own rule in ack.zig.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const bus = @import("riic_bus.zig");
-const flag = @import("riic_flags.zig");
-const riic_target = @import("riic_target.zig");
+const bus = @import("bus.zig");
+const flag = @import("flags.zig");
+const riic_target = @import("target.zig");
 const access = @import("../bytelanes.zig");
-const riic_restart = @import("riic_restart.zig");
-const riic_stop = @import("riic_stop.zig");
-const riic_rx = @import("riic_rx.zig");
-const riic_ack = @import("riic_ack.zig");
-const riic_reset = @import("riic_reset.zig");
+const riic_restart = @import("restart.zig");
+const riic_stop = @import("stop.zig");
+const riic_rx = @import("rx.zig");
+const riic_ack = @import("ack.zig");
+const riic_reset = @import("reset.zig");
 
 pub const win_base = flag.win_base;
 pub const win_span = flag.win_span;

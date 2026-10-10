@@ -67,9 +67,16 @@ file (`nvic`, `clocks`, `registry`, `crc`), and a block gets its own directory
 when it grows a second file. An off-chip part never sits in a controller's
 directory: the GT911 is a component, not part of `i3c/`.
 
+A file's name does not repeat its directory's: `periph/canfd/tx_status.zig`,
+not `periph/canfd/canfd_tx_status.zig`, and `host/sock.zig`, not
+`host/host_sock.zig`. The directory already says whose file it is. The one
+file that carries the directory's name is the block's or the part's own
+(`canfd/canfd.zig`). A name Zig keeps for itself gets a fuller one:
+`canfd/error_flags.zig`, not `error.zig`.
+
 `tests/` mirrors the source on the same paths, all the way down:
-`src/chip/periph/gpt/gpt_channel.zig` is tested by
-`tests/chip/periph/gpt/gpt_channel_test.zig`.
+`src/chip/periph/gpt/channel.zig` is tested by
+`tests/chip/periph/gpt/channel_test.zig`.
 
 There is no `@cImport` in the tree. SDL3's C API reaches the GUI through the
 translate-c package in build.zig, and that is the only C boundary.

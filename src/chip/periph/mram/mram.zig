@@ -71,14 +71,14 @@
 //! into the generic shadow below, so a store landed 0xAA01 in a word and a
 //! read handed it straight back: SUINIT was still standing on every poll
 //! and ra8_flash_msuinitr_kick always ran out its spin limit and returned
-//! a hardware timeout. The rule and its evidence are in mram_init.zig.
+//! a hardware timeout. The rule and its evidence are in init.zig.
 //!
 //! NOT MODELLED, AND NOT GUESSED: the 0x4013_C000 wait-state and ECC
 //! configuration pages, which stay sparse because ra8_cgc_init programs them
 //! during clock setup with a key-strip readback this model would have to
 //! invent; the erase and blank-check commands; and every MSTATR bit besides
 //! MRDY and the two illegal-command latches. The code-MRAM page is its own
-//! file, mram_code.zig: MRCPS still reads idle-and-ready the way dev leaves
+//! file, code.zig: MRCPS still reads idle-and-ready the way dev leaves
 //! it, and a store to it is refused there for the same reason a store to
 //! MSTATR is refused here.
 const std = @import("std");
@@ -86,29 +86,29 @@ const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 const maci = @import("../maci.zig");
-const cells = @import("mram_otp.zig");
-const code = @import("mram_code.zig");
-const mram_regs = @import("mram_regs.zig");
+const cells = @import("otp.zig");
+const code = @import("code.zig");
+const mram_regs = @import("regs.zig");
 
 pub const window = cells.window;
 
-/// The option window mapped as readable memory: mram_window.zig.
-pub const option_window = @import("mram_window.zig");
+/// The option window mapped as readable memory: window.zig.
+pub const option_window = @import("window.zig");
 
-/// Where these registers sit and what their bits mean: mram_regs.zig.
+/// Where these registers sit and what their bits mean: regs.zig.
 pub const regs = mram_regs.regs;
 pub const command = mram_regs.command;
 pub const field = mram_regs.field;
 
 /// The code-MRAM program-control page (the R_MRMS 0x3000 page), which
-/// answers for itself in mram_code.zig.
+/// answers for itself in code.zig.
 pub const code_page = code.page;
 
-/// MSUINITR, the set-up init kick, and its rule: mram_init.zig.
-pub const init_reg = @import("mram_init.zig");
+/// MSUINITR, the set-up init kick, and its rule: init.zig.
+pub const init_reg = @import("init.zig");
 
-/// MENTRYR, the mode gate and its key: mram_entry.zig.
-pub const entry_reg = @import("mram_entry.zig");
+/// MENTRYR, the mode gate and its key: entry.zig.
+pub const entry_reg = @import("entry.zig");
 
 const shadow_words: usize = regs.span / 4;
 

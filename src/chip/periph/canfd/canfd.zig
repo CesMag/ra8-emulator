@@ -47,12 +47,12 @@
 //! and the driver's own clear writes the inverse of its mask so the rest
 //! survived their own acknowledgement. The dispatch then hands that word to
 //! the application as errors that never happened. The rule and its evidence
-//! live in src/chip/periph/canfd/canfd_error.zig.
+//! live in src/chip/periph/canfd/error_flags.zig.
 //!
 //! A MODE WRITE LANDS ON NOTHING WHILE THE MACHINE IS ASLEEP. Neither model
 //! knew the sleep request beside the mode field, so a driver that leaves it
 //! set reached operation mode here and hangs on silicon. The rule and its
-//! evidence live in src/chip/periph/canfd/canfd_sleep.zig.
+//! evidence live in src/chip/periph/canfd/sleep.zig.
 //!
 //! KEPT FROM DEV DELIBERATELY: the acceptance filter and its open-when-empty
 //! rule, so an image that programs no CFDGAFL entry keeps receiving
@@ -64,16 +64,16 @@
 //! RX-FIFO one. The rest of the window is shadowed, and never read.
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const fifo = @import("canfd_fifo.zig");
-const sleep = @import("canfd_sleep.zig");
-const rx_config = @import("canfd_rx_config.zig");
-const rx_status = @import("canfd_rx_status.zig");
-const tx_status = @import("canfd_tx_status.zig");
-const registers = @import("canfd_regs.zig");
-const errors = @import("canfd_error.zig");
+const fifo = @import("fifo.zig");
+const sleep = @import("sleep.zig");
+const rx_config = @import("rx_config.zig");
+const rx_status = @import("rx_status.zig");
+const tx_status = @import("tx_status.zig");
+const registers = @import("regs.zig");
+const errors = @import("error_flags.zig");
 
 /// The geometry, the offsets and the field masks, split into
-/// canfd_regs.zig and reached through the block the way the other parts of
+/// regs.zig and reached through the block the way the other parts of
 /// it are.
 pub const unit0_base = registers.unit0_base;
 pub const unit1_base = registers.unit1_base;
@@ -115,13 +115,13 @@ pub const Unit = struct {
     /// The state machines, both in reset from power-up as on silicon.
     global: Mode = .reset,
     channel: Mode = .reset,
-    /// Both sleep requests, set from power-up. See canfd_sleep.zig.
+    /// Both sleep requests, set from power-up. See sleep.zig.
     dozing: sleep.Pair = .{},
     /// CFDTMC[0], with TMTR cleared once the frame has gone.
     tmc: u32 = 0,
     /// CFDTMSTS[0], the transmit result. Set by the controller, cleared by
     /// software, and the gate on every later request. See
-    /// src/chip/periph/canfd/canfd_tx_status.zig.
+    /// src/chip/periph/canfd/tx_status.zig.
     tx: tx_status.Status = .{},
     /// CFDCnERFL: the error flags, which only the controller can raise.
     faults: errors.Errors = .{},
@@ -138,10 +138,10 @@ pub const Unit = struct {
     /// Accepted frames with no stage free.
     lost: u32 = 0,
     /// CFDRFSTS[0]'s latched half: RFMLT, and the stores aimed at it. See
-    /// src/chip/periph/canfd/canfd_rx_status.zig.
+    /// src/chip/periph/canfd/rx_status.zig.
     rx_sts: rx_status.Status = .{},
     /// Accepted frames dropped because CFDRFCC.RFE was never set, so there
-    /// was no FIFO to queue them in. See src/chip/periph/canfd/canfd_rx_config.zig.
+    /// was no FIFO to queue them in. See src/chip/periph/canfd/rx_config.zig.
     unarmed: u32 = 0,
     /// CFDRFCC[0], the RX FIFO's own configuration.
     rx: rx_config.Config = .{},

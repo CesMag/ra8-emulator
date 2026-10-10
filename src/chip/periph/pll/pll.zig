@@ -49,7 +49,7 @@
 //! k_ra8_plodiv_div1 is absent from the firmware enum. A model that stored the
 //! word anyway would let firmware configure a PLL output ratio here that
 //! silicon never accepted, and the run would report a clock tree the bench
-//! does not have. The rule lives in `pll_config.zig` now that two PLLs need
+//! does not have. The rule lives in `config.zig` now that two PLLs need
 //! it.
 //!
 //! AND THE STOP BARRIER, which this file previously wrote off as a driver
@@ -89,8 +89,8 @@
 const periph = @import("../registry.zig");
 const prcr = @import("../prcr.zig");
 const oscsf = @import("../oscsf.zig");
-const div = @import("pll_div.zig");
-const config = @import("pll_config.zig");
+const div = @import("div.zig");
+const config = @import("config.zig");
 const lanes = @import("../lanes.zig");
 
 /// The group these sit behind: PRC0, the clock generation circuit.

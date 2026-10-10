@@ -14,7 +14,7 @@ const led = @import("led/led.zig");
 const lsm6dso = @import("imu_lsm6dso/lsm6dso.zig");
 const max17048 = @import("gauge_max17048/max17048.zig");
 const modem = @import("modem_at/modem.zig");
-const esp_hosted = @import("esp32c6_hosted/esp_hosted.zig");
+const esp_hosted = @import("esp32c6_hosted/hosted.zig");
 
 pub const imu_name = "lsm6dso";
 pub const gauge_name = "max17048";

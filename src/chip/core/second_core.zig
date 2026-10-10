@@ -66,7 +66,7 @@ const Guest = @import("cpu/memory/guest.zig").Guest;
 const guest_load = @import("cpu/memory/load.zig");
 
 /// CPU1's turn length against CPU0's round, from the CPU clock dividers.
-pub const rate = @import("core_rate.zig");
+pub const rate = @import("rate.zig");
 
 pub const State = @import("second_state.zig").State;
 

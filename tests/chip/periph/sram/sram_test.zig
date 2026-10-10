@@ -7,7 +7,7 @@ const esclr = sram.win_base + sram.off_esclr;
 
 /// A controller with the configuration registers already open, which is
 /// what every self-test here is about. The lock itself is covered in
-/// sram_lock_test.zig.
+/// lock_test.zig.
 fn unit() sram.Sram {
     var block = sram.Sram.init();
     unlock(&block);

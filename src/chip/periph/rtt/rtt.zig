@@ -39,7 +39,7 @@
 //! `cadence`.
 //!
 //! THE UNFINISHED LINE SURVIVES, and an over-long one is not counted as a line
-//! the firmware ended: see rtt_line.zig.
+//! the firmware ended: see line.zig.
 //!
 //! NOT MODELLED, AND NOT GUESSED: down-buffers (host to target input, which
 //! nothing in this tree drives), up-buffers past channel zero, and the
@@ -49,8 +49,8 @@ const std = @import("std");
 
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const memmap = @import("../../core/memmap.zig");
-const block = @import("rtt_block.zig");
-const text = @import("rtt_line.zig");
+const block = @import("block.zig");
+const text = @import("line.zig");
 
 /// The window the scan hunts a control block in: the SRAM this tree actually
 /// maps, not dev's hard-coded four megabytes. A J-Link searches the ranges it

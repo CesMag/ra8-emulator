@@ -47,13 +47,13 @@
 //!
 //! THE TABLE IS WHAT ENFORCEMENT READS. A store into a read-only region is a
 //! MemManage violation on silicon, and the Zig core refuses it through
-//! src/chip/core/cpu/mpu_check.zig: src/chip/periph/mpu/mpu_fault.zig holds what it
+//! src/chip/core/cpu/mpu_check.zig: src/chip/periph/mpu/fault.zig holds what it
 //! catches, and this block is the table it reads. So a
 //! region captured wrongly here is now a fault taken wrongly rather than a
 //! line in the report, which is why `observe` says what each store meant
 //! rather than leaving the caller to work it out from the address.
 const memmap = @import("../../core/memmap.zig");
-const mpu_fault = @import("mpu_fault.zig");
+const mpu_fault = @import("fault.zig");
 
 /// The register block's fixed shape: how many data regions this core reports,
 /// and where DREGION sits in TYPE.
@@ -95,8 +95,8 @@ pub const field = struct {
 
 /// One data region as the firmware left it: the inclusive span it covers, and
 /// the three bits that decide which accesses into it are allowed.
-/// The Non-secure MPU's copy on the Zig core's bus. src/chip/periph/mpu/mpu_ns.zig.
-pub const ns = @import("mpu_ns.zig");
+/// The Non-secure MPU's copy on the Zig core's bus. src/chip/periph/mpu/ns.zig.
+pub const ns = @import("ns.zig");
 
 pub const Region = struct {
     base: u32 = 0,

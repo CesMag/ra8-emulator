@@ -9,7 +9,7 @@
 //! That is why this block is the first consumer of the DTCE bit
 //! src/chip/periph/icu/icu.zig has been carrying with nothing reading it.
 //!
-//!   DTCCR  (+0x00, 8b)  RRS, the read-skip bit (src/chip/periph/dtc/dtc_skip.zig)
+//!   DTCCR  (+0x00, 8b)  RRS, the read-skip bit (src/chip/periph/dtc/skip.zig)
 //!   DTCVBR (+0x04, 32b) the vector table: one TI pointer per ICU slot
 //!   DTCST  (+0x0C, 8b)  DTCST b0, the module start bit
 //!   DTCSTS (+0x0E, 16b) ACT b15 and the vector number of the last transfer
@@ -28,12 +28,12 @@
 //! on all three and a driver that reads straight through is only right on dev.
 const periph = @import("../registry.zig");
 const icu = @import("../icu/icu.zig");
-const xfer = @import("dtc_xfer.zig");
-const skip = @import("dtc_skip.zig");
-const regs = @import("dtc_regs.zig");
+const xfer = @import("xfer.zig");
+const skip = @import("skip.zig");
+const regs = @import("regs.zig");
 const bytelanes = @import("../bytelanes.zig");
 /// DTCSAR, the two controllers' security attribution word in CPSCU.
-pub const attribution = @import("dtc_sar.zig");
+pub const attribution = @import("sar.zig");
 /// The read-skip cache lives next door; re-exported so a caller holding the
 /// block also has the RRS vocabulary.
 pub const readskip = skip;

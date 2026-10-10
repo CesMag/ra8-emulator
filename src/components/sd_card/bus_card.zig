@@ -1,7 +1,7 @@
 //! The SD card on the other side of the host controller: what it holds, and
 //! which state it is in when a command arrives.
 //!
-//! The controller reaches it only through periph/sdhi/sdhi_line.zig (adapter
+//! The controller reaches it only through periph/sdhi/line.zig (adapter
 //! in bus_line.zig). Split out of sdhi.zig because the two answer different questions. The
 //! controller owns a register window, a FIFO and a set of status flags; the
 //! card owns 512-byte blocks, a relative address, and the five-state walk

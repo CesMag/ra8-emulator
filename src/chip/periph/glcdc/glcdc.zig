@@ -20,7 +20,7 @@
 //! did this model, so that poll burned its whole budget, returned a timeout,
 //! and the background colour it exists to set was never written. The bit is
 //! spent on the write here. The rule and its evidence live in
-//! src/chip/periph/glcdc/glcdc_latch.zig.
+//! src/chip/periph/glcdc/latch.zig.
 //!
 //! The block is inside the switchable graphics power domain (HUM Ch 11.5.1
 //! Table 11.7 p 480), which is gated off at reset, so it asks pdctr.zig
@@ -30,18 +30,18 @@
 const periph = @import("../registry.zig");
 const pdctr = @import("../pdctr.zig");
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
-const clut = @import("glcdc_clut.zig");
+const clut = @import("clut.zig");
 const lanes = @import("../lanes.zig");
-const pixel = @import("glcdc_pixel.zig");
-const scan = @import("glcdc_scan.zig");
-const blend = @import("glcdc_blend.zig");
-const mix = @import("glcdc_mix.zig");
-const output = @import("glcdc_out.zig");
-const descriptor = @import("glcdc_frame.zig");
-pub const backdrop = @import("glcdc_backdrop.zig");
-const tcon = @import("glcdc_tcon.zig");
-const sys = @import("glcdc_sys.zig");
-const update = @import("glcdc_latch.zig");
+const pixel = @import("pixel.zig");
+const scan = @import("scan.zig");
+const blend = @import("blend.zig");
+const mix = @import("mix.zig");
+const output = @import("out.zig");
+const descriptor = @import("frame.zig");
+pub const backdrop = @import("backdrop.zig");
+const tcon = @import("tcon.zig");
+const sys = @import("sys.zig");
+const update = @import("latch.zig");
 /// GLCDC geometry. The span reaches past the graphics layers to the panel
 /// clock control at +0x1450, which is the last register in the block.
 pub const win_base: u32 = 0x4034_2000;
@@ -65,7 +65,7 @@ pub const off = struct {
     pub const bg_bgc: u32 = 0x1014;
 };
 /// Field masks this file reads. The FLM field positions the descriptor
-/// decode applies live with the decode, in glcdc_frame.zig.
+/// decode applies live with the decode, in frame.zig.
 pub const field = struct {
     /// BG_EN.EN, bit 0: the output stage is running.
     pub const bg_en: u32 = 0x1;
@@ -160,7 +160,7 @@ pub const Glcdc = struct {
     }
 
     /// Recover one layer's descriptor, out of the five registers that
-    /// describe it. The decode itself is glcdc_frame.zig's.
+    /// describe it. The decode itself is frame.zig's.
     pub fn decode(self: *const Glcdc, layer: u8) ?Framebuffer {
         const at = off.layer_base + off.layer_stride * (@as(u32, layer) - 1);
         return descriptor.decode(.{
@@ -385,7 +385,7 @@ pub const Glcdc = struct {
             .context = self,
             .readFn = readThunk,
             .writeFn = writeThunk,
-            .peekFn = @import("glcdc_peek.zig").thunk,
+            .peekFn = @import("peek.zig").thunk,
         };
     }
 };

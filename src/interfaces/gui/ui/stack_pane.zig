@@ -1,6 +1,6 @@
 //! The call stack pane (RA8EMU-744): one row per frame of a core's call
 //! chain, innermost first, walked with the image's .debug_frame the way
-//! `backtrace` is (session_report.zig). Each row is the frame number, the
+//! `backtrace` is (session/report.zig). Each row is the frame number, the
 //! pc, the function with its offset, and FILE:LINE when the line table has
 //! it. The innermost frame is amber; the shell's selected frame sits on a
 //! band. A frame an exception interrupted carries a muted '~' in its gutter.

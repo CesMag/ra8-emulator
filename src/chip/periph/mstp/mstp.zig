@@ -26,7 +26,7 @@
 //! everything below is tested directly rather than only through a full run.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const drops = @import("mstp_drops.zig");
+const drops = @import("drops.zig");
 const octaclk = @import("../octaclk.zig");
 const pscu = @import("../pscu.zig");
 

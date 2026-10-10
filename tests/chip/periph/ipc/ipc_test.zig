@@ -232,5 +232,5 @@ test "a refused narrow access leaves the channel quiet on neither counter" {
 }
 
 test {
-    _ = @import("ipc_repeat_test.zig");
+    _ = @import("repeat_test.zig");
 }

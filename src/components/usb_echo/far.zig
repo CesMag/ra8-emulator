@@ -1,5 +1,5 @@
 //! The echo device as the far end of the HS host jack, through the chip's
-//! contract in usbhs_far.zig. The board plugs it in when no cable is laid.
+//! contract in usbhs/far.zig. The board plugs it in when no cable is laid.
 //!
 //! The device answers at once: a refused SETUP is a stall the moment it lands,
 //! a control read has its reply staged by then, and an IN token finds a packet

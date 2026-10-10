@@ -3,7 +3,7 @@
 //!
 //! This file only keeps the order, which is the format: the SPI-mode card,
 //! the host controller, the SD-bus card. Each model saves its own half
-//! (components/sd_card/card_snapshot.zig, chip/periph/sdhi/sdhi_snapshot.zig,
+//! (components/sd_card/snapshot.zig, chip/periph/sdhi/snapshot.zig,
 //! RA8EMU-1104). Not saved: the card's line on SCI0 (a pointer to the card,
 //! wiring) and the volume `--sd-new` formatted (run report only).
 const std = @import("std");

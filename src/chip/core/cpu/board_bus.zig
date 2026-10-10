@@ -13,7 +13,7 @@ const registry = @import("../../periph/registry.zig");
 const memmap = @import("../memmap.zig");
 const sau = @import("../../periph/sau.zig");
 const mpu = @import("../../periph/mpu/mpu.zig");
-const mpu_ns = @import("../../periph/mpu/mpu_ns.zig");
+const mpu_ns = @import("../../periph/mpu/ns.zig");
 /// Public so a test can build the latch without a root export.
 pub const fault_clear = @import("../../periph/fault_clear.zig");
 const fp_state = @import("fpu/state.zig");
@@ -223,7 +223,7 @@ pub const Scs = struct {
     /// Enforcement is not armed from here.
     regions: ?*mpu.Mpu = null,
     /// The Non-secure MPU, programmed through its own copy at +0x20000
-    /// (src/chip/periph/mpu/mpu_ns.zig). Null keeps every MPU access on `regions`.
+    /// (src/chip/periph/mpu/ns.zig). Null keeps every MPU access on `regions`.
     regions_ns: ?*mpu.Mpu = null,
     /// CFSR, HFSR and SFSR are write-one-to-clear. The store is settled
     /// as it lands, so no read in between sees the raw word.

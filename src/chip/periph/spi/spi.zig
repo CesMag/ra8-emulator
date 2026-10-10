@@ -38,7 +38,7 @@
 //! cannot both be right, and neither reads the data length. Here SPCMD0.SPB
 //! picks the width and SPCMD0.LSBF the bit order, so a 16- or 32-bit
 //! transfer moves what the driver put in SPDR rather than its low byte; see
-//! spi_frame.zig. A device on the line takes the frame a byte at a time,
+//! frame.zig. A device on the line takes the frame a byte at a time,
 //! most significant first, which is the order a wire clocks them in.
 //!
 //! A DEVICE CAN BE ON THE LINE. A channel with no loopback and nothing
@@ -56,7 +56,7 @@
 //! carry the frame SPCMD0 selects, or that names a lane above the bottom of
 //! the register, is refused and counted: no part frame is clocked and the
 //! receive register keeps what it holds. SPCR2 and SPSRC are bags of lines
-//! and still merge; see spi_frame.zig for the rule.
+//! and still merge; see frame.zig for the rule.
 //!
 //! SPCR2 IS LOCKED WHILE THE CHANNEL RUNS. Both drivers in the firmware
 //! tree say the hardware only honors a store to SPCR2 while SPCR.SPE is
@@ -65,7 +65,7 @@
 //! store whatever SPE says, so a driver that asks for the internal tie
 //! after starting the channel gets one here and bare pins on the bench.
 //! Here such a store lands on nothing and is counted; see
-//! spi_enable_lock.zig. SPCMD0 is deliberately NOT locked with it: the same
+//! enable_lock.zig. SPCMD0 is deliberately NOT locked with it: the same
 //! tree calls SPCMD0 SPE-restricted once, in a prose aside, but
 //! internal_apply_bit_width rewrites SPCMD0.SPB on every transfer with SPE
 //! standing and the frame widths the corpus moves depend on that taking
@@ -78,9 +78,9 @@
 //! never read.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const frames = @import("spi_frame.zig");
+const frames = @import("frame.zig");
 const lanes = @import("../lanes.zig");
-const lock = @import("spi_enable_lock.zig");
+const lock = @import("enable_lock.zig");
 
 /// The byte-lane arithmetic every register window here shares.
 const part = lanes.part;

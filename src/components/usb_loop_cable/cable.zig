@@ -5,7 +5,7 @@
 //! usb_selftest_cdc runs a device stack on USBFS and a host stack on USBHS,
 //! cabled together. This is the far end the USBHS host sees in that case, in
 //! place of the echo device in src/components/usb_echo, through the chip's
-//! far-end contract (usbhs_far.zig). It answers nothing on
+//! far-end contract (usbhs/far.zig). It answers nothing on
 //! its own: every reply is a packet the firmware's own USBFS driver wrote.
 //! A control transfer is asynchronous here, because the device side answers
 //! only when its driver runs, so the host side polls `answer`.

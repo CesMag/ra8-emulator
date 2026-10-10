@@ -28,14 +28,14 @@
 const memmap = @import("../../core/memmap.zig");
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const irqcr = @import("icu_irqcr.zig");
+const irqcr = @import("irqcr.zig");
 /// Host-driven pin edges and the ISEL/IRQMD test they pass (RA8EMU-375).
-pub const pin_irq = @import("icu_pin_irq.zig");
+pub const pin_irq = @import("pin_irq.zig");
 
-/// INTSELR: which core each event interrupts (src/chip/periph/icu/icu_intsel.zig).
-pub const intsel = @import("icu_intsel.zig");
-/// NMIER, NMICLR, NMISR and WUPEN0/1 (src/chip/periph/icu/icu_nmi.zig).
-pub const nmi = @import("icu_nmi.zig");
+/// INTSELR: which core each event interrupts (src/chip/periph/icu/intsel.zig).
+pub const intsel = @import("intsel.zig");
+/// NMIER, NMICLR, NMISR and WUPEN0/1 (src/chip/periph/icu/nmi.zig).
+pub const nmi = @import("nmi.zig");
 
 /// R_ICU geometry (ra8_icu_regs.h): the block is at 0x4000_6000 and the
 /// event-link table sits 0x6300 into it.

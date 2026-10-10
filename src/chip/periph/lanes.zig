@@ -2,9 +2,9 @@
 //!
 //! An access on this bus carries an address and a width, and a peripheral has
 //! to answer the register the address lands in cut to the lanes the width
-//! names. Three blocks now need the same arithmetic (`src/chip/periph/gpio/gpio_regs.zig`
+//! names. Three blocks now need the same arithmetic (`src/chip/periph/gpio/regs.zig`
 //! for the PORT halves, `src/chip/periph/sci/sci.zig` for the status words, and
-//! `src/chip/periph/elc/elc_regs.zig` for the event links), so it lives in one place
+//! `src/chip/periph/elc/regs.zig` for the event links), so it lives in one place
 //! rather than in three.
 //!
 //! The rule the callers share: A READ IS SERVED FROM THE WORD THE ACCESS LANDS

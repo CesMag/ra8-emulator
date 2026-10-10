@@ -16,12 +16,12 @@
 //! real firmware paths pass in the model and fail on the bench.
 //!
 //! One: a single write to IWDTRR looked like a refresh. It is not one; the
-//! sequence rule lives in iwdt_refresh.zig.
+//! sequence rule lives in refresh.zig.
 //!
 //! Two: IWDTSR.CNTVAL never moved, so `iwdt_demo`, which refreshes only when
 //! the counter has fallen inside its window, waits for a value that a cell
 //! will never produce and burns its whole budget. The counter counts here,
-//! and iwdt_status.zig keeps it read-only against the driver's own status
+//! and status.zig keeps it read-only against the driver's own status
 //! clear, which writes the counter bits back.
 //!
 //! What is deliberately NOT modelled. The IWDTCR TOPS and CKS encodings are
@@ -31,11 +31,11 @@
 //! the register. `counts_per_tick` below is an emulator-time choice in the
 //! same spirit as wdt.zig's, not a silicon number. IWDTCSTPR.SLCSTP halts
 //! the counter in Sleep, and Sleep is not modelled, so it rides too.
-const iwdt_ofs0 = @import("iwdt_ofs0.zig");
-const iwdt_refresh = @import("iwdt_refresh.zig");
-const iwdt_status = @import("iwdt_status.zig");
+const iwdt_ofs0 = @import("ofs0.zig");
+const iwdt_refresh = @import("refresh.zig");
+const iwdt_status = @import("status.zig");
 const periph = @import("../registry.zig");
-const wdt_clock = @import("../wdt/wdt_clock.zig");
+const wdt_clock = @import("../wdt/clock.zig");
 const event_queue = @import("../time/event_queue.zig");
 
 pub const ofs0 = iwdt_ofs0;

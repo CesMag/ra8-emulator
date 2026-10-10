@@ -3,8 +3,8 @@
 //! the memory of the whole suite. The rest are listed in all.zig.
 test {
     _ = @import("host/socket_flags_test.zig");
-    _ = @import("host/host_sock_test.zig");
-    _ = @import("host/host_sock_windows_test.zig");
+    _ = @import("host/sock_test.zig");
+    _ = @import("host/sock_windows_test.zig");
     _ = @import("host/sock_ready_test.zig");
     _ = @import("host/win32_test.zig");
     _ = @import("interfaces/cli/eink_log_test.zig");
@@ -14,7 +14,7 @@ test {
     _ = @import("interfaces/cli/session_ctl_test.zig");
     _ = @import("interfaces/cli/ctl_end_to_end_test.zig");
     _ = @import("interfaces/cli/ctl_map_test.zig");
-    _ = @import("host/host_profiles_test.zig");
+    _ = @import("host/profiles_test.zig");
     _ = @import("interfaces/gui/shell_main_test.zig");
     _ = @import("interfaces/gui/local_session_test.zig");
     _ = @import("interfaces/gui/shell_startup_test.zig");
@@ -24,21 +24,21 @@ test {
     _ = @import("snapshot/file_test.zig");
     _ = @import("board/snapshot/memory_test.zig");
     _ = @import("snapshot/fields_test.zig");
-    _ = @import("chip/core/cpu/cpu_snapshot_test.zig");
+    _ = @import("chip/core/cpu/snapshot_test.zig");
     _ = @import("chip/snapshot/time_test.zig");
     _ = @import("snapshot/units_test.zig");
     _ = @import("chip/snapshot/timers_test.zig");
-    _ = @import("chip/periph/sci/sci_snapshot_test.zig");
+    _ = @import("chip/periph/sci/snapshot_test.zig");
     _ = @import("board/snapshot/sd_test.zig");
-    _ = @import("components/sd_card/card_snapshot_test.zig");
-    _ = @import("chip/periph/sdhi/sdhi_snapshot_test.zig");
-    _ = @import("chip/periph/mram/mram_snapshot_test.zig");
-    _ = @import("components/nor_flash/flash_snapshot_test.zig");
-    _ = @import("components/usb_stick/stick_snapshot_test.zig");
+    _ = @import("components/sd_card/snapshot_test.zig");
+    _ = @import("chip/periph/sdhi/snapshot_test.zig");
+    _ = @import("chip/periph/mram/snapshot_test.zig");
+    _ = @import("components/nor_flash/snapshot_test.zig");
+    _ = @import("components/usb_stick/snapshot_test.zig");
     _ = @import("board/snapshot/wire_test.zig");
-    _ = @import("chip/periph/drw/drw_snapshot_test.zig");
-    _ = @import("chip/periph/glcdc/glcdc_snapshot_test.zig");
-    _ = @import("components/eink_it8951/panel_snapshot_test.zig");
+    _ = @import("chip/periph/drw/snapshot_test.zig");
+    _ = @import("chip/periph/glcdc/snapshot_test.zig");
+    _ = @import("components/eink_it8951/snapshot_test.zig");
     _ = @import("chip/snapshot/clocks_test.zig");
     _ = @import("chip/snapshot/security_test.zig");
     _ = @import("chip/snapshot/controllers_test.zig");
@@ -50,10 +50,10 @@ test {
     _ = @import("chip/snapshot/channels_test.zig");
     _ = @import("board/snapshot/usb_test.zig");
     _ = @import("board/snapshot/rswitch_test.zig");
-    _ = @import("chip/periph/npu/npu_snapshot_test.zig");
+    _ = @import("chip/periph/npu/snapshot_test.zig");
     _ = @import("chip/snapshot/systick_test.zig");
     _ = @import("board/snapshot/stretch_test.zig");
-    _ = @import("components/esp32c6_hosted/c6_snapshot_test.zig");
+    _ = @import("components/esp32c6_hosted/snapshot_test.zig");
     _ = @import("board/snapshot/board_test.zig");
     _ = @import("board/snapshot/run_test.zig");
     _ = @import("interfaces/render/draw_list_test.zig");
@@ -144,8 +144,8 @@ test {
     _ = @import("interfaces/cli/cli_test.zig");
     _ = @import("interfaces/cli/camera_source_test.zig");
     _ = @import("interfaces/cli/usb_disk_option_test.zig");
-    _ = @import("interfaces/usbip/usbip_wire_test.zig");
-    _ = @import("interfaces/usbip/usbip_export_test.zig");
+    _ = @import("interfaces/usbip/wire_test.zig");
+    _ = @import("interfaces/usbip/exported_test.zig");
     _ = @import("interfaces/cli/debug_front_test.zig");
     _ = @import("interfaces/cli/sweep_cli_test.zig");
     _ = @import("interfaces/cli/sweep_elf_test.zig");

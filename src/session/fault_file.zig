@@ -7,7 +7,7 @@
 //! boundary is wrapped so each event lands on its exact virtual time.
 const std = @import("std");
 const boot = @import("ra8_chip").core.cpu.boot;
-const api = @import("session_api.zig");
+const api = @import("api.zig");
 const Board = @import("ra8_board").board.Board;
 const session_plug = @import("board_plug.zig");
 const session_faults = @import("board_faults.zig");

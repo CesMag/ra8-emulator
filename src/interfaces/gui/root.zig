@@ -3,7 +3,7 @@
 //! that ra8_gui, the SDL backend and the tests import. It is given the
 //! session, the adapters it talks and draws through, and the host, and
 //! neither ra8_board nor ra8_chip (RA8EMU-984): the GUI reads and changes
-//! the machine only through the Session API. main.zig, gui_window.zig and
+//! the machine only through the Session API. main.zig, window.zig and
 //! the sdl files stay outside this module because they need SDL.
 pub const platform = @import("platform.zig");
 pub const headless = @import("headless.zig");

@@ -37,11 +37,11 @@
 //! return from Software Standby) and SS2LP (bits 3:2, its low-power setting).
 //! ra8_lpm_init writes it and power_profiler reaches that path, so it is held
 //! here behind the same PRC1 gate; the other bits read 0 whatever was written.
-/// DPSIER/DPSIFR/DPSIEGR, the deep-standby cancel bytes: lpm_dps.zig.
-pub const dps = @import("lpm_dps.zig");
+/// DPSIER/DPSIFR/DPSIEGR, the deep-standby cancel bytes: dps.zig.
+pub const dps = @import("dps.zig");
 const periph = @import("../registry.zig");
 const prcr = @import("../prcr.zig");
-const mode = @import("lpm_mode.zig");
+const mode = @import("mode.zig");
 
 /// The group these sit behind: PRC1, low-power modes and the VBATT file.
 pub const guard: u16 = prcr.group.lpm;

@@ -5,7 +5,7 @@
 //! and writes only through CPU1's memory.Guest (RA8EMU-535). The
 //! instructions themselves run on CPU1's Zig core
 //! (src/chip/core/second_zig.zig), which takes one turn per CPU0 round. Turns
-//! are sized by CPUCLK1 against CPUCLK0 (src/chip/core/core_rate.zig). CPU1's own timebase (its SysTick) advances by what it ran.
+//! are sized by CPUCLK1 against CPUCLK0 (src/chip/core/rate.zig). CPU1's own timebase (its SysTick) advances by what it ran.
 const std = @import("std");
 const loaded_image = @import("loaded_image.zig");
 const second_core = @import("second_core.zig");

@@ -6,7 +6,7 @@
 //! order and times rather than the drain's.
 const rtos_trace = @import("rtos_trace.zig");
 const rtos_stream = @import("rtos_stream.zig");
-const stream_mod = @import("session_event_stream.zig");
+const stream_mod = @import("event_stream.zig");
 const zig_boundary = @import("zig_boundary.zig");
 const timebase = @import("ra8_chip").periph.timebase;
 

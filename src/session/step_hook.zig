@@ -26,8 +26,8 @@ pub const stack_walk = @import("stack_walk.zig");
 pub const stack_sampler = @import("stack_sampler.zig");
 /// Re-exported for tests/session/zig_session_test.zig, for the same reason.
 pub const zig_session = @import("zig_session.zig");
-/// Re-exported for tests/session/session_report_test.zig, for the same reason.
-pub const session_report = @import("session_report.zig");
+/// Re-exported for tests/session/report_test.zig, for the same reason.
+pub const session_report = @import("report.zig");
 /// Re-exported for tests/session/zig_script_test.zig, for the same reason.
 pub const zig_script = @import("zig_script.zig");
 /// Re-exported for tests/session/watch_bus_test.zig, for the same reason.

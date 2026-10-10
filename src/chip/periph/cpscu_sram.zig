@@ -9,7 +9,7 @@
 //! back 0 and 0xFFFF_FFFF in turn.
 //!
 //! THREE WINDOWS, NOT ONE. The words sit at CPSCU offsets 0x010, 0x400..0x40C
-//! and 0x510, and cpscu.zig, dtc_sar.zig and ipc_attr.zig already hold the
+//! and 0x510, and cpscu.zig, dtc/sar.zig and ipc/attr.zig already hold the
 //! words between them, so each range is a block of its own on the bus.
 //!
 //! WRITABLE BITS come from the firmware's ra8_sram_regs.h, which quotes the

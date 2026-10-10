@@ -39,7 +39,7 @@ pub const Event = union(enum) {
 };
 
 /// How an executable opens and closes its window. ra8_gui passes
-/// gui_window.zig's SDL window to the shell; a test passes a headless one.
+/// window.zig's SDL window to the shell; a test passes a headless one.
 /// `open` is null when no window can be had.
 pub const Opener = struct {
     open: *const fn () ?Platform,

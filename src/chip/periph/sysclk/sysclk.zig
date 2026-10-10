@@ -48,16 +48,16 @@
 //! reset value "reads as 0 (... = HOCO ~20 MHz)", so CKSEL starts at HOCO.
 //!
 //! NO FREQUENCY IS DERIVED. The dividers are decoded to ratios for the report
-//! (`sysclk_div.zig`) and nothing more: this model has no oscillator
+//! (`div.zig`) and nothing more: this model has no oscillator
 //! frequencies behind it, and the modelled time base is charged per chunk
 //! rather than per cycle (`clocks.zig`), so a rate computed here would be
 //! decoration. Wiring real rates into the time base is its own slice.
 const periph = @import("../registry.zig");
 const prcr = @import("../prcr.zig");
 const oscsf = @import("../oscsf.zig");
-const div = @import("sysclk_div.zig");
+const div = @import("div.zig");
 /// Each core's clock in Hz, from this tree (RA8EMU-515).
-pub const rate = @import("sysclk_rate.zig");
+pub const rate = @import("rate.zig");
 const hazard = @import("../voltage_hazard.zig");
 
 /// Window geometry: SCKDIVCR (+0x020) through SCKSCR (+0x026) inclusive.

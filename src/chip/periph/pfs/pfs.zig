@@ -12,14 +12,14 @@
 //! skipping the unlock does not fault and does not report. The write silently
 //! goes nowhere and the driver carries on believing the pin is routed, which
 //! is the single worst way for a pin bring-up bug to present. See
-//! `pfs_protect.zig` for the two-step sequence and for why the Secure path is
+//! `protect.zig` for the two-step sequence and for why the Secure path is
 //! the one that gates.
 //!
 //! Before this block existed the whole window fell to the bus catch-all, which
 //! stores whatever it is handed and reads it back, so every pin write landed
 //! whether or not the firmware had unlocked.
 //!
-//! THE ONE ORDERING RULE PmnPFS HAS lives in `pfs_route.zig`: a pin is meant
+//! THE ONE ORDERING RULE PmnPFS HAS lives in `route.zig`: a pin is meant
 //! to be returned to GPIO mode before a new peripheral function is programmed
 //! onto it, and a store that moves a routed pin straight to a different
 //! function leaves the pad driving the old one while the new select decodes.
@@ -33,8 +33,8 @@
 //! on, so it stores and reads back and nothing more.
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const protect = @import("pfs_protect.zig");
-const route = @import("pfs_route.zig");
+const protect = @import("protect.zig");
+const route = @import("route.zig");
 
 pub const win_base: u32 = 0x4040_0800;
 pub const win_span: u32 = 0x580;

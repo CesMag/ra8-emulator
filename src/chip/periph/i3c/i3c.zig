@@ -4,7 +4,7 @@
 //! One channel, one transfer machine: START, the address byte, the payload
 //! either way, then STOP. What answers on the line comes from the same
 //! device registry the RIIC controller uses, so this file is only about
-//! transfers, and the responder half lives in i3c_target.zig.
+//! transfers, and the responder half lives in target.zig.
 //!
 //! RSTCTL IS A COMMAND REGISTER, NOT A SHADOW. Both drivers pulse
 //! RSTCTL.RI3CRST before they configure anything, and both say the hardware
@@ -13,7 +13,7 @@
 //! nothing, so a channel left mid-transfer stayed mid-transfer through
 //! bring-up: still busy, still holding the previous transaction's flags and
 //! staged bytes. The rule and its evidence live in
-//! src/chip/periph/i3c/i3c_reset.zig.
+//! src/chip/periph/i3c/reset.zig.
 //!
 //! dev drove this window from the data buffer alone. A byte written with no
 //! START became an address and selected a part, a read past what the part
@@ -22,11 +22,11 @@
 //! waiting on one of them waited forever. Each of those is refused and
 //! counted here instead.
 const periph = @import("../registry.zig");
-const bus = @import("../riic/riic_bus.zig");
-const flag = @import("i3c_flags.zig");
-const regs = @import("i3c_regs.zig");
-const i3c_target = @import("i3c_target.zig");
-const rstctl = @import("i3c_reset.zig");
+const bus = @import("../riic/bus.zig");
+const flag = @import("flags.zig");
+const regs = @import("regs.zig");
+const i3c_target = @import("target.zig");
+const rstctl = @import("reset.zig");
 
 pub const win_base = flag.win_base;
 pub const win_span = flag.win_span;

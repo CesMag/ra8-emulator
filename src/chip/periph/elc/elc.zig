@@ -24,15 +24,15 @@
 //! The register layout here is ra8_elc_regs.h and HUM Ch 19 p 817..836.
 //!
 //! The map itself, and which lanes of a word each register occupies, is
-//! src/chip/periph/elc/elc_regs.zig; this file is the behaviour behind it.
+//! src/chip/periph/elc/regs.zig; this file is the behaviour behind it.
 const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const regs = @import("elc_regs.zig");
+const regs = @import("regs.zig");
 /// The link table lives next door; re-exported so a caller that has the
 /// block also has the slot vocabulary.
-pub const route = @import("elc_route.zig");
+pub const route = @import("route.zig");
 
 /// Geometry, offsets and counts live with the map, and are re-exported so a
 /// caller that has the block does not have to reach past it.
@@ -85,7 +85,7 @@ pub const Elc = struct {
     /// The live WE bit of each generator. WI reads back set, so it is not
     /// stored: it is a write-side gate, not a state bit.
     armed: [generators]bool = @splat(false),
-    /// The ELSR slots and what has reached them (src/chip/periph/elc/elc_route.zig).
+    /// The ELSR slots and what has reached them (src/chip/periph/elc/route.zig).
     table: route.Table = .{},
     attribution: [attributions]u32 = @splat(0),
     pending: Due = .{},

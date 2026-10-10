@@ -26,8 +26,8 @@ const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const dma_bank = @import("../dma_bank.zig");
 const lanes = @import("../lanes.zig");
 const periph = @import("../registry.zig");
-const regs = @import("dmac_regs.zig");
-const xfer = @import("dmac_xfer.zig");
+const regs = @import("regs.zig");
+const xfer = @import("xfer.zig");
 
 /// DMAC0 channel geometry (ra8_dmac_regs.h).
 pub const win_base: u32 = 0x4000_A000;
@@ -39,7 +39,7 @@ pub const win_span: u32 = channel_stride * @as(u32, channel_count);
 pub const event_base: u16 = 0x0E0;
 
 /// The register map of one channel, and the lanes each register occupies,
-/// live in src/chip/periph/dmac/dmac_regs.zig. They are re-exported here because a
+/// live in src/chip/periph/dmac/regs.zig. They are re-exported here because a
 /// channel's window is what most callers mean by "the DMAC".
 pub const off = regs.off;
 pub const field = regs.field;

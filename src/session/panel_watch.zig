@@ -1,5 +1,5 @@
 //! A viewer's watch on the GLCDC panel (RA8EMU-1126). The GLCDC model
-//! composites a frame only when something scans it (glcdc_vsync.zig), so a
+//! composites a frame only when something scans it (glcdc/vsync.zig), so a
 //! client subscribed to the panel would never hear of one. While a viewer
 //! watches, this arms the panel's frame boundary the way `--frames-out`
 //! does: at each boundary it scans the panel into its own buffer, and when
@@ -15,8 +15,8 @@
 //! An e-ink panel reports its own refreshes and needs none of this.
 const std = @import("std");
 const Board = @import("ra8_board").board.Board;
-const Sources = @import("session_event_sources.zig").Sources;
-const session_display = @import("session_display.zig");
+const Sources = @import("event_sources.zig").Sources;
+const session_display = @import("display.zig");
 const panel_diff = @import("panel_diff.zig");
 
 pub const Watch = struct {

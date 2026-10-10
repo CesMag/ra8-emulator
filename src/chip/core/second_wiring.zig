@@ -7,7 +7,7 @@ const registry = @import("../periph/registry.zig");
 const cpu_ctrl = @import("../periph/cpu_ctrl.zig");
 const reboot = @import("reboot.zig");
 const Guest = @import("cpu/memory/guest.zig").Guest;
-const CoreWindows = @import("core_windows.zig").CoreWindows;
+const CoreWindows = @import("windows.zig").CoreWindows;
 
 pub const Wiring = struct {
     /// The shared peripheral bus CPU1's stores fall through to.

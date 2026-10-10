@@ -2,7 +2,7 @@
 //! registers a device driver reads back during bring-up.
 //!
 //! USBFS shares its register layout with USBHS (ra8_usb_regs.h), so the
-//! offsets come from usbhs_regs.zig. What differs is the role: this side is
+//! offsets come from usbhs/regs.zig. What differs is the role: this side is
 //! the device half of the board's USB loop, so what it reports is whether
 //! VBUS is present and what the line looks like once the driver pulls D+ up.
 //!
@@ -11,11 +11,11 @@
 //! 0/all-ones answers to reads.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const regs = @import("../usbhs/usbhs_regs.zig");
-pub const dcp = @import("usbfs_dcp.zig");
-pub const host = @import("usbfs_host.zig");
-pub const pipe = @import("usbfs_pipe.zig");
-pub const bulk = @import("usbfs_bulk.zig");
+const regs = @import("../usbhs/regs.zig");
+pub const dcp = @import("dcp.zig");
+pub const host = @import("host.zig");
+pub const pipe = @import("pipe.zig");
+pub const bulk = @import("bulk.zig");
 
 pub const window = struct {
     pub const base: u32 = 0x4025_0000;

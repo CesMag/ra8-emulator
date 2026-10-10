@@ -16,7 +16,7 @@
 //! The A bit asks for the Non-secure MPU. The model keeps one MPU bank per
 //! core, so TTA and TTAT read that bank.
 const mpu = @import("../../periph/mpu/mpu.zig");
-const background = @import("../../periph/mpu/mpu_background.zig");
+const background = @import("../../periph/mpu/background.zig");
 const mpu_check = @import("mpu_check.zig");
 const tt = @import("../tt.zig");
 

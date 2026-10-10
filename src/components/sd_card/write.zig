@@ -1,7 +1,7 @@
 //! The data phase of an SD block write in SPI mode: the token the host sends
 //! ahead of a block, the 512 payload bytes, and the two CRC bytes behind them.
 //!
-//! Split out of sd_card.zig the way sdhi_xfer.zig is split out of sdhi.zig.
+//! Split out of sd_card.zig the way sdhi/xfer.zig is split out of sdhi.zig.
 //! The card owns commands and responses; this owns the bytes in between, and
 //! it decides nothing about the image: a finished block is handed back as an
 //! outcome and the card commits it, so the store and the protocol stay apart.

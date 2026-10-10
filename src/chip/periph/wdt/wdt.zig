@@ -34,11 +34,11 @@
 //! counts, TOPS cycles less one after a reload the way CNTVAL reads on
 //! silicon, so a driver comparing CNTVAL against its own window bounds
 //! (wdt_window_demo checks 256..768 of 1024) reads the units it expects.
-//! How many ticks one count takes comes from src/chip/periph/wdt/wdt_clock.zig,
+//! How many ticks one count takes comes from src/chip/periph/wdt/clock.zig,
 //! which carries the bench's measured rate.
 //!
 //! Four: the three control registers take one write each after reset and are
-//! deaf afterwards (HUM Ch 27.3.2, and see src/chip/periph/wdt/wdt_write_once.zig).
+//! deaf afterwards (HUM Ch 27.3.2, and see src/chip/periph/wdt/write_once.zig).
 //! dev took every write, so a firmware reconfiguring its watchdog mid-run got
 //! the new settings here and keeps the old ones on the bench. WDTCSTPR is the
 //! register that makes it bite: ra8_wdt_init programmes it, and then
@@ -51,9 +51,9 @@
 //! though only RSTIRQS is implemented, and the odd byte above each 8-bit
 //! control register still reaches it the way it always has here. Both are the
 //! narrow-access vein, not this rule.
-pub const clock = @import("wdt_clock.zig");
+pub const clock = @import("clock.zig");
 const periph = @import("../registry.zig");
-const write_once = @import("wdt_write_once.zig");
+const write_once = @import("write_once.zig");
 const event_queue = @import("../time/event_queue.zig");
 
 /// WDT0 geometry (ra8_wdt_regs.h, r_wdt_regs_t; HUM Ch 27.2 p 1070).

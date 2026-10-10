@@ -4,7 +4,7 @@
 //! imports only the chip's line contracts and the snapshot format. A part
 //! that needs host data declares an interface, and the application fills it
 //! from ra8_host.
-pub const ov5640 = @import("camera_ov5640/ov5640_sccb.zig");
+pub const ov5640 = @import("camera_ov5640/sccb.zig");
 /// The camera part's frame production: host inputs wrapped and converted
 /// to what the CEU programmed (RA8EMU-1059).
 pub const camera = struct {
@@ -54,19 +54,19 @@ pub const sd_trace = @import("sd_card/trace.zig");
 pub const sd_write = @import("sd_card/write.zig");
 pub const sd_bus_card = @import("sd_card/bus_card.zig");
 /// The ESP32-C6 on the EK-RA8D2, speaking esp-hosted over SPI or UART.
-pub const esp_hosted = @import("esp32c6_hosted/esp_hosted.zig");
+pub const esp_hosted = @import("esp32c6_hosted/hosted.zig");
 pub const sd_bus_line = @import("sd_card/bus_line.zig");
-pub const c6_snapshot = @import("esp32c6_hosted/c6_snapshot.zig");
-pub const card_snapshot = @import("sd_card/card_snapshot.zig");
+pub const c6_snapshot = @import("esp32c6_hosted/snapshot.zig");
+pub const card_snapshot = @import("sd_card/snapshot.zig");
 pub const catalog = @import("catalog.zig");
 pub const endpoint = @import("endpoint.zig");
-pub const esp_tape = @import("esp32c6_hosted/esp_tape.zig");
+pub const esp_tape = @import("esp32c6_hosted/tape.zig");
 pub const fault = @import("fault.zig");
 pub const fault_lines = @import("fault_lines.zig");
 pub const fault_schedule = @import("fault_schedule.zig");
 pub const fault_spec = @import("fault_spec.zig");
-pub const flash_snapshot = @import("nor_flash/flash_snapshot.zig");
-pub const panel_snapshot = @import("eink_it8951/panel_snapshot.zig");
+pub const flash_snapshot = @import("nor_flash/snapshot.zig");
+pub const panel_snapshot = @import("eink_it8951/snapshot.zig");
 pub const parts = @import("parts.zig");
 pub const request = @import("request.zig");
-pub const stick_snapshot = @import("usb_stick/stick_snapshot.zig");
+pub const stick_snapshot = @import("usb_stick/snapshot.zig");

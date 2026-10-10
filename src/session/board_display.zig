@@ -4,7 +4,7 @@ const Board = @import("ra8_board").board.Board;
 const display_settled = @import("ra8_board").display_settled;
 const FrameCapture = @import("ra8_board").frame_capture.FrameCapture;
 const eink = @import("ra8_components").eink;
-const session_display = @import("session_display.zig");
+const session_display = @import("display.zig");
 const panel_watch = @import("panel_watch.zig");
 
 pub const Error = error{ Timeout, NoVirtualProgress, NoFrame };

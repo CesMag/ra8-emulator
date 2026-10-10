@@ -42,7 +42,7 @@
 //!
 //! A COMPARE MATCHES ONLY WHEN AGTCMSR ARMED IT. This model used to stand a
 //! rule of its own in for the register it could not read: a compare value of
-//! zero counted as unarmed, everything else as armed. agt_compare.zig now
+//! zero counted as unarmed, everything else as armed. compare.zig now
 //! reads TCMEA and TCMEB out of AGTCMSR at +0x0E, so a side the driver never
 //! enabled raises nothing and a side it parked at 0xFFFF is not mistaken for
 //! an armed one. A count that passes a compare value with the function
@@ -50,7 +50,7 @@
 //!
 //! THE COUNT SOURCE IS THE ONE AGTMR1 SELECTS. That field used to be a
 //! shadow byte on both trees, so every channel stepped at one rate whatever
-//! a driver asked for. agt_clock.zig now reads TCK out of it: a divided
+//! a driver asked for. clock.zig now reads TCK out of it: a divided
 //! source counts proportionally slower, and AGT1 set to cascade steps on
 //! AGT0's underflow instead of on a clock of its own.
 //!
@@ -74,8 +74,8 @@
 const std = @import("std");
 
 const periph = @import("../registry.zig");
-const clk = @import("agt_clock.zig");
-const cmp = @import("agt_compare.zig");
+const clk = @import("clock.zig");
+const cmp = @import("compare.zig");
 
 /// The count source, re-exported so a caller reaches it through the block.
 pub const source = clk;

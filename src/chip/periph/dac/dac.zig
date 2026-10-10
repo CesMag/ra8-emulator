@@ -32,7 +32,7 @@
 //! is how a driver opened without the internal route, and how the block's own
 //! deinit, shuts a channel; a code stored to one is staged, not driven. The
 //! placement of those twelve bits inside DADR is DACR1.DPSEL's call, not a
-//! fixed low-twelve. Both live in src/chip/periph/dac/dac_output.zig, which carries
+//! fixed low-twelve. Both live in src/chip/periph/dac/output.zig, which carries
 //! the bit map and what is deliberately left alone in it.
 //!
 //! THE HALFWORD ABOVE DADR IS NOT DADR. The register is sixteen bits wide at
@@ -53,7 +53,7 @@
 //! that file gives. The rest of the window is shadowed so a read-modify-write
 //! survives, and never read.
 const std = @import("std");
-const output = @import("dac_output.zig");
+const output = @import("output.zig");
 const periph = @import("../registry.zig");
 
 /// The output gate and the data placement, reached as `dac.gate` the way the

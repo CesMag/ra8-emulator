@@ -3,7 +3,7 @@
 //!
 //! The CPSCU window at 0x4000_8000 carries the attribution the Secure boot
 //! writes before it hands anything to the Non-Secure world. Two of its words
-//! already have a home: IPCSAR and IPCPAR live in ipc_attr.zig, because they
+//! already have a home: IPCSAR and IPCPAR live in ipc/attr.zig, because they
 //! attribute the mailbox channels and the mailbox is what reports them. This
 //! file is the rest of what the firmware in this tree touches: the three bus
 //! controller words, the two bus-initiator MPU words, and the CPU attribution word.
@@ -25,7 +25,7 @@
 //! so what the run gains today is the PRC4 gate below and a report that says
 //! what the boot delegated; the determinism is for the image that does.
 //!
-//! EVERY WORD IS GATED BY PRCR_S.PRC4, the same gate ipc_attr.zig holds and
+//! EVERY WORD IS GATED BY PRCR_S.PRC4, the same gate ipc/attr.zig holds and
 //! the reason this is a block rather than a shadow. A store issued with PRC4
 //! shut is discarded by silicon with no fault and no status bit. The
 //! firmware opens PRC4 and PRC1 together across the whole release sequence

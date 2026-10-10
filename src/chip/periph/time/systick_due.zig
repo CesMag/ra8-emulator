@@ -14,7 +14,7 @@
 //! wrap falls, not a second clock: nothing here moves a counter or touches
 //! the event queue.
 const clocks = @import("../clocks.zig");
-const rate = @import("../sysclk/sysclk_rate.zig");
+const rate = @import("../sysclk/rate.zig");
 
 const ns_per_s: u64 = 1_000_000_000;
 

@@ -1,6 +1,6 @@
 //! Fills the call stack pane's snapshot from the session (RA8EMU-1079),
 //! walking the image's .debug_frame the way `backtrace` does
-//! (session_report.zig). ui/stack_pane.zig draws the result without
+//! (session/report.zig). ui/stack_pane.zig draws the result without
 //! importing the session.
 const std = @import("std");
 const Image = @import("ra8_session").symbols.Image;

@@ -8,7 +8,7 @@ const break_table = @import("break_table.zig");
 const watch_table = @import("watch_table.zig");
 const elf = @import("ra8_board").image.elf;
 const symbols = @import("symbols.zig");
-const session_source = @import("session_source.zig");
+const session_source = @import("source.zig");
 const dwarf_line = @import("dwarf_line.zig");
 
 pub const header = "Num     Type            Disp Enb Address    What\n";

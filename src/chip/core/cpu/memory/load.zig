@@ -6,7 +6,7 @@
 //! The board's loader merges the pages before any is mapped: segments of
 //! one image share pages, and a page already backed is refused.
 const loaded_image = @import("../../loaded_image.zig");
-const option_window = @import("../../../periph/mram/mram_window.zig");
+const option_window = @import("../../../periph/mram/window.zig");
 const Guest = @import("guest.zig").Guest;
 
 pub const Error = error{ MapFailed, WriteFailed };

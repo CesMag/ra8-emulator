@@ -4,23 +4,23 @@
 //! What is here is the window: which offsets are real registers, which answer
 //! from a machine rather than the shadow, and which a store cannot reach at
 //! all. The machines themselves live beside it: the power and port side in
-//! usbhs_phy.zig, the pipe table in usbhs_pipe.zig, and the control transfer
-//! (CFIFO staging, SETUP, the device on the far end) in usbhs_xfer.zig, with
+//! phy.zig, the pipe table in pipe.zig, and the control transfer
+//! (CFIFO staging, SETUP, the device on the far end) in xfer.zig, with
 //! the two data ports a bulk driver actually moves payload through in
-//! usbhs_dfifo.zig, and the embedded PHY's own PLL in usbhs_pll.zig.
+//! dfifo.zig, and the embedded PHY's own PLL in pll.zig.
 //!
 //! PLLSTA and PHYSET sit in reserved gaps of the shared device-mode struct,
 //! at 0x006 and 0x03E, and LPSTS past it at 0x102. All three are reachable
 //! with SYSCFG.USBE still clear, because the driver brings the PHY up before
 //! it sets USBE.
 const periph = @import("../registry.zig");
-const regs = @import("usbhs_regs.zig");
-const usbhs_dfifo = @import("usbhs_dfifo.zig");
-const usbhs_phy = @import("usbhs_phy.zig");
-const usbhs_pipe = @import("usbhs_pipe.zig");
-const usbhs_pll = @import("usbhs_pll.zig");
-const usbhs_xfer = @import("usbhs_xfer.zig");
-pub const far = @import("usbhs_far.zig");
+const regs = @import("regs.zig");
+const usbhs_dfifo = @import("dfifo.zig");
+const usbhs_phy = @import("phy.zig");
+const usbhs_pipe = @import("pipe.zig");
+const usbhs_pll = @import("pll.zig");
+const usbhs_xfer = @import("xfer.zig");
+pub const far = @import("far.zig");
 
 pub const Host = struct {
     base: u32 = regs.window.base,

@@ -17,7 +17,7 @@ const unit1 = canfd.unit1_base;
 fn start(model: *canfd.Canfd, base: u32) void {
     // ra8_canfd.c programs the FIFO depth while the global machine is still
     // in reset, brings both machines up, and only then sets RFE, which does
-    // not take in GL_RESET. See src/chip/periph/canfd/canfd_rx_config.zig.
+    // not take in GL_RESET. See src/chip/periph/canfd/rx_config.zig.
     model.write(base + rx_config.off_rfcc0, 4, depth_4);
     model.write(base + canfd.off_gctr, 4, 0);
     model.write(base + canfd.off_cnctr, 4, 0);
@@ -28,7 +28,7 @@ fn start(model: *canfd.Canfd, base: u32) void {
 /// word, then assert the transmit request.
 fn send(model: *canfd.Canfd, base: u32, id: u32, dlc: u32, payload: u32) void {
     // ra8_canfd_transmit clears the previous result first: TMTR is only
-    // honoured while TMTRF reads 00b. See src/chip/periph/canfd/canfd_tx_status.zig.
+    // honoured while TMTRF reads 00b. See src/chip/periph/canfd/tx_status.zig.
     model.write(base + canfd.off_tmsts0, 1, 0);
     model.write(base + canfd.off_tm0, 4, id);
     model.write(base + canfd.off_tm0 + 4, 4, dlc << fifo.ptr.dlc_shift);
@@ -189,7 +189,7 @@ test "a store into CFDRFSTS goes to the flag rule rather than the faked count" {
     var model = canfd.Canfd.init();
     start(&model, unit0);
     // RFIF is the controller's, so the store is counted as an invented flag
-    // by canfd_rx_status.zig and the register still reads empty.
+    // by rx_status.zig and the register still reads empty.
     model.write(unit0 + canfd.off_rfsts0, 4, canfd.field.rfif);
     try std.testing.expectEqual(@as(u32, 0), model.units[0].faked);
     try std.testing.expectEqual(@as(u32, 1), model.units[0].rx_sts.invented);

@@ -1,6 +1,6 @@
 //! The Ethernet PHY on the MDIO bus, and the management frame RMAC.MPSM
 //! carries to it. A board part (RA8EMU-1042): the port reaches it through
-//! the MDIO line in src/chip/periph/eth/eth_line.zig.
+//! the MDIO line in src/chip/periph/eth/line.zig.
 //!
 //! The PHY is a part on a two-wire bus like any other: it answers at its own
 //! address and nowhere else, and the registers it measures are its to write.

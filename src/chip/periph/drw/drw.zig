@@ -7,7 +7,7 @@
 //! never rasterized on the bench because nothing ever cleared PDCTRGD.PDDE,
 //! and the emulator modelled no power domain at all, so the app passed.
 //! Ported from board_periph_drw.c on dev; the blend arithmetic lives next
-//! door in drw_blend.zig.
+//! door in blend.zig.
 //!
 //! The geometry rule is the whole block in one sentence (HUM Ch 62.6.2
 //! p 3716): the engine scans the bounding box SIZE gives it, anchored at the
@@ -22,17 +22,17 @@
 const std = @import("std");
 
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
-const blend = @import("drw_blend.zig");
-const cache = @import("drw_cache.zig");
-const dlist = @import("drw_dlist.zig");
-const limit = @import("drw_limit.zig");
-const regs = @import("drw_regs.zig");
-const tex = @import("drw_tex.zig");
+const blend = @import("blend.zig");
+const cache = @import("cache.zig");
+const dlist = @import("dlist.zig");
+const limit = @import("limit.zig");
+const regs = @import("regs.zig");
+const tex = @import("tex.zig");
 const lanes = @import("../lanes.zig");
 const pdctr = @import("../pdctr.zig");
 const periph = @import("../registry.zig");
 
-/// The map is next door in drw_regs.zig, re-exported so a caller still names
+/// The map is next door in regs.zig, re-exported so a caller still names
 /// an offset on the block.
 pub const win_base = regs.win_base;
 pub const win_span = regs.win_span;
@@ -53,9 +53,9 @@ pub const Decline = enum {
     /// no in-tree primitive programs it.
     quad,
     /// A pattern source, which this model does not read. The texture
-    /// source next to it is read for real; see drw_tex.zig.
+    /// source next to it is read for real; see tex.zig.
     patterned,
-    /// A texture source programmed in a way drw_tex.zig will not sample:
+    /// A texture source programmed in a way tex.zig will not sample:
     /// an undocumented READFORMAT, an indexed format with the CLUT
     /// disabled, bilinear filtering, an RLE source, or a texture whose
     /// origin or pitch was never programmed.
@@ -335,7 +335,7 @@ pub const Drw = struct {
         self.declined +%= 1;
     }
 
-    /// Run a display list: drw_dlist.zig reads it, this executes what it
+    /// Run a display list: dlist.zig reads it, this executes what it
     /// hands back, exactly as a CPU write to the same register would.
     pub fn runList(self: *Drw, at: u32) void {
         const memory = self.memory orelse {

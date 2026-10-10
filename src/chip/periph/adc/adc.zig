@@ -9,7 +9,7 @@
 //! the poll completes on its first read.
 //!
 //! The arithmetic of a slot, which source it names and what that source
-//! reports, lives next door in adc_scan.zig. This file owns the window, the
+//! reports, lives next door in scan.zig. This file owns the window, the
 //! scan machine and what the run is told afterwards.
 //!
 //! Ported from board_periph_adc.c on dev, with four things that model does
@@ -53,7 +53,7 @@
 //! and not obviously wrong, though the empty scan is counted so a run that
 //! never enrolled anything says so.
 //!
-//! THE SCAN-END INTERRUPT ENABLE lives in src/chip/periph/adc/adc_intr.zig: ADINTCR
+//! THE SCAN-END INTERRUPT ENABLE lives in src/chip/periph/adc/intr.zig: ADINTCR
 //! (+0x005C) decides whether a finished scan raises anything at all, so an
 //! image the HAL brought up, which writes ADINTCR = 0 in `ra8_adc_init`,
 //! converts and reports and owes the core nothing. The event used to be
@@ -66,14 +66,14 @@
 const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
-const scan = @import("adc_scan.zig");
-const intr = @import("adc_intr.zig");
+const scan = @import("scan.zig");
+const intr = @import("intr.zig");
 
 /// The scan-end interrupt enable, reached as `adc.interrupt` the way the
 /// other split blocks in this tree re-export their halves.
 pub const interrupt = intr;
 /// The TSN factory calibration words the die-temperature line pairs with.
-pub const tsn_cal = @import("adc_tsn_cal.zig");
+pub const tsn_cal = @import("tsn_cal.zig");
 
 /// The window. The Non-secure alias is folded onto this base by the bus.
 pub const win_base: u32 = 0x4033_8000;

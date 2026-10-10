@@ -60,7 +60,7 @@ fn attachGate(self: *Board) !void {
 }
 
 /// The ADC, and the TSN factory calibration words its die-temperature line
-/// is converted against (adc_tsn_cal.zig).
+/// is converted against (adc/tsn_cal.zig).
 fn attachAdc(self: *Board, core: Guest) !void {
     try self.bus.add(self.adc.block());
     _ = tsn_cal.map(core) catch false;

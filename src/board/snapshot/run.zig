@@ -5,7 +5,7 @@
 //! Load into a freshly built run: a fresh store, fresh cores and a freshly
 //! attached board. A file from another part is refused before anything
 //! changes; any later error leaves the run partly loaded, so drop it, the
-//! same rule as cpu_snapshot.zig and board.zig.
+//! same rule as cpu/snapshot.zig and board.zig.
 const file = @import("ra8_snapshot").file;
 const memory = @import("memory.zig");
 const cpu = @import("ra8_chip").core.cpu.cpu_snapshot;
