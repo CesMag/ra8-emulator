@@ -6,7 +6,7 @@
 //! how many samples went out behind it, and what the transmit FIFO was still
 //! holding when the run ended. PDM is the same question from the other side:
 //! whether the samples a capture loop read were ever produced.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const ssie = @import("ra8_chip").periph.ssie;
 const Writer = @import("../report.zig").Writer;
 

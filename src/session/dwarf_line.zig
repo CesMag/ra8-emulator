@@ -6,7 +6,7 @@
 //! carries on past it. A lookup walks every unit until one answers, which
 //! is quick next to the stop that asked for it.
 const std = @import("std");
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const symbols = @import("symbols.zig");
 const dwarf_cursor = @import("dwarf_cursor.zig");
 const line_header = @import("dwarf_line_header.zig");

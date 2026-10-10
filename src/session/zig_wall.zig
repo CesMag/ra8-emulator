@@ -4,7 +4,7 @@
 //! each initiator. The longest of them is what the board, both SysTick banks
 //! and the window pacer see.
 const std = @import("std");
-const backing = @import("../board/external_backing.zig");
+const backing = @import("ra8_board").external_backing;
 const clocks = @import("ra8_chip").periph.clocks;
 const Clock = @import("run_clock.zig").Clock;
 

@@ -21,7 +21,7 @@
 //! checking; lists (IPC channels, semaphores, doorbells) carry only the
 //! units that saw traffic, each with its index. The other report sections
 //! join this document under RA8EMU-198's later subtasks.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const bus_fault = @import("ra8_chip").periph.bus_fault;
 const cpu_ctrl = @import("ra8_chip").periph.cpu_ctrl;

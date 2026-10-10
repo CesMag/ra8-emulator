@@ -6,7 +6,7 @@
 //! ones that name a store nobody would otherwise know had vanished.
 const std = @import("std");
 
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 const Writer = *std.Io.Writer;
 

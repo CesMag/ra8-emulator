@@ -2,7 +2,7 @@
 //! NPU was asked to do, what it moved, and every kick it refused, the same
 //! facts report/compute.zig prints. Every key is always present, zero on a
 //! part without the NPU or a run that never touched it.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The `compute` object, keyed inside the document after `analog`.
 pub fn section(j: anytype, board: *Board) !void {

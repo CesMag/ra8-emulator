@@ -23,7 +23,7 @@
 //! No heap: the firmware has none (no .heap region, and sbrk traps), so
 //! there are no heap symbols to read.
 const std = @import("std");
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const memmap = @import("ra8_chip").core.memmap;
 const sections = @import("sections.zig");
 const symbols = @import("symbols.zig");

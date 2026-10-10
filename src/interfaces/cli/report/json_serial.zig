@@ -3,7 +3,7 @@
 //! facts report/serial.zig prints. Every key is always present; channel
 //! lists hold only the channels that did anything. The USB host lines that
 //! also live in serial.zig belong to the usb batch and are left out here.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The whole `serial` object, keyed inside the document.
 pub fn section(j: anytype, board: *Board) !void {

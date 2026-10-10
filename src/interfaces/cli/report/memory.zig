@@ -7,7 +7,7 @@
 //! line size the firmware read and the maintenance it asked for.
 const std = @import("std");
 
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const cache = @import("ra8_chip").periph.cache;
 
 const Writer = *std.Io.Writer;

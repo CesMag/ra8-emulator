@@ -3,7 +3,7 @@
 //! and what the IT8951 e-ink controller loaded and refreshed, the same facts
 //! report/graphics.zig prints in raster() and panel(). Every key is always
 //! present, zero or null on a run that never touched the block.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The `drw` and `eink` keys, written inside `graphics`.
 pub fn parts(j: anytype, board: *Board) !void {

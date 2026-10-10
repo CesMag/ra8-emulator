@@ -10,7 +10,7 @@ pub const frame_out = @import("frame_out.zig");
 pub const frames_out = @import("frames_out.zig");
 pub const undefined_sites = @import("report/undefined.zig");
 /// Stills of the host window (RA8EMU-500).
-const Board = @import("../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const elc = @import("ra8_chip").periph.elc;
 const clocks = @import("ra8_chip").periph.clocks;
 const nvic = @import("ra8_chip").periph.nvic;

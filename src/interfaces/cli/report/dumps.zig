@@ -12,7 +12,7 @@
 //! run live.
 const std = @import("std");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
-const elf = @import("../../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const cli = @import("../cli.zig");
 const symbols = @import("../../../session/symbols.zig");
 const sd_dump = @import("ra8_components").sd_dump;

@@ -14,7 +14,7 @@
 //! through src/session/rtos_second.zig.
 const std = @import("std");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const symbols = @import("symbols.zig");
 const rtos_trace = @import("rtos_trace.zig");
 pub const names = @import("rtos_names.zig");

@@ -3,7 +3,7 @@
 //! Its own file rather than another section of report.zig for the reason
 //! AGENTS.md gives: report.zig had grown past the gate's 400 lines, and the
 //! watchdog's account of itself is one thing a reader looks for on its own.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const clocks = @import("ra8_chip").periph.clocks;
 

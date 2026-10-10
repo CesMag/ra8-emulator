@@ -1,6 +1,6 @@
 //! The end-of-run lines for the core voltage range, and for the brown-out
 //! hazard between that range and the clock the tree ended up on.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 pub fn sections(board: *const Board, out: anytype) !void {
     try range(board, out);

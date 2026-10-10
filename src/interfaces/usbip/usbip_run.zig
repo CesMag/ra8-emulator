@@ -4,7 +4,7 @@
 //! host that imports it, and keeps listening after that host leaves.
 //! Its events go to stderr, beside the gdb listener's.
 const std = @import("std");
-const usb = @import("../../board/usb.zig");
+const usb = @import("ra8_board").usb;
 const usbfs = @import("ra8_chip").periph.usbfs;
 const bridge = @import("usbip_bridge.zig");
 

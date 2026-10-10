@@ -2,13 +2,13 @@
 //! e-ink frames arrive after glass refreshes. Sampling and duplicate
 //! suppression are shared, and frames.txt records emulated time in ns.
 const std = @import("std");
-const Board = @import("../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const frame_args = @import("frames_args.zig");
 const eink = @import("ra8_components").eink;
 const eink_wire = @import("ra8_components").eink_wire;
 const gif = @import("gif.zig");
 const video_out = @import("video_out.zig");
-const display_settled = @import("../../board/display_settled.zig");
+const display_settled = @import("ra8_board").display_settled;
 
 pub const Sequence = struct {
     allocator: std.mem.Allocator,
@@ -155,7 +155,7 @@ pub const Sequence = struct {
     }
 };
 
-pub const FrameCapture = @import("../../board/frame_capture.zig").FrameCapture;
+pub const FrameCapture = @import("ra8_board").frame_capture.FrameCapture;
 
 /// --frames-out armed before the run (RA8EMU-573). It installs a Vsync on
 /// the GLCDC output stage, so each frame period the board boundary scans the

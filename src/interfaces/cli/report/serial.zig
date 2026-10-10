@@ -1,7 +1,7 @@
 //! The SCI part of the end-of-run report: what each channel moved, and the
 //! console line the firmware printed through it. Split out of report.zig,
 //! which was at the file-length limit.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const Host = @import("ra8_chip").periph.usbhs.Host;
 const Echo = @import("ra8_components").usb_echo.Device;

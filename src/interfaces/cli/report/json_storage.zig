@@ -3,7 +3,7 @@
 //! controller and the card on the SPI line, the same facts
 //! report/storage.zig prints. Every key is always present; the DOTF list
 //! holds only the channels the firmware touched.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The whole `storage` object, keyed inside the document.
 pub fn section(j: anytype, board: *Board) !void {

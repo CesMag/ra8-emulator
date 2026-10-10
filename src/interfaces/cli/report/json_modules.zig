@@ -2,7 +2,7 @@
 //! selects, dividers, oscillators, the sub-clock, the MRAM clocks and the
 //! module-stop verdict, the same facts report/modules.zig prints. Lists hold
 //! only the selects and dividers the firmware touched.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const ckcr = @import("ra8_chip").periph.ckcr;
 const ckdiv = @import("ra8_chip").periph.ckdiv;
 

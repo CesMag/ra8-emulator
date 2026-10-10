@@ -2,7 +2,7 @@
 //! panel the display controller is scanning, and what the drawing engine put
 //! in the framebuffer. Split out of report.zig, which was at the file-length
 //! limit, and they belong together anyway: all three read the same domain.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const system = @import("glcdc_sys.zig");
 

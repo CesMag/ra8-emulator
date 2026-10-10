@@ -1,6 +1,6 @@
 //! Session access to the board's RTC counters (RA8EMU-809): one snapshot
 //! of the BCD registers the guest reads, taken without a bus access.
-const Board = @import("../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const rtc = @import("ra8_chip").periph.rtc;
 const session_rtc = @import("session_rtc.zig");
 

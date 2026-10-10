@@ -13,7 +13,7 @@ const oscsf = @import("ra8_chip").periph.oscsf;
 const mrms = @import("ra8_chip").periph.mrms;
 const std = @import("std");
 
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 const Writer = *std.Io.Writer;
 

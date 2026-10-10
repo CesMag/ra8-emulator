@@ -3,7 +3,7 @@
 //! USBFS jack (json_usbfs.zig), the same facts report/serial.zig usb() and
 //! report/usb.zig, usb_cable.zig print. Every key is always present; the
 //! refusal counts are the same sums the human report prints.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Host = @import("ra8_chip").periph.usbhs.Host;
 const Echo = @import("ra8_components").usb_echo.Device;
 const usb_cable = @import("usb_cable.zig");

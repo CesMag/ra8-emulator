@@ -3,7 +3,7 @@
 //! (session_report.zig). ui/stack_pane.zig draws the result without
 //! importing the session.
 const std = @import("std");
-const elf = @import("../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const dwarf_line = @import("../../session/dwarf_line.zig");
 const session_api = @import("../../session/session_api.zig");
 const symbols = @import("../../session/symbols.zig");

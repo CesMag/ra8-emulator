@@ -5,10 +5,10 @@
 //! opening line reads SP and the reset vector off that store, option memory
 //! is read from it, and src/interfaces/cli/zig_run.zig gets no engine.
 const std = @import("std");
-const elf = @import("../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const Reboot = @import("ra8_chip").core.reboot.Reboot;
-const Board = @import("../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const option_memory = @import("ra8_chip").periph.iwdt_option_memory;
 const cli = @import("cli.zig");
 const Parts = @import("parts.zig").Parts;
@@ -17,7 +17,7 @@ const zig_run = @import("zig_run.zig");
 const dumps = @import("report/dumps.zig");
 const Stop = @import("ra8_chip").core.stop.Stop;
 const fault_file = @import("../../session/fault_file.zig");
-const Cpu0 = @import("../../board/cpu0_store.zig").Cpu0;
+const Cpu0 = @import("ra8_board").cpu0_store.Cpu0;
 
 /// Fitting the board is shared with main's engine path.
 pub const fit = @import("board_fit.zig").fit;

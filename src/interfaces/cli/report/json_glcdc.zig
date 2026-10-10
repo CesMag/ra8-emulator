@@ -5,7 +5,7 @@
 //! stage and the system block follow in json_glcdc_out.zig;
 //! the drawing engine and the e-ink panel in json_drw.zig (RA8EMU-371). Every key is
 //! always present; lists hold only the entries the firmware programmed.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const json_glcdc_out = @import("json_glcdc_out.zig");
 const json_drw = @import("json_drw.zig");
 

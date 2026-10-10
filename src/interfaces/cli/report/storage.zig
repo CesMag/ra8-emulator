@@ -1,7 +1,7 @@
 //! The storage part of the end-of-run report: what the firmware did to the
 //! octal NOR flash and to the two cards, one on the SD host controller and
 //! one on the SPI line, and the commands each engine refused.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 
 /// Every storage path, in the order it was added to the board: the octal NOR

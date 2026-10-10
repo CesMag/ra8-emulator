@@ -5,7 +5,7 @@
 //! without importing the session.
 const std = @import("std");
 const draw_list = @import("../render/draw_list.zig");
-const elf = @import("../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const dwarf_line = @import("../../session/dwarf_line.zig");
 const session_api = @import("../../session/session_api.zig");
 const session_source = @import("../../session/session_source.zig");

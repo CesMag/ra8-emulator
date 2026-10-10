@@ -4,7 +4,7 @@
 //! A refused pin write is the quiet one. It does not fault and the driver
 //! never learns of it, so the run has to say it out loud or the bring-up bug
 //! looks like a dead peripheral rather than a missing unlock.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 
 pub fn sections(board: *Board, out: Writer) !void {

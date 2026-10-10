@@ -2,8 +2,8 @@
 //! requirements it implies and every configuration's time, in one object
 //! an agent can parse. sweep_table.zig prints the same rows for a person.
 const json = @import("report/json.zig");
-const workload = @import("../../board/sizing/workload.zig");
-const sweep = @import("../../board/sizing/sweep.zig");
+const workload = @import("ra8_board").sizing.workload;
+const sweep = @import("ra8_board").sizing.sweep;
 
 pub const caveat = "sizes and byte counts are exact; timing is as good as the memory timing parameters, " ++
     "which come from the candidate parts' datasheets until RA8P1 silicon exists";

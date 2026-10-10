@@ -6,7 +6,7 @@
 //! (RA8EMU-391, json_sd.zig and json_watched.zig).
 const std = @import("std");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
-const elf = @import("../../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const cli = @import("../cli.zig");
 const symbols = @import("../../../session/symbols.zig");
 const registers = @import("../../../session/registers.zig");
@@ -17,7 +17,7 @@ const watchpoint = @import("../../../session/watchpoint.zig");
 pub const json_sd = @import("json_sd.zig");
 pub const json_watched = @import("json_watched.zig");
 pub const json_regs = @import("json_regs.zig");
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// What the dumps read from: the registers and memory as the run left them,
 /// the image and the flags that asked. A `--cpu zig` run hands over its own

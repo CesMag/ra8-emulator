@@ -3,7 +3,7 @@
 //! what the Secure boot attributed to the Non-Secure world. The same facts
 //! the MPU, SAU and attribution lines of report/cores.zig print, every key
 //! always present so a quiet run reads as zeros rather than missing keys.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const mpu = @import("ra8_chip").periph.mpu;
 const sau = @import("ra8_chip").periph.sau;
 

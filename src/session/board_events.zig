@@ -1,6 +1,6 @@
 //! Connect board observations to the core-addressed session event stream (RA8EMU-192).
-const Board = @import("../board/board.zig").Board;
-const boundary = @import("../board/boundary.zig");
+const Board = @import("ra8_board").board.Board;
+const boundary = @import("ra8_board").boundary;
 const api = @import("session_api.zig");
 
 /// Attach non-blocking sources; each callback reads the board bus issuer.
@@ -17,6 +17,6 @@ pub fn attach(board: *Board, session: *api.Session) void {
     board.heartbeat.event_hook = session.event_sources.independentWatchdogHook();
 }
 
-pub fn current(board: *Board) @import("../board/event_sink.zig").Observation {
+pub fn current(board: *Board) @import("ra8_board").event_sink.Observation {
     return boundary.observation(board);
 }

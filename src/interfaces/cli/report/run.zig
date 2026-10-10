@@ -11,11 +11,11 @@
 //! sector number after that point out of a program counter. Printed last it
 //! reads as a verdict on the report rather than as one more block's account
 //! of itself.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const report = @import("../report.zig");
 const report_timing = @import("timing.zig");
-const pacing = @import("../../../board/run/pacing.zig");
+const pacing = @import("ra8_board").run.pacing;
 const idle = @import("ra8_chip").core.idle;
 const report_part = @import("part.zig");
 const clocks = @import("ra8_chip").periph.clocks;

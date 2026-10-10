@@ -1,6 +1,6 @@
 //! The option-setting part of the end-of-run report: what the extra-MRAM
 //! sequencer actually programmed, and every command it refused.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 
 /// One line per run that issued a MACI command. A refused command is

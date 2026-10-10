@@ -8,10 +8,10 @@ const std = @import("std");
 const served_setup = @import("../rpc/served_setup.zig");
 const loop = @import("serve_loop.zig");
 const listen = @import("serve_listen.zig");
-const camera_install = @import("../../board/camera_install.zig");
+const camera_install = @import("ra8_board").camera_install;
 const source_spec = @import("ra8_host").camera.source_spec;
 const camera_source = @import("camera_source.zig");
-const Board = @import("../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 pub const usage =
     \\usage: ra8_emulator serve --stdio <firmware.elf>

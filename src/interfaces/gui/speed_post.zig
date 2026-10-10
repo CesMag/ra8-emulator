@@ -9,8 +9,8 @@
 //! run that was not paced starts pacing at that park, against `clock`.
 const std = @import("std");
 const session_api = @import("../../session/session_api.zig");
-const pacer = @import("../../board/run/pacer.zig");
-const pacing = @import("../../board/run/pacing.zig");
+const pacer = @import("ra8_board").run.pacer;
+const pacing = @import("ra8_board").run.pacing;
 
 pub const SpeedPost = struct {
     /// Window and engine threads lock through it; neither cancels.

@@ -4,7 +4,7 @@
 //! and its geometry, and the battery-backed corner (PRCR, VBTBKRn, the VBATT
 //! control file), the same facts report/icu.zig, pinfunc.zig, options.zig,
 //! part.zig and backup.zig print. Every key is always present.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const part = @import("ra8_chip").core.part;
 const json_options = @import("json_options.zig");
 

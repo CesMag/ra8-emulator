@@ -1,8 +1,8 @@
 //! Session access to the board's raw panel frame and settled state.
 const std = @import("std");
-const Board = @import("../board/board.zig").Board;
-const display_settled = @import("../board/display_settled.zig");
-const FrameCapture = @import("../board/frame_capture.zig").FrameCapture;
+const Board = @import("ra8_board").board.Board;
+const display_settled = @import("ra8_board").display_settled;
+const FrameCapture = @import("ra8_board").frame_capture.FrameCapture;
 const eink = @import("ra8_components").eink;
 const session_display = @import("session_display.zig");
 

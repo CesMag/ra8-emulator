@@ -16,7 +16,7 @@
 //! never finished.
 const std = @import("std");
 
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const dmac = @import("ra8_chip").periph.dmac;
 
 const Writer = *std.Io.Writer;

@@ -1,6 +1,6 @@
 //! The compute part of the end-of-run report: what the NPU was asked to do,
 //! what it actually moved, and the kicks it refused to pretend about.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const vela_hook = @import("ra8_chip").periph.npu_vela_hook;
 

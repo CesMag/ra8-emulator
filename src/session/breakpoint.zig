@@ -30,7 +30,7 @@
 //! is still in r0 is the instruction after the call, which has no symbol
 //! of its own and is reached as `caller+offset`.
 const std = @import("std");
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const place = @import("place.zig");
 const symbols = @import("symbols.zig");
 

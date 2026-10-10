@@ -1,7 +1,7 @@
 //! The RIIC controller's own lines in the end-of-run report: what each
 //! channel clocked, what it refused, and what its responder half answered.
 //! The parts sitting on the bus report themselves from network.zig.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 
 /// One line per RIIC channel that saw traffic. A transfer clocked with the

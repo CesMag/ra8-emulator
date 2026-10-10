@@ -5,7 +5,7 @@
 //! The PNG is the board view: the panel inside the EK-RA8D2 outline with
 //! the user LEDs as the pins left them (board_view.zig).
 const std = @import("std");
-const Board = @import("../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const eink = @import("ra8_components").eink;
 const eink_wire = @import("ra8_components").eink_wire;
 const png = @import("../render/png.zig");

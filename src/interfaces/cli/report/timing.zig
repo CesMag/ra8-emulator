@@ -18,7 +18,7 @@
 const clocks = @import("ra8_chip").periph.clocks;
 const tally_mod = @import("../../../session/tally.zig");
 const taken_in_mod = @import("../../../session/taken_in.zig");
-const elf = @import("../../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const symbols = @import("../../../session/symbols.zig");
 const pc_hits = @import("../../../session/pc_hits.zig");
 

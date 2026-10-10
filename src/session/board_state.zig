@@ -10,13 +10,13 @@
 //! a session restores one `--save-state` wrote. A second core is refused,
 //! as the CLI refuses it: its state is not in the file yet.
 const std = @import("std");
-const Board = @import("../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const BoardBoundary = @import("board_boundary.zig").BoardBoundary;
 const Cpu = @import("ra8_chip").core.cpu.cpu.Cpu;
 const Store = @import("ra8_chip").core.cpu.memory.store.Store;
-const run_file = @import("../board/snapshot/run.zig");
+const run_file = @import("ra8_board").snapshot.run;
 const systick = @import("ra8_chip").snapshot.systick;
-const stretch = @import("../board/snapshot/stretch.zig");
+const stretch = @import("ra8_board").snapshot.stretch;
 
 pub const Error = error{SecondCoreNotSaved};
 

@@ -2,13 +2,13 @@
 //! `--debug-script` or `--debug`. The public harness owns CPU0 and its board;
 //! this front adds the requested debugger mode and optional CPU1.
 const std = @import("std");
-const elf = @import("../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const cpu1_image = @import("cpu1_image.zig");
 const cpu_mod = @import("ra8_chip").core.cpu.cpu;
-const Board = @import("../../board/board.zig").Board;
-const board_wiring = @import("../../board/wiring.zig");
+const Board = @import("ra8_board").board.Board;
+const board_wiring = @import("ra8_board").wiring;
 const board_speed = @import("../../session/board_speed.zig");
-const pacing = @import("../../board/run/pacing.zig");
+const pacing = @import("ra8_board").run.pacing;
 const script = @import("../../session/script.zig");
 const stop_machine = @import("../../session/stop_machine.zig");
 const zig_script = @import("../../session/zig_script.zig");

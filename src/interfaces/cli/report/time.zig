@@ -1,6 +1,6 @@
 //! The timekeeping part of the end-of-run report: where the calendar got to,
 //! and what the alarm actually did.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 
 /// One line for the clock, then the things that went wrong separately. A

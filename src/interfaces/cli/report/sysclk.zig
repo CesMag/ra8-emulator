@@ -5,7 +5,7 @@
 //! A store dropped by PRC0 is the quiet one. Silicon discards it with no fault
 //! and no status bit, so the run has to say it out loud or a bring-up that
 //! never took effect looks like one that did.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const div = @import("ra8_chip").periph.sysclk_div;
 

@@ -17,7 +17,7 @@
 const hotspots = @import("../../../session/hotspots.zig");
 const functions = @import("../../../session/functions.zig");
 const symbols = @import("../../../session/symbols.zig");
-const elf = @import("../../../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const Writer = @import("../report.zig").Writer;
 
 /// Print the addresses the run kept coming back to, most sampled first.

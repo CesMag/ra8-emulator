@@ -19,8 +19,8 @@ const fault_lines = @import("ra8_components").fault_lines;
 const riic_bus = @import("ra8_chip").periph.riic_bus;
 const spi = @import("ra8_chip").periph.spi;
 const session_api = @import("session_api.zig");
-const plug = @import("../board/plug.zig");
-const Board = @import("../board/board.zig").Board;
+const plug = @import("ra8_board").plug;
+const Board = @import("ra8_board").board.Board;
 const eink = @import("ra8_components").eink;
 
 pub const Error = error{NothingFitted};

@@ -1,7 +1,7 @@
 //! The cross-core part of the end-of-run report: what went through the IPC
 //! mailbox, what the other core was supposed to hear about, and what the
 //! core's own MPU was asked to protect.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const ipc = @import("ra8_chip").periph.ipc;
 const sync = @import("ra8_chip").periph.ipc_sync;

@@ -6,7 +6,7 @@ const gpt = @import("ra8_chip").periph.gpt;
 const gtclkcr = @import("ra8_chip").periph.gtclkcr;
 const iwdt = @import("ra8_chip").periph.iwdt;
 
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 
 /// AGT first, then GPT, the order dev's combined report used. A channel that

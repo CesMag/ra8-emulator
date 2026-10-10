@@ -5,7 +5,7 @@
 //! something is wrong, and they kept growing.
 const std = @import("std");
 
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const lvd = @import("ra8_chip").periph.lvd;
 
 const Writer = *std.Io.Writer;

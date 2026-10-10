@@ -2,7 +2,7 @@
 //! colour and whether its pin has it on. `--frame-out` and the GUI window
 //! both draw this strip under the panel, so the reading lives here and the
 //! render library only takes the values.
-const Board = @import("../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const gpio = @import("ra8_chip").periph.gpio;
 
 /// One user LED: its colour and whether it is lit.

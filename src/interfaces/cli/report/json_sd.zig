@@ -5,7 +5,7 @@
 const std = @import("std");
 const sd_dump = @import("ra8_components").sd_dump;
 const sd_image = @import("ra8_components").sd_image;
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The card shape, for tests that build a card to read back.
 pub const geometry = sd_image.geometry;

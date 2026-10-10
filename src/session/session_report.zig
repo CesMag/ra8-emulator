@@ -4,7 +4,7 @@
 //! These read the core only through core_view, so any session prints the
 //! same lines for
 //! the same stop.
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const core_view = @import("core_view.zig");
 const dwarf_line = @import("dwarf_line.zig");
 const session_source = @import("session_source.zig");

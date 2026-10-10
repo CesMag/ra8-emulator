@@ -11,7 +11,7 @@ const fault_spec = @import("ra8_components").fault_spec;
 const source_spec = @import("ra8_host").camera.source_spec;
 const sci_reply = @import("ra8_chip").periph.sci_reply;
 const rtc_start = @import("../../session/rtc_start.zig");
-const speed = @import("../../board/run/speed.zig");
+const speed = @import("ra8_board").run.speed;
 const duration = @import("../../session/duration.zig");
 const timebase = @import("ra8_chip").periph.timebase;
 

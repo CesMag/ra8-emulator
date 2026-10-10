@@ -5,9 +5,9 @@
 //! its row comes from the child's JSON report: wall time, the CPU's stall
 //! on both regions, and the external_regions counters.
 const std = @import("std");
-const external = @import("../../board/external_memory.zig");
-const matrix = @import("../../board/sizing/matrix.zig");
-const sweep = @import("../../board/sizing/sweep.zig");
+const external = @import("ra8_board").external_memory;
+const matrix = @import("ra8_board").sizing.matrix;
+const sweep = @import("ra8_board").sizing.sweep;
 
 const ek_profile = @embedFile("../../board/ek_ra8d2.board");
 const max_report_bytes = 64 * 1024 * 1024;

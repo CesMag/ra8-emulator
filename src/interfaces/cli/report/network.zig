@@ -2,7 +2,7 @@
 //! actually put on its internal loopback and the ones it only wrote down,
 //! where the Ethernet PTP timers got to, and what the AT modem on the
 //! MikroBUS UART was asked.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const ether = @import("ether.zig");
 const riic_report = @import("riic.zig");

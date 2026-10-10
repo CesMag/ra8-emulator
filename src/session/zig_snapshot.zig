@@ -9,13 +9,13 @@
 //! A run with `--cpu1` is refused: the second core lives in its own driver
 //! and its state is not in the file yet.
 const std = @import("std");
-const backing = @import("../board/external_backing.zig");
+const backing = @import("ra8_board").external_backing;
 const boot = @import("ra8_chip").core.cpu.boot;
 const Cpu = @import("ra8_chip").core.cpu.cpu.Cpu;
 const Store = @import("ra8_chip").core.cpu.memory.store.Store;
-const run_file = @import("../board/snapshot/run.zig");
+const run_file = @import("ra8_board").snapshot.run;
 const systick = @import("ra8_chip").snapshot.systick;
-const stretch = @import("../board/snapshot/stretch.zig");
+const stretch = @import("ra8_board").snapshot.stretch;
 const Clock = @import("run_clock.zig").Clock;
 
 /// The largest file a load reads.

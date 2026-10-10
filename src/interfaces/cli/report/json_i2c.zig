@@ -2,7 +2,7 @@
 //! (RA8EMU-362): each part sitting on the I2C/I3C bus, the same facts the
 //! part lines of report/network.zig print. The RIIC controller itself is
 //! the top-level `riic` array (json_riic.zig). Every key is always present.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The whole `i2c_parts` object, keyed inside `network`.
 pub fn parts(j: anytype, board: *Board) !void {

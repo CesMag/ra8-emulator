@@ -2,8 +2,8 @@
 //! host, plugged into the board's USB stick (RA8EMU-1020: the host read
 //! lives here, not in the board).
 const std = @import("std");
-const usb = @import("../../board/usb.zig");
-const usb_plug = @import("../../board/usb_plug.zig");
+const usb = @import("ra8_board").usb;
+const usb_plug = @import("ra8_board").usb_plug;
 const disk_file = @import("ra8_host").disk_file;
 
 /// The disk bytes a spec names, owned by `allocator`.

@@ -5,7 +5,7 @@
 //! the same either way. An image without line information, or a table this reader
 //! refuses, answers the way gdb does for an address it has no line for.
 const std = @import("std");
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const dwarf_line = @import("dwarf_line.zig");
 const dwarf_line_find = @import("dwarf_line_find.zig");
 const dwarf_info = @import("dwarf_info.zig");

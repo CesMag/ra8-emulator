@@ -4,8 +4,8 @@
 //! whose engine has a thread of its own, goes through gui/speed_post.zig.
 const session_api = @import("session_api.zig");
 const clocks = @import("ra8_chip").periph.clocks;
-const pacer = @import("../board/run/pacer.zig");
-const pacing = @import("../board/run/pacing.zig");
+const pacer = @import("ra8_board").run.pacer;
+const pacing = @import("ra8_board").run.pacing;
 
 pub const BoardSpeed = struct {
     time: *clocks.Time,

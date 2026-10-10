@@ -13,7 +13,7 @@
 //! 24-bit, 32 as 32-bit. A narrower word is shifted up so full scale stays
 //! full scale, and 8-bit WAV (which is unsigned) never comes up.
 const std = @import("std");
-const Board = @import("../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const ssie = @import("ra8_chip").periph.ssie;
 const wav = @import("wav.zig");
 const world_flags = @import("world_flags.zig");

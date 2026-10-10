@@ -6,7 +6,7 @@
 //! says.
 const std = @import("std");
 
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 const Writer = *std.Io.Writer;
 

@@ -1,7 +1,7 @@
 //! The `riic` array of `--report json` (RA8EMU-360): one entry per RIIC
 //! channel that saw traffic, with its responder half, the same facts
 //! report/riic.zig prints. Every key is always present in an entry.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The whole `riic` array, keyed inside the document.
 pub fn section(j: anytype, board: *Board) !void {

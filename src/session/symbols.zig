@@ -20,7 +20,7 @@
 //! Every read is bounds-checked against the image's own bytes, so a
 //! truncated or hostile table gives null rather than a slice out of range.
 const std = @import("std");
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 
 /// Section header types, of which only the symbol table matters here.
 pub const section_type = struct {

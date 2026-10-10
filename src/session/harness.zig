@@ -1,6 +1,6 @@
 //! Public owner for a firmware image, its Zig core, board, and debug session.
 const std = @import("std");
-const elf = @import("../board/image/elf.zig");
+const elf = @import("ra8_board").image.elf;
 const part = @import("ra8_chip").core.part;
 const BoardBus = @import("ra8_chip").core.cpu.board_bus.BoardBus;
 const cpu_mod = @import("ra8_chip").core.cpu.cpu;
@@ -8,8 +8,8 @@ const NvicSource = @import("ra8_chip").core.cpu.exception.nvic_source.NvicSource
 const QuietSource = @import("ra8_chip").core.cpu.exception.quiet_source.QuietSource;
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const memory_load = @import("ra8_chip").core.cpu.memory.load;
-const read_image = @import("../board/image/load.zig");
-const Board = @import("../board/board.zig").Board;
+const read_image = @import("ra8_board").image.load;
+const Board = @import("ra8_board").board.Board;
 const option_memory = @import("ra8_chip").periph.iwdt_option_memory;
 const Reboot = @import("ra8_chip").core.reboot.Reboot;
 const session_plug = @import("board_plug.zig");
@@ -27,7 +27,7 @@ const step_hook = @import("step_hook.zig");
 const watch_bus = @import("watch_bus.zig");
 const rtos_hook = step_hook.rtos_hook;
 const rtos_publish = step_hook.rtos_publish;
-const Cpu0 = @import("../board/cpu0_store.zig").Cpu0;
+const Cpu0 = @import("ra8_board").cpu0_store.Cpu0;
 
 pub const limits = struct {
     pub const max_elf_bytes = 64 * 1024 * 1024;

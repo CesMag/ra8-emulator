@@ -1,6 +1,6 @@
 //! The end-of-run lines for the low-power control bytes.
 const std = @import("std");
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 pub fn sections(board: *const Board, out: anytype) !void {
     const unit = &board.low_power;

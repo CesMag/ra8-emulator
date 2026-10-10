@@ -4,7 +4,7 @@
 //! Every key is always present; lists hold only the units that did
 //! anything. The R-Switch Ethernet lines (report/ether.zig) and the USB
 //! host lines follow under their own subtask.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const modem_line = @import("ra8_components").modem_at;
 const json_i2c = @import("json_i2c.zig");
 

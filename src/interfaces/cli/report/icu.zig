@@ -1,6 +1,6 @@
 //! The interrupt controller's account of itself: what it routed, and the
 //! external-IRQ pins it was told to reconfigure mid-flight.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 
 pub fn sections(board: *Board, out: Writer) !void {

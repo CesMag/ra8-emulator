@@ -3,7 +3,7 @@
 //! voltage monitors, the same facts sysclk.zig, pll.zig, voltage.zig,
 //! lowpower.zig and monitors.zig print. The clock-generation blocks from
 //! modules.zig follow in json_modules.zig. Every key is always present.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const div = @import("ra8_chip").periph.sysclk_div;
 const lvd = @import("ra8_chip").periph.lvd;
 const Config = @import("ra8_chip").periph.pll_config.Config;

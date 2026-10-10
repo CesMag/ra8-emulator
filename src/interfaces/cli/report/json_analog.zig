@@ -2,7 +2,7 @@
 //! the ADC_B converter and the ACMPHS comparators, the same facts
 //! report/analog.zig prints. Every key is always present; the channel lists
 //! hold only the channels the firmware touched.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 
 /// The `analog` object, keyed inside the document after `backup`.
 pub fn section(j: anytype, board: *Board) !void {

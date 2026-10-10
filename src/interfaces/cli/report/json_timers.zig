@@ -3,7 +3,7 @@
 //! report/timers.zig prints. The watchdogs and the RTC follow in
 //! json_watch.zig. Every key is always present; channel lists hold only the
 //! channels that did anything.
-const Board = @import("../../../board/board.zig").Board;
+const Board = @import("ra8_board").board.Board;
 const json_watch = @import("json_watch.zig");
 
 /// The whole `timers` object, keyed inside the document.

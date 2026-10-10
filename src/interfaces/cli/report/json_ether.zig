@@ -4,8 +4,8 @@
 //! prints. Every key is always present; `ports` holds only the ports the
 //! firmware touched.
 const std = @import("std");
-const Board = @import("../../../board/board.zig").Board;
-const net = @import("../../../board/net.zig");
+const Board = @import("ra8_board").board.Board;
+const net = @import("ra8_board").net;
 
 /// The whole `ethernet` object, keyed inside the document.
 pub fn section(j: anytype, board: *Board) !void {

@@ -2,8 +2,8 @@
 //! workload needs first, then one line per configuration with where its
 //! time went. sweep_report.zig carries the same rows as JSON.
 const std = @import("std");
-const workload = @import("../../board/sizing/workload.zig");
-const sweep = @import("../../board/sizing/sweep.zig");
+const workload = @import("ra8_board").sizing.workload;
+const sweep = @import("ra8_board").sizing.sweep;
 const sweep_report = @import("sweep_report.zig");
 const caveat = sweep_report.caveat;
 
