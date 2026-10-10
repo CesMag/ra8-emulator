@@ -3,14 +3,14 @@
 //! core's own MPU was asked to protect.
 const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
-const ipc = @import("../../../chip/periph/ipc/ipc.zig");
-const sync = @import("../../../chip/periph/ipc/ipc_sync.zig");
-const ipc_attr = @import("../../../chip/periph/ipc/ipc_attr.zig");
-const cpscu = @import("../../../chip/periph/cpscu.zig");
-const cpu_ctrl = @import("../../../chip/periph/cpu_ctrl.zig");
-const mpu = @import("../../../chip/periph/mpu/mpu.zig");
-const sau = @import("../../../chip/periph/sau.zig");
-const second_core = @import("../../../chip/core/second_core.zig");
+const ipc = @import("ra8_chip").periph.ipc;
+const sync = @import("ra8_chip").periph.ipc_sync;
+const ipc_attr = @import("ra8_chip").periph.ipc_attr;
+const cpscu = @import("ra8_chip").periph.cpscu;
+const cpu_ctrl = @import("ra8_chip").periph.cpu_ctrl;
+const mpu = @import("ra8_chip").periph.mpu;
+const sau = @import("ra8_chip").periph.sau;
+const second_core = @import("ra8_chip").core.second_core;
 
 /// What CPU0 did with the second-core release handshake. ACT going up means
 /// the handshake completed, never by itself that a second core is fetching:

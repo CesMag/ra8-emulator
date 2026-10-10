@@ -7,7 +7,7 @@
 //! holding when the run ended. PDM is the same question from the other side:
 //! whether the samples a capture loop read were ever produced.
 const Board = @import("../../../board/board.zig").Board;
-const ssie = @import("../../../chip/periph/ssie/ssie.zig");
+const ssie = @import("ra8_chip").periph.ssie;
 const Writer = @import("../report.zig").Writer;
 
 /// One line per channel the firmware touched, plus the loud cases. A sample

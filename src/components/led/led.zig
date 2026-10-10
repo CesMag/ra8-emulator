@@ -1,5 +1,5 @@
 //! An LED on a GPIO pin, the part a run attaches with `led`.
-const gpio_pins = @import("../../chip/periph/gpio/gpio_pins.zig");
+const gpio_pins = @import("ra8_chip").periph.gpio_pins;
 
 /// An LED on a pin the firmware drives: whether it is lit, and how many
 /// times that changed.

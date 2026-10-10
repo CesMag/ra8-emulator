@@ -5,7 +5,7 @@
 //! Its events go to stderr, beside the gdb listener's.
 const std = @import("std");
 const usb = @import("../../board/usb.zig");
-const usbfs = @import("../../chip/periph/usbfs/usbfs.zig");
+const usbfs = @import("ra8_chip").periph.usbfs;
 const bridge = @import("usbip_bridge.zig");
 
 pub const Live = struct {

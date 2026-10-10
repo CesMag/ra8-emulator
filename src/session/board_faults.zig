@@ -12,10 +12,10 @@ const endpoint = @import("../components/endpoint.zig");
 const fault = @import("../components/fault.zig");
 const fault_spec = @import("../components/fault_spec.zig");
 const fault_lines = @import("../components/fault_lines.zig");
-const riic_bus = @import("../chip/periph/riic/riic_bus.zig");
-const spi = @import("../chip/periph/spi/spi.zig");
-const sci = @import("../chip/periph/sci/sci.zig");
-const sci_device = @import("../chip/periph/sci/sci_device.zig");
+const riic_bus = @import("ra8_chip").periph.riic_bus;
+const spi = @import("ra8_chip").periph.spi;
+const sci = @import("ra8_chip").periph.sci;
+const sci_device = @import("ra8_chip").periph.sci_device;
 const lines = @import("board_faults_lines.zig");
 const Board = @import("../board/board.zig").Board;
 

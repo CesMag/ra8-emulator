@@ -6,10 +6,10 @@
 //! on the other end is a board fact, so it is set here. The device jack has
 //! a scripted host on it, the way a PC would be, stepped once per boundary.
 const std = @import("std");
-const Bounded = @import("../chip/core/bounded.zig").Bounded;
-const periph = @import("../chip/periph/registry.zig");
-const usbfs = @import("../chip/periph/usbfs/usbfs.zig");
-const usbhs = @import("../chip/periph/usbhs/usbhs.zig");
+const Bounded = @import("ra8_chip").core.bounded.Bounded;
+const periph = @import("ra8_chip").periph.registry;
+const usbfs = @import("ra8_chip").periph.usbfs;
+const usbhs = @import("ra8_chip").periph.usbhs;
 const usb_echo = @import("../components/usb_echo/device.zig");
 const usb_echo_far = @import("../components/usb_echo/far.zig");
 const usb_loop_cable = @import("../components/usb_loop_cable/cable.zig");

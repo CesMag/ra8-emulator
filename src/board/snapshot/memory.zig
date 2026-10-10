@@ -11,8 +11,8 @@
 //! Layout: a region count, then per region its base, length, how many pages
 //! follow, and each page as its offset and bytes.
 const std = @import("std");
-const memmap = @import("../../chip/core/memmap.zig");
-const store_mod = @import("../../chip/core/cpu/memory/store.zig");
+const memmap = @import("ra8_chip").core.memmap;
+const store_mod = @import("ra8_chip").core.cpu.memory.store;
 const external = @import("../external_memory.zig");
 const external_backing = @import("../external_backing.zig");
 const file = @import("ra8_snapshot").file;

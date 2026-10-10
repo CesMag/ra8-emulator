@@ -12,8 +12,8 @@
 //! pushes back. dev's TX sink swallows every frame, so a descriptor is
 //! completed whatever happened to it.
 const std = @import("std");
-const desc = @import("../../chip/periph/eth/eth_desc.zig");
-const line = @import("../../chip/periph/eth/eth_line.zig");
+const desc = @import("ra8_chip").periph.eth_desc;
+const line = @import("ra8_chip").periph.eth_line;
 
 /// Frames held in one direction. Enough for a request and its reply with
 /// room to spare, and it bounds what the board carries.

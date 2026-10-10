@@ -64,7 +64,7 @@ const proto = @import("wire.zig");
 const busy = @import("busy.zig");
 const image = @import("image.zig");
 const refresh = @import("refresh.zig");
-const spi = @import("../../chip/periph/spi/spi.zig");
+const spi = @import("ra8_chip").periph.spi;
 /// The LUT busy model, re-exported so a caller reaches it through the
 /// panel rather than by a second import.
 pub const lut = busy;

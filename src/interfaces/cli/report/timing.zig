@@ -15,7 +15,7 @@
 //! apart from the elapsed count alone. The rest of the file names the
 //! sites behind the run's counters: counted pcs and where exceptions
 //! were taken.
-const clocks = @import("../../../chip/periph/clocks.zig");
+const clocks = @import("ra8_chip").periph.clocks;
 const tally_mod = @import("../../../session/tally.zig");
 const taken_in_mod = @import("../../../session/taken_in.zig");
 const elf = @import("../../../image/elf.zig");

@@ -6,9 +6,9 @@
 //! still be handed bytes. A real device stalls what it does not implement and
 //! refuses what its state does not allow, which is what the host driver has
 //! to cope with on a bench.
-const regs = @import("../../chip/periph/usbhs/usbhs_regs.zig");
-const setup = @import("../../chip/periph/usbhs/usbhs_setup.zig");
-const usbhs_function = @import("../../chip/periph/usbhs/usbhs_function.zig");
+const regs = @import("ra8_chip").periph.usbhs_regs;
+const setup = @import("ra8_chip").periph.usbhs_setup;
+const usbhs_function = @import("ra8_chip").periph.usbhs_function;
 
 /// Where enumeration has got to, per USB 2.0 chapter 9.
 pub const State = enum { default, address, configured };

@@ -10,33 +10,33 @@
 const std = @import("std");
 const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
-const time = @import("../../chip/snapshot/time.zig");
-const Part = @import("../../chip/core/part.zig").Part;
+const time = @import("ra8_chip").snapshot.time;
+const Part = @import("ra8_chip").core.part.Part;
 
 pub const Error = file.Error || fields.Error || error{ Missing, WrongPart };
 
 /// The board-shaped sections after time, in kind order. Appending is a
 /// format change.
 const sections = .{
-    @import("../../chip/snapshot/timers.zig"),
-    @import("../../chip/periph/sci/sci_snapshot.zig"),
+    @import("ra8_chip").snapshot.timers,
+    @import("ra8_chip").periph.sci_snapshot,
     @import("sd.zig"),
     @import("wire.zig"),
-    @import("../../chip/periph/drw/drw_snapshot.zig"),
-    @import("../../chip/periph/glcdc/glcdc_snapshot.zig"),
+    @import("ra8_chip").periph.drw_snapshot,
+    @import("ra8_chip").periph.glcdc_snapshot,
     @import("../../components/eink_it8951/panel_snapshot.zig"),
-    @import("../../chip/snapshot/clocks.zig"),
-    @import("../../chip/snapshot/security.zig"),
-    @import("../../chip/snapshot/controllers.zig"),
+    @import("ra8_chip").snapshot.clocks,
+    @import("ra8_chip").snapshot.security,
+    @import("ra8_chip").snapshot.controllers,
     @import("storage.zig"),
-    @import("../../chip/snapshot/signals.zig"),
-    @import("../../chip/snapshot/datapath.zig"),
-    @import("../../chip/snapshot/media.zig"),
+    @import("ra8_chip").snapshot.signals,
+    @import("ra8_chip").snapshot.datapath,
+    @import("ra8_chip").snapshot.media,
     @import("wired.zig"),
-    @import("../../chip/snapshot/channels.zig"),
+    @import("ra8_chip").snapshot.channels,
     @import("usb.zig"),
     @import("rswitch.zig"),
-    @import("../../chip/periph/npu/npu_snapshot.zig"),
+    @import("ra8_chip").periph.npu_snapshot,
     @import("../../components/esp32c6_hosted/c6_snapshot.zig"),
 };
 

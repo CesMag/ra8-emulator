@@ -1,7 +1,7 @@
 //! Where the `--dump-regs` rows of `--report json` read from (RA8EMU-579):
 //! the Zig core's registers as the run left them.
-const Cortex = @import("../../../chip/core/cpu/cortex.zig").Cortex;
-const Regs = @import("../../../chip/core/cpu/regs.zig").Regs;
+const Cortex = @import("ra8_chip").core.cpu.cortex.Cortex;
+const Regs = @import("ra8_chip").core.cpu.regs.Regs;
 
 pub const Reader = union(enum) {
     zig: *const Regs,

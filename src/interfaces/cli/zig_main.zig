@@ -6,16 +6,16 @@
 //! is read from it, and src/interfaces/cli/zig_run.zig gets no engine.
 const std = @import("std");
 const elf = @import("../../image/elf.zig");
-const Guest = @import("../../chip/core/cpu/memory/guest.zig").Guest;
-const Reboot = @import("../../chip/core/reboot.zig").Reboot;
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
+const Reboot = @import("ra8_chip").core.reboot.Reboot;
 const Board = @import("../../board/board.zig").Board;
-const option_memory = @import("../../chip/periph/iwdt/iwdt_option_memory.zig");
+const option_memory = @import("ra8_chip").periph.iwdt_option_memory;
 const cli = @import("cli.zig");
 const Parts = @import("parts.zig").Parts;
 const report = @import("report.zig");
 const zig_run = @import("zig_run.zig");
 const dumps = @import("report/dumps.zig");
-const Stop = @import("../../chip/core/stop.zig").Stop;
+const Stop = @import("ra8_chip").core.stop.Stop;
 const fault_file = @import("../../session/fault_file.zig");
 const Cpu0 = @import("../../board/cpu0_store.zig").Cpu0;
 

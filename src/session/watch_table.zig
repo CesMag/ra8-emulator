@@ -39,7 +39,7 @@ pub const Kind = enum {
 /// What actually happened on the bus. A watch kind can cover both; an
 /// access is always one or the other.
 /// The DWT's access kinds, so a watch and a comparator agree on them.
-pub const Access = @import("../chip/periph/dwt.zig").Access;
+pub const Access = @import("ra8_chip").periph.dwt.Access;
 
 /// One watched range, inclusive of `first` and `last`.
 pub const Watch = struct {

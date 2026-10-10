@@ -3,7 +3,7 @@
 //! imports the chip; the asserts below keep them equal to the chip's.
 const std = @import("std");
 const proto = @import("../rpc/session_rpc.zig");
-const gpio = @import("../../chip/periph/gpio/gpio.zig");
+const gpio = @import("ra8_chip").periph.gpio;
 const board_pane = @import("ui/board_pane.zig");
 
 comptime {

@@ -10,7 +10,7 @@
 //!
 //! This file reads the model's counters and nothing else, so the
 //! watcher needs nothing from the core.
-const nvic = @import("../chip/periph/nvic.zig");
+const nvic = @import("ra8_chip").periph.nvic;
 const rtos_trace = @import("rtos_trace.zig");
 
 pub const Nvic = nvic.Nvic;

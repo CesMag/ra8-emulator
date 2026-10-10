@@ -3,7 +3,7 @@
 //! mark under the reservation's base overflowed it by the difference.
 const zig_core = @import("zig_core.zig");
 const region_map = @import("region_map.zig");
-const never_low = @import("../chip/core/cpu/regs.zig").never_low;
+const never_low = @import("ra8_chip").core.cpu.regs.never_low;
 
 pub const Report = struct {
     marks: zig_core.StackMarks,

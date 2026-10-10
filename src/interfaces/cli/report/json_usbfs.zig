@@ -3,7 +3,7 @@
 //! descriptors it was handed, the same facts report/usb.zig prints.
 //! Descriptors are lowercase hex strings, null when none came back.
 const std = @import("std");
-const usbfs_host = @import("../../../chip/periph/usbfs/usbfs_host.zig");
+const usbfs_host = @import("ra8_chip").periph.usbfs_host;
 
 /// The whole `fs_host` object, keyed inside `usb`.
 pub fn section(j: anytype, host: *const usbfs_host.Host) !void {

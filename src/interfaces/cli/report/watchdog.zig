@@ -5,7 +5,7 @@
 //! watchdog's account of itself is one thing a reader looks for on its own.
 const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
-const clocks = @import("../../../chip/periph/clocks.zig");
+const clocks = @import("ra8_chip").periph.clocks;
 
 /// The refused refresh is the loud case: on silicon an early reload is a
 /// refresh error that resets the part, and the C tree accepts it silently.

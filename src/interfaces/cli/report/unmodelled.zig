@@ -2,7 +2,7 @@
 //! peripheral addresses the firmware touched that no block models. The
 //! summary line counts them; this names them, so the next model to write is
 //! one run away instead of one bisection away.
-const registry = @import("../../../chip/periph/registry.zig");
+const registry = @import("ra8_chip").periph.registry;
 
 /// Enough to name the next model without burying the rest of the report.
 pub const limit: usize = 16;

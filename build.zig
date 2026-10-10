@@ -104,8 +104,11 @@ pub fn build(b: *std.Build) void {
 fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module) void {
     const host = library(b, target, optimize, "ra8_host", "src/host/root.zig");
     const snapshot = library(b, target, optimize, "ra8_snapshot", "src/snapshot/root.zig");
+    const chip = library(b, target, optimize, "ra8_chip", "src/chip/root.zig");
+    chip.addImport("ra8_snapshot", snapshot);
     emu.addImport("ra8_host", host);
     emu.addImport("ra8_snapshot", snapshot);
+    emu.addImport("ra8_chip", chip);
 }
 
 /// One library module, importable by its name from this build and from a

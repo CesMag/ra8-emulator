@@ -4,9 +4,9 @@
 //! the bytes at the PC and it gives back "str r1, [r0]", decoded by the Zig
 //! core's own table and printed by its group printers (RA8EMU-17), in the
 //! spelling the parity digest tests pin. No C is involved (RA8EMU-249).
-const Instr = @import("../chip/core/cpu/instr.zig").Instr;
-const printers = @import("../chip/core/cpu/text/disasm.zig");
-const text = @import("../chip/core/cpu/text/text.zig");
+const Instr = @import("ra8_chip").core.cpu.instr.Instr;
+const printers = @import("ra8_chip").core.cpu.text.disasm;
+const text = @import("ra8_chip").core.cpu.text.text;
 
 pub const Error = error{NothingDecoded};
 

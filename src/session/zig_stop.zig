@@ -5,8 +5,8 @@
 const std = @import("std");
 const elf = @import("../image/elf.zig");
 const symbols = @import("symbols.zig");
-const Stop = @import("../chip/core/stop.zig").Stop;
-const Deadline = @import("../chip/core/deadline.zig").Deadline;
+const Stop = @import("ra8_chip").core.stop.Stop;
+const Deadline = @import("ra8_chip").core.deadline.Deadline;
 
 /// The watched counter, or null. A name the image does not carry is
 /// reported and the run goes to its instruction budget instead: a missing

@@ -9,9 +9,9 @@
 //! `?*Second`; a run has at most one CPU1 and so at most one of these, and
 //! it lives until the process ends.
 const std = @import("std");
-const Guest = @import("../chip/core/cpu/memory/guest.zig").Guest;
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const elf = @import("../image/elf.zig");
-const second_core = @import("../chip/core/second_core.zig");
+const second_core = @import("ra8_chip").core.second_core;
 const rtos_hook = @import("rtos_hook.zig");
 
 var traced: ?*rtos_hook.Tracer = null;

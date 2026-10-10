@@ -16,7 +16,7 @@ pub fn sections(board: *const Board, out: anytype) !void {
             });
         } else {
             try out.print("low power: LPSCR.LPMD = 0x{X}, which the HUM does not define\n", .{
-                unit.lpscr & @import("../../../chip/periph/lpm/lpm.zig").field.lpmd,
+                unit.lpscr & @import("ra8_chip").periph.lpm.field.lpmd,
             });
         }
     }

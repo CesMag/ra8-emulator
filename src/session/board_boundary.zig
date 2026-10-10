@@ -5,17 +5,17 @@
 //! A sleeping CPU0 may reach to the board's next edge (RA8EMU-767), as a
 //! plain run's idle skip does (src/interfaces/cli/zig_run.zig asleepWidth).
 const Board = @import("../board/board.zig").Board;
-const Guest = @import("../chip/core/cpu/memory/guest.zig").Guest;
-const Cpu = @import("../chip/core/cpu/cpu.zig").Cpu;
-const Reboot = @import("../chip/core/reboot.zig").Reboot;
-const systick_bank = @import("../chip/core/systick_bank.zig");
-const clocks = @import("../chip/periph/clocks.zig");
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
+const Cpu = @import("ra8_chip").core.cpu.cpu.Cpu;
+const Reboot = @import("ra8_chip").core.reboot.Reboot;
+const systick_bank = @import("ra8_chip").core.systick_bank;
+const clocks = @import("ra8_chip").periph.clocks;
 const zig_boundary = @import("zig_boundary.zig");
-const second_core = @import("../chip/core/second_core.zig");
-const registry = @import("../chip/periph/registry.zig");
+const second_core = @import("ra8_chip").core.second_core;
+const registry = @import("ra8_chip").periph.registry;
 const quiet_due = @import("../board/quiet_due.zig");
 const board_edge = @import("../board/boundary.zig");
-const sleep_pace = @import("../chip/core/sleep_pace.zig");
+const sleep_pace = @import("ra8_chip").core.sleep_pace;
 
 pub const BoardBoundary = struct {
     board: *Board,

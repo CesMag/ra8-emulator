@@ -26,7 +26,7 @@
 //! how the driver treats an echoed line, so dev's echo-free wire is kept),
 //! the DTR and RI pins, and any timing between the command and its answer.
 const std = @import("std");
-const sci = @import("../../chip/periph/sci/sci.zig");
+const sci = @import("ra8_chip").periph.sci;
 const script = @import("script.zig");
 
 /// RXD7/TXD7: SCI7 is the MikroBUS UART, dev's k_modem_channel.

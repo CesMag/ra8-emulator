@@ -5,7 +5,7 @@
 //! The chip only records the sites: address, encoding, arrivals. Naming
 //! them from the symbol table is the frontend's job, so it lives here.
 const elf = @import("../../../image/elf.zig");
-const undefined_ops = @import("../../../chip/core/undefined_ops.zig");
+const undefined_ops = @import("ra8_chip").core.undefined_ops;
 const symbols = @import("../../../session/symbols.zig");
 
 const Found = undefined_ops.Found;

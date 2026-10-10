@@ -11,7 +11,7 @@ const board = @import("usbip_board.zig");
 const listen = @import("usbip_listen.zig");
 const server = @import("usbip_server.zig");
 const session = @import("usbip_session.zig");
-const usbfs = @import("../../chip/periph/usbfs/usbfs.zig");
+const usbfs = @import("ra8_chip").periph.usbfs;
 const sock_ready = @import("ra8_host").sock_ready;
 
 /// What one poll changed.

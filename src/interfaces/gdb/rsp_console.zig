@@ -7,7 +7,7 @@
 //! session's own `itm:` lines do not repeat it when the connection ends.
 const std = @import("std");
 const packet = @import("rsp_packet.zig");
-const itm = @import("../../chip/periph/itm.zig");
+const itm = @import("ra8_chip").periph.itm;
 
 pub const limits = struct {
     /// Text bytes per packet; its hex plus the `O` stays well inside the

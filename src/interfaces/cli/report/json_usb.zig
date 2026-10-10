@@ -4,7 +4,7 @@
 //! report/usb.zig, usb_cable.zig print. Every key is always present; the
 //! refusal counts are the same sums the human report prints.
 const Board = @import("../../../board/board.zig").Board;
-const Host = @import("../../../chip/periph/usbhs/usbhs.zig").Host;
+const Host = @import("ra8_chip").periph.usbhs.Host;
 const Echo = @import("../../../components/usb_echo/device.zig").Device;
 const usb_cable = @import("usb_cable.zig");
 const json_usbfs = @import("json_usbfs.zig");

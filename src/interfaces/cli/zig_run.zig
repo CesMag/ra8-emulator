@@ -3,10 +3,10 @@
 //! same boundary, so a ThreadX image gets its tick and the peripherals that
 //! count time (the USB host script among them) move.
 const std = @import("std");
-const Guest = @import("../../chip/core/cpu/memory/guest.zig").Guest;
-const boot = @import("../../chip/core/cpu/boot.zig");
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
+const boot = @import("ra8_chip").core.cpu.boot;
 const elf = @import("../../image/elf.zig");
-const clocks = @import("../../chip/periph/clocks.zig");
+const clocks = @import("ra8_chip").periph.clocks;
 const fault_file = @import("../../session/fault_file.zig");
 const cli = @import("cli.zig");
 const Board = @import("../../board/board.zig").Board;
@@ -20,14 +20,14 @@ const eink_log = @import("eink_log.zig");
 const audio_out = @import("audio_out.zig");
 const rtos_hook = @import("../../session/rtos_hook.zig");
 const run_loop = @import("../../session/run_loop.zig");
-const second_core = @import("../../chip/core/second_core.zig");
+const second_core = @import("ra8_chip").core.second_core;
 const profile = @import("../../session/profile.zig");
 pub const stack_profile = @import("../../session/stack_profile.zig");
 const mem_dump = @import("../../session/mem_dump.zig");
 const watchpoint = @import("../../session/watchpoint.zig");
 /// `--watch` on a Zig run: src/session/zig_watch.zig.
 pub const zig_watch = @import("../../session/zig_watch.zig");
-const Until = @import("../../chip/core/until.zig").Until;
+const Until = @import("ra8_chip").core.until.Until;
 /// The `--stop-sym` counter a Zig run watches: src/session/zig_stop.zig.
 pub const stop_sym = @import("../../session/zig_stop.zig");
 /// Re-exported for tests/session/itm_console_test.zig: cli.zig is full.

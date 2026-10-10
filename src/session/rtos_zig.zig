@@ -6,10 +6,10 @@
 //! Tracer.onStore; an exception the core takes or returns from is recorded
 //! as it is reported to the source. Everything else passes straight on.
 const std = @import("std");
-const bus = @import("../chip/core/cpu/bus.zig");
-const Source = @import("../chip/core/cpu/exception/source.zig").Source;
-const Entry = @import("../chip/core/cpu/exception/active.zig").Entry;
-const boot = @import("../chip/core/cpu/boot.zig");
+const bus = @import("ra8_chip").core.cpu.bus;
+const Source = @import("ra8_chip").core.cpu.exception.source.Source;
+const Entry = @import("ra8_chip").core.cpu.exception.active.Entry;
+const boot = @import("ra8_chip").core.cpu.boot;
 const rtos_hook = @import("rtos_hook.zig");
 
 pub const Listener = struct {

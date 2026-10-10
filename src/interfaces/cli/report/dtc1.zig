@@ -2,7 +2,7 @@
 //! end-of-run report. It prints nothing while DTC1 is untouched, so a
 //! single-core run, or a dual-core image whose CPU1 never programs it, reads
 //! exactly as before.
-const dtc = @import("../../../chip/periph/dtc/dtc.zig");
+const dtc = @import("ra8_chip").periph.dtc;
 
 /// The headline, and the refusal line when CPU1 took an interrupt the DTC
 /// would not run. Takes any writer so a test can read the lines back.

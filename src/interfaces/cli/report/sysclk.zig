@@ -7,7 +7,7 @@
 //! never took effect looks like one that did.
 const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
-const div = @import("../../../chip/periph/sysclk/sysclk_div.zig");
+const div = @import("ra8_chip").periph.sysclk_div;
 
 pub fn sections(board: *Board, out: Writer) !void {
     const unit = &board.tree;

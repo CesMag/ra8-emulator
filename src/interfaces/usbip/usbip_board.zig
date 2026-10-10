@@ -3,7 +3,7 @@
 //! Its descriptors are read off the scripted host that enumerates that jack
 //! when no cable is in, so the bridge shows a host exactly what the
 //! firmware answered and never a copy kept by hand.
-const usbfs = @import("../../chip/periph/usbfs/usbfs.zig");
+const usbfs = @import("ra8_chip").periph.usbfs;
 const wire = @import("usbip_wire.zig");
 const exp = @import("usbip_export.zig");
 

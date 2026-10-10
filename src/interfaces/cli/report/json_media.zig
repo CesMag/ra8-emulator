@@ -4,8 +4,8 @@
 //! capture.zig print. Every key is always present; the channel lists hold
 //! only the channels the firmware touched.
 const Board = @import("../../../board/board.zig").Board;
-const ssie = @import("../../../chip/periph/ssie/ssie.zig");
-const phy_status = @import("../../../chip/periph/mipi/mipi_phy_status.zig");
+const ssie = @import("ra8_chip").periph.ssie;
+const phy_status = @import("ra8_chip").periph.mipi_phy_status;
 
 /// The three objects, keyed inside the document after `graphics`.
 pub fn section(j: anytype, board: *Board) !void {

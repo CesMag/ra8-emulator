@@ -4,10 +4,10 @@
 const std = @import("std");
 const elf = @import("../../image/elf.zig");
 const loader = @import("../../image/load.zig");
-const second_core = @import("../../chip/core/second_core.zig");
-const Driver = @import("../../chip/core/second_zig_run.zig").Driver;
-const Wiring = @import("../../chip/core/second_wiring.zig").Wiring;
-const Guest = @import("../../chip/core/cpu/memory/guest.zig").Guest;
+const second_core = @import("ra8_chip").core.second_core;
+const Driver = @import("ra8_chip").core.second_zig_run.Driver;
+const Wiring = @import("ra8_chip").core.second_wiring.Wiring;
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 
 /// Open `driver` on the image at `path`. The bytes are written into CPU1's
 /// store before this returns, so they are freed here.

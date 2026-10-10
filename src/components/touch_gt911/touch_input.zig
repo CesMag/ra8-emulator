@@ -18,9 +18,9 @@
 //! would (RA8EMU-375).
 const std = @import("std");
 const gt911 = @import("gt911.zig");
-const gpio = @import("../../chip/periph/gpio/gpio.zig");
-const pin_irq = @import("../../chip/periph/icu/icu_pin_irq.zig");
-const ByteSource = @import("../../chip/periph/byte_source.zig").ByteSource;
+const gpio = @import("ra8_chip").periph.gpio;
+const pin_irq = @import("ra8_chip").periph.icu_pin_irq;
+const ByteSource = @import("ra8_chip").periph.byte_source.ByteSource;
 const user_switch = @import("../user_switch/user_switch.zig");
 
 /// Longest line kept. A longer one is dropped whole and counted.

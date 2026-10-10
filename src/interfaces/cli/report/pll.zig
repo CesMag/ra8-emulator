@@ -2,7 +2,7 @@
 //! time, plus MOSCWTCR and the stores the PRCR gate turned away.
 const std = @import("std");
 const Board = @import("../../../board/board.zig").Board;
-const Config = @import("../../../chip/periph/pll/pll_config.zig").Config;
+const Config = @import("ra8_chip").periph.pll_config.Config;
 
 fn ratio(value: ?u8, out: anytype) !void {
     if (value) |one| {

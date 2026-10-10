@@ -6,7 +6,7 @@
 //! plug and fault hooks (src/session/board_schedule.zig), and the run's
 //! boundary is wrapped so each event lands on its exact virtual time.
 const std = @import("std");
-const boot = @import("../chip/core/cpu/boot.zig");
+const boot = @import("ra8_chip").core.cpu.boot;
 const api = @import("session_api.zig");
 const Board = @import("../board/board.zig").Board;
 const session_plug = @import("board_plug.zig");

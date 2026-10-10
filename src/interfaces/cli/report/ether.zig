@@ -9,10 +9,10 @@
 const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
 const eth_phy = @import("../../../components/eth_phy/phy.zig");
-const eth_mac = @import("../../../chip/periph/eth/eth_mac.zig");
-const eth = @import("../../../chip/periph/eth/eth.zig");
+const eth_mac = @import("ra8_chip").periph.eth_mac;
+const eth = @import("ra8_chip").periph.eth;
 const net = @import("../../../board/net.zig");
-const pdctr = @import("../../../chip/periph/pdctr.zig");
+const pdctr = @import("ra8_chip").periph.pdctr;
 
 pub fn sections(board: *Board, out: Writer) !void {
     try domain(board, out);

@@ -1,6 +1,6 @@
 //! Fixed-cadence instruction widths at an image core-clock rate.
 const std = @import("std");
-const clocks = @import("../chip/periph/clocks.zig");
+const clocks = @import("ra8_chip").periph.clocks;
 
 pub fn instructions(cycles: u64, hz: u64, remainder: u64) u64 {
     const fixed_hz = clocks.timebase.default_hz;

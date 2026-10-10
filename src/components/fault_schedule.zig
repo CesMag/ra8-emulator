@@ -24,7 +24,7 @@ const catalog = @import("catalog.zig");
 const endpoint = @import("endpoint.zig");
 const fault_spec = @import("fault_spec.zig");
 const parts = @import("parts.zig");
-const timebase = @import("../chip/periph/time/timebase.zig");
+const timebase = @import("ra8_chip").periph.timebase;
 
 pub const Action = union(enum) {
     fault: fault_spec.Mode,

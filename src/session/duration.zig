@@ -6,7 +6,7 @@
 //! longest is ten years of virtual time, past which a soak says nothing a
 //! shorter one does not.
 const std = @import("std");
-const timebase = @import("../chip/periph/time/timebase.zig");
+const timebase = @import("ra8_chip").periph.timebase;
 
 pub const Error = error{ NotANumber, NoUnit, NotPositive, TooLong };
 

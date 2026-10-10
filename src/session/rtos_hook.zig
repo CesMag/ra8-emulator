@@ -13,7 +13,7 @@
 //! The Zig core feeds the tracer through src/session/rtos_zig.zig, and CPU1
 //! through src/session/rtos_second.zig.
 const std = @import("std");
-const Guest = @import("../chip/core/cpu/memory/guest.zig").Guest;
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const elf = @import("../image/elf.zig");
 const symbols = @import("symbols.zig");
 const rtos_trace = @import("rtos_trace.zig");

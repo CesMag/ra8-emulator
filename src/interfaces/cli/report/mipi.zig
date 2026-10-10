@@ -21,7 +21,7 @@ pub fn sections(board: *Board, out: Writer) !void {
         "MIPI-PHY: {s}, {s}, refclk {d} MHz, {d} power-up(s), {d} PLL lock(s)\n",
         .{
             phy.mode().name(),
-            @import("../../../chip/periph/mipi/mipi_phy_status.zig").describe(phy.sfr()),
+            @import("ra8_chip").periph.mipi_phy_status.describe(phy.sfr()),
             phy.referenceMhz(),
             phy.powerups,
             phy.locks,

@@ -9,11 +9,11 @@ const touch_spec = @import("../../session/touch_spec.zig");
 const request = @import("../../components/request.zig");
 const fault_spec = @import("../../components/fault_spec.zig");
 const source_spec = @import("ra8_host").camera.source_spec;
-const sci_reply = @import("../../chip/periph/sci/sci_reply.zig");
+const sci_reply = @import("ra8_chip").periph.sci_reply;
 const rtc_start = @import("../../session/rtc_start.zig");
 const speed = @import("../../board/run/speed.zig");
 const duration = @import("../../session/duration.zig");
-const timebase = @import("../../chip/periph/time/timebase.zig");
+const timebase = @import("ra8_chip").periph.timebase;
 
 const Options = cli.Options;
 const card_setup = cli.card_setup;

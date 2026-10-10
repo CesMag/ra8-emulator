@@ -1,8 +1,8 @@
 //! The NOR part's two faces toward the chip: the command engine's contract
 //! (periph/xspi/xspi_nor.zig) and the store's mapped window
 //! (core/cpu/memory/mapped.zig).
-const xspi_nor = @import("../../chip/periph/xspi/xspi_nor.zig");
-const mapped = @import("../../chip/core/cpu/memory/mapped.zig");
+const xspi_nor = @import("ra8_chip").periph.xspi_nor;
+const mapped = @import("ra8_chip").core.cpu.mapped;
 const Flash = @import("flash.zig").Flash;
 const part = @import("flash.zig").part;
 

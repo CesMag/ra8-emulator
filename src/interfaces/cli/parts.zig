@@ -5,9 +5,9 @@
 //! Lifted out of src/interfaces/cli/main.zig when the file passed the gate's 400 lines:
 //! holding the run's state is its own purpose, and it grows by a field
 //! every time a slice adds a counter.
-const csel = @import("../../chip/core/csel.zig");
-const tz = @import("../../chip/core/tz.zig");
-const idle = @import("../../chip/core/idle.zig");
+const csel = @import("ra8_chip").core.csel;
+const tz = @import("ra8_chip").core.tz;
+const idle = @import("ra8_chip").core.idle;
 const hotspots = @import("../../session/hotspots.zig");
 const functions = @import("../../session/functions.zig");
 const profile = functions.profile;
@@ -16,11 +16,11 @@ const std = @import("std");
 const stack_samples = @import("../../session/stack_samples.zig");
 const tally = @import("../../session/tally.zig");
 const pc_hits = @import("../../session/pc_hits.zig");
-const clocks = @import("../../chip/periph/clocks.zig");
-const lob = @import("../../chip/core/lob.zig");
-const bus_fault = @import("../../chip/periph/bus_fault.zig");
+const clocks = @import("ra8_chip").periph.clocks;
+const lob = @import("ra8_chip").core.lob;
+const bus_fault = @import("ra8_chip").periph.bus_fault;
 const console_output = @import("console_output.zig");
-const second_core = @import("../../chip/core/second_core.zig");
+const second_core = @import("ra8_chip").core.second_core;
 
 pub const Parts = struct {
     /// Where finished console lines go: `--console` and `--until`.

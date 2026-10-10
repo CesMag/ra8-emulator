@@ -22,7 +22,7 @@
 //! the core is asked, so `sleep_pace.still` keeps the width for them.
 const std = @import("std");
 const Board = @import("board.zig").Board;
-const gpt_sched = @import("../chip/periph/gpt/gpt_sched.zig");
+const gpt_sched = @import("ra8_chip").periph.gpt_sched;
 
 /// Every block that moves per boundary and is not on the event queue is
 /// idle, so nothing but a queued event can happen before the next one.

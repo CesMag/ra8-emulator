@@ -5,8 +5,8 @@ const std = @import("std");
 const zig_core = @import("zig_core.zig");
 const stop_machine = @import("stop_machine.zig");
 const call_decode = @import("call_decode.zig");
-const cpu_mod = @import("../chip/core/cpu/cpu.zig");
-const dispatch = @import("../chip/core/cpu/exception/dispatch.zig");
+const cpu_mod = @import("ra8_chip").core.cpu.cpu;
+const dispatch = @import("ra8_chip").core.cpu.exception.dispatch;
 const watch_bus = @import("watch_bus.zig");
 const zig_cycles = @import("zig_cycles.zig");
 /// Re-exported for tests/session/zig_monitor_test.zig.

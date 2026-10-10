@@ -3,7 +3,7 @@
 //! host with no cable in says nothing here; the echo device's lines
 //! cover it.
 pub const Loop = @import("../../../components/usb_loop_cable/cable.zig").Loop;
-const usbfs = @import("../../../chip/periph/usbfs/usbfs.zig");
+const usbfs = @import("ra8_chip").periph.usbfs;
 
 pub fn section(plugged: ?*const Loop, out: anytype) !void {
     const cable = plugged orelse return;

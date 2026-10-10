@@ -1,5 +1,5 @@
 //! A push button on a GPIO pin, the part a run attaches with `button`.
-const gpio_pins = @import("../../chip/periph/gpio/gpio_pins.zig");
+const gpio_pins = @import("ra8_chip").periph.gpio_pins;
 
 /// A push button to ground with a pull-up: released reads high, pressed
 /// reads low, the same as SW1 and SW2 on the board.

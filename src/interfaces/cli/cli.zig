@@ -1,6 +1,6 @@
 //! The command line: the flags the emulator takes and nothing else.
 const std = @import("std");
-const part = @import("../../chip/core/part.zig");
+const part = @import("ra8_chip").core.part;
 const place = @import("../../session/place.zig");
 const pc_hits = @import("../../session/pc_hits.zig");
 const mem_dump = @import("../../session/mem_dump.zig");
@@ -8,7 +8,7 @@ const gt911 = @import("../../components/touch_gt911/gt911.zig");
 const world_flags = @import("world_flags.zig");
 const max17048 = @import("../../components/gauge_max17048/max17048.zig");
 const sd_format = @import("../../components/sd_card/format.zig");
-const cpu_choice = @import("../../chip/core/cpu/choice.zig");
+const cpu_choice = @import("ra8_chip").core.cpu.choice;
 const rtos_load = @import("../../session/rtos_load.zig");
 const request = @import("../../components/request.zig");
 pub const ctl_args = @import("ctl_args.zig");
@@ -18,7 +18,7 @@ pub const card_setup = @import("card_setup.zig");
 pub const usbip_wire = @import("../usbip/usbip_wire.zig");
 pub const usbip_export = @import("../usbip/usbip_export.zig");
 pub const console_output = @import("console_output.zig");
-pub const console_input = @import("../../chip/periph/sci/sci_input.zig");
+pub const console_input = @import("ra8_chip").periph.sci_input;
 pub const host_bytes = @import("host_bytes.zig");
 /// How many `--dump-sym` names one run will carry: the suite asks for at most
 /// two (progress and failure counters), so this is a little room above that.
@@ -88,7 +88,7 @@ pub const Options = struct {
     trace_sd: bool = false, // write one line per SD command to stderr
     state: @import("state_args.zig").Options = .{}, // `--save-state`, `--load-state` (RA8EMU-696)
     console: bool = false, // `--console`: stream finished SCI console lines to stdout
-    console_reply: @import("../../chip/periph/sci/sci_reply.zig").Reply = .{}, // RA8EMU-626
+    console_reply: @import("ra8_chip").periph.sci_reply.Reply = .{}, // RA8EMU-626
     dump_sd: ?u32 = null, // print this card block back as hex once the run is over
     faults: ?[]const u8 = null, // `--faults FILE`: hardware changes at virtual times (RA8EMU-207)
     /// Contacts queued on the touch panel, one drained per frame read.

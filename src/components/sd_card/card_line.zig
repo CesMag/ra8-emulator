@@ -25,7 +25,7 @@
 //! lead bits instead, which is what sd_card.zig already documents. A card
 //! deselected mid-command is therefore not a state this model has.
 
-const sci = @import("../../chip/periph/sci/sci.zig");
+const sci = @import("ra8_chip").periph.sci;
 const sd_card = @import("card.zig");
 
 /// Which SCI channel the card is wired to: Pmod2 (J25), which is SCI0

@@ -8,10 +8,10 @@
 //! in file order. Time is the board's TimeBase (RA8EMU-179); the wrapped
 //! boundary converts its cycle edge when instructions and cycles differ.
 const std = @import("std");
-const boot = @import("../chip/core/cpu/boot.zig");
+const boot = @import("ra8_chip").core.cpu.boot;
 const api = @import("session_api.zig");
 const fault_schedule = @import("../components/fault_schedule.zig");
-const timebase = @import("../chip/periph/time/timebase.zig");
+const timebase = @import("ra8_chip").periph.timebase;
 
 pub const Applier = struct {
     events: []const fault_schedule.Event,

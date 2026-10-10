@@ -8,7 +8,7 @@
 //! There is no analog sensor behind this. It answers the probe and remembers
 //! configuration; it does not claim the board streams pixels.
 const std = @import("std");
-const bus = @import("../../chip/periph/riic/riic_bus.zig");
+const bus = @import("ra8_chip").periph.riic_bus;
 
 pub const address: u7 = 0x3C;
 

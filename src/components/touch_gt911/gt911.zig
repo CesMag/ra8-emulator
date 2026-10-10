@@ -11,7 +11,7 @@
 //! point read filled the record from whatever coordinates were left over and
 //! counted a touch, so an image that read the record without looking at the
 //! status byte first was handed a tap that never happened.
-const bus = @import("../../chip/periph/riic/riic_bus.zig");
+const bus = @import("ra8_chip").periph.riic_bus;
 
 /// Live host touches for this panel: src/components/touch_gt911/touch_input.zig.
 pub const host = @import("touch_input.zig");

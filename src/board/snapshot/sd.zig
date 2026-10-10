@@ -11,7 +11,7 @@ const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
 const blocks = @import("ra8_snapshot").blocks;
 const cards = @import("../../components/sd_card/card_snapshot.zig");
-const host = @import("../../chip/periph/sdhi/sdhi_snapshot.zig");
+const host = @import("ra8_chip").periph.sdhi_snapshot;
 
 pub const Error = file.Error || fields.Error || error{ Missing, OutOfMemory };
 

@@ -7,7 +7,7 @@
 //! firmware and advance again. Endpoint 0 goes through usbip_control.zig;
 //! endpoints the firmware never opened stall, as the kernel's -EPIPE.
 const wire = @import("usbip_wire.zig");
-const usbfs = @import("../../chip/periph/usbfs/usbfs.zig");
+const usbfs = @import("ra8_chip").periph.usbfs;
 const control = @import("usbip_control.zig");
 
 pub const epipe: i32 = -32;

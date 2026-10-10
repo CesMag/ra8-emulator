@@ -8,9 +8,9 @@
 //! It listens only while armed, which zig_drive does around one
 //! instruction, and never to that instruction's own fetch.
 const std = @import("std");
-const bus = @import("../chip/core/cpu/bus.zig");
+const bus = @import("ra8_chip").core.cpu.bus;
 const step_hook = @import("step_hook.zig");
-const until = @import("../chip/core/until.zig");
+const until = @import("ra8_chip").core.until;
 /// Re-exported for tests/session/unit_view_test.zig.
 pub const unit_view = @import("unit_view.zig");
 

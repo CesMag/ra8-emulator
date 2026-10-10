@@ -19,7 +19,7 @@ const request = @import("request.zig");
 const endpoint = @import("endpoint.zig");
 const fault = @import("fault.zig");
 const fault_lines = @import("fault_lines.zig");
-const timebase = @import("../chip/periph/time/timebase.zig");
+const timebase = @import("ra8_chip").periph.timebase;
 
 pub const Mode = union(enum) {
     disconnected,

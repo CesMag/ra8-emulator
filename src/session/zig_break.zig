@@ -8,7 +8,7 @@ const std = @import("std");
 const elf = @import("../image/elf.zig");
 const breakpoint = @import("breakpoint.zig");
 const profile = @import("profile.zig");
-const cpu = @import("../chip/core/cpu/cpu.zig");
+const cpu = @import("ra8_chip").core.cpu.cpu;
 
 pub const Break = breakpoint.Break;
 

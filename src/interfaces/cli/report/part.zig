@@ -6,7 +6,7 @@
 //! the default part, so an RA8D2 run's report stays byte identical to the
 //! one every corpus expectation was recorded against.
 const std = @import("std");
-const part = @import("../../../chip/core/part.zig");
+const part = @import("ra8_chip").core.part;
 const Writer = @import("../report.zig").Writer;
 
 const kib: u32 = 1024;

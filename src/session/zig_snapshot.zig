@@ -10,11 +10,11 @@
 //! and its state is not in the file yet.
 const std = @import("std");
 const backing = @import("../board/external_backing.zig");
-const boot = @import("../chip/core/cpu/boot.zig");
-const Cpu = @import("../chip/core/cpu/cpu.zig").Cpu;
-const Store = @import("../chip/core/cpu/memory/store.zig").Store;
+const boot = @import("ra8_chip").core.cpu.boot;
+const Cpu = @import("ra8_chip").core.cpu.cpu.Cpu;
+const Store = @import("ra8_chip").core.cpu.memory.store.Store;
 const run_file = @import("../board/snapshot/run.zig");
-const systick = @import("../chip/snapshot/systick.zig");
+const systick = @import("ra8_chip").snapshot.systick;
 const stretch = @import("../board/snapshot/stretch.zig");
 const Clock = @import("run_clock.zig").Clock;
 

@@ -22,11 +22,11 @@
 //! units that saw traffic, each with its index. The other report sections
 //! join this document under RA8EMU-198's later subtasks.
 const Board = @import("../../../board/board.zig").Board;
-const Guest = @import("../../../chip/core/cpu/memory/guest.zig").Guest;
-const bus_fault = @import("../../../chip/periph/bus_fault.zig");
-const cpu_ctrl = @import("../../../chip/periph/cpu_ctrl.zig");
-const ipc = @import("../../../chip/periph/ipc/ipc.zig");
-const sync = @import("../../../chip/periph/ipc/ipc_sync.zig");
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
+const bus_fault = @import("ra8_chip").periph.bus_fault;
+const cpu_ctrl = @import("ra8_chip").periph.cpu_ctrl;
+const ipc = @import("ra8_chip").periph.ipc;
+const sync = @import("ra8_chip").periph.ipc_sync;
 const json = @import("json.zig");
 const json_protect = @import("json_protect.zig");
 const json_mem = @import("json_mem.zig");

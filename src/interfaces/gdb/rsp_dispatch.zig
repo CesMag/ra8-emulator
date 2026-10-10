@@ -11,7 +11,7 @@
 //! A request it does not know gets the empty reply, which is how the
 //! protocol says "not supported" and lets gdb fall back.
 const std = @import("std");
-const Cortex = @import("../../chip/core/cpu/cortex.zig").Cortex;
+const Cortex = @import("ra8_chip").core.cpu.cortex.Cortex;
 const features = @import("rsp_features.zig");
 const stop_machine = @import("../../session/stop_machine.zig");
 

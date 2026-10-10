@@ -4,7 +4,7 @@
 //! needs a SysTick timebase this section does not carry; a reader divides the
 //! timing section's ticks by `refreshes` instead.
 const Board = @import("../../../board/board.zig").Board;
-const iwdt = @import("../../../chip/periph/iwdt/iwdt.zig");
+const iwdt = @import("ra8_chip").periph.iwdt;
 
 /// Written inside the `timers` object, after the GPT bank.
 pub fn parts(j: anytype, board: *Board) !void {

@@ -3,8 +3,8 @@
 //! module-stop verdict, the same facts report/modules.zig prints. Lists hold
 //! only the selects and dividers the firmware touched.
 const Board = @import("../../../board/board.zig").Board;
-const ckcr = @import("../../../chip/periph/ckcr.zig");
-const ckdiv = @import("../../../chip/periph/ckdiv.zig");
+const ckcr = @import("ra8_chip").periph.ckcr;
+const ckdiv = @import("ra8_chip").periph.ckdiv;
 
 /// Written inside the `clocks` object, after the monitors.
 pub fn parts(j: anytype, board: *Board) !void {

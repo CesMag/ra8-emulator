@@ -6,7 +6,7 @@
 const std = @import("std");
 
 const Board = @import("../../../board/board.zig").Board;
-const lvd = @import("../../../chip/periph/lvd/lvd.zig");
+const lvd = @import("ra8_chip").periph.lvd;
 
 const Writer = *std.Io.Writer;
 

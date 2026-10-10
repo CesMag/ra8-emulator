@@ -8,7 +8,7 @@ const rtos_trace = @import("rtos_trace.zig");
 const rtos_stream = @import("rtos_stream.zig");
 const stream_mod = @import("session_event_stream.zig");
 const zig_boundary = @import("zig_boundary.zig");
-const timebase = @import("../chip/periph/time/timebase.zig");
+const timebase = @import("ra8_chip").periph.timebase;
 
 /// The board's time base, named for tests.
 pub const TimeBase = timebase.TimeBase;

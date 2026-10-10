@@ -68,7 +68,7 @@ const sd_reply = @import("reply.zig");
 const sd_write = @import("write.zig");
 const sd_trace = @import("trace.zig");
 const sd_command = @import("command.zig");
-const spi = @import("../../chip/periph/spi/spi.zig");
+const spi = @import("ra8_chip").periph.spi;
 
 /// Which SPI_B channel the card is wired to. The model's own rule; see the
 /// header.

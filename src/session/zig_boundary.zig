@@ -10,7 +10,7 @@ const zig_cycles = @import("zig_cycles.zig");
 const zig_drive = @import("zig_drive.zig");
 const stop_machine = @import("stop_machine.zig");
 const watch_bus = @import("watch_bus.zig");
-const sleep_pace = @import("../chip/core/sleep_pace.zig");
+const sleep_pace = @import("ra8_chip").core.sleep_pace;
 
 /// Instructions between boundaries when the board names none.
 pub const default_chunk: u32 = 1024;

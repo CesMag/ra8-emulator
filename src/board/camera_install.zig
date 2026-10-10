@@ -4,7 +4,7 @@
 //! reads. A source that cannot be opened never gets here, so the old one
 //! stays in place.
 const Board = @import("board.zig").Board;
-const frame_source = @import("../chip/periph/camera/frame_source.zig");
+const frame_source = @import("ra8_chip").periph.frame_source;
 
 /// Install `next` as `board`'s camera source; the board owns it from here.
 /// Call it only on the thread that steps the board.

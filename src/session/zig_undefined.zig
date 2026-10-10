@@ -6,9 +6,9 @@
 //! instruction. The guard is only installed when the flag asks for it,
 //! because it turns off the trip skipping a plain run relies on.
 const elf = @import("../image/elf.zig");
-const undefined_ops = @import("../chip/core/undefined_ops.zig");
+const undefined_ops = @import("ra8_chip").core.undefined_ops;
 const read_image = @import("../image/load.zig");
-const cpu = @import("../chip/core/cpu/cpu.zig");
+const cpu = @import("ra8_chip").core.cpu.cpu;
 
 pub const Found = undefined_ops.Found;
 

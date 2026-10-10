@@ -2,8 +2,8 @@
 //! The board side of the chip's external port (RA8EMU-1041): the chip decodes
 //! the apertures, and this fabric meters every access behind them.
 const std = @import("std");
-const initiator_mod = @import("../chip/core/cpu/memory/initiator.zig");
-const port = @import("../chip/core/cpu/memory/external_port.zig");
+const initiator_mod = @import("ra8_chip").core.cpu.memory.initiator;
+const port = @import("ra8_chip").core.cpu.memory.external_port;
 
 pub const Initiator = initiator_mod.Initiator;
 

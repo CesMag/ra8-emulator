@@ -7,7 +7,7 @@
 //! rate where it was rather than guessing, and so does a tree firmware has
 //! not touched yet.
 const Board = @import("board.zig").Board;
-const sysclk = @import("../chip/periph/sysclk/sysclk.zig");
+const sysclk = @import("ra8_chip").periph.sysclk;
 
 /// What the tree and the PLLs say each core runs at.
 pub fn inputs(self: *const Board) sysclk.rate.Inputs {

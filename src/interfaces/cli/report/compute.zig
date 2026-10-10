@@ -2,7 +2,7 @@
 //! what it actually moved, and the kicks it refused to pretend about.
 const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
-const vela_hook = @import("../../../chip/periph/npu/npu_vela_hook.zig");
+const vela_hook = @import("ra8_chip").periph.npu_vela_hook;
 
 /// One line per run that touched the NPU window, plus a line for each kind
 /// of kick that produced no job. A stream dev would have run down the copy

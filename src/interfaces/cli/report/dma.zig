@@ -17,7 +17,7 @@
 const std = @import("std");
 
 const Board = @import("../../../board/board.zig").Board;
-const dmac = @import("../../../chip/periph/dmac/dmac.zig");
+const dmac = @import("ra8_chip").periph.dmac;
 
 const Writer = *std.Io.Writer;
 

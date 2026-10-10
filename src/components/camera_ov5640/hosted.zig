@@ -5,10 +5,10 @@
 //! wrote into the OV5640's FORMAT CONTROL register and scaled to the size it
 //! programmed. The camera never opens a host file or device itself.
 const std = @import("std");
-const frame_source = @import("../../chip/periph/camera/frame_source.zig");
+const frame_source = @import("ra8_chip").periph.frame_source;
 const convert = @import("pixel_convert.zig");
 const converted = @import("converted_source.zig");
-const gradient = @import("../../chip/periph/camera/gradient_source.zig");
+const gradient = @import("ra8_chip").periph.gradient_source;
 
 /// OV5640 FORMAT CONTROL (0x4300): bits 7:4 pick the output format. 0x6 is
 /// RGB565. 0x3 is YUV422, which the camera example writes (0x30), and the

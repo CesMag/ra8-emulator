@@ -13,8 +13,8 @@
 const std = @import("std");
 const core_view = @import("../../session/core_view.zig");
 const stop_machine = @import("../../session/stop_machine.zig");
-const dwt = @import("../../chip/periph/dwt.zig");
-const dcb = @import("../../chip/periph/dcb.zig");
+const dwt = @import("ra8_chip").periph.dwt;
+const dcb = @import("ra8_chip").periph.dcb;
 
 /// Hand a debugger store of `length` bytes at `address` to the models.
 pub fn forward(core: core_view.View, machine: *stop_machine.Machine, address: u32, length: usize) void {

@@ -4,7 +4,7 @@
 //! transcript on either CPU. `core 0|1` hands the session to the other
 //! core (RA8EMU-337), its image and temporary breaks with it.
 const std = @import("std");
-const Bounded = @import("../chip/core/bounded.zig").Bounded;
+const Bounded = @import("ra8_chip").core.bounded.Bounded;
 const break_table = @import("break_table.zig");
 const commands = @import("commands.zig");
 const elf = @import("../image/elf.zig");

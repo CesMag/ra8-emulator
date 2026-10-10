@@ -21,9 +21,9 @@ const break_table = @import("break_table.zig");
 const breakpoint = @import("breakpoint.zig");
 const watch_table = @import("watch_table.zig");
 const fpb = @import("fpb.zig");
-const dwt = @import("../chip/periph/dwt.zig");
-const itm = @import("../chip/periph/itm.zig");
-const dcb = @import("../chip/periph/dcb.zig");
+const dwt = @import("ra8_chip").periph.dwt;
+const itm = @import("ra8_chip").periph.itm;
+const dcb = @import("ra8_chip").periph.dcb;
 
 /// What the CPU is about to execute, as the driver sees it.
 pub const Event = struct {

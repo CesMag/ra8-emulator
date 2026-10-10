@@ -3,7 +3,7 @@
 //! the interface it declares.
 const std = @import("std");
 const host_read = @import("ra8_host").host_read;
-const ByteSource = @import("../../chip/periph/byte_source.zig").ByteSource;
+const ByteSource = @import("ra8_chip").periph.byte_source.ByteSource;
 
 /// The byte source that reads `handle` without waiting.
 pub fn of(handle: host_read.Handle) ByteSource {

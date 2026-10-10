@@ -7,14 +7,14 @@
 //! is load-bearing in a way the field list is not, the same reason the bus
 //! order sits in wiring.zig rather than beside the blocks it attaches.
 const core_clock = @import("core_clock.zig");
-const Guest = @import("../chip/core/cpu/memory/guest.zig").Guest;
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 
 const Board = @import("board.zig").Board;
-const reset = @import("../chip/periph/reset.zig");
-const pin_irq = @import("../chip/periph/icu/icu_pin_irq.zig");
-const agt_sched = @import("../chip/periph/agt/agt_sched.zig");
-const gpt_sched = @import("../chip/periph/gpt/gpt_sched.zig");
-const rtc_sched = @import("../chip/periph/rtc/rtc_sched.zig");
+const reset = @import("ra8_chip").periph.reset;
+const pin_irq = @import("ra8_chip").periph.icu_pin_irq;
+const agt_sched = @import("ra8_chip").periph.agt_sched;
+const gpt_sched = @import("ra8_chip").periph.gpt_sched;
+const rtc_sched = @import("ra8_chip").periph.rtc_sched;
 const event_sink = @import("event_sink.zig");
 /// Whether a sleeping core may run to the next queued event: src/board/quiet_due.zig.
 pub const quiet_due = @import("quiet_due.zig");
@@ -59,7 +59,7 @@ pub fn tick(self: *Board, core: Guest, instructions: u32) !void {
     return tickFrom(self, core, instructions, .cpu0);
 }
 
-pub fn tickFrom(self: *Board, core: Guest, instructions: u32, issuer: @import("../chip/periph/registry.zig").Issuer) !void {
+pub fn tickFrom(self: *Board, core: Guest, instructions: u32, issuer: @import("ra8_chip").periph.registry.Issuer) !void {
     if (self.event_sink) |sink| sink.observeFn(sink.context, issuer, self.time.base.now(), observation(self));
     const before_ns = self.time.base.now();
     self.time.base.advance(instructions);
@@ -159,7 +159,7 @@ pub fn takeResetRequests(self: *Board, core: anytype) !void {
     return takeResetRequestsFrom(self, core, .cpu0);
 }
 
-pub fn takeResetRequestsFrom(self: *Board, core: anytype, issuer: @import("../chip/periph/registry.zig").Issuer) !void {
+pub fn takeResetRequestsFrom(self: *Board, core: anytype, issuer: @import("ra8_chip").periph.registry.Issuer) !void {
     if (self.watchdog.reset_requested) {
         self.watchdog.reset_requested = false;
         self.run.soak.note(.watchdog_reset, self.time.base.now());
@@ -184,7 +184,7 @@ pub fn resetFor(self: *Board, source: reset.Source) void {
     resetForFrom(self, source, .cpu0);
 }
 
-pub fn resetForFrom(self: *Board, source: reset.Source, issuer: @import("../chip/periph/registry.zig").Issuer) void {
+pub fn resetForFrom(self: *Board, source: reset.Source, issuer: @import("ra8_chip").periph.registry.Issuer) void {
     if (self.event_sink) |sink| sink.resetFn(sink.context, issuer, source, self.time.base.now());
     self.causes.request(source);
     self.events.clearLatches();

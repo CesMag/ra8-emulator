@@ -4,8 +4,8 @@
 //! the MPU, SAU and attribution lines of report/cores.zig print, every key
 //! always present so a quiet run reads as zeros rather than missing keys.
 const Board = @import("../../../board/board.zig").Board;
-const mpu = @import("../../../chip/periph/mpu/mpu.zig");
-const sau = @import("../../../chip/periph/sau.zig");
+const mpu = @import("ra8_chip").periph.mpu;
+const sau = @import("ra8_chip").periph.sau;
 
 /// The whole `protection` object, keyed inside the document.
 pub fn section(j: anytype, board: *Board) !void {

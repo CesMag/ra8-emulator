@@ -1,6 +1,6 @@
 //! The EK-RA8D2's two user switches (UM Tbl 25, RA8EMU-1043), both on PORT0
 //! with board pull-ups: SW1 = P009 on IRQ13, SW2 = P008 on IRQ12.
-const gpio = @import("../chip/periph/gpio/gpio.zig");
+const gpio = @import("ra8_chip").periph.gpio;
 const user_switch = @import("../components/user_switch/user_switch.zig");
 
 pub const user = [_]user_switch.Switch{

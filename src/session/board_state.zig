@@ -12,10 +12,10 @@
 const std = @import("std");
 const Board = @import("../board/board.zig").Board;
 const BoardBoundary = @import("board_boundary.zig").BoardBoundary;
-const Cpu = @import("../chip/core/cpu/cpu.zig").Cpu;
-const Store = @import("../chip/core/cpu/memory/store.zig").Store;
+const Cpu = @import("ra8_chip").core.cpu.cpu.Cpu;
+const Store = @import("ra8_chip").core.cpu.memory.store.Store;
 const run_file = @import("../board/snapshot/run.zig");
-const systick = @import("../chip/snapshot/systick.zig");
+const systick = @import("ra8_chip").snapshot.systick;
 const stretch = @import("../board/snapshot/stretch.zig");
 
 pub const Error = error{SecondCoreNotSaved};

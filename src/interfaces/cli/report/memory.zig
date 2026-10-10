@@ -8,7 +8,7 @@
 const std = @import("std");
 
 const Board = @import("../../../board/board.zig").Board;
-const cache = @import("../../../chip/periph/cache/cache.zig");
+const cache = @import("ra8_chip").periph.cache;
 
 const Writer = *std.Io.Writer;
 
@@ -35,7 +35,7 @@ pub fn sections(board: *Board, out: Writer) !void {
 /// SRAMPRCR. Quiet unless a key was written or a guarded store happened,
 /// and loud when one was turned away: a configuration write that never
 /// landed is the kind of thing a driver does not notice until the bench.
-fn protection(lock: *const @import("../../../chip/periph/sram/sram_lock.zig").Lock, out: Writer) !void {
+fn protection(lock: *const @import("ra8_chip").periph.sram_lock.Lock, out: Writer) !void {
     if (lock.quiet()) return;
     try out.print(
         "SRAMPRCR: {s}, {d} key write(s), {d} guarded store(s) through\n",

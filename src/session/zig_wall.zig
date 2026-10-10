@@ -5,7 +5,7 @@
 //! and the window pacer see.
 const std = @import("std");
 const backing = @import("../board/external_backing.zig");
-const clocks = @import("../chip/periph/clocks.zig");
+const clocks = @import("ra8_chip").periph.clocks;
 const Clock = @import("run_clock.zig").Clock;
 
 /// Charge `instructions` retired by CPU0 to both cores and the board.

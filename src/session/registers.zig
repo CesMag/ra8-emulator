@@ -17,7 +17,7 @@
 //! `read_block(ctx, uint64_t lba, count, buf)` shows its lba and hides its
 //! count.
 const std = @import("std");
-const Cortex = @import("../chip/core/cpu/cortex.zig").Cortex;
+const Cortex = @import("ra8_chip").core.cpu.cortex.Cortex;
 
 pub const limits = struct {
     /// How many registers share one printed line.

@@ -2,7 +2,7 @@
 const std = @import("std");
 const host = @import("touch_input.zig");
 const gt911 = @import("gt911.zig");
-const gpio = @import("../../chip/periph/gpio/gpio.zig");
+const gpio = @import("ra8_chip").periph.gpio;
 pub const Event = union(enum) {
     tap: gt911.Contact,
     swipe: struct { from: gt911.Contact, to: gt911.Contact, duration_ns: u64 },

@@ -14,9 +14,9 @@ const hotspots = @import("../../../session/hotspots.zig");
 pub const Pcs = hotspots.Table;
 const functions = @import("../../../session/functions.zig");
 const profile = functions.profile;
-const lob = @import("../../../chip/core/lob.zig");
-const csel = @import("../../../chip/core/csel.zig");
-const tz = @import("../../../chip/core/tz.zig");
+const lob = @import("ra8_chip").core.lob;
+const csel = @import("ra8_chip").core.csel;
+const tz = @import("ra8_chip").core.tz;
 
 /// The hand-stepped counts.
 pub const Steps = struct {

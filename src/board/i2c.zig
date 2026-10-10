@@ -11,19 +11,19 @@
 //! with no module fitted answers nothing at 0x6B or 0x36. They go on the line
 //! only when the run asks for them with `click`; by default those addresses
 //! stay silent, the same as the bench.
-const bus = @import("../chip/periph/riic/riic_bus.zig");
+const bus = @import("ra8_chip").periph.riic_bus;
 const catalog = @import("../components/catalog.zig");
 const endpoint = @import("../components/endpoint.zig");
 const gt911 = @import("../components/touch_gt911/gt911.zig");
-const i3c = @import("../chip/periph/i3c/i3c.zig");
+const i3c = @import("ra8_chip").periph.i3c;
 const lsm6dso = @import("../components/imu_lsm6dso/lsm6dso.zig");
 const max17048 = @import("../components/gauge_max17048/max17048.zig");
 const ov5640 = @import("../components/camera_ov5640/ov5640_sccb.zig");
 const parts = @import("../components/parts.zig");
-const periph = @import("../chip/periph/registry.zig");
+const periph = @import("ra8_chip").periph.registry;
 const pi4ioe = @import("../components/expander_pi4ioe/pi4ioe.zig");
-const riic = @import("../chip/periph/riic/riic.zig");
-const timebase = @import("../chip/periph/time/timebase.zig");
+const riic = @import("ra8_chip").periph.riic;
+const timebase = @import("ra8_chip").periph.timebase;
 
 pub const Wire = struct {
     controller: riic.Riic = riic.Riic.init(),

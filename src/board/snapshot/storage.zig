@@ -9,7 +9,7 @@
 const std = @import("std");
 const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
-const options_half = @import("../../chip/periph/mram/mram_snapshot.zig");
+const options_half = @import("ra8_chip").periph.mram_snapshot;
 const nor_half = @import("../../components/nor_flash/flash_snapshot.zig");
 
 pub const Error = file.Error || fields.Error || error{ Missing, OutOfMemory };

@@ -7,7 +7,7 @@
 //! captures a whole frame inside one CE write, so a swap between steps
 //! always lands between frames, never in the middle of one, and the next
 //! armed capture is the first to come from the new source.
-const frame_source = @import("../../chip/periph/camera/frame_source.zig");
+const frame_source = @import("ra8_chip").periph.frame_source;
 
 pub const FrameSource = frame_source.FrameSource;
 

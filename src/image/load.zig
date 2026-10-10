@@ -4,7 +4,7 @@
 //! `Loaded` that holds them, so both outlive the load.
 const elf = @import("elf.zig");
 const pages = @import("pages.zig");
-const loaded_image = @import("../chip/core/loaded_image.zig");
+const loaded_image = @import("ra8_chip").core.loaded_image;
 
 /// Load segments with file bytes one image may carry.
 pub const capacity: usize = 32;

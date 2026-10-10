@@ -4,15 +4,15 @@
 //! for the application to report. The CLI's adapter is
 //! src/interfaces/cli/zig_run.zig.
 const std = @import("std");
-const Guest = @import("../chip/core/cpu/memory/guest.zig").Guest;
-const boot = @import("../chip/core/cpu/boot.zig");
-const choice = @import("../chip/core/cpu/choice.zig");
-const systick_cut = @import("../chip/core/cpu/cpu.zig").systick_cut;
-const second_core = @import("../chip/core/second_core.zig");
-const Until = @import("../chip/core/until.zig").Until;
-const Stop = @import("../chip/core/stop.zig").Stop;
-const Deadline = @import("../chip/core/deadline.zig").Deadline;
-const clocks = @import("../chip/periph/clocks.zig");
+const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
+const boot = @import("ra8_chip").core.cpu.boot;
+const choice = @import("ra8_chip").core.cpu.choice;
+const systick_cut = @import("ra8_chip").core.cpu.cpu.systick_cut;
+const second_core = @import("ra8_chip").core.second_core;
+const Until = @import("ra8_chip").core.until.Until;
+const Stop = @import("ra8_chip").core.stop.Stop;
+const Deadline = @import("ra8_chip").core.deadline.Deadline;
+const clocks = @import("ra8_chip").periph.clocks;
 const elf = @import("../image/elf.zig");
 const Board = @import("../board/board.zig").Board;
 const fault_file = @import("fault_file.zig");

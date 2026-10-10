@@ -9,7 +9,7 @@
 const std = @import("std");
 const zig_core = @import("zig_core.zig");
 const stop_machine = @import("stop_machine.zig");
-const dcb = @import("../chip/periph/dcb.zig");
+const dcb = @import("ra8_chip").periph.dcb;
 
 /// Pend DebugMonitor for the event the last instruction raised, if any.
 pub fn take(core: zig_core.ZigCore, machine: *stop_machine.Machine) void {

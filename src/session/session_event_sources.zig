@@ -1,16 +1,16 @@
 //! Engine-thread source adapters for session events (RA8EMU-192).
 const std = @import("std");
 const stream_mod = @import("session_event_stream.zig");
-const sci = @import("../chip/periph/sci/sci.zig");
-const gpio = @import("../chip/periph/gpio/gpio.zig");
-const registry = @import("../chip/periph/registry.zig");
-const TimeBase = @import("../chip/periph/time/timebase.zig").TimeBase;
-const reset = @import("../chip/periph/reset.zig");
+const sci = @import("ra8_chip").periph.sci;
+const gpio = @import("ra8_chip").periph.gpio;
+const registry = @import("ra8_chip").periph.registry;
+const TimeBase = @import("ra8_chip").periph.timebase.TimeBase;
+const reset = @import("ra8_chip").periph.reset;
 const board_events = @import("../board/event_sink.zig");
 const eink = @import("../components/eink_it8951/panel.zig");
-const glcdc = @import("../chip/periph/glcdc/glcdc.zig");
-const wdt = @import("../chip/periph/wdt/wdt.zig");
-const iwdt = @import("../chip/periph/iwdt/iwdt.zig");
+const glcdc = @import("ra8_chip").periph.glcdc;
+const wdt = @import("ra8_chip").periph.wdt;
+const iwdt = @import("ra8_chip").periph.iwdt;
 
 pub const Core = stream_mod.Core;
 pub const Event = stream_mod.Event;
