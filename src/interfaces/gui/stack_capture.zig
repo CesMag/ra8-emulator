@@ -3,7 +3,7 @@
 //! (session_report.zig). ui/stack_pane.zig draws the result without
 //! importing the session.
 const std = @import("std");
-const elf = @import("ra8_board").image.elf;
+const Image = @import("ra8_session").symbols.Image;
 const dwarf_line = @import("ra8_session").dwarf_line;
 const session_api = @import("ra8_session").session_api;
 const symbols = @import("ra8_session").symbols;
@@ -17,7 +17,7 @@ comptime {
 /// Walks `core`'s call chain. Without CFI for the stop the chain is pc and,
 /// when it holds a code address, lr, as `backtrace` falls back to. With no
 /// image the frames carry only their pcs.
-pub fn capture(session: *session_api.Session, core: session_api.Core, image: ?elf.Image) anyerror!stack_pane.Snapshot {
+pub fn capture(session: *session_api.Session, core: session_api.Core, image: ?Image) anyerror!stack_pane.Snapshot {
     const view = try session.view(core);
     var walked: [stack_pane.max_frames]unwind.Frame = undefined;
     const cfi = if (image) |found| dwarf_line.section(found, ".debug_frame") else &.{};
@@ -39,7 +39,7 @@ pub fn capture(session: *session_api.Session, core: session_api.Core, image: ?el
     return snapshot;
 }
 
-fn nameFrame(frame: *stack_pane.Frame, image: elf.Image, at: u32) void {
+fn nameFrame(frame: *stack_pane.Frame, image: Image, at: u32) void {
     const found = symbols.inside(image, at) orelse return;
     frame.name_len = @min(found.name.len, stack_pane.name_cap);
     @memcpy(frame.name_buf[0..frame.name_len], found.name[0..frame.name_len]);

@@ -5,7 +5,7 @@
 //! without importing the session.
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
-const elf = @import("ra8_board").image.elf;
+const Image = @import("ra8_session").symbols.Image;
 const dwarf_line = @import("ra8_session").dwarf_line;
 const session_api = @import("ra8_session").session_api;
 const session_source = @import("ra8_session").session_source;
@@ -58,7 +58,7 @@ pub const Error = error{ NoCodeOnLine, TooManyMarks };
 
 /// Clears the breakpoint the gutter set on `line` of `file`, or sets one
 /// where the line table puts that line's code. True when one is now set.
-pub fn toggle(marks: *source_pane.Marks, session: *session_api.Session, core: session_api.Core, image: ?elf.Image, file: []const u8, line: u32) anyerror!bool {
+pub fn toggle(marks: *source_pane.Marks, session: *session_api.Session, core: session_api.Core, image: ?Image, file: []const u8, line: u32) anyerror!bool {
     if (marks.find(file, line)) |index| {
         try session.clearBreakpoint(core, marks.items[index].id);
         marks.items[index] = marks.items[marks.len - 1];
@@ -75,7 +75,7 @@ pub fn toggle(marks: *source_pane.Marks, session: *session_api.Session, core: se
 
 /// A gutter click: toggles that line's breakpoint, or null when the click
 /// missed the gutter.
-pub fn click(marks: *source_pane.Marks, session: *session_api.Session, core: session_api.Core, image: ?elf.Image, area: draw_list.Rect, snapshot: *const source_pane.Snapshot, x: i32, y: i32) anyerror!?bool {
+pub fn click(marks: *source_pane.Marks, session: *session_api.Session, core: session_api.Core, image: ?Image, area: draw_list.Rect, snapshot: *const source_pane.Snapshot, x: i32, y: i32) anyerror!?bool {
     const line = source_pane.lineAt(area, snapshot, x, y) orelse return null;
     return try toggle(marks, session, core, image, snapshot.path(), line);
 }

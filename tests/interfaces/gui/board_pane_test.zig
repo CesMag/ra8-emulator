@@ -91,3 +91,9 @@ test "the board pane frame with LED1 on is pinned" {
     const digest = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
     try std.testing.expectEqual(@as(u64, 11290556999026159831), digest);
 }
+
+test "the pane's LED count and lamp colours are the chip's" {
+    const gpio = ra8.periph.gpio;
+    try std.testing.expectEqual(gpio.led_count, pane.led_count);
+    for (gpio.leds, pane.led_rgb565) |led, rgb565| try std.testing.expectEqual(led.rgb565, rgb565);
+}

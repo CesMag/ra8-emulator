@@ -22,6 +22,10 @@
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 
+/// The parsed image every lookup here reads: the board loader's ELF image.
+/// A caller that holds one names it through the session.
+pub const Image = elf.Image;
+
 /// Section header types, of which only the symbol table matters here.
 pub const section_type = struct {
     /// SHT_SYMTAB, the full symbol table a linked image keeps.
