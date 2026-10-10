@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sd_dump = ra8.components.sd_dump;
+const sd_dump = ra8.components.sd_card.dump;
 
 test "a row carries its offset, the bytes as hex, and the bytes as text" {
     var buf: sd_dump.Buffer = undefined;

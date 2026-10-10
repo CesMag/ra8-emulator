@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const ipc = ra8.chip.periph.ipc;
-const sync = ra8.chip.periph.ipc_sync;
+const sync = ra8.chip.periph.ipc.sync;
 
 fn reg(channel: usize, offset: u32) u32 {
     return ipc.channelAddress(channel) + offset;

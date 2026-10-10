@@ -15,8 +15,8 @@ const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const elf = @import("ra8_board").image.elf;
 const cli = @import("../cli.zig");
 const symbols = @import("ra8_session").symbols;
-const sd_dump = @import("ra8_components").sd_dump;
-const sd_image = @import("ra8_components").sd_image;
+const sd_dump = @import("ra8_components").sd_card.dump;
+const sd_image = @import("ra8_components").sd_card.image;
 const registers = @import("ra8_session").registers;
 const json_regs = @import("json_regs.zig");
 

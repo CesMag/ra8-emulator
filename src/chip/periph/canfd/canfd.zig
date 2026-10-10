@@ -64,37 +64,37 @@
 //! RX-FIFO one. The rest of the window is shadowed, and never read.
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const fifo = @import("fifo.zig");
-const sleep = @import("sleep.zig");
-const rx_config = @import("rx_config.zig");
-const rx_status = @import("rx_status.zig");
-const tx_status = @import("tx_status.zig");
-const registers = @import("regs.zig");
+pub const fifo = @import("fifo.zig");
+pub const sleep = @import("sleep.zig");
+pub const rx_config = @import("rx_config.zig");
+pub const rx_status = @import("rx_status.zig");
+pub const tx_status = @import("tx_status.zig");
+pub const regs = @import("regs.zig");
 const errors = @import("error_flags.zig");
 
 /// The geometry, the offsets and the field masks, split into
 /// regs.zig and reached through the block the way the other parts of
 /// it are.
-pub const unit0_base = registers.unit0_base;
-pub const unit1_base = registers.unit1_base;
-pub const win_span = registers.win_span;
-pub const unit_count = registers.unit_count;
-pub const off_cnctr = registers.off_cnctr;
-pub const off_cnsts = registers.off_cnsts;
-pub const off_gctr = registers.off_gctr;
-pub const off_gsts = registers.off_gsts;
-pub const off_rfsts0 = registers.off_rfsts0;
-pub const off_rfpctr0 = registers.off_rfpctr0;
-pub const off_tmc0 = registers.off_tmc0;
-pub const off_tmsts0 = registers.off_tmsts0;
-pub const off_afl = registers.off_afl;
-pub const off_rf0 = registers.off_rf0;
-pub const off_tm0 = registers.off_tm0;
-pub const afl = registers.afl;
-pub const field = registers.field;
-pub const event = registers.event;
-pub const Due = registers.Due;
-pub const Mode = registers.Mode;
+pub const unit0_base = regs.unit0_base;
+pub const unit1_base = regs.unit1_base;
+pub const win_span = regs.win_span;
+pub const unit_count = regs.unit_count;
+pub const off_cnctr = regs.off_cnctr;
+pub const off_cnsts = regs.off_cnsts;
+pub const off_gctr = regs.off_gctr;
+pub const off_gsts = regs.off_gsts;
+pub const off_rfsts0 = regs.off_rfsts0;
+pub const off_rfpctr0 = regs.off_rfpctr0;
+pub const off_tmc0 = regs.off_tmc0;
+pub const off_tmsts0 = regs.off_tmsts0;
+pub const off_afl = regs.off_afl;
+pub const off_rf0 = regs.off_rf0;
+pub const off_tm0 = regs.off_tm0;
+pub const afl = regs.afl;
+pub const field = regs.field;
+pub const event = regs.event;
+pub const Due = regs.Due;
+pub const Mode = regs.Mode;
 
 /// The error-flag rule, reached as `canfd.error_flags` the way the other
 /// split parts of this block are reached through it.

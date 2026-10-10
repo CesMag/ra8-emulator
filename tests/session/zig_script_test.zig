@@ -9,7 +9,7 @@ const commands = ra8.session.commands;
 const memmap = ra8.chip.core.memmap;
 const session = ra8.session.session;
 const stop_machine = ra8.session.stop_machine;
-const Session = ra8.session.session_api.Session;
+const Session = ra8.session.api.Session;
 const step_hook = ra8.session.step_hook;
 const zig_script = step_hook.zig_script;
 

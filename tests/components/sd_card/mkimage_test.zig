@@ -3,11 +3,11 @@
 const std = @import("std");
 const io = std.testing.io;
 const ra8 = @import("ra8");
-const mk = ra8.components.sd_mkimage;
-const sd_image = ra8.components.sd_image;
+const mk = ra8.components.sd_card.mkimage;
+const sd_image = ra8.components.sd_card.image;
 const disk_file = ra8.host.disk_file;
 const Folder = ra8.host.folder.Folder;
-const card = ra8.components.sd_bus_card;
+const card = ra8.components.sd_card.bus_card;
 const fat32 = @import("fat32_reader.zig");
 
 const A = std.testing.allocator;

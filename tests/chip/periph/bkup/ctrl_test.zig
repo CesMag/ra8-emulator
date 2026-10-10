@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const ctrl = ra8.chip.periph.bkup_ctrl;
+const ctrl = ra8.chip.periph.bkup.ctrl;
 
 test "every named register resolves to its own slot" {
     var seen = @as([ctrl.slot_count]bool, @splat(false));

@@ -80,7 +80,7 @@ const std = @import("std");
 const periph = @import("../registry.zig");
 const frames = @import("frame.zig");
 const lanes = @import("../lanes.zig");
-const lock = @import("enable_lock.zig");
+pub const enable_lock = @import("enable_lock.zig");
 
 /// The byte-lane arithmetic every register window here shares.
 const part = lanes.part;
@@ -169,7 +169,7 @@ pub const Channel = struct {
     /// SPDR reads that could not carry the frame: nothing was taken.
     narrow_reads: u32 = 0,
     /// SPCR2 stores made while SPE was set: the register did not move.
-    locked: lock.Locked = .{},
+    locked: enable_lock.Locked = .{},
     /// What is on the wire, when anything is.
     device: ?Device = null,
 

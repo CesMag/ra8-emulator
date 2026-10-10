@@ -12,10 +12,10 @@ const endpoint = @import("ra8_components").endpoint;
 const fault = @import("ra8_components").fault;
 const fault_spec = @import("ra8_components").fault_spec;
 const fault_lines = @import("ra8_components").fault_lines;
-const riic_bus = @import("ra8_chip").periph.riic_bus;
+const riic_bus = @import("ra8_chip").periph.riic.bus;
 const spi = @import("ra8_chip").periph.spi;
 const sci = @import("ra8_chip").periph.sci;
-const sci_device = @import("ra8_chip").periph.sci_device;
+const sci_device = @import("ra8_chip").periph.sci.device;
 const lines = @import("board_faults_lines.zig");
 const Board = @import("ra8_board").board.Board;
 

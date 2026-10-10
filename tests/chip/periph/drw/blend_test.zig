@@ -5,7 +5,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const blend = ra8.chip.periph.drw_blend;
+const blend = ra8.chip.periph.drw.blend;
 
 /// The reset CONTROL2: no invert bits, so both factors are 1, and
 /// WRITEALPHA = 00, so the stored alpha comes from COLOR2.

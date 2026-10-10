@@ -1,7 +1,7 @@
 //! Reads the memory pane's bytes through the session (RA8EMU-1078), so
 //! ui/memory_pane.zig stays a pure draw producer that never imports the
 //! session.
-const session_api = @import("ra8_session").session_api;
+const session_api = @import("ra8_session").api;
 const memory_pane = @import("ui/memory_pane.zig");
 
 /// Reads `row_count` rows (at most `memory_pane.max_rows`) of `core`'s

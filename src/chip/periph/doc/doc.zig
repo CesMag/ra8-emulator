@@ -47,6 +47,7 @@ const std = @import("std");
 const periph = @import("../registry.zig");
 const doc_compare = @import("compare.zig");
 const dodir = @import("operand.zig");
+pub const operand = dodir;
 
 /// The detection condition DOCR.DCSEL selects, in its own file.
 pub const compare = doc_compare;
@@ -135,9 +136,9 @@ pub const Doc = struct {
     }
 
     /// Run one operation with `operand` as the DODIR value.
-    pub fn apply(self: *Doc, operand: u32) void {
+    pub fn apply(self: *Doc, value: u32) void {
         const mask = self.widthMask();
-        const in = operand & mask;
+        const in = value & mask;
         const current = self.dodsr0 & mask;
         switch (self.mode()) {
             .add => {
@@ -157,7 +158,7 @@ pub const Doc = struct {
             else => {
                 // Compare leaves the accumulator alone; only the flag moves.
                 // Which question is being asked is DOCR.DCSEL's to answer, and
-                // the two window relations weigh the operand against DODSR1 as
+                // the two window relations weigh the value against DODSR1 as
                 // well as DODSR0.
                 const condition = compare.Relation.of(self.docr);
                 if (condition.windowed()) self.windows +%= 1;

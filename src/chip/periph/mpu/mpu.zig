@@ -53,7 +53,7 @@
 //! line in the report, which is why `observe` says what each store meant
 //! rather than leaving the caller to work it out from the address.
 const memmap = @import("../../core/memmap.zig");
-const mpu_fault = @import("fault.zig");
+pub const fault = @import("fault.zig");
 
 /// The register block's fixed shape: how many data regions this core reports,
 /// and where DREGION sits in TYPE.
@@ -97,6 +97,8 @@ pub const field = struct {
 /// the three bits that decide which accesses into it are allowed.
 /// The Non-secure MPU's copy on the Zig core's bus. src/chip/periph/mpu/ns.zig.
 pub const ns = @import("ns.zig");
+pub const background = @import("background.zig");
+pub const escalate = @import("escalate.zig");
 
 pub const Region = struct {
     base: u32 = 0,
@@ -146,7 +148,7 @@ pub const Region = struct {
     /// privileged code may do there.
     pub const Refusal = enum { allowed, permission, privilege };
 
-    pub fn refuses(self: Region, kind: mpu_fault.Kind, privileged: bool) Refusal {
+    pub fn refuses(self: Region, kind: fault.Kind, privileged: bool) Refusal {
         if (!privileged and !self.unprivileged) return .privilege;
         return switch (kind) {
             // No permission bit refuses a load: read-only is about stores and

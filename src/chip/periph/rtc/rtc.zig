@@ -54,10 +54,10 @@
 const std = @import("std");
 
 const periph = @import("../registry.zig");
-const clock = @import("clock.zig");
-const reset = @import("reset.zig");
-const frequency = @import("frequency.zig");
-const rtc_source = @import("source.zig");
+pub const clock = @import("clock.zig");
+pub const reset = @import("reset.zig");
+pub const frequency = @import("frequency.zig");
+pub const source = @import("source.zig");
 const rtc_pace = @import("pace.zig");
 
 /// RTC geometry (ra8_rtc_regs.h). The bus folds the Non-secure alias onto
@@ -159,7 +159,7 @@ pub const Rtc = struct {
     divisor: frequency.Frequency = .{},
     /// RCR4's count source, and what the run made of the order it was
     /// selected in.
-    count_source: rtc_source.Select = .{},
+    count_source: source.Select = .{},
     due_alarm: bool = false,
     due_periodic: bool = false,
 

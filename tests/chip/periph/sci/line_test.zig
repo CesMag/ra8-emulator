@@ -1,7 +1,7 @@
 //! Covers src/chip/periph/sci/line.zig: the console line the firmware printed.
 const std = @import("std");
 const ra8 = @import("ra8");
-const text = ra8.chip.periph.sci_line;
+const text = ra8.chip.periph.sci.line;
 
 const Transcript = struct {
     bytes: [64]u8 = undefined,

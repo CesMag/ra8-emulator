@@ -11,7 +11,7 @@
 //! with no module fitted answers nothing at 0x6B or 0x36. They go on the line
 //! only when the run asks for them with `click`; by default those addresses
 //! stay silent, the same as the bench.
-const bus = @import("ra8_chip").periph.riic_bus;
+const bus = @import("ra8_chip").periph.riic.bus;
 const catalog = @import("ra8_components").catalog;
 const endpoint = @import("ra8_components").endpoint;
 const gt911 = @import("ra8_components").gt911;

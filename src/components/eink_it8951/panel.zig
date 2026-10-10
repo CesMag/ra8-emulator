@@ -61,22 +61,19 @@
 //! shadowed and never interpreted.
 const std = @import("std");
 const proto = @import("wire.zig");
-const busy = @import("busy.zig");
-const image = @import("image.zig");
-const refresh = @import("refresh.zig");
+pub const busy = @import("busy.zig");
+pub const image = @import("image.zig");
+pub const refresh = @import("refresh.zig");
 const spi = @import("ra8_chip").periph.spi;
+pub const wire = @import("wire.zig");
+pub const snapshot = @import("snapshot.zig");
 /// The LUT busy model, re-exported so a caller reaches it through the
 /// panel rather than by a second import.
 pub const lut = busy;
 /// Which SPI_B channel the panel is wired to. The model's own rule; see the
 /// header.
 pub const line_channel: usize = 0;
-/// The panel's ready line, driven from the board so an HRDY poll reads a
-/// level rather than a floating zero. Matches the epaper app's busy pin.
-pub const hrdy = struct {
-    pub const port: u8 = 4;
-    pub const pin: u4 = 1;
-};
+pub const hrdy = @import("hrdy.zig");
 /// How many host registers the model keeps. Small on purpose: the driver
 /// touches a handful, and one nothing ever wrote reads zero anyway.
 pub const register_slots: usize = 8;

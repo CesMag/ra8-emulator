@@ -2,7 +2,7 @@
 //! budget and the pacer's thousandths, in --speed's range (RA8EMU-184).
 const std = @import("std");
 const ra8 = @import("ra8");
-const Change = ra8.session.session_speed.Change;
+const Change = ra8.session.speed.Change;
 
 test "a factor becomes a budget and thousandths" {
     const quarter = try Change.of(0.25, 1_000_000);

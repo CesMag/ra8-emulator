@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const short = ra8.chip.periph.mipi_csi_short;
+const short = ra8.chip.periph.mipi.csi_short;
 
 test "storing follows GSCT.GFIF" {
     try std.testing.expect(!short.storing(0));

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const otp = ra8.chip.periph.mram_otp;
+const otp = ra8.chip.periph.mram.otp;
 
 test "the window is HUM Table 59.15's range and nothing either side of it" {
     try std.testing.expect(otp.window.holds(otp.window.lo, 1));

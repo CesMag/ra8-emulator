@@ -45,11 +45,13 @@ const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
 const sci_status = @import("status.zig");
+pub const status = sci_status;
 const sci_lin = @import("lin.zig");
-const sci_spi = @import("spi.zig");
+pub const spi = @import("spi.zig");
 const sci_device = @import("device.zig");
-const sci_ring = @import("ring.zig");
-const sci_error = @import("error_latches.zig");
+pub const device = sci_device;
+pub const ring = @import("ring.zig");
+pub const error_latches = @import("error_latches.zig");
 const lanes = @import("../lanes.zig");
 
 /// SCI_B geometry. The Non-secure alias is folded onto this base by the bus
@@ -66,7 +68,7 @@ pub const off_rdr: u32 = 0x00;
 pub const off_tdr: u32 = 0x04;
 pub const off_ccr0: u32 = 0x08;
 /// CCR3's mode field, and what a Simple-SPI frame clocks back: spi.zig.
-pub const off_ccr3: u32 = sci_spi.off_ccr3;
+pub const off_ccr3: u32 = spi.off_ccr3;
 /// The status words and the clear strobes live in src/chip/periph/sci/status.zig,
 /// which owns what they answer and what a store to one does.
 pub const off_csr: u32 = sci_status.off.csr;
@@ -89,21 +91,11 @@ pub const lin = sci_lin;
 
 pub const csr = sci_status.csr;
 pub const cfclr = sci_status.cfclr;
-pub const Errors = sci_error.Errors;
+pub const Errors = error_latches.Errors;
 pub const fifo = sci_status.fifo;
 
-/// The ELC event numbers the console channel raises (HUM Ch 19 Table 19.3,
-/// FSP `bsp_elc.h` for ra8d2: SCI8_RXI 0x122, _TXI 0x123, _TEI 0x124). A
-/// firmware that routes one of these writes the same number into an IELSR
-/// slot, and src/chip/periph/icu/icu.zig matches the raised event to that slot.
-///
-/// Only the console channel has modelled event numbers, the same limit dev
-/// draws: the other nine channels raise nothing until something needs them.
-pub const event = struct {
-    pub const rxi: u16 = 0x122;
-    pub const txi: u16 = 0x123;
-    pub const tei: u16 = 0x124;
-};
+/// The ELC event numbers the console channel raises: event.zig.
+pub const event = @import("event.zig");
 
 /// The console events armed and satisfied at one moment. Bounded because
 /// there are exactly three of them.
@@ -112,8 +104,8 @@ pub const Due = Bounded(u16, 3);
 pub const data_mask: u32 = 0xFF;
 
 /// Model sizing, and the receive ring itself: src/chip/periph/sci/ring.zig.
-pub const limits = sci_ring.limits;
-pub const Ring = sci_ring.Ring;
+pub const limits = ring.limits;
+pub const Ring = ring.Ring;
 
 /// Something on a channel's line, and when it is on it.
 pub const Device = sci_device.Device;
@@ -137,7 +129,7 @@ pub const Channel = struct {
     unnamed_stores: u32 = 0,
     rx: Ring = .{},
     /// The CSR flags firmware has to clear: src/chip/periph/sci/error_latches.zig.
-    errors: sci_error.Errors = .{},
+    errors: error_latches.Errors = .{},
     /// CCR3, kept whole so the mode field can be read out of it.
     ccr3: u32 = 0,
     /// Simple-SPI frames nothing answered, clocked in off an idle line.
@@ -182,6 +174,12 @@ pub const Line = @import("line.zig").Line;
 
 /// What a watcher outside the run sees of every sent byte (RA8EMU-206).
 pub const Tap = @import("tap.zig").Tap;
+pub const line = @import("line.zig");
+pub const reply = @import("reply.zig");
+pub const peek = @import("peek.zig");
+pub const input = @import("input.zig");
+pub const snapshot = @import("snapshot.zig");
+pub const tap = @import("tap.zig");
 
 /// The block: ten channels and the console line capture.
 pub const Sci = struct {
@@ -331,7 +329,7 @@ pub const Sci = struct {
         }
         channel.transmitted += 1;
         if (index == console_channel) self.line.feed(byte);
-        if (self.tap) |tap| tap.sent(tap.ctx, index, byte);
+        if (self.tap) |hook| hook.sent(hook.ctx, index, byte);
         self.deliver(index, byte);
     }
 
@@ -345,14 +343,14 @@ pub const Sci = struct {
         const on_line = channel.device orelse return self.clockIdle(index);
         // A device wired to the channel's SPI pins is not on the line while
         // the channel is running as a UART (src/chip/periph/sci/device.zig).
-        if (on_line.spi_only and !sci_spi.simpleSpi(channel.ccr3)) return self.clockIdle(index);
-        const reply = on_line.feed(byte);
-        if (reply.len == 0) return self.clockIdle(index);
+        if (on_line.spi_only and !spi.simpleSpi(channel.ccr3)) return self.clockIdle(index);
+        const answer = on_line.feed(byte);
+        if (answer.len == 0) return self.clockIdle(index);
         if (!channel.enabled(ccr0.re)) {
-            channel.unheard +%= @intCast(reply.len);
+            channel.unheard +%= @intCast(answer.len);
             return;
         }
-        channel.receive(reply);
+        channel.receive(answer);
     }
 
     /// A Simple-SPI frame nothing answered still clocked one in: the channel
@@ -360,13 +358,13 @@ pub const Sci = struct {
     /// and an unconnected CIPO sits high. Asynchronous channels are untouched.
     fn clockIdle(self: *Sci, index: usize) void {
         const channel = &self.channels[index];
-        if (!sci_spi.simpleSpi(channel.ccr3)) return;
+        if (!spi.simpleSpi(channel.ccr3)) return;
         channel.idle_frames +%= 1;
         if (!channel.enabled(ccr0.re)) {
             channel.unheard +%= 1;
             return;
         }
-        channel.receive(&[_]u8{sci_spi.idle_byte});
+        channel.receive(&[_]u8{spi.idle_byte});
     }
 
     pub fn block(self: *Sci) periph.Block {

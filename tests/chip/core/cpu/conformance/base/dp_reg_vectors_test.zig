@@ -2,8 +2,8 @@
 //! runs through the `dp_reg` group on a bare register file, Rdn r0, Rm r1.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.dp_reg_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.dp_reg_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const dp_reg = cpu_ns.ops.dp_reg;
 

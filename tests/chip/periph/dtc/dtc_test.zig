@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const dtc = ra8.chip.periph.dtc;
 const icu = ra8.chip.periph.icu;
-const xfer = ra8.chip.periph.dtc_xfer;
+const xfer = ra8.chip.periph.dtc.xfer;
 
 /// The bytes of a run, and a handle onto them. The controller takes its
 /// memory by value the way it takes a real engine, so the handle holds a

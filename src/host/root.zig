@@ -4,13 +4,13 @@
 //! file-backed media. It imports only std. Libraries below the applications
 //! never import it: a component that needs host data declares an interface,
 //! and the application fills it from here.
-pub const host_profiles = @import("profiles.zig");
-pub const host_sock = @import("sock.zig");
-pub const host_sock_windows = @import("sock_windows.zig");
+pub const profiles = @import("profiles.zig");
+pub const sock = @import("sock.zig");
+pub const sock_windows = @import("sock_windows.zig");
 pub const sock_ready = @import("sock_ready.zig");
 pub const win32 = @import("win32.zig");
-pub const host_console = @import("console.zig");
-pub const host_read = @import("read.zig");
+pub const console = @import("console.zig");
+pub const read = @import("read.zig");
 pub const tape_dir = @import("tape_dir.zig");
 pub const worker = @import("worker.zig");
 pub const disk_file = @import("disk_file.zig");

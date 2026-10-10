@@ -7,7 +7,7 @@
 //! over as bytes: the run writes to the copy, never back to the file.
 const std = @import("std");
 const usb = @import("usb.zig");
-const usb_disk = @import("ra8_components").usb_stick_disk;
+const usb_disk = @import("ra8_components").usb_stick.disk;
 
 pub const blank_spec = "blank";
 /// 256 KiB: big enough for the host examples' files, and still FAT12.

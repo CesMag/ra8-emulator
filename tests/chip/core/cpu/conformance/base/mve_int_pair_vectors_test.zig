@@ -3,8 +3,8 @@
 //! IT byte, LR, FPSCR.LTPSIZE and FPSCR.QC set first.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.mve_int_pair_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.mve_int_pair_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const Cpu = cpu_ns.cpu.Cpu;
 const it_state = cpu_ns.it_state;

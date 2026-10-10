@@ -19,6 +19,7 @@ pub const tape = @import("tape.zig");
 pub const sock = @import("sock.zig");
 pub const host_net = @import("host_net.zig");
 pub const worker = @import("worker.zig");
+pub const snapshot = @import("snapshot.zig");
 
 pub const channel: usize = 2;
 pub const handshake_port: u8 = 0;

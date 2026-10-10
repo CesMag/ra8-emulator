@@ -5,7 +5,7 @@
 //! four accumulators land exactly on a .5 tie.
 const std = @import("std");
 const ra8 = @import("ra8");
-const round = ra8.chip.periph.npu_vela.round;
+const round = ra8.chip.periph.npu.vela.round;
 
 const Vector = struct { acc: i64, scale: u32, shift: u6, double: i128, natural: i128, truncate: i128 };
 

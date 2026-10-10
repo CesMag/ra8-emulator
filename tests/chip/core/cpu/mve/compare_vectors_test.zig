@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/compare_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
+const vector = ra8.chip.core.cpu.conformance.vector;
 const compare = ra8.chip.core.cpu.mve.compare;
 const vectors = ra8.chip.core.cpu.mve.compare_vectors;
 

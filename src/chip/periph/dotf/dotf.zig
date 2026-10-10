@@ -33,8 +33,8 @@
 //! stored. Every other offset in the window is reserved padding in FSP's own
 //! struct; it is shadowed so a read-modify-write survives, and never read.
 const periph = @import("../registry.zig");
-const control = @import("control.zig");
-const region = @import("region.zig");
+pub const control = @import("control.zig");
+pub const region = @import("region.zig");
 
 /// DOTF geometry. The bus folds the Non-secure alias onto this base.
 pub const win_base: u32 = 0x4026_8800;

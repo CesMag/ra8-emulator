@@ -4,10 +4,10 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const bus = ra8.chip.periph.riic_bus;
-const flag = ra8.chip.periph.i3c_flags;
+const bus = ra8.chip.periph.riic.bus;
+const flag = ra8.chip.periph.i3c.flags;
 const i3c = ra8.chip.periph.i3c;
-const regs = ra8.chip.periph.i3c_regs;
+const regs = ra8.chip.periph.i3c.regs;
 
 fn at(offset: u32, width: u3) regs.Access {
     return regs.Access.of(offset, width);

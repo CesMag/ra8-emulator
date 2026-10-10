@@ -6,13 +6,13 @@
 //! of the wire are board parts (src/components/eth_phy) this connects.
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const eth = @import("ra8_chip").periph.eth;
-const eth_queue = @import("ra8_chip").periph.eth_queue;
+const eth_queue = @import("ra8_chip").periph.eth.queue;
 const eth_phy = @import("ra8_components").eth_phy;
 const eth_peer = @import("ra8_components").eth_peer;
-const gateway = @import("ra8_chip").periph.eth_gateway;
+const gateway = @import("ra8_chip").periph.eth.gateway;
 const pdctr = @import("ra8_chip").periph.pdctr;
 const periph = @import("ra8_chip").periph.registry;
-const regs = @import("ra8_chip").periph.eth_regs;
+const regs = @import("ra8_chip").periph.eth.regs;
 
 pub const Rswitch = struct {
     ports: [regs.cluster.port_count]eth.Port = .{

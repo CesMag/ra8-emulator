@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
+const vector = ra8.chip.core.cpu.conformance.vector;
 const sign = ra8.chip.core.cpu.fpu.sign;
 const vectors = ra8.chip.core.cpu.fpu.sign_vectors;
 

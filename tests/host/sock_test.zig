@@ -4,7 +4,7 @@
 //! caller handles, not a signal.
 const std = @import("std");
 const builtin = @import("builtin");
-const host_sock = @import("ra8").host.host_sock;
+const host_sock = @import("ra8").host.sock;
 
 fn pair() ![2]std.posix.fd_t {
     var fds: [2]std.posix.fd_t = undefined;

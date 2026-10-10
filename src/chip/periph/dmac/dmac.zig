@@ -26,8 +26,8 @@ const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const dma_bank = @import("../dma_bank.zig");
 const lanes = @import("../lanes.zig");
 const periph = @import("../registry.zig");
-const regs = @import("regs.zig");
-const xfer = @import("xfer.zig");
+pub const regs = @import("regs.zig");
+pub const xfer = @import("xfer.zig");
 
 /// DMAC0 channel geometry (ra8_dmac_regs.h).
 pub const win_base: u32 = 0x4000_A000;

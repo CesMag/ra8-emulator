@@ -195,7 +195,7 @@ test "an AGT underflow is raised on the boundary that closes at its due time" {
     defer unit.deinit();
     try ra8.board.wiring.attachBlocks(&unit, memory);
     const agt = ra8.chip.periph.agt;
-    const sched = ra8.chip.periph.agt_clock.sched;
+    const sched = ra8.chip.periph.agt.clock.sched;
     // 0x1100 counts at the AGT's PCLKB lands a few thousand ns past the
     // second whole boundary, wide enough that the floor does not round it.
     unit.interval.channels[0] = .{ .counter = 0x1100, .reload = 0xFFFF, .cr = agt.control.tstart };

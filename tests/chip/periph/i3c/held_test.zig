@@ -2,7 +2,7 @@
 //! RA8EMU-537): never free, and a START request goes nowhere.
 const std = @import("std");
 const ra8 = @import("ra8");
-const flag = ra8.chip.periph.i3c_flags;
+const flag = ra8.chip.periph.i3c.flags;
 const i3c = ra8.chip.periph.i3c;
 
 test "a held line never reads free" {

@@ -2,7 +2,7 @@
 //! as one request.
 const std = @import("std");
 const ra8 = @import("ra8");
-const setup = ra8.chip.periph.usbhs_setup;
+const setup = ra8.chip.periph.usbhs.setup;
 
 test "the packet comes out of the four staging registers" {
     // GET_DESCRIPTOR(device), 18 bytes.

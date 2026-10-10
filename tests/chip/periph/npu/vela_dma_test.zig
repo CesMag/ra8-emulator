@@ -2,7 +2,7 @@
 //! linear copy NPU_OP_DMA_START does.
 const std = @import("std");
 const ra8 = @import("ra8");
-const dma = ra8.chip.periph.npu_vela.dma;
+const dma = ra8.chip.periph.npu.vela.dma;
 
 /// A flat 4 KiB memory at bus address 0x1000 that refuses everything else.
 const Memory = struct {

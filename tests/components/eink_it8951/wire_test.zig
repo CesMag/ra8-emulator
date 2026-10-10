@@ -3,7 +3,7 @@
 //! of.
 const std = @import("std");
 const ra8 = @import("ra8");
-const proto = ra8.components.eink_wire;
+const proto = ra8.components.eink.wire;
 
 test "a data word carries pixels by the mode word's format field" {
     try std.testing.expectEqual(@as(u16, 8), proto.pixelsPerWord(0));

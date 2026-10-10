@@ -3,7 +3,7 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const lock = ra8.chip.periph.spi_enable_lock;
+const lock = ra8.chip.periph.spi.enable_lock;
 
 test "a stopped channel takes the store" {
     var locked = lock.Locked{};

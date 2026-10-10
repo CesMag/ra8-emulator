@@ -101,7 +101,7 @@ test "a status flag is cleared by writing its bit zero, not one" {
 
 test "a count passing an enabled compare value sets TCMAF, which dev never raises" {
     var unit = agt.Agt.init();
-    unit.write(ch0 + agt.off.cmsr, 1, agt.compare_fn.mask.tcmea);
+    unit.write(ch0 + agt.off.cmsr, 1, agt.compare.mask.tcmea);
     unit.write(ch0 + agt.off.cma, 2, 0x3800);
     armed(&unit, ch0, 0x4000);
     unit.tick();
@@ -111,7 +111,7 @@ test "a count passing an enabled compare value sets TCMAF, which dev never raise
 
 test "a compare value the count has not reached does not match" {
     var unit = agt.Agt.init();
-    unit.write(ch0 + agt.off.cmsr, 1, agt.compare_fn.mask.tcmeb);
+    unit.write(ch0 + agt.off.cmsr, 1, agt.compare.mask.tcmeb);
     unit.write(ch0 + agt.off.cmb, 2, 0x0100);
     armed(&unit, ch0, 0x4000);
     unit.tick();
@@ -168,7 +168,7 @@ test "a block answers on its own window and nowhere else" {
 
 /// AGT1's TCK = 101b, the cascade encoding, written with the count stopped.
 fn cascadeHigh(unit: *agt.Agt) void {
-    unit.write(ch1 + agt.off.mr1, 1, @backingInt(agt.source.Source.agt0_underflow));
+    unit.write(ch1 + agt.off.mr1, 1, @backingInt(agt.clock.Source.agt0_underflow));
 }
 
 test "the cascade pair started in the documented order loses nothing" {

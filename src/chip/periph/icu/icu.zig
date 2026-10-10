@@ -28,7 +28,7 @@
 const memmap = @import("../../core/memmap.zig");
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const irqcr = @import("irqcr.zig");
+pub const irqcr = @import("irqcr.zig");
 /// Host-driven pin edges and the ISEL/IRQMD test they pass (RA8EMU-375).
 pub const pin_irq = @import("pin_irq.zig");
 

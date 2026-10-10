@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const entry_reg = ra8.chip.periph.mram_entry;
-const field = ra8.chip.periph.mram_regs.field;
+const entry_reg = ra8.chip.periph.mram.entry;
+const field = ra8.chip.periph.mram.field;
 
 test "a keyed word store enters program/erase mode" {
     var unit: entry_reg.Entry = .{};

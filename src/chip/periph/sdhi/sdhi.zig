@@ -53,10 +53,11 @@
 //! CMD6. They are shadowed so a read-modify-write survives, never read.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const sd_line = @import("line.zig");
-const fifo = @import("fifo.zig");
+pub const line = @import("line.zig");
+pub const fifo = @import("fifo.zig");
 const bus_lanes = @import("../lanes.zig");
-const xfer = @import("xfer.zig");
+pub const xfer = @import("xfer.zig");
+pub const snapshot = @import("snapshot.zig");
 
 pub const win_base: u32 = 0x4025_2000;
 pub const win_span: u32 = 0x200;
@@ -124,7 +125,7 @@ const words = win_span / 4;
 
 pub const Sdhi = struct {
     regs: [words]u32 = @splat(0),
-    card: sd_line.Line = sd_line.absent,
+    card: line.Line = line.absent,
     /// The block in flight, if a data phase is armed.
     data: xfer.Transfer = .{},
     /// CMD55 arrived and the next command is an ACMD.
@@ -221,7 +222,7 @@ pub const Sdhi = struct {
         const arg = self.regs[word(off.sd_arg)];
         const was_app = self.app_pending;
         self.app_pending = index == cmd.app_cmd;
-        var rsp = [4]u32{ sd_line.response.r1_ready, 0, 0, 0 };
+        var rsp = [4]u32{ line.response.r1_ready, 0, 0, 0 };
         switch (index) {
             cmd.read_single, cmd.read_multi => self.beginRead(index == cmd.read_multi, arg, &rsp),
             cmd.write_single, cmd.write_multi => self.beginWrite(index == cmd.write_multi, arg, &rsp),
@@ -244,20 +245,20 @@ pub const Sdhi = struct {
     fn identify(self: *Sdhi, index: u32, arg: u32, was_app: bool, rsp: *[4]u32) void {
         if (index == cmd.op_cond and was_app) {
             self.card.powerUp();
-            rsp[0] = sd_line.response.ocr_ready;
+            rsp[0] = line.response.ocr_ready;
             return;
         }
         switch (index) {
             cmd.go_idle => self.card.goIdle(),
-            cmd.if_cond => rsp[0] = sd_line.response.r7_if_cond,
-            cmd.app_cmd => rsp[0] = sd_line.response.r1_ready | sd_line.response.r1_app_cmd,
+            cmd.if_cond => rsp[0] = line.response.r7_if_cond,
+            cmd.app_cmd => rsp[0] = line.response.r1_ready | line.response.r1_app_cmd,
             cmd.send_cid => {
                 if (!self.card.publishCid()) return illegal(rsp);
-                rsp.* = @splat(sd_line.response.cid_word);
+                rsp.* = @splat(line.response.cid_word);
             },
             cmd.send_rca => {
                 if (!self.card.takeAddress()) return illegal(rsp);
-                rsp[0] = sd_line.response.rca_value;
+                rsp[0] = line.response.rca_value;
             },
             cmd.select => self.card.select(@intCast(arg >> 16)),
             cmd.send_csd => rsp.* = self.card.csd(),
@@ -372,7 +373,7 @@ fn isResponse(aligned: u32) bool {
 
 /// The card understood the command and refused it in this state.
 fn illegal(rsp: *[4]u32) void {
-    rsp[0] = sd_line.response.r1_ready | sd_line.response.r1_illegal;
+    rsp[0] = line.response.r1_ready | line.response.r1_illegal;
 }
 
 fn readThunk(context: *anyopaque, at: u32, width: u3) u32 {

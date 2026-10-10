@@ -87,7 +87,8 @@ const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 const maci = @import("../maci.zig");
 const cells = @import("otp.zig");
-const code = @import("code.zig");
+pub const otp = cells;
+pub const code = @import("code.zig");
 const mram_regs = @import("regs.zig");
 
 pub const window = cells.window;
@@ -109,6 +110,9 @@ pub const init_reg = @import("init.zig");
 
 /// MENTRYR, the mode gate and its key: entry.zig.
 pub const entry_reg = @import("entry.zig");
+pub const entry = @import("entry.zig");
+pub const init = @import("init.zig");
+pub const snapshot = @import("snapshot.zig");
 
 const shadow_words: usize = regs.span / 4;
 

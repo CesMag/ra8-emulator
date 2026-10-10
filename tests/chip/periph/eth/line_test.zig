@@ -1,8 +1,8 @@
 //! Tests for src/chip/periph/eth/line.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.chip.periph.eth_regs;
-const line = ra8.chip.periph.eth_line;
+const regs = ra8.chip.periph.eth.regs;
+const line = ra8.chip.periph.eth.line;
 
 fn frame(op: regs.Op, data: u16) u32 {
     return regs.rmac.psme |

@@ -14,7 +14,7 @@ const size: u32 = 0x2000;
 
 fn stackOf(context: *anyopaque, core: usize) ?region_map.Stack {
     const harness: *ra8.session.harness.Harness = @ptrCast(@alignCast(context));
-    const which: ra8.session.session_api.Core = if (core == 0) .cpu0 else .cpu1;
+    const which: ra8.session.api.Core = if (core == 0) .cpu0 else .cpu1;
     const loaded = harness.loadedImage(which) orelse return null;
     return region_map.stackOf(loaded, &region_map.ek_ra8d2);
 }

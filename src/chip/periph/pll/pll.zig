@@ -89,8 +89,8 @@
 const periph = @import("../registry.zig");
 const prcr = @import("../prcr.zig");
 const oscsf = @import("../oscsf.zig");
-const div = @import("div.zig");
-const config = @import("config.zig");
+pub const div = @import("div.zig");
+pub const config = @import("config.zig");
 const lanes = @import("../lanes.zig");
 
 /// The group these sit behind: PRC0, the clock generation circuit.

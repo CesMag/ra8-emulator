@@ -10,8 +10,8 @@
 //! into BMSR and read back a link that never negotiated. Both are refused
 //! here and counted.
 const std = @import("std");
-const regs = @import("ra8_chip").periph.eth_regs;
-const line = @import("ra8_chip").periph.eth_line;
+const regs = @import("ra8_chip").periph.eth.regs;
+const line = @import("ra8_chip").periph.eth.line;
 
 /// Where the board's PHY answers. One PHY, at the bottom of the address
 /// space, which is what the bring-up code reads.

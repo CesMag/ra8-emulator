@@ -6,7 +6,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const dtc = ra8.chip.periph.dtc;
 const icu = ra8.chip.periph.icu;
-const xfer = ra8.chip.periph.dtc_xfer;
+const xfer = ra8.chip.periph.dtc.xfer;
 
 const Cells = struct {
     base: u32 = 0x2000_0000,

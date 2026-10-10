@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci_device = ra8.chip.periph.sci_device;
+const sci_device = ra8.chip.periph.sci.device;
 
 const Answering = struct {
     last: u8 = 0,

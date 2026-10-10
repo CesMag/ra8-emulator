@@ -66,8 +66,8 @@
 const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
-const scan = @import("scan.zig");
-const intr = @import("intr.zig");
+pub const scan = @import("scan.zig");
+pub const intr = @import("intr.zig");
 
 /// The scan-end interrupt enable, reached as `adc.interrupt` the way the
 /// other split blocks in this tree re-export their halves.

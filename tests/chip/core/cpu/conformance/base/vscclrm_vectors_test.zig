@@ -3,8 +3,8 @@
 //! non-zero and whose VPR starts at 0x00AB_1234.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.vscclrm_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.vscclrm_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const Cpu = cpu_ns.cpu.Cpu;
 

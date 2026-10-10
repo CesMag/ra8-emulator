@@ -1,7 +1,7 @@
 //! Tests for the GLCDC gamma correction blocks.
 const std = @import("std");
 const ra8 = @import("ra8");
-const gam = ra8.chip.periph.glcdc_gamma;
+const gam = ra8.chip.periph.glcdc.gamma;
 
 fn packGains(high: u32, low: u32) u32 {
     return high << gam.field.gain_shift | low;

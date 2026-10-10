@@ -2,7 +2,7 @@
 //! it reports when it cannot hold what the line drove.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci_ring = ra8.chip.periph.sci_ring;
+const sci_ring = ra8.chip.periph.sci.ring;
 
 test "bytes come back out in the order they went in" {
     var ring = sci_ring.Ring{};

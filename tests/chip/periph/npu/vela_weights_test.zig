@@ -3,7 +3,7 @@
 //! is the weights handed to it, which its `decode` also returns.
 const std = @import("std");
 const ra8 = @import("ra8");
-const weights = ra8.chip.periph.npu_vela.weights;
+const weights = ra8.chip.periph.npu.vela.weights;
 
 fn expectDecode(comptime hex: []const u8, expected: []const i16) !void {
     var stream: [hex.len / 2]u8 = undefined;

@@ -2,7 +2,7 @@
 const std = @import("std");
 const Board = @import("ra8_board").board.Board;
 const eink = @import("ra8_components").eink;
-const refresh = @import("ra8_components").eink_refresh;
+const refresh = @import("ra8_components").eink.refresh;
 const json = @import("report/json.zig");
 
 pub const Entry = struct {

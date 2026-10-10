@@ -2,8 +2,8 @@
 //! runs through the `extend_wide` group on a bare core holding N and C.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.extend_wide_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.extend_wide_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const Cpu = cpu_ns.cpu.Cpu;
 const nzcv: u32 = 0xF000_0000;

@@ -23,7 +23,7 @@ const audio = @import("report/audio.zig");
 const capture = @import("report/capture.zig");
 const compute = @import("report/compute.zig");
 const cores = @import("report/cores.zig");
-const dma = @import("report/dma.zig");
+pub const dma = @import("report/dma.zig");
 const backup = @import("report/backup.zig");
 const memory = @import("report/memory.zig");
 const modules = @import("report/modules.zig");
@@ -41,7 +41,7 @@ const serial = @import("report/serial.zig");
 const storage = @import("report/storage.zig");
 const time = @import("report/time.zig");
 const timers = @import("report/timers.zig");
-const watchdog = @import("report/watchdog.zig");
+pub const watchdog = @import("report/watchdog.zig");
 /// Public so its tests can reach it; root.zig is at the gate's 400 lines.
 pub const usb = @import("report/usb.zig");
 pub const usb_cable = @import("report/usb_cable.zig");
@@ -64,7 +64,7 @@ const reset = @import("ra8_chip").periph.reset;
 const reboot = @import("ra8_chip").core.reboot;
 const scb = @import("ra8_chip").periph.scb;
 const lob = @import("ra8_chip").core.lob;
-const unmodelled = @import("report/unmodelled.zig");
+pub const unmodelled = @import("report/unmodelled.zig");
 
 pub const Writer = *std.Io.Writer;
 
@@ -391,3 +391,6 @@ pub fn reboots(out: Writer, pending: reboot.Reboot) !void {
 pub const gif = @import("ra8_render").gif;
 pub const wav = @import("ra8_render").wav;
 pub const audio_out = @import("audio_out.zig");
+pub const dumps = @import("report/dumps.zig");
+pub const part = @import("report/part.zig");
+pub const run = @import("report/run.zig");

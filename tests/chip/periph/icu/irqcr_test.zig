@@ -5,7 +5,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const icu = ra8.chip.periph.icu;
-const irqcr = ra8.chip.periph.icu_irqcr;
+const irqcr = ra8.chip.periph.icu.irqcr;
 
 const base = icu.icu_base;
 

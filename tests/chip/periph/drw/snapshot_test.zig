@@ -6,7 +6,7 @@ const drw = ra8.chip.periph.drw;
 const pdctr = ra8.chip.periph.pdctr;
 const prcr = ra8.chip.periph.prcr;
 const file = ra8.snapshot.file;
-const raster = ra8.chip.periph.drw_snapshot;
+const raster = ra8.chip.periph.drw.snapshot;
 
 const Stand = struct { raster: drw.Drw };
 

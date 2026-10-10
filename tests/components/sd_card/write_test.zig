@@ -1,10 +1,10 @@
 //! Covers src/components/sd_card/write.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sd_crc = ra8.components.sd_crc;
-const sd_write = ra8.components.sd_write;
+const sd_crc = ra8.components.sd_card.crc;
+const sd_write = ra8.components.sd_card.write;
 
-const block_bytes = ra8.components.sd_image.geometry.block_bytes;
+const block_bytes = ra8.components.sd_card.image.geometry.block_bytes;
 
 /// Send a whole payload and its checksum, and hand back what the last byte
 /// did, which is the only byte that finishes a block.

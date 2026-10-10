@@ -8,7 +8,9 @@
 //! command it does not implement fails in the CSW with ILLEGAL REQUEST, the
 //! way a real stick answers, rather than stalling the pipe.
 const std = @import("std");
-const usbhs_function = @import("ra8_chip").periph.usbhs_function;
+const usbhs_function = @import("ra8_chip").periph.usbhs.function;
+pub const disk = @import("disk.zig");
+pub const snapshot = @import("snapshot.zig");
 
 pub const block_len: u32 = 512;
 pub const cbw_len: usize = 31;

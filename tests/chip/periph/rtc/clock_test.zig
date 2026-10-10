@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const clock = ra8.chip.periph.rtc_clock;
+const clock = ra8.chip.periph.rtc.clock;
 
 test "bcd packs and unpacks a two-digit value" {
     try std.testing.expectEqual(@as(u8, 0x00), clock.bcd.fromBinary(0));

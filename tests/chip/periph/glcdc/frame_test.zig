@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const frame = ra8.chip.periph.glcdc_frame;
+const frame = ra8.chip.periph.glcdc.frame;
 const memmap = ra8.chip.core.memmap;
 
 test "a framebuffer lives in the RAM a bus initiator can reach" {

@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const sci = ra8.chip.periph.sci;
-const sci_peek = ra8.chip.periph.sci_peek;
+const sci_peek = ra8.chip.periph.sci.peek;
 
 const channel: usize = 3;
 

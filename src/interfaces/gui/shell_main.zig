@@ -7,7 +7,7 @@
 //! halted at reset until Run is pressed on the time bar (RA8EMU-1118).
 //! Only the local host connects so far; SSH profiles join with RA8EMU-761.
 const std = @import("std");
-const host_profiles = @import("ra8_host").host_profiles;
+const host_profiles = @import("ra8_host").profiles;
 const platform = @import("platform.zig");
 const pane_layout = @import("ui/pane_layout.zig");
 const shell_loop = @import("shell_loop.zig");

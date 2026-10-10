@@ -4,7 +4,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const npu = ra8.chip.periph.npu;
-const cmd = ra8.chip.periph.npu_cmd;
+const cmd = ra8.chip.periph.npu.cmd;
 const store_memory = @import("../store_memory.zig");
 const Guest = store_memory.Guest;
 

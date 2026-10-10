@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/int_width_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
+const vector = ra8.chip.core.cpu.conformance.vector;
 const int = ra8.chip.core.cpu.mve.int;
 const width = ra8.chip.core.cpu.mve.int_width;
 const vectors = ra8.chip.core.cpu.mve.int_width_vectors;

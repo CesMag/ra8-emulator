@@ -1,6 +1,6 @@
 //! Covers src/components/sd_card/crc.zig.
 const std = @import("std");
-const sd_crc = @import("ra8").components.sd_crc;
+const sd_crc = @import("ra8").components.sd_card.crc;
 
 test "an empty block checksums to zero" {
     try std.testing.expectEqual(@as(u16, 0), sd_crc.crc16(&.{}));

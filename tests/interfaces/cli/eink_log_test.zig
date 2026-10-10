@@ -4,7 +4,7 @@ const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 const eink_log = cli_app.eink_log;
 const eink = ra8.components.eink;
-const proto = ra8.components.eink_wire;
+const proto = ra8.components.eink.wire;
 
 fn word(panel: *eink.Panel, value: u16) void {
     _ = panel.exchange(@intCast(value >> 8));

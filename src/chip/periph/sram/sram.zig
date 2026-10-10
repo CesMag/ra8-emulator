@@ -48,6 +48,7 @@
 const std = @import("std");
 const periph = @import("../registry.zig");
 const prot = @import("lock.zig");
+pub const lock = prot;
 
 /// SRAMPRCR and the registers its key guards, re-exported so a caller that
 /// has the controller has the lock too.

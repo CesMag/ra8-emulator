@@ -70,4 +70,4 @@ pub const covered: []const []const u8 = &(fpu_sign.covered ++ fpu_add.covered ++
 pub const decoded_covered: []const []const u8 = base.covered;
 
 /// The per-group base vectors, one file per decode-table group.
-pub const base = ra8.chip.core.cpu.conformance_base;
+pub const base = ra8.chip.core.cpu.conformance.base;

@@ -2,7 +2,7 @@
 //! Vela program sets with cmd0 commands.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 const fm = vela.fm;
 
 test "IFM, OFM and IFM2 registers each land in their own map" {

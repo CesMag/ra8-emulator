@@ -2,7 +2,7 @@
 //! seen through the I2C registry and the RIIC address phase.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.chip.periph.riic_bus;
+const bus = ra8.chip.periph.riic.bus;
 const fault = ra8.components.model.fault;
 const gauge_mod = ra8.components.max17048;
 

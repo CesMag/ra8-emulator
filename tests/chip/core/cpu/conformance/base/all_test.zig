@@ -125,5 +125,5 @@ test {
     _ = @import("vlldm_vlstm_t2_vectors_test.zig");
     _ = @import("vlldm_vlstm_vectors_test.zig");
     _ = @import("vscclrm_vectors_test.zig");
-    std.testing.refAllDecls(ra8.chip.core.cpu.conformance_base);
+    std.testing.refAllDecls(ra8.chip.core.cpu.conformance.base);
 }

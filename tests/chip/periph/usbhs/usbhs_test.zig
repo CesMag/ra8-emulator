@@ -2,7 +2,7 @@
 //! machine, and which a store cannot reach.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.chip.periph.usbhs_regs;
+const regs = ra8.chip.periph.usbhs.regs;
 const usbhs = ra8.chip.periph.usbhs;
 
 fn at(offset: u32) u32 {

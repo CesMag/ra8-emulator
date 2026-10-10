@@ -7,18 +7,15 @@ const mem_dump = @import("ra8_session").mem_dump;
 const gt911 = @import("ra8_components").gt911;
 const world_flags = @import("world_flags.zig");
 const max17048 = @import("ra8_components").max17048;
-const sd_format = @import("ra8_components").sd_format;
+const sd_format = @import("ra8_components").sd_card.format;
 const cpu_choice = @import("ra8_chip").core.cpu.choice;
 const rtos_load = @import("ra8_session").rtos_load;
 const request = @import("ra8_components").request;
 pub const ctl_args = @import("ctl_args.zig");
-pub const rtc_start = @import("ra8_session").rtc_start;
+const rtc_start = @import("ra8_session").rtc_start;
 pub const usage = @import("usage.zig").text;
 pub const card_setup = @import("card_setup.zig");
-pub const usbip_wire = @import("ra8_usbip").usbip_wire;
-pub const usbip_export = @import("ra8_usbip").usbip_export;
 pub const console_output = @import("console_output.zig");
-pub const console_input = @import("ra8_chip").periph.sci_input;
 pub const host_bytes = @import("host_bytes.zig");
 /// How many `--dump-sym` names one run will carry: the suite asks for at most
 /// two (progress and failure counters), so this is a little room above that.
@@ -88,7 +85,7 @@ pub const Options = struct {
     trace_sd: bool = false, // write one line per SD command to stderr
     state: @import("state_args.zig").Options = .{}, // `--save-state`, `--load-state` (RA8EMU-696)
     console: bool = false, // `--console`: stream finished SCI console lines to stdout
-    console_reply: @import("ra8_chip").periph.sci_reply.Reply = .{}, // RA8EMU-626
+    console_reply: @import("ra8_chip").periph.sci.reply.Reply = .{}, // RA8EMU-626
     dump_sd: ?u32 = null, // print this card block back as hex once the run is over
     faults: ?[]const u8 = null, // `--faults FILE`: hardware changes at virtual times (RA8EMU-207)
     /// Contacts queued on the touch panel, one drained per frame read.

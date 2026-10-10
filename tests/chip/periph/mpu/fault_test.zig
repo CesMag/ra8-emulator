@@ -1,7 +1,7 @@
 //! What enforcement caught, and what it did with it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const mpu_fault = ra8.chip.periph.mpu_fault;
+const mpu_fault = ra8.chip.periph.mpu.fault;
 
 test "a latch with nothing armed and nothing refused stays out of the report" {
     const latch = mpu_fault.Latch{};

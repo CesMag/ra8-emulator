@@ -2,7 +2,7 @@
 //! PRECISION register formats, checked against Vela's get_address.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 const addr = vela.addr;
 
 const int8_nhwc = addr.Format{ .signed = true, .size = 1, .layout = .nhwc };

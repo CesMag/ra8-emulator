@@ -1,8 +1,8 @@
 //! SCCB through the actual RIIC transfer machine, not just the sensor callbacks.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bus = ra8.chip.periph.riic_bus;
-const flags = ra8.chip.periph.riic_flags;
+const bus = ra8.chip.periph.riic.bus;
+const flags = ra8.chip.periph.riic.flags;
 const ov5640 = ra8.components.ov5640;
 const expander = ra8.components.pi4ioe;
 const riic = ra8.chip.periph.riic;

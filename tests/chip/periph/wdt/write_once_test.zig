@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const write_once = ra8.chip.periph.wdt_write_once;
+const write_once = ra8.chip.periph.wdt.write_once;
 
 test "a fresh latch has nothing written and gives every register its write" {
     var once = write_once.Once{};

@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const mpu = ra8.chip.periph.mpu;
-const background = ra8.chip.periph.mpu_background;
+const background = ra8.chip.periph.mpu.background;
 
 /// A table with the given spans enabled, written the way the firmware would
 /// through RBAR/RLAR so the region fields come out of the real decoder.

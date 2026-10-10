@@ -1,7 +1,7 @@
 //! Covers src/components/modem_at/script.zig: the AT script and the V.250 match.
 const std = @import("std");
 const ra8 = @import("ra8");
-const script = ra8.components.modem_at_script;
+const script = ra8.components.modem_at.script;
 
 test "a scripted command gets its scripted answer" {
     try std.testing.expectEqualStrings("\r\nOK\r\n", script.answerFor("AT").?);

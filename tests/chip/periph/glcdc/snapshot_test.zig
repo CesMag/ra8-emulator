@@ -6,7 +6,7 @@ const glcdc = ra8.chip.periph.glcdc;
 const pdctr = ra8.chip.periph.pdctr;
 const prcr = ra8.chip.periph.prcr;
 const file = ra8.snapshot.file;
-const display = ra8.chip.periph.glcdc_snapshot;
+const display = ra8.chip.periph.glcdc.snapshot;
 
 const Stand = struct { display: glcdc.Glcdc };
 

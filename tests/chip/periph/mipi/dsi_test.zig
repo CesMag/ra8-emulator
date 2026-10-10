@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const dsi = ra8.chip.periph.mipi_dsi;
-const rule = ra8.chip.periph.mipi_dsi_link;
+const dsi = ra8.chip.periph.mipi.dsi;
+const rule = ra8.chip.periph.mipi.dsi_link;
 
 const base = dsi.win_base;
 

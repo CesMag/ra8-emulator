@@ -84,18 +84,22 @@ const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 
 const buf = @import("buffer.zig");
+pub const buffer = buf;
 const ch = @import("channel.zig");
+pub const channel = ch;
 const clk = @import("clock.zig");
-const compare = @import("compare.zig");
+pub const compare = @import("compare.zig");
 const lk = @import("lock.zig");
 const win = @import("window.zig");
 const md = @import("mode.zig");
 const prd = @import("period.zig");
-const sync = @import("sync.zig");
+pub const period = prd;
+pub const sync = @import("sync.zig");
 
 /// The PWM output delay generator: pdg.zig.
 pub const pdg = @import("pdg.zig");
 const periph = @import("../registry.zig");
+pub const sched = @import("sched.zig");
 
 /// The compare pair, reached as `gpt.match` the way the other split blocks in
 /// this tree re-export their halves.
@@ -163,8 +167,8 @@ pub const Gpt = struct {
     }
 
     pub fn tick(self: *Gpt) void {
-        for (&self.channels, 0..) |*channel, index| {
-            if (channel.tick() != 0 and index == 0) self.pending = true;
+        for (&self.channels, 0..) |*chan, index| {
+            if (chan.tick() != 0 and index == 0) self.pending = true;
         }
     }
 
@@ -178,8 +182,8 @@ pub const Gpt = struct {
 
     pub fn quiet(self: *const Gpt) bool {
         if (!self.sync.quiet()) return false;
-        for (self.channels) |channel| {
-            if (!channel.quiet()) return false;
+        for (self.channels) |chan| {
+            if (!chan.quiet()) return false;
         }
         return true;
     }
@@ -187,14 +191,14 @@ pub const Gpt = struct {
     pub fn read(self: *Gpt, address: u32, width: u3) u32 {
         const offset = address -% win_base;
         if (offset >= win_span) return 0;
-        const channel = &self.channels[offset / stride];
+        const chan = &self.channels[offset / stride];
         const local = offset % stride;
-        if (local == off.gtcnt) channel.sampleRead();
+        if (local == off.gtcnt) chan.sampleRead();
         var value: u32 = 0;
         var index: u32 = 0;
         while (index < width and local + index < stride) : (index += 1) {
             const shift: u5 = @intCast(index * 8);
-            value |= @as(u32, channel.readByte(local + index)) << shift;
+            value |= @as(u32, chan.readByte(local + index)) << shift;
         }
         return value;
     }
@@ -202,18 +206,18 @@ pub const Gpt = struct {
     pub fn write(self: *Gpt, address: u32, width: u3, value: u32) void {
         const offset = address -% win_base;
         if (offset >= win_span) return;
-        const channel = &self.channels[offset / stride];
+        const chan = &self.channels[offset / stride];
         const local = offset % stride;
         // GTWP takes the whole access at once, so the key is judged on the
         // word the store leaves behind rather than on a byte of it.
         if (local < lk.off.gtwp + 4) {
-            channel.guard.store(local - lk.off.gtwp, width, value);
+            chan.guard.store(local - lk.off.gtwp, width, value);
             return;
         }
         // One store, one refusal: the protection turns the access away, not
         // each of its byte lanes.
-        if (!channel.guard.admits(local, win.protected(local))) return;
-        // The bits are channel-indexed, so the access acts on the channels it
+        if (!chan.guard.admits(local, win.protected(local))) return;
+        // The bits are chan-indexed, so the access acts on the channels it
         // names rather than on the window it came through.
         if (sync.which(local)) |action| {
             const bits = sync.carried(local - sync.base(action), width, value);
@@ -223,7 +227,7 @@ pub const Gpt = struct {
         var index: u32 = 0;
         while (index < width and local + index < stride) : (index += 1) {
             const shift: u5 = @intCast(index * 8);
-            channel.writeByte(local + index, @truncate(value >> shift));
+            chan.writeByte(local + index, @truncate(value >> shift));
         }
     }
 

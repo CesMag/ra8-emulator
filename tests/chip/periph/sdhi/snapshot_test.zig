@@ -3,11 +3,11 @@
 //! keeps that unit's card line, and a word index past a block does not fit.
 const std = @import("std");
 const ra8 = @import("ra8");
-const half = ra8.chip.periph.sdhi_snapshot;
+const half = ra8.chip.periph.sdhi.snapshot;
 const fields = ra8.snapshot.fields;
 const Sdhi = ra8.chip.periph.sdhi.Sdhi;
-const sdhi_line = ra8.chip.periph.sdhi_line;
-const xfer = ra8.chip.periph.sdhi_xfer;
+const sdhi_line = ra8.chip.periph.sdhi.line;
+const xfer = ra8.chip.periph.sdhi.xfer;
 
 test "the controller reads back over a fresh unit and keeps its card line" {
     var unit = Sdhi.init();

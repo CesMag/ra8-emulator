@@ -1,7 +1,7 @@
 //! Covers turning Windows console key events into SCI bytes (RA8EMU-723).
 const std = @import("std");
 const ra8 = @import("ra8");
-const host_console = ra8.host.host_console;
+const host_console = ra8.host.console;
 
 fn key(char: u16, down: bool, repeat: u16) host_console.InputRecord {
     return .{ .event_type = host_console.key_event, .event = .{ .key = .{

@@ -29,10 +29,12 @@
 const std = @import("std");
 const lanes = @import("../lanes.zig");
 const periph = @import("../registry.zig");
-const regs = @import("regs.zig");
+pub const regs = @import("regs.zig");
 const eth_mode = @import("mode.zig");
+pub const mode = eth_mode;
 const eth_line = @import("line.zig");
 const eth_mac = @import("mac.zig");
+pub const mac = eth_mac;
 const eth_tas = @import("tas.zig");
 const eth_cbs = @import("cbs.zig");
 const pdctr = @import("../pdctr.zig");
@@ -48,6 +50,10 @@ pub const forward = @import("forward.zig");
 pub const open_regs = @import("open_regs.zig");
 /// COMA RIC, RRC and RCEC: coma.zig.
 pub const coma = @import("coma.zig");
+pub const desc = @import("desc.zig");
+pub const dma = @import("dma.zig");
+pub const gateway = @import("gateway.zig");
+pub const queue = @import("queue.zig");
 /// The MDIO bus and the wire the board connects: line.zig.
 pub const line = eth_line;
 /// TAS gate-list RAM and indirect access registers.

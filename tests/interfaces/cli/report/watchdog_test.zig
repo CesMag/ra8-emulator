@@ -7,7 +7,7 @@
 const std = @import("std");
 const cli_app = @import("cli_app");
 
-const report_watchdog = cli_app.report_watchdog;
+const report_watchdog = cli_app.report.watchdog;
 
 test "a run that never refreshed has no cadence" {
     try std.testing.expectEqual(@as(?f64, null), report_watchdog.everyPeriods(0, 200));

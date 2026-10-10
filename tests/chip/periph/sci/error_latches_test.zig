@@ -2,8 +2,8 @@
 //! clear, which for now is the receive overrun.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sci_error = ra8.chip.periph.sci_error;
-const status = ra8.chip.periph.sci_status;
+const sci_error = ra8.chip.periph.sci.error_latches;
+const status = ra8.chip.periph.sci.status;
 
 test "a fresh channel is reporting nothing" {
     const errors = sci_error.Errors{};

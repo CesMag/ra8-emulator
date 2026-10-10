@@ -1,9 +1,9 @@
 //! The live stdout sink for `--console`, separate from the end-of-run report,
 //! and the tap `--until` reads finished lines from.
 const std = @import("std");
-const sci_line = @import("ra8_chip").periph.sci_line;
+const sci_line = @import("ra8_chip").periph.sci.line;
 const until = @import("ra8_chip").core.until;
-const sci_reply = @import("ra8_chip").periph.sci_reply;
+const sci_reply = @import("ra8_chip").periph.sci.reply;
 
 /// Where each finished console line goes: stdout when `--console` asked
 /// for it, and the `--until` wait when one is set.

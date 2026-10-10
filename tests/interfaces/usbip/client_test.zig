@@ -1,8 +1,8 @@
 //! Covers src/interfaces/usbip/client.zig: every client request
 //! decodes on the server side, and every server reply decodes here.
 const std = @import("std");
-const cli_app = @import("cli_app");
-const wire = cli_app.cli.usbip_wire;
+const ra8 = @import("ra8");
+const wire = ra8.usbip.wire;
 const client = wire.client;
 
 test "OP_REQ_DEVLIST is the header the server reads as a devlist request" {

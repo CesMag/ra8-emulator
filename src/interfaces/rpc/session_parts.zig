@@ -18,7 +18,7 @@ const Context = handlers.Context;
 const Ack = rpc.Outcome(proto.Ack);
 const ack: Ack = .{ .ok = .{ .accepted = 1 } };
 
-fn core(of: proto.Core) @import("ra8_session").session_api.Core {
+fn core(of: proto.Core) @import("ra8_session").api.Core {
     return @fromBackingInt(@intCast(@backingInt(of)));
 }
 

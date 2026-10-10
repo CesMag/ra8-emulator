@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const pixel = ra8.chip.periph.glcdc_pixel;
-const clut = ra8.chip.periph.glcdc_clut;
+const pixel = ra8.chip.periph.glcdc.pixel;
+const clut = ra8.chip.periph.glcdc.clut;
 
 const Format = pixel.Format;
 

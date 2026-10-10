@@ -2,8 +2,8 @@
 //! bytes served after it, and the reads past the end of what was staged.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rx = ra8.chip.periph.riic_rx;
-const flag = ra8.chip.periph.riic_flags;
+const rx = ra8.chip.periph.riic.rx;
+const flag = ra8.chip.periph.riic.flags;
 
 test "a fresh path holds nothing and is quiet" {
     var path = rx.Rx{};

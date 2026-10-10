@@ -6,7 +6,7 @@ const cli_app = @import("cli_app");
 const parse = cli_app.cli.parse;
 const rtc = ra8.chip.periph.rtc;
 
-fn start(value: []const u8) !?cli_app.cli.rtc_start.Calendar {
+fn start(value: []const u8) !?ra8.session.rtc_start.Calendar {
     const options = try parse(&[_][]const u8{ "emu", "a.elf", "--rtc-start", value });
     const given = options.rtc_start orelse return null;
     return given.at;
@@ -48,7 +48,7 @@ test "--rtc-start refuses what the RTC cannot count" {
 test "--rtc-start now reads the host clock when the board is fitted" {
     const options = try parse(&[_][]const u8{ "emu", "a.elf", "--rtc-start", "now" });
     try std.testing.expect(options.rtc_start.? == .now);
-    const at = try cli_app.cli.rtc_start.resolve(options.rtc_start.?, std.testing.io);
+    const at = try ra8.session.rtc_start.resolve(options.rtc_start.?, std.testing.io);
     try std.testing.expect(at.year >= 26);
     try std.testing.expect(at.month >= 1 and at.month <= 12);
 }

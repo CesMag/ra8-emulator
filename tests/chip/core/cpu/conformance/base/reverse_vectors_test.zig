@@ -2,8 +2,8 @@
 //! through the `reverse` group on a bare register file.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.reverse_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.reverse_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const reverse = cpu_ns.ops.reverse;
 

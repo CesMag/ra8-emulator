@@ -11,7 +11,7 @@
 //! number back as a measurement, a read starting on an odd address handed
 //! back half of one register and half of the next, and the power-on-reset
 //! command landed in the file and did nothing at all.
-const bus = @import("ra8_chip").periph.riic_bus;
+const bus = @import("ra8_chip").periph.riic.bus;
 
 pub const address: u7 = 0x36;
 

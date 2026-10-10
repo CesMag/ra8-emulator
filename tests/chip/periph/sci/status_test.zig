@@ -2,7 +2,7 @@
 //! which words in the channel window the controller owns.
 const std = @import("std");
 const ra8 = @import("ra8");
-const status = ra8.chip.periph.sci_status;
+const status = ra8.chip.periph.sci.status;
 
 test "CSR idles with the transmitter drained and the line high" {
     const idle = status.common(false);

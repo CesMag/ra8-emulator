@@ -23,7 +23,7 @@
 //!
 //! Reads are never gated: PRCR gates writes only (HUM Ch 13.1 p 520), so a
 //! dropped write shows up as a read-back of the old value rather than a fault.
-const ctrl = @import("ctrl.zig");
+pub const ctrl = @import("ctrl.zig");
 
 /// VBTBPCR1, outside the window: pcr1.zig.
 pub const pcr1 = @import("pcr1.zig");

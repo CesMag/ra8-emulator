@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const usbfs = ra8.chip.periph.usbfs;
 const pipe = usbfs.pipe;
-const regs = ra8.chip.periph.usbhs_regs;
+const regs = ra8.chip.periph.usbhs.regs;
 
 fn at(offset: u32) u32 {
     return usbfs.window.base + offset;

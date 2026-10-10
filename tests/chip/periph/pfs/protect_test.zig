@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const protect = ra8.chip.periph.pfs_protect;
+const protect = ra8.chip.periph.pfs.protect;
 
 test "the gate resets locked, so a pin write before any unlock goes nowhere" {
     const guard = protect.Protect{};

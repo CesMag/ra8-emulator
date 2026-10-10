@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const sci = ra8.chip.periph.sci;
 const file = ra8.snapshot.file;
-const serial = ra8.chip.periph.sci_snapshot;
+const serial = ra8.chip.periph.sci.snapshot;
 
 const Stand = struct { serial: sci.Sci = .{} };
 

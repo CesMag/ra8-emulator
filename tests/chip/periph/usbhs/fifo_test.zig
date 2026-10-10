@@ -1,8 +1,8 @@
 //! The CFIFO port: where it is aimed, what it will move, and what it refuses.
 const std = @import("std");
 const ra8 = @import("ra8");
-const fifo = ra8.chip.periph.usbhs_fifo;
-const regs = ra8.chip.periph.usbhs_regs;
+const fifo = ra8.chip.periph.usbhs.fifo;
+const regs = ra8.chip.periph.usbhs.regs;
 
 test "a fresh port is aimed at nothing" {
     var port = fifo.Port{};

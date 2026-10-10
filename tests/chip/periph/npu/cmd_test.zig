@@ -2,7 +2,7 @@
 //! run, and the refusals that keep it from running one it cannot.
 const std = @import("std");
 const ra8 = @import("ra8");
-const cmd = ra8.chip.periph.npu_cmd;
+const cmd = ra8.chip.periph.npu.cmd;
 
 fn stream(op: u32, source: u32, destination: u32, count: u32, addend: u32) [cmd.header.words]u32 {
     return .{ cmd.header.magic | op, source, destination, count, addend };

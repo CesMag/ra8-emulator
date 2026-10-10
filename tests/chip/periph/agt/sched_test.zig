@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const agt = ra8.chip.periph.agt;
-const sched = ra8.chip.periph.agt_clock.sched;
+const sched = ra8.chip.periph.agt.clock.sched;
 const cadence = ra8.chip.core.cadence;
 
 /// One boundary of virtual time at the time base's default 1 GHz.
@@ -52,7 +52,7 @@ test "a stopped or cascaded channel has nothing due" {
     timer.channels[1] = timer.channels[0];
     try std.testing.expectEqual(@as(?u64, null), sched.dueAt(timer.channels[1], 1, 0));
     // AGT0 cannot cascade, so the same byte counts undivided there.
-    const undivided = ra8.chip.periph.agt_clock.underflowInNs(100, .pclkb, sched.pclkb_hz).?;
+    const undivided = ra8.chip.periph.agt.clock.underflowInNs(100, .pclkb, sched.pclkb_hz).?;
     try std.testing.expectEqual(@as(?u64, 2_000_000 + undivided), sched.dueAt(timer.channels[0], 0, 2_000_000));
 }
 

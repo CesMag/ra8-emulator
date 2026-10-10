@@ -80,7 +80,7 @@ test "--panel-only writes the dark fallback panel at its own size" {
 }
 
 test "attached e-ink frame-out writes the refreshed glass as grey PNG pixels" {
-    const proto = ra8.components.eink_wire;
+    const proto = ra8.components.eink.wire;
     var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.asks.attached_eink = &board.panel;
@@ -131,7 +131,7 @@ fn word(panel: anytype, value: u16) void {
 }
 
 test "with no attach and no GLCDC frame, frame-out saves the board's refreshed e-ink glass" {
-    const proto = ra8.components.eink_wire;
+    const proto = ra8.components.eink.wire;
     var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.panel.planes.resize(.{ .width = 16, .height = 8 });

@@ -3,7 +3,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const gptp = ra8.chip.periph.gptp;
-const timer = ra8.chip.periph.gptp_timer;
+const timer = ra8.chip.periph.gptp.timer;
 
 const four_ns: u32 = 4 << timer.scale.subns_shift;
 

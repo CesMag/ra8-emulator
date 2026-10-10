@@ -26,7 +26,7 @@
 //! pin reads high with nothing driving it.
 const std = @import("std");
 const periph = @import("../registry.zig");
-const regs = @import("regs.zig");
+pub const regs = @import("regs.zig");
 
 /// Pin models (RA8EMU-497), reached through here because root.zig is full.
 pub const pins = @import("pins.zig");

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const dac = ra8.chip.periph.dac;
-const output = ra8.chip.periph.dac_output;
+const output = ra8.chip.periph.dac.output;
 
 const ch0 = dac.channelAddress(0);
 

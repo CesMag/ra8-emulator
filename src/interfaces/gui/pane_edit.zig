@@ -9,7 +9,7 @@ const hex_entry = @import("ui/hex_entry.zig");
 const memory_pane = @import("ui/memory_pane.zig");
 const registers_capture = @import("registers_capture.zig");
 const registers_pane = @import("ui/registers_pane.zig");
-const session_api = @import("ra8_session").session_api;
+const session_api = @import("ra8_session").api;
 
 const Rect = draw_list.Rect;
 

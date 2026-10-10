@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const adc = ra8.chip.periph.adc;
-const intr = ra8.chip.periph.adc_intr;
-const scan = ra8.chip.periph.adc_scan;
+const intr = ra8.chip.periph.adc.intr;
+const scan = ra8.chip.periph.adc.scan;
 
 fn unit() adc.Adc {
     return adc.Adc.init();

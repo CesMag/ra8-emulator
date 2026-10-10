@@ -3,7 +3,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 const sci = ra8.chip.periph.sci;
-const input = cli_app.cli.console_input;
+const input = ra8.chip.periph.sci.input;
 const host_bytes = cli_app.cli.host_bytes;
 
 /// Writes all of `bytes` to a pipe end, as the host side of the test.

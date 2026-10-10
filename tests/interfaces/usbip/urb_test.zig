@@ -3,12 +3,11 @@
 //! around them.
 const std = @import("std");
 const ra8 = @import("ra8");
-const cli_app = @import("cli_app");
 const usbfs = ra8.chip.periph.usbfs;
 const pipe = usbfs.pipe;
-const regs = ra8.chip.periph.usbhs_regs;
-const urb = cli_app.cli.usbip_export.urb;
-const wire = cli_app.cli.usbip_wire;
+const regs = ra8.chip.periph.usbhs.regs;
+const urb = ra8.usbip.exported.urb;
+const wire = ra8.usbip.wire;
 
 fn at(offset: u32) u32 {
     return usbfs.window.base + offset;

@@ -2,7 +2,7 @@ const std = @import("std");
 const testing = std.testing;
 
 const gpt = @import("ra8").chip.periph.gpt;
-const period = @import("ra8").chip.periph.gpt_period;
+const period = @import("ra8").chip.periph.gpt.period;
 
 const base = gpt.win_base;
 

@@ -8,7 +8,7 @@
 //! same rule as cpu/snapshot.zig and board.zig.
 const file = @import("ra8_snapshot").file;
 const memory = @import("memory.zig");
-const cpu = @import("ra8_chip").core.cpu.cpu_snapshot;
+const cpu = @import("ra8_chip").core.cpu.snapshot;
 const board_snap = @import("board.zig");
 const Store = @import("ra8_chip").core.cpu.memory.store.Store;
 const Cpu = @import("ra8_chip").core.cpu.cpu.Cpu;

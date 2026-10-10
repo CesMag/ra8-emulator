@@ -4,8 +4,8 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const Store = ra8.chip.core.cpu.memory.store.Store;
 const Guest = ra8.chip.core.cpu.memory.guest.Guest;
-const desc = ra8.chip.periph.eth_desc;
-const eth_dma = ra8.chip.periph.eth_dma;
+const desc = ra8.chip.periph.eth.desc;
+const eth_dma = ra8.chip.periph.eth.dma;
 const eth_peer = ra8.components.eth_peer;
 
 const linkfix_at: u32 = 0x2200_1000;

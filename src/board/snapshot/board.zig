@@ -19,12 +19,12 @@ pub const Error = file.Error || fields.Error || error{ Missing, WrongPart };
 /// format change.
 const sections = .{
     @import("ra8_chip").snapshot.timers,
-    @import("ra8_chip").periph.sci_snapshot,
+    @import("ra8_chip").periph.sci.snapshot,
     @import("sd.zig"),
     @import("wire.zig"),
-    @import("ra8_chip").periph.drw_snapshot,
-    @import("ra8_chip").periph.glcdc_snapshot,
-    @import("ra8_components").panel_snapshot,
+    @import("ra8_chip").periph.drw.snapshot,
+    @import("ra8_chip").periph.glcdc.snapshot,
+    @import("ra8_components").eink.snapshot,
     @import("ra8_chip").snapshot.clocks,
     @import("ra8_chip").snapshot.security,
     @import("ra8_chip").snapshot.controllers,
@@ -36,8 +36,8 @@ const sections = .{
     @import("ra8_chip").snapshot.channels,
     @import("usb.zig"),
     @import("rswitch.zig"),
-    @import("ra8_chip").periph.npu_snapshot,
-    @import("ra8_components").c6_snapshot,
+    @import("ra8_chip").periph.npu.snapshot,
+    @import("ra8_components").esp_hosted.snapshot,
 };
 
 pub fn save(board: anytype, writer: anytype) !void {

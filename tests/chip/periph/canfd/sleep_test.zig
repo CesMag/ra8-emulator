@@ -2,7 +2,7 @@
 //! field, and the mode write it swallows.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sleep = ra8.chip.periph.canfd_sleep;
+const sleep = ra8.chip.periph.canfd.sleep;
 const canfd = ra8.chip.periph.canfd;
 
 test "a machine comes out of reset asleep" {

@@ -10,8 +10,8 @@ const std = @import("std");
 const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
 const blocks = @import("ra8_snapshot").blocks;
-const cards = @import("ra8_components").card_snapshot;
-const host = @import("ra8_chip").periph.sdhi_snapshot;
+const cards = @import("ra8_components").sd_card.snapshot;
+const host = @import("ra8_chip").periph.sdhi.snapshot;
 
 pub const Error = file.Error || fields.Error || error{ Missing, OutOfMemory };
 

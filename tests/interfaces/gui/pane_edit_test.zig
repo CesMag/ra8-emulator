@@ -25,7 +25,7 @@ const registers_area = Rect{ .x = 0, .y = 0, .w = 2 * registers_pane.pad + 3 * @
 const memory_area = Rect{ .x = 0, .y = 0, .w = memory_pane.min_w, .h = 2 * memory_pane.pad + 2 * memory_pane.row_h };
 const r4: usize = 4;
 
-fn press(e: *edit.Edit, code: u32, session: *ra8.session.session_api.Session) !edit.State {
+fn press(e: *edit.Edit, code: u32, session: *ra8.session.api.Session) !edit.State {
     return e.key(code, session, .cpu0);
 }
 
@@ -36,7 +36,7 @@ test "a click on r4's value and DEADBEEF then Enter writes r4" {
     const at = edit.registerOrigin(registers_area, r4).?;
     const picked = edit.registerAt(registers_area, at.x + 1, at.y + 1).?;
     try std.testing.expectEqual(r4, picked);
-    try std.testing.expectEqual(ra8.session.session_api.Register.r4, registers_capture.shown[picked]);
+    try std.testing.expectEqual(ra8.session.api.Register.r4, registers_capture.shown[picked]);
     var e = edit.Edit.begin(.{ .register = picked });
     e.typed("deadbeef");
     try std.testing.expectEqual(edit.State.written, try press(&e, hex_entry.codes.enter, session));

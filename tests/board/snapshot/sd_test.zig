@@ -10,11 +10,11 @@ const sd = ra8.board.snapshot.sd;
 const Stand = struct {
     sd: components.sd_card.Card,
     card: periph.sdhi.Sdhi,
-    host_card: components.sd_bus_card.Card,
+    host_card: components.sd_card.bus_card.Card,
 
     fn init() Stand {
         const allocator = std.testing.allocator;
-        return .{ .sd = components.sd_card.Card.init(allocator), .card = periph.sdhi.Sdhi.init(), .host_card = components.sd_bus_card.Card.init(allocator) };
+        return .{ .sd = components.sd_card.Card.init(allocator), .card = periph.sdhi.Sdhi.init(), .host_card = components.sd_card.bus_card.Card.init(allocator) };
     }
 
     fn deinit(self: *Stand) void {

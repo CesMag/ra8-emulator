@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const reset = ra8.chip.periph.rtc_reset;
+const reset = ra8.chip.periph.rtc.reset;
 const rtc = ra8.chip.periph.rtc;
 
 test "RCR2 sits where the register file puts it" {

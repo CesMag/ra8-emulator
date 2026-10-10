@@ -6,7 +6,7 @@ const npu = ra8.chip.periph.npu;
 const Store = ra8.chip.core.cpu.memory.store.Store;
 const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const file = ra8.snapshot.file;
-const section = ra8.chip.periph.npu_snapshot;
+const section = ra8.chip.periph.npu.snapshot;
 
 const Stand = struct { npu: npu.Npu };
 
@@ -44,7 +44,7 @@ test "a busy NPU round-trips byte for byte" {
     try saved(&fresh, &second);
     try std.testing.expectEqualSlices(u8, first.written(), second.written());
     try std.testing.expectEqual(@as(u64, 1 << 33), fresh.npu.vela.moved);
-    try std.testing.expectEqual(ra8.chip.periph.npu_cmd.Op.add_constant, fresh.npu.last_op.?);
+    try std.testing.expectEqual(ra8.chip.periph.npu.cmd.Op.add_constant, fresh.npu.last_op.?);
     try std.testing.expect(fresh.npu.due_irq);
 }
 

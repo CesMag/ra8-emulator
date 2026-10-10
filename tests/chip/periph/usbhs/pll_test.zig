@@ -2,8 +2,8 @@
 //! report before then.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.chip.periph.usbhs_regs;
-const usbhs_pll = ra8.chip.periph.usbhs_pll;
+const regs = ra8.chip.periph.usbhs.regs;
+const usbhs_pll = ra8.chip.periph.usbhs.pll;
 
 const clocked = true;
 

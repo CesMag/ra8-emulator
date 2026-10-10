@@ -13,7 +13,7 @@
 //! Parsing only says where; whether anything already answers there is the
 //! bus registry's call when the model is attached.
 const std = @import("std");
-const riic_bus = @import("ra8_chip").periph.riic_bus;
+const riic_bus = @import("ra8_chip").periph.riic.bus;
 
 pub const Kind = enum { i2c, spi, uart, gpio };
 

@@ -64,8 +64,8 @@ const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 const prcr = @import("../prcr.zig");
-const sync = @import("sync.zig");
-const attr = @import("attr.zig");
+pub const sync = @import("sync.zig");
+pub const attr = @import("attr.zig");
 const repeating = @import("repeat.zig");
 
 /// IPC geometry (ra8_ipc_regs.h). The bus folds the Non-secure alias onto

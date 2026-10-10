@@ -1,7 +1,7 @@
 //! GLCDC SYSCNT: the panel clock gate and the status word a driver polls.
 const std = @import("std");
 const ra8 = @import("ra8");
-const sys = ra8.chip.periph.glcdc_sys;
+const sys = ra8.chip.periph.glcdc.sys;
 
 /// What `ra8_glcdc_init` writes into PANEL_CLK: CLKSEL = LCDCLK, CLKEN set,
 /// divider /2.

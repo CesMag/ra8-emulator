@@ -5,7 +5,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const shell_main = gui_app.shell_main;
-const Profile = ra8.host.host_profiles.Profile;
+const Profile = ra8.host.profiles.Profile;
 const platform = gui_app.platform;
 const Headless = gui_app.headless.Headless;
 

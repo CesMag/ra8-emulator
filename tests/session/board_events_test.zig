@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const Board = ra8.board.board.Board;
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 const sci = ra8.chip.periph.sci;
 
 test "board UART GPIO LED and watchdog reset events use virtual time" {

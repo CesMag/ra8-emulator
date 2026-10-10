@@ -1,6 +1,6 @@
 //! Tests for src/chip/periph/elc/route.zig.
 const std = @import("std");
-const route = @import("ra8").chip.periph.elc_route;
+const route = @import("ra8").chip.periph.elc.route;
 
 fn linked(pairs: []const struct { usize, u16 }) route.Table {
     var table = route.Table{};

@@ -3,7 +3,7 @@
 const std = @import("std");
 const cli_app = @import("cli_app");
 
-const report_part = cli_app.report_part;
+const report_part = cli_app.report.part;
 
 test "an RA8P1 run names its part and its cited geometry" {
     var buf: [256]u8 = undefined;

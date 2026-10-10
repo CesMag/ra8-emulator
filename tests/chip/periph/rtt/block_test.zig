@@ -2,7 +2,7 @@
 //! before it trusts a descriptor.
 const std = @import("std");
 const ra8 = @import("ra8");
-const block = ra8.chip.periph.rtt_block;
+const block = ra8.chip.periph.rtt.block;
 const memmap = ra8.chip.core.memmap;
 
 fn up(buf: u32, size: u32, write: u32, read: u32) block.Up {

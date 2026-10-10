@@ -11,7 +11,7 @@ const periph = @import("ra8_chip").periph.registry;
 const usbfs = @import("ra8_chip").periph.usbfs;
 const usbhs = @import("ra8_chip").periph.usbhs;
 const usb_echo = @import("ra8_components").usb_echo;
-const usb_echo_far = @import("ra8_components").usb_echo_far;
+const usb_echo_far = @import("ra8_components").usb_echo.far;
 const usb_loop_cable = @import("ra8_components").usb_loop_cable;
 const usb_stick = @import("ra8_components").usb_stick;
 

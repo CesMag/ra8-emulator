@@ -3,11 +3,11 @@
 const std = @import("std");
 const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
-const api = @import("ra8_session").session_api;
+const api = @import("ra8_session").api;
 const stop_machine = @import("ra8_session").stop_machine;
 const region_map = @import("ra8_session").region_map;
 const source_spec = @import("ra8_host").camera.source_spec;
-const session_rtc = @import("ra8_session").session_rtc;
+const session_rtc = @import("ra8_session").rtc;
 
 /// The refusal codes live with the wire (RA8EMU-998): both ends agree on them.
 pub const app_codes = proto.app_codes;

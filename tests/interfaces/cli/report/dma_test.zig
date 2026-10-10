@@ -7,7 +7,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 
-const report_dma = cli_app.report_dma;
+const report_dma = cli_app.report.dma;
 const dmac = ra8.chip.periph.dmac;
 const dma_bank = ra8.chip.periph.dma_bank;
 

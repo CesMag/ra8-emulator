@@ -7,7 +7,7 @@ const Machine = ra8.session.stop_machine.Machine;
 const dispatch = ra8.gdb.rsp_dispatch;
 const zig_run = dispatch.zig_run;
 const zig_session = ra8.session.step_hook.zig_session;
-const session_api = ra8.session.session_api;
+const session_api = ra8.session.api;
 
 /// 64 bytes of RAM at address 0, the vector table first.
 const Ram = struct {

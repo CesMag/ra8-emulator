@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const eink = ra8.components.eink;
-const proto = ra8.components.eink_wire;
+const proto = ra8.components.eink.wire;
 
 /// Clock one 16-bit word at the panel, MSB first, discarding what it drives.
 fn word(panel: *eink.Panel, value: u16) void {

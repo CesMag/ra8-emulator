@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const output = ra8.chip.periph.acmphs_output;
+const output = ra8.chip.periph.acmphs.output;
 
 test "a comparator that is not operating monitors nothing" {
     try std.testing.expect(!output.operating(0));

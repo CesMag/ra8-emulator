@@ -3,7 +3,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const periph = ra8.chip.periph.registry;
 const mod = ra8.chip.periph.gpio;
-const regs = ra8.chip.periph.gpio_regs;
+const regs = ra8.chip.periph.gpio.regs;
 
 const Gpio = mod.Gpio;
 const pcntr1 = mod.pcntr1;

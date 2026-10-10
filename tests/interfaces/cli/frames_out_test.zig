@@ -5,8 +5,8 @@ const cli_app = @import("cli_app");
 const frames_out = cli_app.report.frames_out;
 const store_board = @import("store_board.zig");
 const glcdc = ra8.chip.periph.glcdc;
-const tcon = ra8.chip.periph.glcdc_tcon;
-const glcdc_sys = ra8.chip.periph.glcdc_sys;
+const tcon = ra8.chip.periph.glcdc.tcon;
+const glcdc_sys = ra8.chip.periph.glcdc.sys;
 const pdctr = ra8.chip.periph.pdctr;
 const prcr = ra8.chip.periph.prcr;
 
@@ -119,7 +119,7 @@ test "an armed run keeps one frame per period with its emulated time" {
 
     const armed = (try frames_out.Armed.armOutputs(std.testing.allocator, std.testing.io, &board, path, gif_path, 1)).?;
     defer armed.deinit();
-    const period = ra8.chip.periph.glcdc_out.vsync.default_period_ns;
+    const period = ra8.chip.periph.glcdc.out.vsync.default_period_ns;
     board.protection.write(prcr.win_base, 2, prcr.unlockWord(pdctr.guard));
     board.domains.graphics.write(pdctr.Domain.graphics.base(), 1, 0);
     board.display.write(glcdc.win_base + tcon.off.sthb1, 4, 2);
@@ -144,7 +144,7 @@ test "an armed run keeps one frame per period with its emulated time" {
 }
 
 test "an attached e-ink refresh records its grey glass plane once per refresh" {
-    const proto = ra8.components.eink_wire;
+    const proto = ra8.components.eink.wire;
     var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.asks.attached_eink = &board.panel;
@@ -179,7 +179,7 @@ test "an attached e-ink refresh records its grey glass plane once per refresh" {
 }
 
 test "with no attach, the board's own e-ink refreshes become the sequence" {
-    const proto = ra8.components.eink_wire;
+    const proto = ra8.components.eink.wire;
     var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
     board.panel.planes.resize(.{ .width = 16, .height = 8 });

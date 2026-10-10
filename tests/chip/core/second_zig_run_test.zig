@@ -12,7 +12,7 @@ const memmap = ra8.chip.core.memmap;
 const Board = ra8.board.board.Board;
 const icu = ra8.chip.periph.icu;
 const dtc = ra8.chip.periph.dtc;
-const xfer = ra8.chip.periph.dtc_xfer;
+const xfer = ra8.chip.periph.dtc.xfer;
 
 const vectors: u32 = memmap.sram_base + 0x1000;
 const code: u32 = vectors + 0x200;

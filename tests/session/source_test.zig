@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const commands = ra8.session.commands;
-const session_source = ra8.session.session_source;
+const session_source = ra8.session.source;
 const unit = @import("dwarf_units.zig").unit;
 
 // Directories "src"; files "main.c" in directory 1, "/abs/boot.s" in 0.

@@ -41,7 +41,7 @@
 pub const dps = @import("dps.zig");
 const periph = @import("../registry.zig");
 const prcr = @import("../prcr.zig");
-const mode = @import("mode.zig");
+pub const mode = @import("mode.zig");
 
 /// The group these sit behind: PRC1, low-power modes and the VBATT file.
 pub const guard: u16 = prcr.group.lpm;

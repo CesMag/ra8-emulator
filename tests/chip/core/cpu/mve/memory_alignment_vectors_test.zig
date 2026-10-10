@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/mve/memory_alignment_vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
+const vector = ra8.chip.core.cpu.conformance.vector;
 const alignment = ra8.chip.core.cpu.mve.memory_alignment_vectors;
 
 test "MVE memory alignment vectors match MemA" {

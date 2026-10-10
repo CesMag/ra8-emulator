@@ -37,6 +37,7 @@ const iwdt_status = @import("status.zig");
 const periph = @import("../registry.zig");
 const wdt_clock = @import("../wdt/clock.zig");
 const event_queue = @import("../time/event_queue.zig");
+pub const option_memory = @import("option_memory.zig");
 
 pub const ofs0 = iwdt_ofs0;
 pub const refresh = iwdt_refresh;

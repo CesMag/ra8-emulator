@@ -77,7 +77,7 @@ test "firmware TCP frames fetch an exact page from a real loopback server" {
     var serving = try io.concurrent(TcpHost.serve, .{&host});
     defer serving.cancel(io) catch {};
 
-    var bridge: Bridge = .{ .net = .of(ra8.host.host_sock) };
+    var bridge: Bridge = .{ .net = .of(ra8.host.sock) };
     defer bridge.deinit();
     var queue: Queue = .{};
     const port = server.socket.address.getPort();
@@ -140,7 +140,7 @@ test "firmware UDP frames exchange a datagram with a real loopback socket" {
     var echoing = try io.concurrent(UdpHost.echo, .{&host});
     defer echoing.cancel(io) catch {};
 
-    var bridge: Bridge = .{ .net = .of(ra8.host.host_sock) };
+    var bridge: Bridge = .{ .net = .of(ra8.host.sock) };
     defer bridge.deinit();
     var queue: Queue = .{};
     try sendUdp(&bridge, &queue, socket.address.getPort(), "ra8-udp");

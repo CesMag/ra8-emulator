@@ -4,7 +4,7 @@ const ra8 = @import("ra8");
 const c6 = ra8.components.esp_hosted;
 const gpio = ra8.chip.periph.gpio;
 const sci = ra8.chip.periph.sci;
-const sci_spi = ra8.chip.periph.sci_spi;
+const sci_spi = ra8.chip.periph.sci.spi;
 
 test "an empty C6 transmit queue answers with esp-hosted idle filler" {
     var serial = sci.Sci.init();

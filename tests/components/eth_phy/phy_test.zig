@@ -2,7 +2,7 @@
 //! refuses.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.chip.periph.eth_regs;
+const regs = ra8.chip.periph.eth.regs;
 const eth_phy = ra8.components.eth_phy;
 
 fn frame(target: u32, index: u32, op: regs.Op, data: u16) u32 {

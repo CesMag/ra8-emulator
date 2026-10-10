@@ -78,7 +78,7 @@ test "closing a boundary charges cycles at the image core clock" {
     _ = clock.width();
     try std.testing.expectEqual(@as(u64, 8_000_000), board.time.base.hz);
     const gptp = ra8.chip.periph.gptp;
-    const gptp_timer = ra8.chip.periph.gptp_timer;
+    const gptp_timer = ra8.chip.periph.gptp.timer;
     const unit = gptp.win_base + gptp.unitOffset(0);
     board.ptp.write(unit + gptp.unit_off.ptptivc, 4, 4 << gptp_timer.scale.subns_shift);
     board.ptp.write(gptp.win_base + gptp.off.ptptmec, 4, 1);

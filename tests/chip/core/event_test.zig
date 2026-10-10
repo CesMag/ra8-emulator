@@ -1,7 +1,7 @@
 //! Covers src/chip/core/event.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const Events = ra8.chip.core.core_event.Events;
+const Events = ra8.chip.core.event.Events;
 
 test "a WFE with no event waits and a SEV from the other core wakes it" {
     var events: Events = .{};

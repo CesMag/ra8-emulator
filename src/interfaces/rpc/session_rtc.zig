@@ -3,7 +3,7 @@
 const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
-const session_rtc = @import("ra8_session").session_rtc;
+const session_rtc = @import("ra8_session").rtc;
 
 const Outcome = rpc.Outcome(proto.RtcReport);
 

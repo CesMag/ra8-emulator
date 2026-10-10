@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const dtc = ra8.chip.periph.dtc;
-const regs = ra8.chip.periph.dtc_regs;
+const regs = ra8.chip.periph.dtc.regs;
 
 fn unit() dtc.Dtc {
     return dtc.Dtc.init();

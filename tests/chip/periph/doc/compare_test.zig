@@ -1,7 +1,7 @@
 //! The DCSEL relations, including the two that read DODSR1 as an upper bound.
 const std = @import("std");
 const ra8 = @import("ra8");
-const compare = ra8.chip.periph.doc_compare;
+const compare = ra8.chip.periph.doc.compare;
 const doc = ra8.chip.periph.doc;
 
 fn docr(dcsel: u8) u8 {

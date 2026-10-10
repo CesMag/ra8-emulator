@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const rtc = ra8.chip.periph.rtc;
-const source = ra8.chip.periph.rtc_source;
+const source = ra8.chip.periph.rtc.source;
 
 fn store(unit: *rtc.Rtc, offset: u32, byte: u8) void {
     unit.write(rtc.win_base + offset, 1, byte);
@@ -67,7 +67,7 @@ test "the driver's own clock bring-up order is quiet on both rules" {
     // RCR4 first, then the prescaler stop, then the software reset.
     store(&unit, rtc.off.rcr4, 0);
     store(&unit, rtc.off.rcr2, 0);
-    store(&unit, rtc.off.rcr2, ra8.chip.periph.rtc_reset.mask.reset);
+    store(&unit, rtc.off.rcr2, ra8.chip.periph.rtc.reset.mask.reset);
     try std.testing.expectEqual(@as(u32, 0), unit.count_source.late);
     try std.testing.expectEqual(@as(u32, 0), unit.count_source.unsourced);
     try std.testing.expect(unit.count_source.settled);
@@ -75,7 +75,7 @@ test "the driver's own clock bring-up order is quiet on both rules" {
 
 test "a bring-up that skips RCR4 is counted at the reset" {
     var unit = rtc.Rtc.init();
-    store(&unit, rtc.off.rcr2, ra8.chip.periph.rtc_reset.mask.reset);
+    store(&unit, rtc.off.rcr2, ra8.chip.periph.rtc.reset.mask.reset);
     try std.testing.expectEqual(@as(u32, 1), unit.count_source.unsourced);
     // And swapping the source afterwards is the late store.
     store(&unit, rtc.off.rcr4, source.rcksel);

@@ -6,7 +6,7 @@ const cli_app = @import("cli_app");
 const store_board = @import("../store_board.zig");
 const elf = ra8.board.image.elf;
 const cli = cli_app.cli;
-const report_dumps = cli_app.report_dumps;
+const report_dumps = cli_app.report.dumps;
 const Builder = @import("../../../session/symbol_image.zig").Builder;
 
 fn dumped(core: store_board.Guest, image: elf.Image, names: []const []const u8, into: []u8) ![]const u8 {
@@ -90,7 +90,7 @@ test "no --dump-regs prints nothing" {
     try std.testing.expectEqualStrings("", stream.buffered());
 }
 
-const Block = ra8.components.sd_image.Block;
+const Block = ra8.components.sd_card.image.Block;
 
 const OneBlockCard = struct {
     sd: struct { img: Img } = .{ .img = .{} },

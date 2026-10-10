@@ -49,8 +49,8 @@ const Bounded = @import("../../core/bounded.zig").Bounded;
 
 const bytelanes = @import("../bytelanes.zig");
 const periph = @import("../registry.zig");
-const compare = @import("compare.zig");
-const regs = @import("regs.zig");
+pub const compare = @import("compare.zig");
+pub const regs = @import("regs.zig");
 
 /// The compare pair, re-exported so a caller reaches it through the block.
 pub const match = compare;

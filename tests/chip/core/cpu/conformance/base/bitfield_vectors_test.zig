@@ -2,8 +2,8 @@
 //! runs through the `bitfield` group on a bare core holding N and C.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.bitfield_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.bitfield_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const nzcv: u32 = 0xF000_0000;
 

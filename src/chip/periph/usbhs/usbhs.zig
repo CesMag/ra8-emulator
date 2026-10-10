@@ -14,19 +14,26 @@
 //! with SYSCFG.USBE still clear, because the driver brings the PHY up before
 //! it sets USBE.
 const periph = @import("../registry.zig");
-const regs = @import("regs.zig");
-const usbhs_dfifo = @import("dfifo.zig");
+pub const regs = @import("regs.zig");
+pub const dfifo = @import("dfifo.zig");
 const usbhs_phy = @import("phy.zig");
-const usbhs_pipe = @import("pipe.zig");
+pub const phy = usbhs_phy;
+pub const pipe = @import("pipe.zig");
 const usbhs_pll = @import("pll.zig");
+pub const pll = usbhs_pll;
 const usbhs_xfer = @import("xfer.zig");
+pub const xfer = usbhs_xfer;
 pub const far = @import("far.zig");
+pub const fifo = @import("fifo.zig");
+pub const function = @import("function.zig");
+pub const int = @import("int.zig");
+pub const setup = @import("setup.zig");
 
 pub const Host = struct {
     base: u32 = regs.window.base,
     phy: usbhs_phy.Phy = .{},
     pll: usbhs_pll.Pll = .{},
-    pipes: usbhs_pipe.Table = .{},
+    pipes: pipe.Table = .{},
     xfer: usbhs_xfer.Transfer = .{},
     /// The 16-bit register shadow, for everything the model does not own.
     shadow: [regs.window.words]u16 = @splat(0),
@@ -73,7 +80,7 @@ pub const Host = struct {
             return 0;
         }
         if (isFifoPort(offset)) return self.xfer.port.readData(width);
-        if (usbhs_dfifo.portOf(offset)) |which| return self.readDataPort(which, offset, width);
+        if (dfifo.portOf(offset)) |which| return self.readDataPort(which, offset, width);
         return switch (offset) {
             regs.reg.syscfg => self.phy.syscfg,
             regs.reg.physet => self.pll.physet,
@@ -122,7 +129,7 @@ pub const Host = struct {
             self.off += 1;
             return;
         }
-        if (usbhs_dfifo.portOf(offset)) |which| {
+        if (dfifo.portOf(offset)) |which| {
             self.writeDataPort(which, offset, width, value, v);
             return;
         }
@@ -176,17 +183,17 @@ pub const Host = struct {
     /// the pipe's staging, its selector reads back, and its control register
     /// reports what the staging really holds.
     fn readDataPort(self: *Host, which: u32, offset: u32, width: u3) u32 {
-        if (usbhs_dfifo.isData(offset)) return self.xfer.readData(which, width, &self.pipes);
-        if (usbhs_dfifo.isControl(offset)) return self.xfer.dataStatus(which, &self.pipes);
+        if (dfifo.isData(offset)) return self.xfer.readData(which, width, &self.pipes);
+        if (dfifo.isControl(offset)) return self.xfer.dataStatus(which, &self.pipes);
         return self.xfer.data.ports[which].sel;
     }
 
     fn writeDataPort(self: *Host, which: u32, offset: u32, width: u3, value: u32, v: u16) void {
-        if (usbhs_dfifo.isData(offset)) {
+        if (dfifo.isData(offset)) {
             self.xfer.writeData(which, width, value, &self.pipes);
             return;
         }
-        if (usbhs_dfifo.isControl(offset)) {
+        if (dfifo.isControl(offset)) {
             self.xfer.dataControl(which, v, &self.pipes);
             return;
         }

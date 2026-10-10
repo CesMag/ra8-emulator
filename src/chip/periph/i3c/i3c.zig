@@ -23,24 +23,24 @@
 //! counted here instead.
 const periph = @import("../registry.zig");
 const bus = @import("../riic/bus.zig");
-const flag = @import("flags.zig");
-const regs = @import("regs.zig");
-const i3c_target = @import("target.zig");
-const rstctl = @import("reset.zig");
+pub const flags = @import("flags.zig");
+pub const regs = @import("regs.zig");
+pub const target = @import("target.zig");
+pub const reset = @import("reset.zig");
 
-pub const win_base = flag.win_base;
-pub const win_span = flag.win_span;
-pub const reg = flag.reg;
+pub const win_base = flags.win_base;
+pub const win_span = flags.win_span;
+pub const reg = flags.reg;
 
 /// Bytes a device may stage for one read. dev's own bound, and more than any
 /// modelled part has to say.
 pub const stage_bytes: usize = 64;
 
 pub const I3c = struct {
-    shadow: [flag.reg.words]u32 = @splat(0),
+    shadow: [flags.reg.words]u32 = @splat(0),
     /// The transmit side is empty out of reset, so a driver may put the
     /// first address byte down without waiting for anything.
-    ntst: u32 = flag.ntst.tdbef0,
+    ntst: u32 = flags.ntst.tdbef0,
     bst: u32 = 0,
     busy: bool = false,
     addressed: bool = false,
@@ -57,7 +57,7 @@ pub const I3c = struct {
 
     devices: bus.Registry = .{},
     /// The responder half, live once the firmware claims an own address.
-    responder: i3c_target.Target = .{},
+    responder: target.Target = .{},
 
     /// Transactions that reached STOP with a device ACKing.
     transfers: u32 = 0,
@@ -117,9 +117,9 @@ pub const I3c = struct {
         self.primed = false;
         // The transmit buffer is empty so the driver can put the address
         // byte in it, and the previous phase's outcome is not this one's.
-        self.ntst = flag.ntst.tdbef0;
-        self.bst &= ~(flag.bst.nackdf | flag.bst.tendf);
-        self.bst |= flag.bst.stcnddf;
+        self.ntst = flags.ntst.tdbef0;
+        self.bst &= ~(flags.bst.nackdf | flags.bst.tendf);
+        self.bst |= flags.bst.stcnddf;
     }
 
     fn closeTransfer(self: *I3c) void {
@@ -129,8 +129,8 @@ pub const I3c = struct {
         }
         self.busy = false;
         self.addressed = false;
-        self.ntst = flag.ntst.tdbef0;
-        self.bst |= flag.bst.spcnddf;
+        self.ntst = flags.ntst.tdbef0;
+        self.bst |= flags.bst.spcnddf;
     }
 
     /// RSTCTL asks the channel back to idle. The bits are commands: they are
@@ -144,10 +144,10 @@ pub const I3c = struct {
     /// address in MSDVAD, which is configuration, and the way firmware
     /// gives that role back up is to write MSDVAD zero.
     fn softReset(self: *I3c, value: u32) void {
-        if (!rstctl.requested(value)) return;
+        if (!reset.requested(value)) return;
         self.resets += 1;
         if (self.busy) self.reset_busy += 1;
-        if (!rstctl.resetsChannel(value)) return;
+        if (!reset.resetsChannel(value)) return;
         self.busy = false;
         self.addressed = false;
         self.acked = false;
@@ -156,7 +156,7 @@ pub const I3c = struct {
         self.staged_len = 0;
         self.served = 0;
         self.primed = false;
-        self.ntst = flag.ntst.tdbef0;
+        self.ntst = flags.ntst.tdbef0;
         self.bst = 0;
     }
 
@@ -174,26 +174,26 @@ pub const I3c = struct {
         if (bus.reserved.holds(self.target_7b)) {
             self.acked = false;
             self.reserved += 1;
-            self.bst |= flag.bst.nackdf;
+            self.bst |= flags.bst.nackdf;
             return;
         }
         // A part that does not acknowledge (a --fault disconnect) NACKs here.
         const device = self.devices.answering(self.target_7b) orelse {
             self.acked = false;
             self.nacks += 1;
-            self.bst |= flag.bst.nackdf;
+            self.bst |= flags.bst.nackdf;
             return;
         };
         self.acked = true;
-        self.bst |= flag.bst.tendf;
+        self.bst |= flags.bst.tendf;
         if (!self.reading) {
-            self.ntst |= flag.ntst.tdbef0;
+            self.ntst |= flags.ntst.tdbef0;
             return;
         }
         self.staged_len = device.read(self.staged[0..]);
         self.served = 0;
         self.primed = false;
-        if (self.staged_len != 0) self.ntst |= flag.ntst.rdbff0;
+        if (self.staged_len != 0) self.ntst |= flags.ntst.rdbff0;
     }
 
     fn writeData(self: *I3c, byte: u8) void {
@@ -206,7 +206,7 @@ pub const I3c = struct {
         if (!self.acked) return;
         if (self.devices.answering(self.target_7b)) |device| device.write(byte);
         self.sent += 1;
-        self.ntst |= flag.ntst.tdbef0;
+        self.ntst |= flags.ntst.tdbef0;
     }
 
     fn readData(self: *I3c) u32 {
@@ -218,16 +218,16 @@ pub const I3c = struct {
         if (self.served >= self.staged_len) {
             // Nothing left on the line. The full flag goes with the data.
             self.overdrain += 1;
-            self.ntst &= ~flag.ntst.rdbff0;
+            self.ntst &= ~flags.ntst.rdbff0;
             return 0;
         }
         const byte = self.staged[self.served];
         self.served += 1;
         self.received += 1;
         if (self.served < self.staged_len) {
-            self.ntst |= flag.ntst.rdbff0;
+            self.ntst |= flags.ntst.rdbff0;
         } else {
-            self.ntst &= ~flag.ntst.rdbff0;
+            self.ntst &= ~flags.ntst.rdbff0;
         }
         return byte;
     }
@@ -240,7 +240,7 @@ pub const I3c = struct {
             self.role_clash += 1;
             return;
         }
-        if (value & flag.cndctl.stcnd != 0) {
+        if (value & flags.cndctl.stcnd != 0) {
             if (self.devices.held_low) {
                 // SCL/SDA held low: no START condition, and the request
                 // bit stays set, so a driver spinning on it times out.
@@ -248,12 +248,12 @@ pub const I3c = struct {
                 return;
             }
             if (self.busy) self.st_busy += 1 else self.openTransfer();
-        } else if (value & flag.cndctl.srcnd != 0) {
+        } else if (value & flags.cndctl.srcnd != 0) {
             if (self.busy) self.openTransfer() else self.rs_idle += 1;
-        } else if (value & flag.cndctl.spcnd != 0) {
+        } else if (value & flags.cndctl.spcnd != 0) {
             if (self.busy) self.closeTransfer();
         }
-        self.shadow[flag.reg.cndctl / 4] = 0;
+        self.shadow[flags.reg.cndctl / 4] = 0;
     }
 
     /// The firmware claiming an own address is the firmware coming up as the
@@ -271,39 +271,39 @@ pub const I3c = struct {
     /// "configure then verify" still works across the window.
     fn readWord(self: *I3c, access: regs.Access) u32 {
         return switch (access.word) {
-            flag.reg.ntst => if (self.responder.armed) self.responder.status() else self.ntst,
-            flag.reg.bst => self.bst,
+            flags.reg.ntst => if (self.responder.armed) self.responder.status() else self.ntst,
+            flags.reg.bst => self.bst,
             // A held line is never free (BCST.BFREF stays 0).
-            flag.reg.bcst => if (self.busy or self.devices.held_low) 0 else flag.bcst.bfref,
+            flags.reg.bcst => if (self.busy or self.devices.held_low) 0 else flags.bcst.bfref,
             // The port moves a byte, and only for an access that reaches it.
-            flag.reg.ntdtbp0 => if (access.carriesData()) self.readData() else 0,
+            flags.reg.ntdtbp0 => if (access.carriesData()) self.readData() else 0,
             else => self.shadow[access.index()],
         };
     }
 
     pub fn read(self: *I3c, address: u32, width: u3) u32 {
-        const offset = address -% flag.win_base;
+        const offset = address -% flags.win_base;
         if (!regs.inside(offset)) return 0;
         const access = regs.Access.of(offset, width);
         return access.cut(self.readWord(access));
     }
 
     pub fn write(self: *I3c, address: u32, width: u3, value: u32) void {
-        const offset = address -% flag.win_base;
+        const offset = address -% flags.win_base;
         if (!regs.inside(offset)) return;
         const access = regs.Access.of(offset, width);
         const merged = access.fold(self.shadow[access.index()], value);
         // Every RSTCTL bit is spent on the write, so none of them reaches
         // the shadow and the driver's poll for a self-clear finishes.
         self.shadow[access.index()] =
-            if (access.word == rstctl.off) rstctl.stored(merged) else merged;
+            if (access.word == reset.off) reset.stored(merged) else merged;
         switch (access.word) {
-            rstctl.off => self.softReset(merged),
-            flag.reg.msdvad => self.claimAddress(merged),
-            flag.reg.cndctl => self.control(merged),
-            flag.reg.ntdtbp0 => if (access.carriesData()) self.writeData(regs.Access.dataByte(value)),
+            reset.off => self.softReset(merged),
+            flags.reg.msdvad => self.claimAddress(merged),
+            flags.reg.cndctl => self.control(merged),
+            flags.reg.ntdtbp0 => if (access.carriesData()) self.writeData(regs.Access.dataByte(value)),
             // BST is write-0-to-clear, and only in the lanes this store named.
-            flag.reg.bst => self.bst &= access.clearing(value),
+            flags.reg.bst => self.bst &= access.clearing(value),
             else => {},
         }
     }
@@ -311,18 +311,18 @@ pub const I3c = struct {
     /// A whole-word access at a window offset, which is how the tests and the
     /// board's own wiring reach a register by name.
     pub fn readOffset(self: *I3c, offset: u32) u32 {
-        return self.read(flag.win_base +% offset, 4);
+        return self.read(flags.win_base +% offset, 4);
     }
 
     pub fn writeOffset(self: *I3c, offset: u32, value: u32) void {
-        self.write(flag.win_base +% offset, 4, value);
+        self.write(flags.win_base +% offset, 4, value);
     }
 
     pub fn block(self: *I3c) periph.Block {
         return .{
             .name = "I3C",
-            .base = flag.win_base,
-            .size = flag.win_span,
+            .base = flags.win_base,
+            .size = flags.win_span,
             .context = self,
             .readFn = readThunk,
             .writeFn = writeThunk,

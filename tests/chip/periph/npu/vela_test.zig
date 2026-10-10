@@ -2,7 +2,7 @@
 //! into commands and payloads, and counting what it asks for.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 
 /// cmd1 NPU_SET_IFM_BASE0 (0x000) with its payload, the way Vela emits it.
 const set_ifm_base0 = [_]u32{ 0x0000_4000, 0x0000_1000 };

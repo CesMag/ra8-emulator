@@ -1,8 +1,8 @@
 //! INTSTS0's latched summary bits: raised with the packet, acked W0C.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.chip.periph.usbhs_regs;
-const usbhs_int = ra8.chip.periph.usbhs_int;
+const regs = ra8.chip.periph.usbhs.regs;
+const usbhs_int = ra8.chip.periph.usbhs.int;
 
 test "a fresh summary names nothing" {
     var summary = usbhs_int.Summary{};

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const latch = ra8.chip.periph.glcdc_latch;
+const latch = ra8.chip.periph.glcdc.latch;
 
 test "the three registers that carry a VEN, and no others" {
     try std.testing.expectEqual(@as(u32, 0x100), latch.bitAt(latch.latch.bg_en));

@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const div = ra8.chip.periph.pll_div;
+const div = ra8.chip.periph.pll.div;
 
 test "PLIDIV is ratio minus one for the three the part supports" {
     try std.testing.expectEqual(@as(u8, 1), div.inputRatio(0).?);

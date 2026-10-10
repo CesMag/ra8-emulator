@@ -6,7 +6,7 @@ const ra8 = @import("ra8");
 const proto = ra8.rpc.session_rpc;
 const server = ra8.rpc.session_server;
 const parts = ra8.rpc.session_parts;
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 
 const Stub = struct {
     text: []const u8,

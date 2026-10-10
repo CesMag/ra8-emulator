@@ -3,7 +3,7 @@
 //! pins and channels a board wires is the board's to say
 //! (src/board/switches.zig for the EK-RA8D2).
 const gpio = @import("ra8_chip").periph.gpio;
-const pin_irq = @import("ra8_chip").periph.icu_pin_irq;
+const pin_irq = @import("ra8_chip").periph.icu.pin_irq;
 
 pub const Switch = struct {
     /// The host-side name, as the touch stream spells it ("sw1").

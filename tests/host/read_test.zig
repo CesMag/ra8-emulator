@@ -1,7 +1,7 @@
 //! Covers the host read that never waits (RA8EMU-725).
 const std = @import("std");
 const ra8 = @import("ra8");
-const host_read = ra8.host.host_read;
+const host_read = ra8.host.read;
 
 /// Writes all of `bytes` to a pipe end, as the host side of the test.
 fn send(fd: std.posix.fd_t, bytes: []const u8) !void {

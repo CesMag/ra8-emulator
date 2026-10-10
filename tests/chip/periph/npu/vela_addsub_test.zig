@@ -5,7 +5,7 @@
 //! OFMs are TFLite Micro's arithmetic; tflite-runtime agrees on every byte.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 const addsub = vela.addsub;
 
 /// A flat 4 KiB memory at bus address 0x1000 that refuses everything else.

@@ -8,7 +8,7 @@ const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 const store_board = @import("../interfaces/cli/store_board.zig");
 
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 const boot = ra8.chip.core.cpu.boot;
 const elf = ra8.board.image.elf;
 const loader = ra8.chip.core.cpu.memory.load;

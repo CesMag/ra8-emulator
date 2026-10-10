@@ -49,7 +49,7 @@
 const std = @import("std");
 
 const periph = @import("../registry.zig");
-const gptp_timer = @import("timer.zig");
+pub const timer = @import("timer.zig");
 
 /// GPTP geometry (ra8_ether_regs.h): the whole aperture of HUM Table 35.3.
 /// The ESWM media mux above it stays in the sparse fallback.
@@ -95,7 +95,7 @@ pub const Spot = struct {
 /// the two counters behind it, and what went wrong.
 pub const Gptp = struct {
     reg: [win_span]u8 = @splat(0),
-    units: [unit_count]gptp_timer.Unit = @splat(gptp_timer.Unit{}),
+    units: [unit_count]timer.Unit = @splat(timer.Unit{}),
     ns_remainder: u64 = 0,
     /// Units started, and units stopped, over the run.
     starts: u32 = 0,
@@ -127,7 +127,7 @@ pub const Gptp = struct {
     /// virtual-time span. Fractional cycles carry into the next chunk.
     pub fn tick(self: *Gptp, elapsed_ns: u64) void {
         const scaled = @as(u128, self.ns_remainder) +
-            @as(u128, elapsed_ns) * gptp_timer.scale.eswclk_hz;
+            @as(u128, elapsed_ns) * timer.scale.eswclk_hz;
         const esw_cycles: u64 = @intCast(scaled / std.time.ns_per_s);
         self.ns_remainder = @intCast(scaled % std.time.ns_per_s);
         for (&self.units, 0..) |*unit, index| {
@@ -231,8 +231,8 @@ pub const Gptp = struct {
         const upper: u64 = self.shadowWord(base + unit_off.ptptovcu);
         const middle: u64 = self.shadowWord(base + unit_off.ptptovcm);
         const lower: u64 = self.shadowWord(base + unit_off.ptptovcl);
-        const sec = ((upper & gptp_timer.mask.sec_upper) << gptp_timer.mask.sec_shift) | middle;
-        const nsec: u32 = @intCast(lower & gptp_timer.mask.nsec);
+        const sec = ((upper & timer.mask.sec_upper) << timer.mask.sec_shift) | middle;
+        const nsec: u32 = @intCast(lower & timer.mask.nsec);
         if (self.units[unit].setOffset(sec, nsec)) self.denormal +%= 1;
     }
 

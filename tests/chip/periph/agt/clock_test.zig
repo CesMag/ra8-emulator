@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const clk = ra8.chip.periph.agt_clock;
+const clk = ra8.chip.periph.agt.clock;
 const agt = ra8.chip.periph.agt;
 
 const ch0 = agt.win_base;

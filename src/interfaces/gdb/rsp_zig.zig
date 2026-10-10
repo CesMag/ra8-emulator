@@ -13,7 +13,7 @@ const std = @import("std");
 const debug_session = @import("ra8_session").session;
 const watch_table = @import("ra8_session").watch_table;
 const zig_drive = @import("ra8_session").zig_drive;
-const session_api = @import("ra8_session").session_api;
+const session_api = @import("ra8_session").api;
 
 pub const Error = error{NoSpace};
 

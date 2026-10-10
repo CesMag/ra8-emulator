@@ -3,7 +3,7 @@
 //! run through the runner.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 const avgpool = vela.avgpool;
 
 const Memory = struct {

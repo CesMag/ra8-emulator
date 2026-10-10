@@ -48,8 +48,8 @@ pub const filter_span: u32 = 0x18;
 pub const rail_millivolts: u16 = 3300;
 
 /// The register fields and the Vdet table, in src/chip/periph/lvd/regs.zig.
-const regs = @import("regs.zig");
-const field_lock = @import("field_lock.zig");
+pub const regs = @import("regs.zig");
+pub const field_lock = @import("field_lock.zig");
 
 pub const compare = regs.compare;
 pub const control = regs.control;
@@ -62,7 +62,7 @@ pub const level_min = regs.level_min;
 pub const level_max = regs.level_max;
 pub const detect_millivolts = regs.detect_millivolts;
 pub const detectVoltage = regs.detectVoltage;
-const interlock = @import("interlock.zig");
+pub const interlock = @import("interlock.zig");
 
 pub const Series = regs.Series;
 

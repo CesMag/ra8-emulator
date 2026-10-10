@@ -2,8 +2,8 @@
 //! previous image, and GC16 or INIT clears it (RA8EMU-559).
 const std = @import("std");
 const ra8 = @import("ra8");
-const image = ra8.components.eink_image;
-const waveform = ra8.components.eink_wire.waveform;
+const image = ra8.components.eink.image;
+const waveform = ra8.components.eink.wire.waveform;
 
 test "a DU flip keeps an eighth of the old level as residue" {
     try std.testing.expectEqual(@as(u8, 0x1F), image.waveformPixel(0x00, 0xFF, waveform.du));

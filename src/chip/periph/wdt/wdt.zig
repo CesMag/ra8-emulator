@@ -53,7 +53,7 @@
 //! narrow-access vein, not this rule.
 pub const clock = @import("clock.zig");
 const periph = @import("../registry.zig");
-const write_once = @import("write_once.zig");
+pub const write_once = @import("write_once.zig");
 const event_queue = @import("../time/event_queue.zig");
 
 /// WDT0 geometry (ra8_wdt_regs.h, r_wdt_regs_t; HUM Ch 27.2 p 1070).

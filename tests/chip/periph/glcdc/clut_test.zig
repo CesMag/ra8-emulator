@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const clut = ra8.chip.periph.glcdc_clut;
+const clut = ra8.chip.periph.glcdc.clut;
 
 test "an offset inside the CLUT area names its layer, plane and entry" {
     const first = clut.slotOf(0x0000).?;

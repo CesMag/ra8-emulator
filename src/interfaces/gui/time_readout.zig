@@ -8,7 +8,7 @@ const std = @import("std");
 const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const speed_field = @import("speed_field.zig");
-const session_rtc = @import("ra8_session").session_rtc;
+const session_rtc = @import("ra8_session").rtc;
 const Link = session_link.Link;
 const Arrival = session_link.Arrival;
 

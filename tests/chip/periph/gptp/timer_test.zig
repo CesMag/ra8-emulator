@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const timer = ra8.chip.periph.gptp_timer;
+const timer = ra8.chip.periph.gptp.timer;
 
 /// 4.0 nanoseconds per ESWCLK cycle in 5.27 fixed point, the increment a
 /// driver programs for a 250 MHz clock.

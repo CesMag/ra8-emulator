@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 
-const report_unmodelled = cli_app.report_unmodelled;
+const report_unmodelled = cli_app.report.unmodelled;
 const Bus = ra8.chip.periph.registry.Bus;
 
 test "lists unmodelled addresses lowest first with how they were touched" {

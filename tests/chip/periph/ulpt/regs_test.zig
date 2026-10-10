@@ -4,7 +4,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const regs = ra8.chip.periph.ulpt_regs;
+const regs = ra8.chip.periph.ulpt.regs;
 
 test "the counter owns four bytes, low byte first" {
     for (0..4) |byte| {

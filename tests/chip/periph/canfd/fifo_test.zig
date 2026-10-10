@@ -2,7 +2,7 @@
 //! receive queue behind a CAN-FD channel.
 const std = @import("std");
 const ra8 = @import("ra8");
-const fifo = ra8.chip.periph.canfd_fifo;
+const fifo = ra8.chip.periph.canfd.fifo;
 
 fn framed(id: u32, dlc: u32, payload: u32) fifo.Frame {
     var frame = fifo.Frame{};

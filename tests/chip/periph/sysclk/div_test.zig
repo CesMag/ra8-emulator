@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const div = ra8.chip.periph.sysclk_div;
+const div = ra8.chip.periph.sysclk.div;
 
 test "a divider code is an exponent" {
     try std.testing.expectEqual(@as(?u32, 1), div.ratio(0));

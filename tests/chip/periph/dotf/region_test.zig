@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const region = ra8.chip.periph.dotf_region;
+const region = ra8.chip.periph.dotf.region;
 
 test "the address registers are 4 KB granular" {
     try std.testing.expectEqual(@as(u32, 0x9000_0000), region.address(0x9000_0FFF));

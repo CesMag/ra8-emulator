@@ -7,7 +7,7 @@ const ra8 = @import("ra8");
 const Board = ra8.board.board.Board;
 const plug = Board.plug;
 const model = ra8.components.model;
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 const session_faults = ra8.session.board_faults;
 
 const modem_at = "modem@uart:sci3";
@@ -48,7 +48,7 @@ const Rig = struct {
         self.arena.deinit();
     }
 
-    fn modem(self: *Rig) ra8.chip.periph.sci_device.Device {
+    fn modem(self: *Rig) ra8.chip.periph.sci.device.Device {
         return self.board.serial.channels[3].device.?;
     }
 

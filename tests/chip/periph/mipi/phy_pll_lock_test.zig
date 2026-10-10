@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const lock = ra8.chip.periph.mipi_phy_pll_lock;
-const status = ra8.chip.periph.mipi_phy_status;
+const lock = ra8.chip.periph.mipi.phy_pll_lock;
+const status = ra8.chip.periph.mipi.phy_status;
 
 test "the PLL is stopped out of reset" {
     try std.testing.expectEqual(status.pll_control.pllstp, lock.plocr_reset);

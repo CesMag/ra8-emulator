@@ -8,7 +8,7 @@
 //! time. Without the flag the clock comes up stopped at its reset date, as
 //! the corpus was recorded.
 const std = @import("std");
-const clock = @import("ra8_chip").periph.rtc_clock;
+const clock = @import("ra8_chip").periph.rtc.clock;
 
 pub const Error = error{ BadDateTime, OutOfRange };
 pub const Calendar = clock.Calendar;

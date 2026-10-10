@@ -1,6 +1,6 @@
 //! Covers src/chip/periph/adc/scan.zig.
 const std = @import("std");
-const scan = @import("ra8").chip.periph.adc_scan;
+const scan = @import("ra8").chip.periph.adc.scan;
 
 test "a slot word decodes into its group and its source" {
     const slot = scan.Slot.decode(0x0000_0503);

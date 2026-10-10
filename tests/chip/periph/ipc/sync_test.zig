@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const ipc = ra8.chip.periph.ipc;
-const sync = ra8.chip.periph.ipc_sync;
+const sync = ra8.chip.periph.ipc.sync;
 
 const sem_lock = sync.sem.lock;
 const nmi_bit = sync.nmi.bit;

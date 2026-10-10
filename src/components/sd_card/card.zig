@@ -63,12 +63,27 @@
 //! which are pins rather than protocol. The capacity is the image's own,
 //! declared there.
 const std = @import("std");
-const image = @import("image.zig");
+pub const image = @import("image.zig");
 const sd_reply = @import("reply.zig");
 const sd_write = @import("write.zig");
 const sd_trace = @import("trace.zig");
 const sd_command = @import("command.zig");
 const spi = @import("ra8_chip").periph.spi;
+pub const card_line = @import("card_line.zig");
+pub const command = @import("command.zig");
+pub const crc = @import("crc.zig");
+pub const dump = @import("dump.zig");
+pub const fat = @import("fat.zig");
+pub const format = @import("format.zig");
+pub const format_advice = @import("format_advice.zig");
+pub const dirent = @import("dirent.zig");
+pub const mkimage = @import("mkimage.zig");
+pub const reply = @import("reply.zig");
+pub const trace = @import("trace.zig");
+pub const write = @import("write.zig");
+pub const bus_card = @import("bus_card.zig");
+pub const bus_line = @import("bus_line.zig");
+pub const snapshot = @import("snapshot.zig");
 
 /// Which SPI_B channel the card is wired to. The model's own rule; see the
 /// header.
@@ -90,17 +105,7 @@ pub const Command = sd_command.Command;
 pub const token = sd_reply.token;
 pub const r1 = sd_reply.r1;
 
-/// The CSD v2.0 register, as far as the capacity field this model fills.
-const csd = struct {
-    pub const length: usize = 16;
-    /// CSD_STRUCTURE = 01b, a v2.0 (high capacity) card.
-    pub const version: u8 = 0x40;
-    /// C_SIZE spans bytes 7..9, six bits wide in the first of them.
-    pub const csize_high: usize = 7;
-    pub const csize_mid: usize = 8;
-    pub const csize_low: usize = 9;
-    pub const high_mask: u32 = 0x3F;
-};
+pub const csd = @import("csd.zig");
 
 pub const Card = struct {
     img: image.Image,
@@ -196,23 +201,23 @@ pub const Card = struct {
         const status: u8 = if (self.ready) r1.ready else r1.idle;
         self.app_cmd = false;
         self.commands +%= 1;
-        const command: Command = @fromBackingInt(@intCast(index));
+        const cmd: Command = @fromBackingInt(@intCast(index));
         if (self.trace) {
             var buf: sd_trace.Buffer = undefined;
             std.debug.print("{s}\n", .{sd_trace.line(&buf, index, arg, was_app)});
         }
-        if (command == .app_op_cond and was_app) {
+        if (cmd == .app_op_cond and was_app) {
             self.ready = true;
             self.reply.one(r1.ready);
             return;
         }
-        if (self.dispatchIdent(command, arg, status)) return;
-        self.dispatchData(command, arg, status);
+        if (self.dispatchIdent(cmd, arg, status)) return;
+        self.dispatchData(cmd, arg, status);
     }
 
     /// Bring-up and configuration: the commands that say who the card is.
-    fn dispatchIdent(self: *Card, command: Command, arg: u32, status: u8) bool {
-        switch (command) {
+    fn dispatchIdent(self: *Card, cmd: Command, arg: u32, status: u8) bool {
+        switch (cmd) {
             .go_idle => self.reply.one(r1.idle),
             // R7: R1 then the voltage range and the 0xAA check pattern back.
             .send_if_cond => self.reply.tail(r1.idle, .{ 0, 0, 1, 0xAA }),
@@ -236,12 +241,12 @@ pub const Card = struct {
     }
 
     /// Transfers and erases: the commands that move or lose data.
-    fn dispatchData(self: *Card, command: Command, arg: u32, status: u8) void {
-        switch (command) {
+    fn dispatchData(self: *Card, cmd: Command, arg: u32, status: u8) void {
+        switch (cmd) {
             .send_csd => self.sendCsd(),
-            .read_single, .read_multi => self.beginRead(command == .read_multi, arg),
+            .read_single, .read_multi => self.beginRead(cmd == .read_multi, arg),
             .stop => self.stopRead(status),
-            .write_single, .write_multi => self.beginWrite(command == .write_multi, arg, status),
+            .write_single, .write_multi => self.beginWrite(cmd == .write_multi, arg, status),
             .erase_start => {
                 self.erase_lo = arg;
                 self.reply.one(status);

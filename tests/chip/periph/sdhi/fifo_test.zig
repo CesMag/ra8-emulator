@@ -2,10 +2,10 @@
 //! what a block the card refuses does to the phase behind it.
 const std = @import("std");
 const ra8 = @import("ra8");
-const fifo = ra8.chip.periph.sdhi_fifo;
-const card = ra8.components.sd_bus_card;
-const bus_line = ra8.components.sd_bus_line;
-const xfer = ra8.chip.periph.sdhi_xfer;
+const fifo = ra8.chip.periph.sdhi.fifo;
+const card = ra8.components.sd_card.bus_card;
+const bus_line = ra8.components.sd_card.bus_line;
+const xfer = ra8.chip.periph.sdhi.xfer;
 
 /// The first block past the end of the card.
 const off_card: u32 = card.geometry.capacity_blocks;

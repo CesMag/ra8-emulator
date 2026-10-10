@@ -30,18 +30,20 @@
 const periph = @import("../registry.zig");
 const pdctr = @import("../pdctr.zig");
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
-const clut = @import("clut.zig");
+pub const clut = @import("clut.zig");
 const lanes = @import("../lanes.zig");
-const pixel = @import("pixel.zig");
-const scan = @import("scan.zig");
-const blend = @import("blend.zig");
-const mix = @import("mix.zig");
-const output = @import("out.zig");
-const descriptor = @import("frame.zig");
+pub const pixel = @import("pixel.zig");
+pub const scan = @import("scan.zig");
+pub const blend = @import("blend.zig");
+pub const mix = @import("mix.zig");
+pub const out = @import("out.zig");
+pub const frame = @import("frame.zig");
 pub const backdrop = @import("backdrop.zig");
-const tcon = @import("tcon.zig");
-const sys = @import("sys.zig");
-const update = @import("latch.zig");
+pub const tcon = @import("tcon.zig");
+pub const sys = @import("sys.zig");
+pub const latch = @import("latch.zig");
+pub const gamma = @import("gamma.zig");
+pub const snapshot = @import("snapshot.zig");
 /// GLCDC geometry. The span reaches past the graphics layers to the panel
 /// clock control at +0x1450, which is the last register in the block.
 pub const win_base: u32 = 0x4034_2000;
@@ -70,7 +72,7 @@ pub const field = struct {
     /// BG_EN.EN, bit 0: the output stage is running.
     pub const bg_en: u32 = 0x1;
     /// FLMRD.RENB, bit 0: this layer fetches from its framebuffer.
-    pub const renb: u32 = descriptor.field.renb;
+    pub const renb: u32 = frame.field.renb;
 };
 /// FLM6.FORMAT codes, and the decode behind them. Re-exported so a caller
 /// that only knows the block still names the format through it.
@@ -78,17 +80,13 @@ pub const Format = pixel.Format;
 
 /// The framebuffer descriptor and the RAM it may live in, re-exported so a
 /// caller that only knows the block still reaches them through it.
-pub const Framebuffer = descriptor.Framebuffer;
-pub const Window = descriptor.Window;
-pub const ram_windows = descriptor.ram_windows;
-pub const max_dimension = descriptor.max_dimension;
-pub const shapeOf = descriptor.shapeOf;
-pub const windowEnd = descriptor.windowEnd;
-pub const addressIsRam = descriptor.addressIsRam;
-
-/// The VEN rule, reached as `glcdc.latch` the way the other split parts of
-/// this block are reached through it.
-pub const latch = update;
+pub const Framebuffer = frame.Framebuffer;
+pub const Window = frame.Window;
+pub const ram_windows = frame.ram_windows;
+pub const max_dimension = frame.max_dimension;
+pub const shapeOf = frame.shapeOf;
+pub const windowEnd = frame.windowEnd;
+pub const addressIsRam = frame.addressIsRam;
 
 const words = win_span / 4;
 
@@ -114,7 +112,7 @@ pub const Glcdc = struct {
     /// The compositor that stacks those layers on the background.
     mixer: mix.Mixer = .{},
     /// The output stage every composited pixel leaves through.
-    output: output.Stage = .{},
+    output: out.Stage = .{},
     /// The timing controller: how big the panel itself is, and which pin
     /// carries which sync signal.
     timing: tcon.Tcon = .{},
@@ -163,7 +161,7 @@ pub const Glcdc = struct {
     /// describe it. The decode itself is frame.zig's.
     pub fn decode(self: *const Glcdc, layer: u8) ?Framebuffer {
         const at = off.layer_base + off.layer_stride * (@as(u32, layer) - 1);
-        return descriptor.decode(.{
+        return frame.decode(.{
             .flmrd = self.word(at + off.flmrd),
             .flm2 = self.word(at + off.flm2),
             .flm3 = self.word(at + off.flm3),
@@ -216,12 +214,12 @@ pub const Glcdc = struct {
 
     fn writeWord(self: *Glcdc, offset: u32, value: u32) void {
         if (self.isStart(offset, value)) self.starts +%= 1;
-        if (update.requested(offset, value)) self.latches +%= 1;
+        if (latch.requested(offset, value)) self.latches +%= 1;
         if (self.latchPalette(offset, value)) {
             self.writes +%= 1;
             return;
         }
-        self.setWord(offset, update.stored(offset, value));
+        self.setWord(offset, latch.stored(offset, value));
         self.writes +%= 1;
     }
 
@@ -261,8 +259,8 @@ pub const Glcdc = struct {
     /// colour and hand back what a viewer would see. Null when there is
     /// nothing to show, and the scanner keeps why.
     pub fn scanOut(self: *Glcdc) ?scan.Picture {
-        const frame = self.framebuffer() orelse return backdrop.show(self);
-        if (!frame.enabled) return self.scanner.refuseOutputOff();
+        const shown = self.framebuffer() orelse return backdrop.show(self);
+        if (!shown.enabled) return self.scanner.refuseOutputOff();
         if (!self.system.startFrame()) return self.scanner.refuseUnclocked();
         const memory = self.memory orelse return null;
         var planes: [mix.layers]mix.Plane = undefined;
@@ -313,10 +311,10 @@ pub const Glcdc = struct {
     /// over the whole of its framebuffer, which is what this model did
     /// before there was a blend stage. Once the driver programs AB1, the
     /// register is believed instead.
-    fn imply(self: *Glcdc, frame: Framebuffer) void {
-        const stage = &self.blends[frame.layer - 1];
+    fn imply(self: *Glcdc, shown: Framebuffer) void {
+        const stage = &self.blends[shown.layer - 1];
         if (self.timing.timing()) |found| blend.placeAll(&self.blends, .{ .left = found.h_back, .top = found.v_back });
-        if (stage.quiet()) stage.* = blend.implied(frame.width, frame.height);
+        if (stage.quiet()) stage.* = blend.implied(shown.width, shown.height);
     }
 
     /// The panel is as wide and as tall as TCON says it is: the driver

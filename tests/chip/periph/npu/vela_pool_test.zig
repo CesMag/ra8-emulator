@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/npu/vela_pool.zig: MAX pooling.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 const pool = vela.pool;
 
 fn hexBytes(comptime hex: []const u8) [hex.len / 2]u8 {

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const usbfs = ra8.chip.periph.usbfs;
-const regs = ra8.chip.periph.usbhs_regs;
+const regs = ra8.chip.periph.usbhs.regs;
 const Loop = ra8.components.usb_loop_cable.Loop;
 
 const get_device = [8]u8{ 0x80, 0x06, 0x00, 0x01, 0x00, 0x00, 0x12, 0x00 };

@@ -18,7 +18,7 @@
 //! model's own choice, stated below.
 const std = @import("std");
 const image = @import("image.zig");
-const sd_line = @import("ra8_chip").periph.sdhi_line;
+const sd_line = @import("ra8_chip").periph.sdhi.line;
 
 pub const geometry = struct {
     /// The SD block size every command here works in.

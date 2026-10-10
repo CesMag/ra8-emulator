@@ -2,8 +2,8 @@
 //! and what it refuses to count.
 const std = @import("std");
 const ra8 = @import("ra8");
-const flag = ra8.chip.periph.i3c_flags;
-const target = ra8.chip.periph.i3c_target;
+const flag = ra8.chip.periph.i3c.flags;
+const target = ra8.chip.periph.i3c.target;
 
 fn armed(address: u7) target.Target {
     var responder = target.Target{};

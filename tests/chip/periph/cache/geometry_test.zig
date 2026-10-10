@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const geometry = ra8.chip.periph.cache_geometry;
+const geometry = ra8.chip.periph.cache.geometry;
 
 test "a zero CTR reports a four-byte line, which is the bug this exists for" {
     try std.testing.expectEqual(@as(u32, 4), geometry.lineBytes(0));

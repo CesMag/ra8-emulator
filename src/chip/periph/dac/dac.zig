@@ -53,7 +53,7 @@
 //! that file gives. The rest of the window is shadowed so a read-modify-write
 //! survives, and never read.
 const std = @import("std");
-const output = @import("output.zig");
+pub const output = @import("output.zig");
 const periph = @import("../registry.zig");
 
 /// The output gate and the data placement, reached as `dac.gate` the way the

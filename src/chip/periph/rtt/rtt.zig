@@ -49,8 +49,9 @@ const std = @import("std");
 
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const memmap = @import("../../core/memmap.zig");
-const block = @import("block.zig");
+pub const block = @import("block.zig");
 const text = @import("line.zig");
+pub const line = text;
 
 /// The window the scan hunts a control block in: the SRAM this tree actually
 /// maps, not dev's hard-coded four megabytes. A J-Link searches the ranges it

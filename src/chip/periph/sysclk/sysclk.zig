@@ -55,7 +55,7 @@
 const periph = @import("../registry.zig");
 const prcr = @import("../prcr.zig");
 const oscsf = @import("../oscsf.zig");
-const div = @import("div.zig");
+pub const div = @import("div.zig");
 /// Each core's clock in Hz, from this tree (RA8EMU-515).
 pub const rate = @import("rate.zig");
 const hazard = @import("../voltage_hazard.zig");

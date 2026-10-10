@@ -9,7 +9,7 @@ const bus = ra8.chip.core.cpu.bus;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const Machine = ra8.session.stop_machine.Machine;
 const zig_session = ra8.session.step_hook.zig_session;
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 const pane = gui_app.registers_pane;
 const capture = gui_app.registers_capture;
 

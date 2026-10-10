@@ -75,13 +75,9 @@ const std = @import("std");
 
 const periph = @import("../registry.zig");
 const clk = @import("clock.zig");
+pub const clock = clk;
 const cmp = @import("compare.zig");
-
-/// The count source, re-exported so a caller reaches it through the block.
-pub const source = clk;
-
-/// The compare-match function select, re-exported the same way.
-pub const compare_fn = cmp;
+pub const compare = cmp;
 
 /// AGT geometry (ra8_agt_regs.h).
 pub const win_base: u32 = 0x4022_1000;
@@ -122,6 +118,7 @@ pub const step_per_tick: u16 = 0x0800;
 
 /// At most one event per boundary, from channel 0.
 pub const Due = @import("../../core/bounded.zig").Bounded(u16, 1);
+pub const sched = @import("sched.zig");
 
 /// One channel: the live count, the two compare values, the control byte,
 /// and a shadow for every register this model does not interpret.

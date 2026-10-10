@@ -1,7 +1,7 @@
 //! Bounded session event stream tests (RA8EMU-192).
 const std = @import("std");
-const stream_api = @import("ra8").session.session_event_stream;
-const api = @import("ra8").session.session_api;
+const stream_api = @import("ra8").session.event_stream;
+const api = @import("ra8").session.api;
 const sci = @import("ra8").chip.periph.sci;
 const gpio = @import("ra8").chip.periph.gpio;
 

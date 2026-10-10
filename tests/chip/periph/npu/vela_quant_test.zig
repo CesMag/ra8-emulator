@@ -2,7 +2,7 @@
 //! stride registers a Vela program sets.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 const quant = vela.quant;
 
 test "the cmd0 activation and accumulator sets each keep their parameter" {

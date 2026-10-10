@@ -1,7 +1,7 @@
 //! What the scripted host on the USBFS jack got out of the device: how far
 //! enumeration went, and the descriptors it was handed on the way.
 const std = @import("std");
-const usbfs_host = @import("ra8_chip").periph.usbfs_host;
+const usbfs_host = @import("ra8_chip").periph.usbfs.host;
 
 /// Silent until the pull-up put a device on the jack.
 pub fn section(host: *const usbfs_host.Host, out: anytype) !void {

@@ -4,7 +4,7 @@ const ra8 = @import("ra8");
 const bus = ra8.chip.core.cpu.bus;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const Machine = ra8.session.stop_machine.Machine;
-const session_view = ra8.session.session_view;
+const session_view = ra8.session.view;
 const zig_session = ra8.session.step_hook.zig_session;
 
 /// 64 bytes of RAM at address 0, the vector table first.

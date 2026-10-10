@@ -1,6 +1,6 @@
 //! Covers src/chip/core/cpu/mve/float_rint_vectors.zig.
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
+const vector = ra8.chip.core.cpu.conformance.vector;
 const float_rint = ra8.chip.core.cpu.mve.float_rint;
 const vectors = ra8.chip.core.cpu.mve.float_rint_vectors;
 const Out = ra8.chip.core.cpu.mve.float_vectors.Out;

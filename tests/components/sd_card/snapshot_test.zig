@@ -4,10 +4,10 @@
 //! historical field order, and a block past the card's end is refused.
 const std = @import("std");
 const ra8 = @import("ra8");
-const cards = ra8.components.card_snapshot;
+const cards = ra8.components.sd_card.snapshot;
 const fields = ra8.snapshot.fields;
 const SpiCard = ra8.components.sd_card.Card;
-const bus_card = ra8.components.sd_bus_card;
+const bus_card = ra8.components.sd_card.bus_card;
 const BusCard = bus_card.Card;
 const allocator = std.testing.allocator;
 

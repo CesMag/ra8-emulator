@@ -2,8 +2,8 @@
 //! through the `sat16` group on a bare core holding N, C and the vector's Q.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.sat16_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.sat16_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const Cpu = cpu_ns.cpu.Cpu;
 const bits = cpu_ns.regs.xpsr_bits;

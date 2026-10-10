@@ -1,8 +1,8 @@
 //! Covers src/interfaces/usbip/wire.zig: the USB/IP records packed and
 //! unpacked byte for byte, against the layout the Linux usbip tools expect.
 const std = @import("std");
-const cli_app = @import("cli_app");
-const wire = cli_app.cli.usbip_wire;
+const ra8 = @import("ra8");
+const wire = ra8.usbip.wire;
 
 test "an operation header is version, code and status, big-endian" {
     var out: [wire.op_header_len]u8 = undefined;

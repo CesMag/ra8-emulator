@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const sdhi = ra8.chip.periph.sdhi;
-const card = ra8.components.sd_bus_card;
-const bus_line = ra8.components.sd_bus_line;
+const card = ra8.components.sd_card.bus_card;
+const bus_line = ra8.components.sd_card.bus_line;
 
 /// A controller with a card in its slot. Kept in place: the slot holds a
 /// pointer to the card.

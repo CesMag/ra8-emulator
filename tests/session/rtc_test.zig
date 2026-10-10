@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const session_rtc = ra8.session.session_rtc;
+const session_rtc = ra8.session.rtc;
 
 fn counters(year: u8, month: u8, day: u8, hour: u8, minute: u8, second: u8) session_rtc.Counters {
     return .{ .year = year, .month = month, .day = day, .hour = hour, .minute = minute, .second = second, .running = true };

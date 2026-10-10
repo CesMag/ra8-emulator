@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const device = ra8.components.usb_echo;
-const setup = ra8.chip.periph.usbhs_setup;
+const setup = ra8.chip.periph.usbhs.setup;
 
 fn get(code: u8, value: u16, length: u16) setup.Packet {
     return .{ .request_type = 0x80, .code = code, .value = value, .length = length };

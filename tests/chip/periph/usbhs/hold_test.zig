@@ -2,11 +2,11 @@
 //! (PID=BUF): held, sent on arming, and dropped by a bus reset.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.chip.periph.usbhs_regs;
-const usbhs_pipe = ra8.chip.periph.usbhs_pipe;
-const xfer = ra8.chip.periph.usbhs_xfer;
+const regs = ra8.chip.periph.usbhs.regs;
+const usbhs_pipe = ra8.chip.periph.usbhs.pipe;
+const xfer = ra8.chip.periph.usbhs.xfer;
 const device = ra8.components.usb_echo;
-const echo_far = ra8.components.usb_echo_far;
+const echo_far = ra8.components.usb_echo.far;
 
 /// Put the device in Configured, so it has a bulk endpoint to take packets on.
 fn configure(transfer: *xfer.Transfer) void {

@@ -7,15 +7,15 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const store_board = @import("../interfaces/cli/store_board.zig");
 
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 const Board = ra8.board.board.Board;
 const Host = ra8.session.board_display.Host;
 const glcdc = ra8.chip.periph.glcdc;
-const tcon = ra8.chip.periph.glcdc_tcon;
-const glcdc_sys = ra8.chip.periph.glcdc_sys;
+const tcon = ra8.chip.periph.glcdc.tcon;
+const glcdc_sys = ra8.chip.periph.glcdc.sys;
 const pdctr = ra8.chip.periph.pdctr;
 const prcr = ra8.chip.periph.prcr;
-const period_ns = ra8.chip.periph.glcdc_out.vsync.default_period_ns;
+const period_ns = ra8.chip.periph.glcdc.out.vsync.default_period_ns;
 
 const Idle = struct {
     fn advance(_: *anyopaque, _: u64) anyerror!void {}
@@ -142,7 +142,7 @@ test "the session's frame is the kept picture, with no scan of its own while a v
     defer frame.deinit(gpa);
     try std.testing.expectEqual(@as(u32, 2), frame.width);
     try std.testing.expectEqual(@as(u32, 1), frame.height);
-    const gray = ra8.session.session_display.grayscale(0xFF11_2233);
+    const gray = ra8.session.display.grayscale(0xFF11_2233);
     try std.testing.expectEqualSlices(u8, &.{ gray, gray }, frame.pixels);
     try std.testing.expectEqual(scanned_at, frame.virtual_ns);
     try std.testing.expectEqual(@as(u32, 1), bench.board.display.system.frames);

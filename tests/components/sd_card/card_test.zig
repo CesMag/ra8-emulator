@@ -2,9 +2,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const sd_card = ra8.components.sd_card;
-const sd_crc = ra8.components.sd_crc;
-const sd_write = ra8.components.sd_write;
-const image = ra8.components.sd_image;
+const sd_crc = ra8.components.sd_card.crc;
+const sd_write = ra8.components.sd_card.write;
+const image = ra8.components.sd_card.image;
 
 const block_bytes = image.geometry.block_bytes;
 

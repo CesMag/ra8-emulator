@@ -1,9 +1,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const sd_card = ra8.components.sd_card;
-const sd_card_line = ra8.components.sd_card_line;
+const sd_card_line = ra8.components.sd_card.card_line;
 const sci = ra8.chip.periph.sci;
-const sci_spi = ra8.chip.periph.sci_spi;
+const sci_spi = ra8.chip.periph.sci.spi;
 
 /// CCR3 with MOD set to Simple-SPI, the way ra8_sci_spi_init writes it.
 const simple_spi_ccr3: u32 = sci_spi.mod.simple_spi << sci_spi.mod.shift;

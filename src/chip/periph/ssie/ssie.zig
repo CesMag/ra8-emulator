@@ -70,7 +70,7 @@
 //! SSIFRDR reads zero and RDC reads zero, as they do on dev.
 const std = @import("std");
 
-const fifo = @import("fifo.zig");
+pub const fifo = @import("fifo.zig");
 const lanes = @import("../lanes.zig");
 const periph = @import("../registry.zig");
 const soft_reset = @import("reset.zig");

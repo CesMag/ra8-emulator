@@ -11,10 +11,10 @@ const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 
 const Board = @import("board.zig").Board;
 const reset = @import("ra8_chip").periph.reset;
-const pin_irq = @import("ra8_chip").periph.icu_pin_irq;
-const agt_sched = @import("ra8_chip").periph.agt_sched;
-const gpt_sched = @import("ra8_chip").periph.gpt_sched;
-const rtc_sched = @import("ra8_chip").periph.rtc_sched;
+const pin_irq = @import("ra8_chip").periph.icu.pin_irq;
+const agt_sched = @import("ra8_chip").periph.agt.sched;
+const gpt_sched = @import("ra8_chip").periph.gpt.sched;
+const rtc_sched = @import("ra8_chip").periph.rtc.sched;
 const event_sink = @import("event_sink.zig");
 /// Whether a sleeping core may run to the next queued event: src/board/quiet_due.zig.
 pub const quiet_due = @import("quiet_due.zig");

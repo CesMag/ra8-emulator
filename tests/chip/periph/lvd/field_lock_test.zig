@@ -2,8 +2,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const field_lock = ra8.chip.periph.lvd_field_lock;
-const regs = ra8.chip.periph.lvd_regs;
+const field_lock = ra8.chip.periph.lvd.field_lock;
+const regs = ra8.chip.periph.lvd.regs;
 
 const div_one: u8 = 0x10;
 const div_two: u8 = 0x20;

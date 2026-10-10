@@ -5,10 +5,10 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const drw = ra8.chip.periph.drw;
-const blend = ra8.chip.periph.drw_blend;
-const dlist = ra8.chip.periph.drw_dlist;
-const cache = ra8.chip.periph.drw_cache;
-const limit = ra8.chip.periph.drw_limit;
+const blend = ra8.chip.periph.drw.blend;
+const dlist = ra8.chip.periph.drw.dlist;
+const cache = ra8.chip.periph.drw.cache;
+const limit = ra8.chip.periph.drw.limit;
 const pdctr = ra8.chip.periph.pdctr;
 const prcr = ra8.chip.periph.prcr;
 const store_memory = @import("../store_memory.zig");

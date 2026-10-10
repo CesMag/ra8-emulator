@@ -13,7 +13,7 @@ const zig_run = cli_app.zig_run;
 const cpu_boot = ra8.chip.core.cpu.boot;
 const pacing = ra8.board.run.pacing;
 const pacer = ra8.board.run.pacer;
-const Calendar = ra8.chip.periph.rtc_clock.Calendar;
+const Calendar = ra8.chip.periph.rtc.clock.Calendar;
 
 const hz: u64 = 1_000_000;
 const day_s: u64 = 24 * 3600;

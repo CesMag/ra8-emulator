@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 
-const report_run = cli_app.report_run;
+const report_run = cli_app.report.run;
 const Second = ra8.chip.core.second_core.Second;
 
 /// Through a real file, because the SAU half of the report writes to a

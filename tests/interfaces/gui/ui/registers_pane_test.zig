@@ -11,7 +11,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const font = ra8.render.font;

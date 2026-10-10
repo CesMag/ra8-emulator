@@ -2,8 +2,8 @@
 //! CONFIG.
 const std = @import("std");
 const ra8 = @import("ra8");
-const eth_mac = ra8.chip.periph.eth_mac;
-const eth_mode = ra8.chip.periph.eth_mode;
+const eth_mac = ra8.chip.periph.eth.mac;
+const eth_mode = ra8.chip.periph.eth.mode;
 
 const example = [_]u8{ 0x02, 0x11, 0x22, 0x33, 0x44, 0x55 };
 

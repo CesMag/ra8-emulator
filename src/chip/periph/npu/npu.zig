@@ -59,8 +59,12 @@ const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const periph = @import("../registry.zig");
-const cmd = @import("cmd.zig");
-const vela_hook = @import("vela_hook.zig");
+const lanes = @import("../lanes.zig");
+pub const cmd = @import("cmd.zig");
+pub const vela_hook = @import("vela_hook.zig");
+pub const vela = @import("vela.zig");
+pub const vela_regs = @import("vela_regs.zig");
+pub const snapshot = @import("snapshot.zig");
 
 /// The window, from ra8_npu_regs.h on dev.
 pub const win_base: u32 = 0x4014_0000;
@@ -193,7 +197,7 @@ pub const Npu = struct {
             off.status => self.state,
             else => self.reg[offset / 4],
         };
-        return part(value, offset % 4, width);
+        return lanes.part(value, offset % 4, width);
     }
 
     pub fn write(self: *Npu, address: u32, width: u3, value: u32) void {
@@ -205,7 +209,7 @@ pub const Npu = struct {
             self.faked +%= 1;
             return;
         }
-        const merged = merge(self.reg[offset / 4], offset % 4, width, value);
+        const merged = lanes.merge(self.reg[offset / 4], offset % 4, width, value);
         if (aligned == off.command) {
             // Spent, not kept: the run bit is a command, not a setting.
             self.onCommand(merged);
@@ -362,24 +366,6 @@ pub const Npu = struct {
 /// A copy that stopped at a refused access, carrying what got through.
 fn cut(done: u32, check: cmd.Check) Moved {
     return .{ .bytes = done, .check = check.value, .short = true };
-}
-
-/// The part of a 32-bit register a narrow access names.
-fn part(value: u32, byte_offset: u32, width: u3) u32 {
-    if (width >= 4) return value;
-    const shift: u5 = @intCast(byte_offset * 8);
-    const shifted = value >> shift;
-    return if (width == 1) shifted & 0xFF else shifted & 0xFFFF;
-}
-
-/// Fold a narrow write into a 32-bit register, leaving the bytes the access
-/// does not name where they were.
-fn merge(current: u32, byte_offset: u32, width: u3, value: u32) u32 {
-    if (width >= 4) return value;
-    const shift: u5 = @intCast(byte_offset * 8);
-    const bits: u32 = if (width == 1) 0xFF else 0xFFFF;
-    const window: u32 = bits << shift;
-    return (current & ~window) | ((value & bits) << shift);
 }
 
 fn readThunk(context: *anyopaque, address: u32, width: u3) u32 {

@@ -3,9 +3,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const usbfs = ra8.chip.periph.usbfs;
-const regs = ra8.chip.periph.usbhs_regs;
-const usbhs_pipe = ra8.chip.periph.usbhs_pipe;
-const xfer = ra8.chip.periph.usbhs_xfer;
+const regs = ra8.chip.periph.usbhs.regs;
+const usbhs_pipe = ra8.chip.periph.usbhs.pipe;
+const xfer = ra8.chip.periph.usbhs.xfer;
 const Loop = ra8.components.usb_loop_cable.Loop;
 
 fn at(offset: u32) u32 {

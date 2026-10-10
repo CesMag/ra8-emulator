@@ -3,7 +3,7 @@
 //! them reads the records Vela emits.
 const std = @import("std");
 const ra8 = @import("ra8");
-const bias = ra8.chip.periph.npu_vela.bias;
+const bias = ra8.chip.periph.npu.vela.bias;
 
 fn expectRecord(bytes: [10]u8, b: i40, scale: u32, shift: u6) !void {
     const record = bias.decode(&bytes).?;

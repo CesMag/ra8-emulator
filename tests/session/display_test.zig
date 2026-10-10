@@ -1,7 +1,7 @@
 //! Session display calls wait on virtual panel time and return raw frames.
 const std = @import("std");
 const ra8 = @import("ra8");
-const api = ra8.session.session_api;
+const api = ra8.session.api;
 const Host = ra8.session.board_display.Host;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const bus = ra8.chip.core.cpu.bus;
@@ -11,7 +11,7 @@ const Machine = ra8.session.stop_machine.Machine;
 const zig_session = ra8.session.step_hook.zig_session;
 const gt911 = ra8.components.gt911;
 const eink = ra8.components.eink;
-const eink_wire = ra8.components.eink_wire;
+const eink_wire = ra8.components.eink.wire;
 
 const Ram = struct {
     bytes: [64]u8 = @splat(0),

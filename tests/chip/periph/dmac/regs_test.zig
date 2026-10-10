@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const dmac = ra8.chip.periph.dmac;
-const regs = ra8.chip.periph.dmac_regs;
+const regs = ra8.chip.periph.dmac.regs;
 const lanes = ra8.chip.periph.lanes;
 
 /// A channel with every register carrying a value that names itself, so a

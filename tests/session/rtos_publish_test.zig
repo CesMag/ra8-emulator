@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const rtos = ra8.session.step_hook;
-const stream_mod = ra8.session.session_event_stream;
+const stream_mod = ra8.session.event_stream;
 const Publisher = rtos.rtos_publish.Publisher;
 
 const Counter = struct {

@@ -28,9 +28,9 @@
 //! on all three and a driver that reads straight through is only right on dev.
 const periph = @import("../registry.zig");
 const icu = @import("../icu/icu.zig");
-const xfer = @import("xfer.zig");
-const skip = @import("skip.zig");
-const regs = @import("regs.zig");
+pub const xfer = @import("xfer.zig");
+pub const skip = @import("skip.zig");
+pub const regs = @import("regs.zig");
 const bytelanes = @import("../bytelanes.zig");
 /// DTCSAR, the two controllers' security attribution word in CPSCU.
 pub const attribution = @import("sar.zig");

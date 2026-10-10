@@ -9,7 +9,7 @@
 //! paint into or read out of RAM need guest memory handed to them as they go
 //! on. Keeping it here leaves board.zig as the list of what the board is.
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
-const tsn_cal = @import("ra8_chip").periph.adc_tsn_cal;
+const tsn_cal = @import("ra8_chip").periph.adc.tsn_cal;
 const sau = @import("ra8_chip").periph.sau;
 const mpu = @import("ra8_chip").periph.mpu;
 const mpu_guard = @import("ra8_chip").core.mpu_guard;
@@ -45,8 +45,8 @@ const dtc = @import("ra8_chip").periph.dtc;
 const vscr = @import("ra8_chip").periph.vscr;
 const pdctr = @import("ra8_chip").periph.pdctr;
 const sd_card = @import("ra8_components").sd_card;
-const sd_card_line = @import("ra8_components").sd_card_line;
-const bus_line = @import("ra8_components").sd_bus_line;
+const sd_card_line = @import("ra8_components").sd_card.card_line;
+const bus_line = @import("ra8_components").sd_card.bus_line;
 
 /// The module-stop shadow, the attribution words that decide which of its
 /// bits a Secure store may move, and the gate the rest of the bus hangs off.
@@ -190,7 +190,7 @@ pub fn cpu0Windows(self: *Board) CoreWindows {
 }
 
 /// The windows a core keeps to itself, declared by the chip (RA8EMU-1012).
-pub const CoreWindows = @import("ra8_chip").core.core_windows.CoreWindows;
+pub const CoreWindows = @import("ra8_chip").core.windows.CoreWindows;
 
 /// The wiring CPU1's bring-up takes from this board (RA8EMU-1012). The chip
 /// owns bring-up; the board supplies its bus, divider, reboot latch,

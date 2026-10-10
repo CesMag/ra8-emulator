@@ -29,7 +29,7 @@ test "a button press and a tap land on the input script in time order" {
     try std.testing.expectEqual(@as(u64, 1_000_000), script.events[0].at_ns);
     const pressed = script.events[0].event.button;
     try std.testing.expect(pressed.down);
-    try std.testing.expectEqual(ra8.session.session_api.Button.sw2, pressed.button_id);
+    try std.testing.expectEqual(ra8.session.api.Button.sw2, pressed.button_id);
     try std.testing.expectEqual(@as(u64, 2_000_000), script.events[1].at_ns);
     const touched = script.events[1].event.tap;
     try std.testing.expectEqual(@as(u16, 120), touched.x);

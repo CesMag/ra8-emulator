@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const regs = ra8.chip.periph.elc_regs;
+const regs = ra8.chip.periph.elc.regs;
 
 test "each register decodes from the word it sits in" {
     try std.testing.expectEqual(regs.Reg.control, regs.decode(regs.off.elcr).?);

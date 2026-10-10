@@ -5,7 +5,7 @@ const ra8 = @import("ra8");
 const Store = ra8.chip.core.cpu.memory.store.Store;
 const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const rtt = ra8.chip.periph.rtt;
-const block = ra8.chip.periph.rtt_block;
+const block = ra8.chip.periph.rtt.block;
 
 const cb_at: u32 = 0x2200_1000;
 const ring_at: u32 = 0x2200_2000;

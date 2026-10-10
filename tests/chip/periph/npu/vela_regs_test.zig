@@ -2,7 +2,7 @@
 //! NPU's address and length registers.
 const std = @import("std");
 const ra8 = @import("ra8");
-const regs = ra8.chip.periph.npu_vela_regs;
+const regs = ra8.chip.periph.npu.vela_regs;
 
 fn cmd1(code: u10, param: u16) u32 {
     return @as(u32, code) | 0x4000 | (@as(u32, param) << 16);

@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const code = ra8.chip.periph.mram_code;
+const code = ra8.chip.periph.mram.code;
 const mram = ra8.chip.periph.mram;
 
 const page = code.page;

@@ -5,8 +5,8 @@
 //! ui/disasm_pane.zig draws the result without importing the session.
 const std = @import("std");
 const disasm = @import("ra8_session").disasm;
-const session_api = @import("ra8_session").session_api;
-const session_view = @import("ra8_session").session_view;
+const session_api = @import("ra8_session").api;
+const session_view = @import("ra8_session").view;
 const disasm_pane = @import("ui/disasm_pane.zig");
 
 /// Decodes `row_count` instructions (at most `disasm_pane.max_rows`) of

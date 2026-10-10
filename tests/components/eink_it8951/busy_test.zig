@@ -2,7 +2,7 @@
 //! down, and the overlap the model counts rather than invents a refusal for.
 const std = @import("std");
 const ra8 = @import("ra8");
-const busy = ra8.components.eink_busy;
+const busy = ra8.components.eink.busy;
 
 test "a fresh LUT is idle and has nothing to say" {
     var lut = busy.Lut{};

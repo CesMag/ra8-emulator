@@ -1,9 +1,9 @@
 //! Covers src/interfaces/usbip/attach.zig: each step reads the reply
 //! the server writes, and what it sends is what the server reads.
 const std = @import("std");
-const cli_app = @import("cli_app");
-const wire = cli_app.cli.usbip_wire;
-const exp = cli_app.cli.usbip_export;
+const ra8 = @import("ra8");
+const wire = ra8.usbip.wire;
+const exp = ra8.usbip.exported;
 const attach = wire.client.attach;
 
 /// usb_printer_vendor's descriptors, as the scripted host read them.

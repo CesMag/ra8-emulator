@@ -5,7 +5,7 @@ const ra8 = @import("ra8");
 const fixture = @import("exception/ram.zig");
 const Fake = @import("exception/fake_source.zig").Fake;
 const file = ra8.snapshot.file;
-const snap = ra8.chip.core.cpu.cpu_snapshot;
+const snap = ra8.chip.core.cpu.snapshot;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 
 const pendsv: u9 = 14;

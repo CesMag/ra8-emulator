@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const sd_trace = ra8.components.sd_trace;
+const sd_trace = ra8.components.sd_card.trace;
 
 test "an ordinary command is written with its index and argument" {
     var buf: sd_trace.Buffer = undefined;

@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const status = ra8.chip.periph.fault_status;
-const mpu_fault = ra8.chip.periph.mpu_fault;
-const escalate = ra8.chip.periph.mpu_escalate;
+const mpu_fault = ra8.chip.periph.mpu.fault;
+const escalate = ra8.chip.periph.mpu.escalate;
 
 test "every CFSR cause sits on its DDI0553 D1.2.11 bit" {
     const Pin = struct { cause: status.Cause, word: u32 };

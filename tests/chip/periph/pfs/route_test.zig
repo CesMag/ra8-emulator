@@ -1,6 +1,6 @@
 const std = @import("std");
 const ra8 = @import("ra8");
-const route = ra8.chip.periph.pfs_route;
+const route = ra8.chip.periph.pfs.route;
 
 const pmr = route.field.pmr;
 

@@ -7,8 +7,8 @@ const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const Image = @import("ra8_session").symbols.Image;
 const dwarf_line = @import("ra8_session").dwarf_line;
-const session_api = @import("ra8_session").session_api;
-const session_source = @import("ra8_session").session_source;
+const session_api = @import("ra8_session").api;
+const session_source = @import("ra8_session").source;
 const source_pane = @import("ui/source_pane.zig");
 
 comptime {

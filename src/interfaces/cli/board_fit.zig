@@ -4,9 +4,10 @@
 //! it). Each piece refuses on its own terms and says so; this only puts them
 //! in order.
 const std = @import("std");
+const usbip_export = @import("ra8_usbip").exported;
 const rtc_start = @import("ra8_session").rtc_start;
 const cli = @import("cli.zig");
-const host_sock = @import("ra8_host").host_sock;
+const host_sock = @import("ra8_host").sock;
 const host_worker = @import("ra8_host").worker;
 const camera_source = @import("camera_source.zig");
 const Board = @import("ra8_board").board.Board;
@@ -66,7 +67,7 @@ pub fn fit(board: *Board, allocator: std.mem.Allocator, io: std.Io, options: cli
     }
     try setBattery(board, options);
     try usb_disk_option.apply(&board.usb, allocator, io, options.usb_disk);
-    try cli.usbip_export.run.install(&board.usb, allocator, io, options.usbip);
+    try usbip_export.run.install(&board.usb, allocator, io, options.usbip);
 }
 
 /// Put the contacts the command line asked for on the touch panel. The queue

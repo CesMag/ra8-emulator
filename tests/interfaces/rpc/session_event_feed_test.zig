@@ -19,10 +19,10 @@ test "stream kinds with their own topic or no wire name are skipped" {
 }
 
 test "an LED change carries its index and level in the address" {
-    const on: ra8.session.session_api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 2, .level = true } } };
+    const on: ra8.session.api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 2, .level = true } } };
     try std.testing.expectEqual(@as(u32, 0x102), feed.addressOf(on));
-    const off: ra8.session.session_api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 0, .level = false } } };
+    const off: ra8.session.api.Event = .{ .core = .cpu0, .kind = .led_changed, .payload = .{ .led = .{ .index = 0, .level = false } } };
     try std.testing.expectEqual(@as(u32, 0), feed.addressOf(off));
-    const point: ra8.session.session_api.Event = .{ .core = .cpu0, .kind = .breakpoint_set, .address = 0x0200_0040 };
+    const point: ra8.session.api.Event = .{ .core = .cpu0, .kind = .breakpoint_set, .address = 0x0200_0040 };
     try std.testing.expectEqual(@as(u32, 0x0200_0040), feed.addressOf(point));
 }

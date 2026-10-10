@@ -3,7 +3,7 @@
 //! flags the pseudocode produces.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
+const vector = ra8.chip.core.cpu.conformance.vector;
 const format = ra8.chip.core.cpu.fpu.format;
 const round = ra8.chip.core.cpu.fpu.round;
 const fpscr_mod = ra8.chip.core.cpu.fpu.fpscr;

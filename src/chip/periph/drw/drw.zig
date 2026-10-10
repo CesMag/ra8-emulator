@@ -22,15 +22,18 @@
 const std = @import("std");
 
 const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
-const blend = @import("blend.zig");
-const cache = @import("cache.zig");
-const dlist = @import("dlist.zig");
-const limit = @import("limit.zig");
-const regs = @import("regs.zig");
-const tex = @import("tex.zig");
+pub const blend = @import("blend.zig");
+pub const cache = @import("cache.zig");
+pub const dlist = @import("dlist.zig");
+pub const limit = @import("limit.zig");
+pub const regs = @import("regs.zig");
+pub const tex = @import("tex.zig");
 const lanes = @import("../lanes.zig");
 const pdctr = @import("../pdctr.zig");
 const periph = @import("../registry.zig");
+pub const clut = @import("clut.zig");
+pub const texel = @import("texel.zig");
+pub const snapshot = @import("snapshot.zig");
 
 /// The map is next door in regs.zig, re-exported so a caller still names
 /// an offset on the block.

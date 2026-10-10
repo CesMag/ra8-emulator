@@ -1,9 +1,9 @@
 //! Covers src/components/sd_card/format.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const format = ra8.components.sd_format;
-const image = ra8.components.sd_image;
-const fat = ra8.components.sd_fat;
+const format = ra8.components.sd_card.format;
+const image = ra8.components.sd_card.image;
+const fat = ra8.components.sd_card.fat;
 
 const megabyte_blocks: u32 = 1024 * 1024 / image.geometry.block_bytes;
 

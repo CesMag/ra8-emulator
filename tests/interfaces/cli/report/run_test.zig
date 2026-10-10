@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 
-const report_run = cli_app.report_run;
+const report_run = cli_app.report.run;
 const Store = ra8.chip.core.cpu.memory.store.Store;
 
 /// Run `zigCore` on a fresh board into a scratch file and return what it wrote.

@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const peer = ra8.components.eth_peer;
-const desc = ra8.chip.periph.eth_desc;
+const desc = ra8.chip.periph.eth.desc;
 
 test "a frame comes back out the way it went in" {
     var link = peer.Link{};

@@ -4,10 +4,10 @@
 const std = @import("std");
 const io = std.testing.io;
 const ra8 = @import("ra8");
-const card = ra8.components.sd_bus_card;
-const sd_image = ra8.components.sd_image;
+const card = ra8.components.sd_card.bus_card;
+const sd_image = ra8.components.sd_card.image;
 const disk_file = ra8.host.disk_file;
-const sd_format = ra8.components.sd_format;
+const sd_format = ra8.components.sd_card.format;
 
 const Block = [card.geometry.block_bytes]u8;
 

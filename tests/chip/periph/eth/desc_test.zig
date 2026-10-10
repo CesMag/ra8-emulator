@@ -1,7 +1,7 @@
 //! The eight bytes: what they decode to, and what a field write keeps.
 const std = @import("std");
 const ra8 = @import("ra8");
-const desc = ra8.chip.periph.eth_desc;
+const desc = ra8.chip.periph.eth.desc;
 
 test "a descriptor decodes size, type and pointer" {
     const raw = [_]u8{ 0x40, 0x02, 0x80, 0x00, 0x00, 0x20, 0x00, 0x22 };

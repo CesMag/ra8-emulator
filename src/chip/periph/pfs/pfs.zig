@@ -33,8 +33,8 @@
 //! on, so it stores and reads back and nothing more.
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const protect = @import("protect.zig");
-const route = @import("route.zig");
+pub const protect = @import("protect.zig");
+pub const route = @import("route.zig");
 
 pub const win_base: u32 = 0x4040_0800;
 pub const win_span: u32 = 0x580;

@@ -1,7 +1,7 @@
 //! Tests for src/chip/periph/npu/vela_minmax.zig: elementwise MIN and MAX.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vela = ra8.chip.periph.npu_vela;
+const vela = ra8.chip.periph.npu.vela;
 const minmax = vela.minmax;
 
 const Memory = struct {

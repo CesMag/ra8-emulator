@@ -2,9 +2,9 @@
 //! and the own address it refuses to answer at.
 const std = @import("std");
 const ra8 = @import("ra8");
-const target = ra8.chip.periph.riic_target;
-const flag = ra8.chip.periph.riic_flags;
-const bus = ra8.chip.periph.riic_bus;
+const target = ra8.chip.periph.riic.target;
+const flag = ra8.chip.periph.riic.flags;
+const bus = ra8.chip.periph.riic.bus;
 
 /// SARL registers hold the address byte, so a 7-bit own address of 0x21 sits
 /// in the register as 0x42.

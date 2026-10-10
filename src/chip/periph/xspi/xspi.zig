@@ -63,6 +63,7 @@ const std = @import("std");
 const octaclk = @import("../octaclk.zig");
 const periph = @import("../registry.zig");
 const xspi_nor = @import("nor.zig");
+pub const nor = xspi_nor;
 pub const reset = @import("reset.zig");
 const lanes = @import("../lanes.zig");
 
@@ -253,7 +254,7 @@ pub const Xspi = struct {
         const size = descriptor.dataSize(cdt);
         if (self.resetting.step(descriptor.opcode(cdt))) self.write_enabled = false;
         switch (@as(Opcode, @fromBackingInt(@intCast(descriptor.opcode(cdt))))) {
-            .read_id => self.buffer(slot.data0).* = if (self.part) |nor| nor.jedecWord() else 0,
+            .read_id => self.buffer(slot.data0).* = if (self.part) |flash| flash.jedecWord() else 0,
             .read_status => self.buffer(slot.data0).* = if (self.write_enabled) status.wel else 0,
             .write_enable => self.write_enabled = true,
             .read => self.doRead(address, size),
@@ -303,15 +304,15 @@ pub const Xspi = struct {
     /// Erase the 4 KiB sector the address falls in.
     fn doErase(self: *Xspi, address: u32) void {
         if (!self.armed()) return;
-        const nor = self.part orelse {
+        const flash = self.part orelse {
             self.out_of_part +%= 1;
             return;
         };
-        if (address >= nor.capacity()) {
+        if (address >= flash.capacity()) {
             self.out_of_part +%= 1;
             return;
         }
-        nor.erase(address);
+        flash.erase(address);
         self.erases +%= 1;
         self.write_enabled = false;
     }
@@ -331,11 +332,11 @@ pub const Xspi = struct {
             self.oversized +%= 1;
             return false;
         }
-        const nor = self.part orelse {
+        const flash = self.part orelse {
             self.out_of_part +%= 1;
             return false;
         };
-        if (address >= nor.capacity()) {
+        if (address >= flash.capacity()) {
             self.out_of_part +%= 1;
             return false;
         }
@@ -349,11 +350,11 @@ pub const Xspi = struct {
             self.oversized +%= 1;
             return false;
         }
-        const nor = self.part orelse {
+        const flash = self.part orelse {
             self.out_of_part +%= 1;
             return false;
         };
-        if (!nor.holds(address, size)) {
+        if (!flash.holds(address, size)) {
             self.out_of_part +%= 1;
             return false;
         }

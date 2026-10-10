@@ -1,7 +1,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const control = ra8.chip.periph.dotf_control;
+const control = ra8.chip.periph.dotf.control;
 
 test "the self-test bit never lands, which is what ends the driver wait" {
     const written = control.value.enable | control.mask.self_test;

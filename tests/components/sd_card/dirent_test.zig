@@ -1,6 +1,6 @@
 //! RA8EMU-563: the image builder's directory entries.
 const std = @import("std");
-const dirent = @import("ra8").components.sd_dirent;
+const dirent = @import("ra8").components.sd_card.dirent;
 
 test "an 8.3 upper-case name is kept and takes one slot" {
     try std.testing.expect(dirent.isShort("README.TXT"));

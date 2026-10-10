@@ -5,7 +5,7 @@ const c6 = ra8.components.esp_hosted;
 const frame = c6.frame;
 const gpio = ra8.chip.periph.gpio;
 const sci = ra8.chip.periph.sci;
-const sci_spi = ra8.chip.periph.sci_spi;
+const sci_spi = ra8.chip.periph.sci.spi;
 
 const caps = [_]u8{ 0x22, 15, 0x44, 1, 0, 0x45, 1, 0x0D, 0x46, 1, 0, 0x47, 1, 80, 0x48, 1, 60 };
 

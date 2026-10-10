@@ -29,7 +29,7 @@ const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
-const regs = @import("regs.zig");
+pub const regs = @import("regs.zig");
 /// The link table lives next door; re-exported so a caller that has the
 /// block also has the slot vocabulary.
 pub const route = @import("route.zig");

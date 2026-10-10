@@ -1,7 +1,7 @@
 //! The blank USB disk: a FAT12 superfloppy a FAT driver can mount.
 const std = @import("std");
 const ra8 = @import("ra8");
-const usb_disk = ra8.components.usb_stick_disk;
+const usb_disk = ra8.components.usb_stick.disk;
 
 var image = @as([512 * usb_disk.sector_len]u8, @splat(0xCC));
 

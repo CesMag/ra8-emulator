@@ -2,7 +2,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const status = ra8.chip.periph.mipi_phy_status;
+const status = ra8.chip.periph.mipi.phy_status;
 
 test "an unpowered PHY reports nothing" {
     try std.testing.expectEqual(@as(u32, 0), status.value(0, 0, 0));

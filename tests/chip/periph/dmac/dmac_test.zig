@@ -5,7 +5,7 @@ const ra8 = @import("ra8");
 
 const dmac = ra8.chip.periph.dmac;
 const dma_bank = ra8.chip.periph.dma_bank;
-const xfer = ra8.chip.periph.dmac_xfer;
+const xfer = ra8.chip.periph.dmac.xfer;
 const store_memory = @import("../store_memory.zig");
 const memmap = ra8.chip.core.memmap;
 

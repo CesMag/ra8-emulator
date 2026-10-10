@@ -1,7 +1,7 @@
 //! Covers src/components/sd_card/bus_card.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const card = ra8.components.sd_bus_card;
+const card = ra8.components.sd_card.bus_card;
 
 fn unit() card.Card {
     return card.Card.init(std.testing.allocator);

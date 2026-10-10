@@ -4,9 +4,9 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const scan = ra8.chip.periph.glcdc_scan;
-const clut = ra8.chip.periph.glcdc_clut;
-const pixel = ra8.chip.periph.glcdc_pixel;
+const scan = ra8.chip.periph.glcdc.scan;
+const clut = ra8.chip.periph.glcdc.clut;
+const pixel = ra8.chip.periph.glcdc.pixel;
 const store_memory = @import("../store_memory.zig");
 const Guest = store_memory.Guest;
 const memmap = ra8.chip.core.memmap;

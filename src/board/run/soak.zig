@@ -10,7 +10,7 @@
 //! src/board/run/soak_watch.zig).
 const std = @import("std");
 const timebase = @import("ra8_chip").periph.timebase;
-const Calendar = @import("ra8_chip").periph.rtc_clock.Calendar;
+const Calendar = @import("ra8_chip").periph.rtc.clock.Calendar;
 pub const soak_watch = @import("soak_watch.zig");
 pub const soak_threads = @import("soak_threads.zig");
 

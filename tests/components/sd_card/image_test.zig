@@ -1,7 +1,7 @@
 //! Covers src/components/sd_card/image.zig.
 const std = @import("std");
 const io = std.testing.io;
-const image = @import("ra8").components.sd_image;
+const image = @import("ra8").components.sd_card.image;
 const disk_file = @import("ra8").host.disk_file;
 
 fn unit() image.Image {

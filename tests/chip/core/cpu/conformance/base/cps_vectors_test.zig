@@ -2,8 +2,8 @@
 //! through the `cps` group on a bare register file.
 const std = @import("std");
 const ra8 = @import("ra8");
-const vector = ra8.chip.core.cpu.conformance_vector;
-const vectors = ra8.chip.core.cpu.conformance_base.cps_vectors;
+const vector = ra8.chip.core.cpu.conformance.vector;
+const vectors = ra8.chip.core.cpu.conformance.base.cps_vectors;
 const cpu_ns = ra8.chip.core.cpu;
 const regs = cpu_ns.regs;
 const cps = cpu_ns.ops.cps;
