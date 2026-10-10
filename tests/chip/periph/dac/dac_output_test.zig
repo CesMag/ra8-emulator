@@ -1,5 +1,5 @@
-//! Covers src/chip/periph/dac_output.zig, and the gate and placement it puts on
-//! src/chip/periph/dac.zig.
+//! Covers src/chip/periph/dac/dac_output.zig, and the gate and placement it puts on
+//! src/chip/periph/dac/dac.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const dac = ra8.chip.periph.dac;

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sram.zig.
+//! Covers src/chip/periph/sram/sram.zig.
 const std = @import("std");
 const sram = @import("ra8").chip.periph.sram;
 

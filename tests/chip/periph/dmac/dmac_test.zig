@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/dmac.zig: the channel window, the module gate over it,
+//! Covers src/chip/periph/dmac/dmac.zig: the channel window, the module gate over it,
 //! and the software request that actually moves bytes in emulated memory.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -14,7 +14,7 @@
 //! GTCNT at +0x48 and GTPR at +0x64). That header is what the GPT file's own
 //! note said did not exist; it does, so A and B are compared here. The two
 //! buffer halves, GTCCR[2] and GTCCR[3], now feed A and B at the end of a
-//! cycle through src/chip/periph/gpt_buffer.zig, which reads GTBER. GTCCRD and
+//! cycle through src/chip/periph/gpt/gpt_buffer.zig, which reads GTBER. GTCCRD and
 //! GTCCRF stay shadowed: they are capture registers and there is no capture
 //! input in this model.
 //!

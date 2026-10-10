@@ -9,7 +9,7 @@
 //! the addresses and counts where they now stand, so the next activation
 //! carries on where this one stopped (HUM Ch 18.2 p 790, r_dtc_xfer_info_t).
 //!
-//! The descriptor gets its own file so src/chip/periph/dtc.zig stays a register
+//! The descriptor gets its own file so src/chip/periph/dtc/dtc.zig stays a register
 //! window and an activation path, the same split drw.zig and drw_blend.zig
 //! have.
 

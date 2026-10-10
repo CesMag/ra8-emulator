@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/dmac_regs.zig: the DMAC channel register map, and what a
+//! Covers src/chip/periph/dmac/dmac_regs.zig: the DMAC channel register map, and what a
 //! read or a store of each width names inside one of its words.
 const std = @import("std");
 const ra8 = @import("ra8");

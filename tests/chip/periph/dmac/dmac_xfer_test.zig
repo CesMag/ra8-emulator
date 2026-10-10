@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/dmac_xfer.zig: the channel plan a DMAC request is
+//! Covers src/chip/periph/dmac/dmac_xfer.zig: the channel plan a DMAC request is
 //! decoded into, and the counts it latches.
 const std = @import("std");
 const ra8 = @import("ra8");

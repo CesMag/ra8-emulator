@@ -1,7 +1,7 @@
 //! CSR, FRSR and FTSR: the SCI_B status words a polled driver lives on, and
 //! what a store to one does.
 //!
-//! Split out of src/chip/periph/sci.zig, which owns the channel, the line capture
+//! Split out of src/chip/periph/sci/sci.zig, which owns the channel, the line capture
 //! and the transmit gate. This file owns the three words the controller
 //! writes and firmware only reads, and the two clear strobes that sit beside
 //! them.

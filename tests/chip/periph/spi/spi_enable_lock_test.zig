@@ -1,4 +1,4 @@
-//! tests/chip/periph/spi_enable_lock_test.zig covers src/chip/periph/spi_enable_lock.zig:
+//! tests/chip/periph/spi/spi_enable_lock_test.zig covers src/chip/periph/spi/spi_enable_lock.zig:
 //! the rule that SPCR2 only takes a store while SPCR.SPE is clear.
 
 const std = @import("std");

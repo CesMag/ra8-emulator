@@ -1,5 +1,5 @@
 //! The DMAC channel plan: what one channel's registers say a request should
-//! move, decoded in one place so src/chip/periph/dmac.zig stays a register window
+//! move, decoded in one place so src/chip/periph/dmac/dmac.zig stays a register window
 //! and a trigger path. Same split drw.zig/drw_blend.zig and
 //! dtc.zig/dtc_xfer.zig have.
 //!

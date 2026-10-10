@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sdhi_fifo.zig: what one SD_BUF0 access comes to, and
+//! Covers src/chip/periph/sdhi/sdhi_fifo.zig: what one SD_BUF0 access comes to, and
 //! what a block the card refuses does to the phase behind it.
 const std = @import("std");
 const ra8 = @import("ra8");

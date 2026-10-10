@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sci_error.zig: the CSR error latches a driver has to
+//! Covers src/chip/periph/sci/sci_error.zig: the CSR error latches a driver has to
 //! clear, which for now is the receive overrun.
 const std = @import("std");
 const ra8 = @import("ra8");

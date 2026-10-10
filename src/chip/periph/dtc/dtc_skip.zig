@@ -3,7 +3,7 @@
 //!
 //! The controller keeps no transfer state in its own registers: every
 //! activation reads a sixteen-byte TI block out of RAM, moves what it says,
-//! and writes it back (src/chip/periph/dtc_xfer.zig). RRS is the one exception.
+//! and writes it back (src/chip/periph/dtc/dtc_xfer.zig). RRS is the one exception.
 //! With it set, an activation whose vector number matches the previous one
 //! skips that read and works from the copy the controller is still holding.
 //! Clearing RRS drops the copy, which is the only way firmware has to make

@@ -8,7 +8,7 @@ const memmap = ra8.chip.core.memmap;
 
 /// A stand-in for the core: the ICU only ever reaches the PPB, so a word map
 /// is the whole of what it needs. Its two methods are called through `anytype`
-/// from src/chip/periph/icu.zig, so both are pub.
+/// from src/chip/periph/icu/icu.zig, so both are pub.
 const FakeCore = struct {
     words: std.AutoHashMap(u32, u32),
 

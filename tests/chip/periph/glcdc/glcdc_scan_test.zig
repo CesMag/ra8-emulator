@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc_scan.zig: reading a framebuffer out of guest
+//! Covers src/chip/periph/glcdc/glcdc_scan.zig: reading a framebuffer out of guest
 //! memory and saying what is in it, and the five cases that are not a
 //! picture.
 const std = @import("std");

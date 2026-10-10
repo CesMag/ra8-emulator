@@ -12,7 +12,7 @@
 //! is exactly that: write TDR, wait for CSR.TDRE, then wait for CSR.RDRF and
 //! read RDR.
 //!
-//! SO AN UNANSWERED FRAME IS NOT A SILENT ONE. src/chip/periph/sci.zig used to
+//! SO AN UNANSWERED FRAME IS NOT A SILENT ONE. src/chip/periph/sci/sci.zig used to
 //! queue a received byte only when a device was attached to the channel's
 //! line, which is right for a UART and wrong here: with nothing on the bus,
 //! RDRF never rose, and the driver's `ra8_hw_wait_flag_set32(&reg->CSR,

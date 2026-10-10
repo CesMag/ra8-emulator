@@ -1,7 +1,7 @@
 //! One PLL's configuration pair, PLLmCCR and PLLmCCR2, and what a store does
 //! to them once the bus has decided the access is allowed.
 //!
-//! Split out of src/chip/periph/pll.zig when PLL2 arrived. That file owns the bus
+//! Split out of src/chip/periph/pll/pll.zig when PLL2 arrived. That file owns the bus
 //! side, the PRCR gate and MOSCWTCR; this one owns a single PLL's two words,
 //! the counters for stores that went nowhere, and the two rules that decide
 //! between them. Both PLLs get one of these, so the rules are written once.

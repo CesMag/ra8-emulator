@@ -47,12 +47,12 @@
 //! and the driver's own clear writes the inverse of its mask so the rest
 //! survived their own acknowledgement. The dispatch then hands that word to
 //! the application as errors that never happened. The rule and its evidence
-//! live in src/chip/periph/canfd_error.zig.
+//! live in src/chip/periph/canfd/canfd_error.zig.
 //!
 //! A MODE WRITE LANDS ON NOTHING WHILE THE MACHINE IS ASLEEP. Neither model
 //! knew the sleep request beside the mode field, so a driver that leaves it
 //! set reached operation mode here and hangs on silicon. The rule and its
-//! evidence live in src/chip/periph/canfd_sleep.zig.
+//! evidence live in src/chip/periph/canfd/canfd_sleep.zig.
 //!
 //! KEPT FROM DEV DELIBERATELY: the acceptance filter and its open-when-empty
 //! rule, so an image that programs no CFDGAFL entry keeps receiving
@@ -121,7 +121,7 @@ pub const Unit = struct {
     tmc: u32 = 0,
     /// CFDTMSTS[0], the transmit result. Set by the controller, cleared by
     /// software, and the gate on every later request. See
-    /// src/chip/periph/canfd_tx_status.zig.
+    /// src/chip/periph/canfd/canfd_tx_status.zig.
     tx: tx_status.Status = .{},
     /// CFDCnERFL: the error flags, which only the controller can raise.
     faults: errors.Errors = .{},
@@ -138,10 +138,10 @@ pub const Unit = struct {
     /// Accepted frames with no stage free.
     lost: u32 = 0,
     /// CFDRFSTS[0]'s latched half: RFMLT, and the stores aimed at it. See
-    /// src/chip/periph/canfd_rx_status.zig.
+    /// src/chip/periph/canfd/canfd_rx_status.zig.
     rx_sts: rx_status.Status = .{},
     /// Accepted frames dropped because CFDRFCC.RFE was never set, so there
-    /// was no FIFO to queue them in. See src/chip/periph/canfd_rx_config.zig.
+    /// was no FIFO to queue them in. See src/chip/periph/canfd/canfd_rx_config.zig.
     unarmed: u32 = 0,
     /// CFDRFCC[0], the RX FIFO's own configuration.
     rx: rx_config.Config = .{},

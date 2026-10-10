@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/agt_clock.zig: the AGTMR1 count source, the divider it
+//! Covers src/chip/periph/agt/agt_clock.zig: the AGTMR1 count source, the divider it
 //! selects, and the one encoding that counts another channel instead.
 const std = @import("std");
 const ra8 = @import("ra8");

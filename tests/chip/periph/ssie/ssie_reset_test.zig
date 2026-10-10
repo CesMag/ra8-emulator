@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/ssie_reset.zig.
+//! Covers src/chip/periph/ssie/ssie_reset.zig.
 const std = @import("std");
 const reset = @import("ra8").chip.periph.ssie_reset;
 

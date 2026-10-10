@@ -7,9 +7,9 @@
 //! controller reads the descriptor that slot points at, moves what it says,
 //! and only lets the CPU see the interrupt once the descriptor has run out.
 //! That is why this block is the first consumer of the DTCE bit
-//! src/chip/periph/icu.zig has been carrying with nothing reading it.
+//! src/chip/periph/icu/icu.zig has been carrying with nothing reading it.
 //!
-//!   DTCCR  (+0x00, 8b)  RRS, the read-skip bit (src/chip/periph/dtc_skip.zig)
+//!   DTCCR  (+0x00, 8b)  RRS, the read-skip bit (src/chip/periph/dtc/dtc_skip.zig)
 //!   DTCVBR (+0x04, 32b) the vector table: one TI pointer per ICU slot
 //!   DTCST  (+0x0C, 8b)  DTCST b0, the module start bit
 //!   DTCSTS (+0x0E, 16b) ACT b15 and the vector number of the last transfer

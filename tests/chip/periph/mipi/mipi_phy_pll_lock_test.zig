@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/mipi_phy_pll_lock.zig.
+//! Covers src/chip/periph/mipi/mipi_phy_pll_lock.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 

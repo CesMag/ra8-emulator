@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/xspi.zig: the manual-command engine, the write-enable
+//! Covers src/chip/periph/xspi/xspi.zig: the manual-command engine, the write-enable
 //! latch, and the descriptors it refuses.
 const std = @import("std");
 const ra8 = @import("ra8");

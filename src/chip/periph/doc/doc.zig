@@ -42,7 +42,7 @@
 //! operand DOCR.DOBW selects; anything narrower carries no operation, is
 //! refused and counted, and DODSR0 keeps what it had. The rule and what it
 //! deliberately does not claim about silicon live in
-//! src/chip/periph/doc_operand.zig.
+//! src/chip/periph/doc/doc_operand.zig.
 const std = @import("std");
 const periph = @import("../registry.zig");
 const doc_compare = @import("doc_compare.zig");

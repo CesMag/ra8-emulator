@@ -1,7 +1,7 @@
 //! The register map of one PORT instance, and what an access of each width
 //! names inside it.
 //!
-//! Split out of src/chip/periph/gpio.zig, which owns the pins, the board LEDs and
+//! Split out of src/chip/periph/gpio/gpio.zig, which owns the pins, the board LEDs and
 //! the externally-driven inputs. This file owns the map alone: which word an
 //! offset lands in, which 16-bit half an access names, and which of those
 //! halves the port itself owns so a store to one is a refusal.

@@ -22,7 +22,7 @@
 //! optimistic direction: a driver bug that forgets to unlock ran here and
 //! failed on the bench.
 //!
-//! WHAT THE PROTECTION COVERS HERE lives in src/chip/periph/gpt_window.zig as
+//! WHAT THE PROTECTION COVERS HERE lives in src/chip/periph/gpt/gpt_window.zig as
 //! `protected`: the counter and period, the control word, the start / stop /
 //! clear requests, the compares and their buffers, and GTBER. GTWP itself is
 //! never protected, or nothing could ever unlock it.

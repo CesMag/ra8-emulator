@@ -34,7 +34,7 @@
 //! variants do differently.
 //!
 //! THE PERIOD IS NOT HERE. GTPBR (+0x68) and the live GTPR are a pair of
-//! their own and live in src/chip/periph/gpt_period.zig, which hands the parked
+//! their own and live in src/chip/periph/gpt/gpt_period.zig, which hands the parked
 //! period over at the same cycle end this file hands the compares over. That
 //! transfer is unconditional, because the HAL documents the reload with no
 //! enable and no bit position for GTBER's period field exists in either

@@ -11,7 +11,7 @@
 //! This file is only the map: which register owns a byte offset inside a
 //! channel, and which byte of that register it is. The byte arithmetic is
 //! `src/chip/periph/bytelanes.zig`, and what each register MEANS stays in
-//! `src/chip/periph/ulpt.zig`.
+//! `src/chip/periph/ulpt/ulpt.zig`.
 
 /// The registers a channel answers for.
 pub const Reg = enum { cnt, cma, cmb, cr, mr1, mr2, mr3, ioc };

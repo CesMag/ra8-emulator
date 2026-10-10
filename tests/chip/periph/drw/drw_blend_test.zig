@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw_blend.zig: the blend factors, the alpha mux and the
+//! Covers src/chip/periph/drw/drw_blend.zig: the blend factors, the alpha mux and the
 //! narrowing to the framebuffer format. The vectors are the ones measured on
 //! an EK-RA8D2 and recorded in board_periph_drw.c on dev, so a change here
 //! that "looks right" but moves a byte fails against silicon, not taste.

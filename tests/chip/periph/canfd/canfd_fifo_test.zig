@@ -1,4 +1,4 @@
-//! tests/chip/periph/canfd_fifo_test.zig covers src/chip/periph/canfd_fifo.zig: the
+//! tests/chip/periph/canfd/canfd_fifo_test.zig covers src/chip/periph/canfd/canfd_fifo.zig: the
 //! receive queue behind a CAN-FD channel.
 const std = @import("std");
 const ra8 = @import("ra8");

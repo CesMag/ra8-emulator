@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/canfd_rx_status.zig: CFDRFSTS's four flags, and the one
+//! Covers src/chip/periph/canfd/canfd_rx_status.zig: CFDRFSTS's four flags, and the one
 //! of them a store is allowed to lower.
 const std = @import("std");
 const ra8 = @import("ra8");

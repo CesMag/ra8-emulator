@@ -25,7 +25,7 @@
 //! RFDC IS READ ONLY AS ZERO OR NON-ZERO, deliberately. The one encoding
 //! this tree documents is ra8_canfd.c's `k_rfcc_rfdc_4msgs = 1UL << 8U`,
 //! four entries; nothing here gives the rest of the field, so the depth
-//! stays src/chip/periph/canfd_fifo.zig's stated four rather than a guessed
+//! stays src/chip/periph/canfd/canfd_fifo.zig's stated four rather than a guessed
 //! decode of a field we have one point of.
 
 /// CFDRFCC[0]. CFDRFCC[1] is the second FIFO, which this model does not

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/dac.zig.
+//! Covers src/chip/periph/dac/dac.zig.
 const std = @import("std");
 const dac = @import("ra8").chip.periph.dac;
 

@@ -1,7 +1,7 @@
 //! The DMAC channel register window, and what an access of each width names
 //! inside it.
 //!
-//! Split out of `src/chip/periph/dmac.zig`, which owns the transfers, the module
+//! Split out of `src/chip/periph/dmac/dmac.zig`, which owns the transfers, the module
 //! gate and the counters. This file owns the map alone: which registers a word
 //! holds, which lanes of that word each one occupies, and which lanes are
 //! reserved.

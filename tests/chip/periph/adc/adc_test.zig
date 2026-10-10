@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/adc.zig.
+//! Covers src/chip/periph/adc/adc.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const adc = ra8.chip.periph.adc;
@@ -70,7 +70,7 @@ test "a completed scan offers the scan end event once" {
     var block = unit();
     enrol(&block, 0, 3, 0, .bits12);
     enableGroup(&block, 3);
-    // ADINTCR gates the event (src/chip/periph/adc_intr.zig); a scan run with it
+    // ADINTCR gates the event (src/chip/periph/adc/adc_intr.zig); a scan run with it
     // clear converts and raises nothing, which is its own test next door.
     block.write(adc.win_base + adc.off.adintcr, 4, 0x0000_0008);
     start(&block, 3);

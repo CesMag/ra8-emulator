@@ -39,7 +39,7 @@ pub const win_span: u32 = channel_stride * @as(u32, channel_count);
 pub const event_base: u16 = 0x0E0;
 
 /// The register map of one channel, and the lanes each register occupies,
-/// live in src/chip/periph/dmac_regs.zig. They are re-exported here because a
+/// live in src/chip/periph/dmac/dmac_regs.zig. They are re-exported here because a
 /// channel's window is what most callers mean by "the DMAC".
 pub const off = regs.off;
 pub const field = regs.field;

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/agt_compare.zig: AGTCMSR's two compare-match enables,
+//! Covers src/chip/periph/agt/agt_compare.zig: AGTCMSR's two compare-match enables,
 //! and what the AGT channel does with a crossing on a side nobody armed.
 const std = @import("std");
 const ra8 = @import("ra8");

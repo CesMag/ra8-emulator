@@ -30,7 +30,7 @@
 //! neither set a flag nor clear one and cannot tell which happened. Here the
 //! register is computed on read and a write to it changes nothing.
 //!
-//! THE FIFO ITSELF lives in src/chip/periph/ssie_fifo.zig: the part's 32 stages,
+//! THE FIFO ITSELF lives in src/chip/periph/ssie/ssie_fifo.zig: the part's 32 stages,
 //! SSIFSR's TDC count, and the SSIFCR resets that empty it. That file carries
 //! the register fields and what is deliberately left alone in them.
 //!
@@ -59,7 +59,7 @@
 //! restart the channel. Here the rising edge empties the transmit FIFO and
 //! takes REN and TEN down, leaving the mode bits above them alone, which is
 //! what ra8_ssie.h states as the post-condition of that call. The rule and
-//! its evidence live in src/chip/periph/ssie_reset.zig.
+//! its evidence live in src/chip/periph/ssie/ssie_reset.zig.
 //!
 //! NOT MODELLED, AND NOT GUESSED: SSIFSR's receive flags, and the write-0-to
 //! -clear the header describes for RDF and TDE. TDE is computed from what the

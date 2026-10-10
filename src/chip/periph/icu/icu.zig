@@ -5,7 +5,7 @@
 //! NVIC lines that event drives: IELSR[n].IELS holds the event number line n
 //! listens for, and firmware writes it there (`ra8_isr_register` /
 //! `ra8_icu_route`) before it enables the line. Until this file existed the
-//! Zig tree had no path from a block to an interrupt at all: src/chip/periph/sci.zig
+//! Zig tree had no path from a block to an interrupt at all: src/chip/periph/sci/sci.zig
 //! landed with its transmit and receive interrupts deliberately left out,
 //! because there was nothing to raise them into, so an interrupt-driven
 //! `ra8_sci_write` printed nothing and waited forever on a flag its handler
@@ -51,7 +51,7 @@ pub const field = struct {
     pub const iels: u32 = 0x0000_03FF;
     /// IR[16]: the latched status flag. Cleared by writing ZERO, not one.
     pub const ir: u32 = 0x0001_0000;
-    /// DTCE[24]: DTC activation enable. src/chip/periph/dtc.zig reads it.
+    /// DTCE[24]: DTC activation enable. src/chip/periph/dtc/dtc.zig reads it.
     pub const dtce: u32 = 0x0100_0000;
     /// Every bit the register occupies. The rest of the word is reserved: it
     /// reads zero and a store into it is kept nowhere.

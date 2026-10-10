@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc_blend.zig: what each graphics layer contributes
+//! Covers src/chip/periph/glcdc/glcdc_blend.zig: what each graphics layer contributes
 //! to the panel, and what happens where two of them overlap.
 const std = @import("std");
 const ra8 = @import("ra8");

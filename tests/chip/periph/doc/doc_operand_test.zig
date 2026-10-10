@@ -1,4 +1,4 @@
-//! Tests for src/chip/periph/doc_operand.zig.
+//! Tests for src/chip/periph/doc/doc_operand.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const mod = ra8.chip.periph.doc_operand;

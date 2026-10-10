@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/rtc_source.zig: RCR4.RCKSEL picks the count source, and
+//! Covers src/chip/periph/rtc/rtc_source.zig: RCR4.RCKSEL picks the count source, and
 //! the order it is picked in is judged against the software reset.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,6 +1,6 @@
 //! The Pmod2 microSD card as something on an SCI channel's line.
 //!
-//! The card model itself (src/chip/periph/sd_card.zig) speaks one byte out, one
+//! The card model itself (src/components/sd_card/card.zig) speaks one byte out, one
 //! byte back, which is what an SPI_B channel drives it through. An SCI
 //! channel in Simple-SPI mode drives the same wire and wants the same
 //! exchange, but its device seam answers with a slice rather than a byte,

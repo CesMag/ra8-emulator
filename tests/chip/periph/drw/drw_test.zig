@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw.zig: the power gate over the drawing engine, the
+//! Covers src/chip/periph/drw/drw.zig: the power gate over the drawing engine, the
 //! ORIGIN trigger, the bounding-box scan, the display-list reader and the
 //! configurations this model declines rather than guesses at.
 const std = @import("std");

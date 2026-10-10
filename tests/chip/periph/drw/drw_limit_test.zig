@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw_limit.zig: the linear form each edge limiter
+//! Covers src/chip/periph/drw/drw_limit.zig: the linear form each edge limiter
 //! carries, the band that turns a half-plane into a stroke, and the tree
 //! CONTROL folds the six of them down.
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Tests for src/chip/periph/elc_route.zig.
+//! Tests for src/chip/periph/elc/elc_route.zig.
 const std = @import("std");
 const route = @import("ra8").chip.periph.elc_route;
 

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/rtc_frequency.zig.
+//! Covers src/chip/periph/rtc/rtc_frequency.zig.
 const std = @import("std");
 const freq = @import("ra8").chip.periph.rtc_frequency;
 

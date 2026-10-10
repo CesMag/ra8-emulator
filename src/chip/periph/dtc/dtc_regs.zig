@@ -10,7 +10,7 @@
 //! This file is only the map: which register owns a byte offset, which byte
 //! of it that offset is, and whether the firmware may store there. The byte
 //! arithmetic is `src/chip/periph/bytelanes.zig`, and what each register MEANS
-//! stays in `src/chip/periph/dtc.zig`.
+//! stays in `src/chip/periph/dtc/dtc.zig`.
 
 /// The registers the window answers for.
 pub const Reg = enum { dtccr, dtcvbr, dtcst, dtcsts };

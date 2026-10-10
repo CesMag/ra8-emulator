@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc_mix.zig: compositing the graphics layers onto
+//! Covers src/chip/periph/glcdc/glcdc_mix.zig: compositing the graphics layers onto
 //! the background colour, which dev never does at all.
 const std = @import("std");
 const ra8 = @import("ra8");

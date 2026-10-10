@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/ulpt.zig: the low-power timer two deep-idle images wake
+//! Covers src/chip/periph/ulpt/ulpt.zig: the low-power timer two deep-idle images wake
 //! themselves on, and the three places dev lets a misbehaving image pass.
 const std = @import("std");
 const ra8 = @import("ra8");

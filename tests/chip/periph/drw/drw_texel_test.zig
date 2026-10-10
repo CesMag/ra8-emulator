@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw_texel.zig: the READFORMAT table, the widths it
+//! Covers src/chip/periph/drw/drw_texel.zig: the READFORMAT table, the widths it
 //! gives a texel, and the ARGB8888 colour a raw texel means.
 const std = @import("std");
 const ra8 = @import("ra8");

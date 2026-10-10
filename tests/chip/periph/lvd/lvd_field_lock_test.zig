@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/lvd_field_lock.zig.
+//! Covers src/chip/periph/lvd/lvd_field_lock.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 

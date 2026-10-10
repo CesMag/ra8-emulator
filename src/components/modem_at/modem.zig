@@ -19,7 +19,7 @@
 //!
 //! The seam also carries a rule this model gets for free and dev did not
 //! have: a byte only reaches the line when CCR0.TE is set, and a reply only
-//! reaches the firmware when CCR0.RE is (src/chip/periph/sci.zig).
+//! reaches the firmware when CCR0.RE is (src/chip/periph/sci/sci.zig).
 //!
 //! NOT MODELLED, AND NOT GUESSED: command echo (a real part powers up with
 //! ATE1 and the script's own ATE0 turns it off, but nothing in this tree says

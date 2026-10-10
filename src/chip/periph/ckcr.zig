@@ -54,7 +54,7 @@
 //! asserted when the divider is changing, and ra8_cgc_usb.c says in so many
 //! words that "if the caller has already released MSTPB12 (USBHS) the
 //! SREQ->SRDY handshake silently hangs". Honouring that needs the module-stop
-//! bit for each of these branches, and src/chip/periph/mstp.zig carries no family
+//! bit for each of these branches, and src/chip/periph/mstp/mstp.zig carries no family
 //! for either USB controller, so a hang modelled here would be a guess for
 //! half the window. Nor is the ESWM power domain asked: ra8_cgc_eswclk.c
 //! drops PDCTRESWM.PDDE before it switches, and src/chip/periph/pdctr.zig models

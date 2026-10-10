@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sd_write.zig.
+//! Covers src/components/sd_card/write.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const sd_crc = ra8.components.sd_crc;

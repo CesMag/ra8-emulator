@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/mram.zig: the controller window, the command the
+//! Covers src/chip/periph/mram/mram.zig: the controller window, the command the
 //! sequencer hands it, and every refusal in between.
 const std = @import("std");
 const ra8 = @import("ra8");

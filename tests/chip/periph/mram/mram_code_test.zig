@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/mram_code.zig: the code-MRAM program-control page, the
+//! Covers src/chip/periph/mram/mram_code.zig: the code-MRAM program-control page, the
 //! status word it answers with, and the store to that word it refuses.
 const std = @import("std");
 const ra8 = @import("ra8");

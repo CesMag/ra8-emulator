@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/spi.zig.
+//! Covers src/chip/periph/spi/spi.zig.
 const std = @import("std");
 const spi = @import("ra8").chip.periph.spi;
 

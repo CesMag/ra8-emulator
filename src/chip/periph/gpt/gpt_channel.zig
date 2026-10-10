@@ -1,7 +1,7 @@
 //! One GPT channel: the counter, what it counts in, and the window it
 //! answers on.
 //!
-//! The bank in src/chip/periph/gpt.zig owns fourteen of these and routes an access
+//! The bank in src/chip/periph/gpt/gpt.zig owns fourteen of these and routes an access
 //! to one of them; everything below the routing is here. That split is the
 //! house rule rather than a size exercise, but size is what forced it: gpt.zig
 //! sat at exactly the 400-line gate ceiling, so the next slice touching the

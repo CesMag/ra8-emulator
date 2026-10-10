@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw_tex.zig: the U/V generators, the mask that folds a
+//! Covers src/chip/periph/drw/drw_tex.zig: the U/V generators, the mask that folds a
 //! coordinate back into the texture, the palette path, the colour key, and
 //! the configurations this model refuses to sample rather than guess at.
 const std = @import("std");

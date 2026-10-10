@@ -13,13 +13,27 @@
 //!                     SDL is a lazy dependency, fetched and built only
 //!                     with -Dgui
 //!
-//! Source is grouped, not flat: src/chip/core/ is the machine (engine, elf,
-//! memmap and disasm), src/chip/periph/ is everything that
-//! answers on the peripheral bus, and two apps sit on top:
-//! src/interfaces/cli/main.zig (ra8_emulator, never links SDL) and
-//! src/interfaces/gui/main.zig (ra8_gui, built under -Dgui). Tests live
-//! in tests/ on mirrored paths, never in a `test` block at the bottom of a
-//! source file, and tests/all.zig is the root that pulls them in.
+//! The source is ten libraries and two applications, each a build module
+//! rooted at root.zig in its own directory (ADR 0004, AGENTS.md):
+//!
+//!   src/host/               ra8_host        the host OS: sockets, files, cameras
+//!   src/snapshot/           ra8_snapshot    the snapshot format
+//!   src/chip/               ra8_chip        the cores (core/) and the on-chip
+//!                                           blocks (periph/)
+//!   src/components/         ra8_components  off-chip parts and the plug layer
+//!   src/board/              ra8_board       the board, its image loader and run policy
+//!   src/session/            ra8_session     the embedding API and the debugger
+//!   src/interfaces/render/  ra8_render      drawing and the image encoders
+//!   src/interfaces/rpc/     ra8_rpc         the session over a wire
+//!   src/interfaces/gdb/     ra8_gdb         the GDB remote server
+//!   src/interfaces/usbip/   ra8_usbip       the USB/IP bridge
+//!   src/interfaces/cli/     cli_app         ra8_emulator, which never links SDL
+//!   src/interfaces/gui/     gui_app         ra8_gui, built under -Dgui
+//!
+//! src/root.zig is the `ra8` umbrella over the libraries. Tests live in
+//! tests/ on mirrored paths, never in a `test` block at the bottom of a
+//! source file; tests/all.zig and tests/all_host.zig are the roots that pull
+//! them in.
 //!
 //! Zig 0.17.0, the version pinned in ra8-firmware .devcontainer/Dockerfile.
 const std = @import("std");

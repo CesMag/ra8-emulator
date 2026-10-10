@@ -30,7 +30,7 @@
 //! self-clearing strobe that starts a break field, so reading it back clear
 //! is exactly what ra8_sci_lin_send_break polls for, and the call returned
 //! success for a break that never happened. The rule and its evidence live
-//! in src/chip/periph/sci_lin.zig.
+//! in src/chip/periph/sci/sci_lin.zig.
 //!
 //! RDR AND TDR ARE A DATA PORT, AND THE PORT IS THE BYTE RDAT/TDAT SITS IN.
 //! An access that does not name byte 0 of the word carries no character in
@@ -67,7 +67,7 @@ pub const off_tdr: u32 = 0x04;
 pub const off_ccr0: u32 = 0x08;
 /// CCR3's mode field, and what a Simple-SPI frame clocks back: sci_spi.zig.
 pub const off_ccr3: u32 = sci_spi.off_ccr3;
-/// The status words and the clear strobes live in src/chip/periph/sci_status.zig,
+/// The status words and the clear strobes live in src/chip/periph/sci/sci_status.zig,
 /// which owns what they answer and what a store to one does.
 pub const off_csr: u32 = sci_status.off.csr;
 pub const off_frsr: u32 = sci_status.off.frsr;
@@ -95,7 +95,7 @@ pub const fifo = sci_status.fifo;
 /// The ELC event numbers the console channel raises (HUM Ch 19 Table 19.3,
 /// FSP `bsp_elc.h` for ra8d2: SCI8_RXI 0x122, _TXI 0x123, _TEI 0x124). A
 /// firmware that routes one of these writes the same number into an IELSR
-/// slot, and src/chip/periph/icu.zig matches the raised event to that slot.
+/// slot, and src/chip/periph/icu/icu.zig matches the raised event to that slot.
 ///
 /// Only the console channel has modelled event numbers, the same limit dev
 /// draws: the other nine channels raise nothing until something needs them.
@@ -111,7 +111,7 @@ pub const Due = Bounded(u16, 3);
 
 pub const data_mask: u32 = 0xFF;
 
-/// Model sizing, and the receive ring itself: src/chip/periph/sci_ring.zig.
+/// Model sizing, and the receive ring itself: src/chip/periph/sci/sci_ring.zig.
 pub const limits = sci_ring.limits;
 pub const Ring = sci_ring.Ring;
 
@@ -136,7 +136,7 @@ pub const Channel = struct {
     /// Stores to TDR that named a byte above TDAT. They send nothing.
     unnamed_stores: u32 = 0,
     rx: Ring = .{},
-    /// The CSR flags firmware has to clear: src/chip/periph/sci_error.zig.
+    /// The CSR flags firmware has to clear: src/chip/periph/sci/sci_error.zig.
     errors: sci_error.Errors = .{},
     /// CCR3, kept whole so the mode field can be read out of it.
     ccr3: u32 = 0,
@@ -160,7 +160,7 @@ pub const Channel = struct {
     }
 
     /// CSR as this channel answers it. What those bits mean, and why they
-    /// read the way they do, is src/chip/periph/sci_status.zig's.
+    /// read the way they do, is src/chip/periph/sci/sci_status.zig's.
     pub fn status(self: *const Channel) u32 {
         return sci_status.common(self.readable()) | self.errors.flags();
     }
@@ -177,7 +177,7 @@ pub const Channel = struct {
 };
 
 /// The captured console line, and what it does with one that never ends,
-/// live in src/chip/periph/sci_line.zig.
+/// live in src/chip/periph/sci/sci_line.zig.
 pub const Line = @import("sci_line.zig").Line;
 
 /// What a watcher outside the run sees of every sent byte (RA8EMU-206).
@@ -344,7 +344,7 @@ pub const Sci = struct {
         const channel = &self.channels[index];
         const on_line = channel.device orelse return self.clockIdle(index);
         // A device wired to the channel's SPI pins is not on the line while
-        // the channel is running as a UART (src/chip/periph/sci_device.zig).
+        // the channel is running as a UART (src/chip/periph/sci/sci_device.zig).
         if (on_line.spi_only and !sci_spi.simpleSpi(channel.ccr3)) return self.clockIdle(index);
         const reply = on_line.feed(byte);
         if (reply.len == 0) return self.clockIdle(index);

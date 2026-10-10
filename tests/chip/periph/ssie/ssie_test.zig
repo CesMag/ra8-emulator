@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/ssie.zig.
+//! Covers src/chip/periph/ssie/ssie.zig.
 const std = @import("std");
 const ssie = @import("ra8").chip.periph.ssie;
 

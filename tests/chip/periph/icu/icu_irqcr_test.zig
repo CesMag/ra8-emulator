@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/icu_irqcr.zig and the ICU's IRQCRa/IRQCRb window: the
+//! Covers src/chip/periph/icu/icu_irqcr.zig and the ICU's IRQCRa/IRQCRb window: the
 //! two-run address arithmetic, the field mask, and the rule that a pin may
 //! only be rewritten while nothing routes its event.
 const std = @import("std");

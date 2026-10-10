@@ -38,11 +38,11 @@ pub const Reason = enum {
     /// unprivileged.
     privilege,
     /// No region covered the address at all, and CTRL.PRIVDEFENA did not hand
-    /// this access the default map. See src/chip/periph/mpu_background.zig.
+    /// this access the default map. See src/chip/periph/mpu/mpu_background.zig.
     background,
 };
 
-/// Which direction the refused access went. The table in src/chip/periph/mpu.zig
+/// Which direction the refused access went. The table in src/chip/periph/mpu/mpu.zig
 /// answers with this too, because what a region allows is decided per
 /// direction: read-only refuses a store and serves a load, execute-never
 /// refuses a fetch and serves both, and privileged-only refuses all three.
@@ -93,7 +93,7 @@ pub const Latch = struct {
     faults: u64 = 0,
     /// Of those, the ones taken as a HardFault because SHCSR.MEMFAULTENA was
     /// clear and MemManage was therefore disabled. See
-    /// src/chip/periph/mpu_escalate.zig.
+    /// src/chip/periph/mpu/mpu_escalate.zig.
     escalated: u64 = 0,
     /// Violations with no handler to reach: the vector table carries none, or
     /// the controller would not take it. No escalation to HardFault is

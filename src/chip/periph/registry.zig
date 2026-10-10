@@ -47,8 +47,9 @@ pub const Port = struct {
 };
 
 /// A veto over the whole window, consulted before anything answers. The
-/// module-stop gate in src/mstp.zig is the one that exists: a peripheral whose
-/// module-stop bit is set is unclocked, so it does not answer the bus at all.
+/// module-stop gate in src/chip/periph/mstp/mstp.zig is the one that exists: a
+/// peripheral whose module-stop bit is set is unclocked, so it does not answer
+/// the bus at all.
 pub const Gate = struct {
     context: *anyopaque,
     stoppedFn: *const fn (context: *anyopaque, address: u32) bool,

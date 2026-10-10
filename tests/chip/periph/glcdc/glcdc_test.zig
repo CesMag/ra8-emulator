@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc.zig: the framebuffer descriptor the display
+//! Covers src/chip/periph/glcdc/glcdc.zig: the framebuffer descriptor the display
 //! controller is programmed with, and the graphics power domain it lives in.
 const std = @import("std");
 const ra8 = @import("ra8");

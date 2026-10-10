@@ -1,9 +1,9 @@
 //! A serial channel's error latches: what CSR reports that firmware has to
 //! clear rather than outgrow.
 //!
-//! Split out of src/chip/periph/sci.zig, which owns the channel, the data port and
+//! Split out of src/chip/periph/sci/sci.zig, which owns the channel, the data port and
 //! the transmit gate. The bits themselves and the clear lines over them are
-//! src/chip/periph/sci_status.zig's; this file owns whether one is standing.
+//! src/chip/periph/sci/sci_status.zig's; this file owns whether one is standing.
 //!
 //! WHY A LATCH AND NOT A DERIVED BIT. TDRE, TEND and RDRF are facts about the
 //! moment: the transmitter is drained, or the receive ring has a byte. ORER

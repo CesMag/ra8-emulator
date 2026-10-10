@@ -49,29 +49,29 @@
 //! here. The count of them is reported, but they are not stacked into a
 //! backlog that would fire long after the counter moved on.
 //!
-//! THE COUNT SOURCE lives in src/chip/periph/gpt_clock.zig: GTCR's TPCS field
+//! THE COUNT SOURCE lives in src/chip/periph/gpt/gpt_clock.zig: GTCR's TPCS field
 //! picks the divider a channel counts at, so a channel slowed to PCLKD/1024
 //! really is a thousand times slower than an undivided one instead of every
 //! channel counting at the same rate.
 //!
-//! COMPARE MATCH lives in src/chip/periph/gpt_compare.zig: GTCCRA (+0x4C) and
+//! COMPARE MATCH lives in src/chip/periph/gpt/gpt_compare.zig: GTCCRA (+0x4C) and
 //! GTCCRB (+0x50) are compared against the count rather than shadowed, and a
 //! crossing raises GTST.TCFA or TCFB. Everything that file does not claim is
 //! still shadowed.
 //!
-//! THE COUNTER MODE lives in src/chip/periph/gpt_mode.zig: GTCR's MD field picks
+//! THE COUNTER MODE lives in src/chip/periph/gpt/gpt_mode.zig: GTCR's MD field picks
 //! the shape a channel counts in, so a triangle channel rises to the period
 //! and falls back to zero instead of sawing, and a one-shot channel stops
 //! itself at the period instead of wrapping forever.
 //!
-//! THE BUFFERED COMPARE lives in src/chip/periph/gpt_buffer.zig: GTBER (+0x40)
+//! THE BUFFERED COMPARE lives in src/chip/periph/gpt/gpt_buffer.zig: GTBER (+0x40)
 //! says whether a channel reloads GTCCRA and GTCCRB from their buffer
 //! registers at the end of a cycle, so a duty the HAL parks through
 //! `ra8_gpt_duty_cycle_set` arrives on the next cycle instead of never
 //! arriving at all. This file's note used to say a buffered duty took effect
 //! at once; it did not take effect, because nothing read the buffer.
 //!
-//! THE WRITE PROTECTION lives in src/chip/periph/gpt_lock.zig: GTWP (+0x00)
+//! THE WRITE PROTECTION lives in src/chip/periph/gpt/gpt_lock.zig: GTWP (+0x00)
 //! carries a password in its upper byte and WP in bit 0, and the HAL
 //! brackets every channel it touches between the two keys, so a channel the
 //! HAL has finished with is shut and a store that skips the key is dropped
@@ -129,7 +129,7 @@ pub const win_span: u32 = stride * @as(u32, channels);
 /// from the window so callers reach it as `gpt.off` the way they always did.
 pub const off = win.off;
 
-/// GTPR and its buffer GTPBR live in src/chip/periph/gpt_period.zig.
+/// GTPR and its buffer GTPBR live in src/chip/periph/gpt/gpt_period.zig.
 pub const periods = prd;
 
 /// GTCR's count-start bit and GTST's status bits, re-exported from the

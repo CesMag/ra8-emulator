@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc_pixel.zig: the eight FLM6.FORMAT packings and
+//! Covers src/chip/periph/glcdc/glcdc_pixel.zig: the eight FLM6.FORMAT packings and
 //! the colour each one decodes to.
 const std = @import("std");
 const ra8 = @import("ra8");

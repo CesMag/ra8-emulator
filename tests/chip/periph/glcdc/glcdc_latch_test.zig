@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc_latch.zig: which GLCDC registers carry a VEN,
+//! Covers src/chip/periph/glcdc/glcdc_latch.zig: which GLCDC registers carry a VEN,
 //! and what a store that sets one leaves behind.
 const std = @import("std");
 const ra8 = @import("ra8");

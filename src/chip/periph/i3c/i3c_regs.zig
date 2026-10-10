@@ -1,7 +1,7 @@
 //! The I3C channel's register window, and what an access of each width names
 //! inside it.
 //!
-//! Split out of `src/chip/periph/i3c.zig`, which owns the transfer machine, the
+//! Split out of `src/chip/periph/i3c/i3c.zig`, which owns the transfer machine, the
 //! device registry and the counters. This file owns the access rule alone.
 //!
 //! EVERY REGISTER IN THIS WINDOW IS A WORD (HUM Ch 40, ra8_i3c_regs.h): the

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw_cache.zig: where a painted pixel is while the
+//! Covers src/chip/periph/drw/drw_cache.zig: where a painted pixel is while the
 //! framebuffer cache is on, what a flush moves, what a destination read is
 //! answered with, and the texture cache's enable and flush pulses.
 const std = @import("std");

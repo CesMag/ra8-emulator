@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/gpt_buffer.zig: GTBER's single-buffer transfer, and the
+//! Covers src/chip/periph/gpt/gpt_buffer.zig: GTBER's single-buffer transfer, and the
 //! duty the HAL parks in GTCCR[2] arriving on the next cycle.
 const std = @import("std");
 const testing = std.testing;

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc_frame.zig: the RAM a framebuffer may live in,
+//! Covers src/chip/periph/glcdc/glcdc_frame.zig: the RAM a framebuffer may live in,
 //! and where the window it starts in runs out.
 const std = @import("std");
 const ra8 = @import("ra8");

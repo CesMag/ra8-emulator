@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/riic_ack.zig: ACKBT moves only with ACKWP already in
+//! Covers src/chip/periph/riic/riic_ack.zig: ACKBT moves only with ACKWP already in
 //! force, so the enable and the set are two separate stores.
 const std = @import("std");
 const ra8 = @import("ra8");

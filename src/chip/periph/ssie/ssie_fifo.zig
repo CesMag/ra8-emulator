@@ -1,7 +1,7 @@
 //! The SSIE transmit staging FIFO: how many samples it holds, what SSIFSR
 //! reports about that, and what a reset does to it.
 //!
-//! Split out of src/chip/periph/ssie.zig, which models the handshake and the
+//! Split out of src/chip/periph/ssie/ssie.zig, which models the handshake and the
 //! sample stream. This file owns the part a driver uses for flow control.
 //!
 //! THE DEPTH IS THE PART'S, NOT A NUMBER THIS MODEL PICKED. ra8_ssie_regs.h

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/riic_rx.zig: the dummy read that starts the clock, the
+//! Covers src/chip/periph/riic/riic_rx.zig: the dummy read that starts the clock, the
 //! bytes served after it, and the reads past the end of what was staged.
 const std = @import("std");
 const ra8 = @import("ra8");

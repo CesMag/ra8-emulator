@@ -2,9 +2,9 @@
 //! at a time.
 //!
 //! SCI_B hands this file every byte channel 8 actually sends
-//! (src/chip/periph/sci.zig), and it keeps the last finished line so the run can
+//! (src/chip/periph/sci/sci.zig), and it keeps the last finished line so the run can
 //! be told what the firmware said. It is its own file for the reason the
-//! RTT probe's line buffer is (src/chip/periph/rtt_line.zig): what a line is, and
+//! RTT probe's line buffer is (src/chip/periph/rtt/rtt_line.zig): what a line is, and
 //! what happens to one that never ends, is a separate question from what a
 //! serial channel does with a byte.
 

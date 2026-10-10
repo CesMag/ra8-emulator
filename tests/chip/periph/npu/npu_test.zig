@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/npu.zig: the register window, and the five places this
+//! Covers src/chip/periph/npu/npu.zig: the register window, and the five places this
 //! model refuses to hand an image a result the silicon would not have given
 //! it.
 const std = @import("std");

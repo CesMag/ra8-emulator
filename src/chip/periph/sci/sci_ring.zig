@@ -1,8 +1,8 @@
 //! A serial channel's receive ring: the bytes a host or a device on the line
 //! has driven back and the firmware has not read out of RDR yet.
 //!
-//! Split out of src/chip/periph/sci.zig, which owns the channel, the status words
-//! and the transmit gate, the same way src/chip/periph/sci_line.zig owns the
+//! Split out of src/chip/periph/sci/sci.zig, which owns the channel, the status words
+//! and the transmit gate, the same way src/chip/periph/sci/sci_line.zig owns the
 //! console line buffer.
 //!
 //! FIXED CAPACITY ON PURPOSE. There is no allocator below the bus in this
@@ -10,7 +10,7 @@
 //! worth reporting rather than swallowing is that it is an OVERRUN: a
 //! character arrived with the previous one still unread, which is exactly
 //! what CSR.ORER reports. So `push` says whether it lost anything and the
-//! channel latches that into the flag; see src/chip/periph/sci_status.zig for the
+//! channel latches that into the flag; see src/chip/periph/sci/sci_status.zig for the
 //! bit and for what clears it.
 
 /// How many unread bytes a channel can hold.

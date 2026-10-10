@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sdhi_xfer.zig.
+//! Covers src/chip/periph/sdhi/sdhi_xfer.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const xfer = ra8.chip.periph.sdhi_xfer;

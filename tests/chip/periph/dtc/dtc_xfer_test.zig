@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/dtc_xfer.zig: the TI block a DTC activation reads out of
+//! Covers src/chip/periph/dtc/dtc_xfer.zig: the TI block a DTC activation reads out of
 //! memory, and what one activation leaves behind in it.
 const std = @import("std");
 const ra8 = @import("ra8");

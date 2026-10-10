@@ -1,5 +1,5 @@
-//! Covers src/chip/periph/adc_intr.zig, and the gate it puts on the scan-end
-//! event in src/chip/periph/adc.zig.
+//! Covers src/chip/periph/adc/adc_intr.zig, and the gate it puts on the scan-end
+//! event in src/chip/periph/adc/adc.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const adc = ra8.chip.periph.adc;

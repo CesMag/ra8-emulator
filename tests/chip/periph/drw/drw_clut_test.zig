@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw_clut.zig: the palette an indexed texture reads
+//! Covers src/chip/periph/drw/drw_clut.zig: the palette an indexed texture reads
 //! through, its load cursor, and the two entry formats CLUTFORMAT selects.
 const std = @import("std");
 const ra8 = @import("ra8");

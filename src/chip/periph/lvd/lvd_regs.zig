@@ -1,6 +1,6 @@
 //! The PVD register fields, and the Vdet each PVDLVL encoding selects.
 //!
-//! Its own file so src/chip/periph/lvd_field_lock.zig can name the two fields it
+//! Its own file so src/chip/periph/lvd/lvd_field_lock.zig can name the two fields it
 //! guards without reaching back into the block that owns the state, the way
 //! canfd_regs.zig sits under canfd.zig. lvd.zig re-exports every name here,
 //! so callers still reach them through the block.

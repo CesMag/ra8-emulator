@@ -33,8 +33,9 @@ pub const Conf = struct {
     /// busy loop still cannot stall the whole table.
     pub const max_floor_ms: u32 = 60_000;
 
-    /// The bench's own windows when a conf names none: scripts/hil/all.sh
-    /// scrapes the console for 10 s and watches a probe for 3 s.
+    /// The bench's own windows when a conf names none: ra8-firmware's
+    /// scripts/hil/all.sh scrapes the console for 10 s and watches a probe
+    /// for 3 s.
     pub const bench_scrape_s: u32 = 10;
     pub const bench_probe_s: u32 = 3;
 

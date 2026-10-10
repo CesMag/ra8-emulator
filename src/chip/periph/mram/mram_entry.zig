@@ -1,7 +1,7 @@
 //! MENTRYR: the program/erase mode gate, the key that opens it, and the
 //! pause bit that halts programming without leaving the mode.
 //!
-//! Split out of src/chip/periph/mram.zig the way mram_init.zig holds MSUINITR:
+//! Split out of src/chip/periph/mram/mram.zig the way mram_init.zig holds MSUINITR:
 //! the block file keeps the sequencer's rules, this one keeps the one
 //! register those rules turn on. What it decides is the whole register: an
 //! access narrower than the register carries no key, a value whose high half

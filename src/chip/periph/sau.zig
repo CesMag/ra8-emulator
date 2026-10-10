@@ -12,7 +12,7 @@
 //! all. TYPE is hardwired on silicon; nothing the firmware does would ever
 //! have put the count there, so the model has to.
 //!
-//! RBAR/RLAR ARE BANKED THROUGH RNR, the same shape src/chip/periph/mpu.zig
+//! RBAR/RLAR ARE BANKED THROUGH RNR, the same shape src/chip/periph/mpu/mpu.zig
 //! already carries for the MPU window beside this one. Five regions get
 //! programmed as five RNR/RBAR/RLAR triples, and with the PPB as plain RAM
 //! each triple would overwrite the last and the table would read back

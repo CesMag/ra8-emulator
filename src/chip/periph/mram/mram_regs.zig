@@ -1,5 +1,5 @@
 //! Where the extra-MRAM controller's registers sit and what their bits mean.
-//! Split out of src/chip/periph/mram.zig so the block file holds the rules and
+//! Split out of src/chip/periph/mram/mram.zig so the block file holds the rules and
 //! this one holds the numbers, the way eth_regs.zig sits beside eth.zig.
 //! Offsets are ra8_flash_regs.h's, relative to the MRMS program-mode
 //! sub-window rather than to the MRAM base the header counts from: the

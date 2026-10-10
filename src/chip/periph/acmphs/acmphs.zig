@@ -18,7 +18,7 @@
 //!
 //! CMPMON IS READ-ONLY AND DERIVED. The sparse file let a store land in it;
 //! here the store is refused and counted, the same line the RTC file draws
-//! around R64CNT. What it reads comes from src/chip/periph/acmphs_output.zig,
+//! around R64CNT. What it reads comes from src/chip/periph/acmphs/acmphs_output.zig,
 //! which carries the monitor rule and states what it does not model.
 //!
 //! NOT MODELLED, AND NOT GUESSED: the ACMPHS interrupt. CPINTCTL and

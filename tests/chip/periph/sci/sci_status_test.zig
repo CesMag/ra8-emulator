@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sci_status.zig: what the SCI status words report, and
+//! Covers src/chip/periph/sci/sci_status.zig: what the SCI status words report, and
 //! which words in the channel window the controller owns.
 const std = @import("std");
 const ra8 = @import("ra8");

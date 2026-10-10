@@ -1,7 +1,7 @@
 //! The register map of the ELC window, and what an access of each width names
 //! inside it.
 //!
-//! Split out of `src/chip/periph/elc.zig`, which owns the generators, the link
+//! Split out of `src/chip/periph/elc/elc.zig`, which owns the generators, the link
 //! table and the counters. This file owns the map alone: which register a word
 //! holds, which lanes of that word the register actually occupies, and which
 //! lanes are reserved.

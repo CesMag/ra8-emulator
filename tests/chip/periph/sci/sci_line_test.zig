@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sci_line.zig: the console line the firmware printed.
+//! Covers src/chip/periph/sci/sci_line.zig: the console line the firmware printed.
 const std = @import("std");
 const ra8 = @import("ra8");
 const text = ra8.chip.periph.sci_line;

@@ -1,4 +1,4 @@
-//! Covers src/sizing: the synthetic workload, the configuration matrix and
+//! Covers src/board/sizing: the synthetic workload, the configuration matrix and
 //! the sweep that times one against the other (RA8EMU-645).
 const std = @import("std");
 const ra8 = @import("ra8");

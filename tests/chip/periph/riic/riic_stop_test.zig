@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/riic_stop.zig: a STOP asked for mid-frame waits for the
+//! Covers src/chip/periph/riic/riic_stop.zig: a STOP asked for mid-frame waits for the
 //! last byte and the WAIT clear before it fires.
 const std = @import("std");
 const ra8 = @import("ra8");

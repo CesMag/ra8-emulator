@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sci_ring.zig: a channel's receive ring and the overrun
+//! Covers src/chip/periph/sci/sci_ring.zig: a channel's receive ring and the overrun
 //! it reports when it cannot hold what the line drove.
 const std = @import("std");
 const ra8 = @import("ra8");

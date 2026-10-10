@@ -38,7 +38,7 @@
 //! which carries the bench's measured rate.
 //!
 //! Four: the three control registers take one write each after reset and are
-//! deaf afterwards (HUM Ch 27.3.2, and see src/chip/periph/wdt_write_once.zig).
+//! deaf afterwards (HUM Ch 27.3.2, and see src/chip/periph/wdt/wdt_write_once.zig).
 //! dev took every write, so a firmware reconfiguring its watchdog mid-run got
 //! the new settings here and keeps the old ones on the bench. WDTCSTPR is the
 //! register that makes it bite: ra8_wdt_init programmes it, and then

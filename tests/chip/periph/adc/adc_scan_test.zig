@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/adc_scan.zig.
+//! Covers src/chip/periph/adc/adc_scan.zig.
 const std = @import("std");
 const scan = @import("ra8").chip.periph.adc_scan;
 

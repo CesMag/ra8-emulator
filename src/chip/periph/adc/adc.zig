@@ -53,7 +53,7 @@
 //! and not obviously wrong, though the empty scan is counted so a run that
 //! never enrolled anything says so.
 //!
-//! THE SCAN-END INTERRUPT ENABLE lives in src/chip/periph/adc_intr.zig: ADINTCR
+//! THE SCAN-END INTERRUPT ENABLE lives in src/chip/periph/adc/adc_intr.zig: ADINTCR
 //! (+0x005C) decides whether a finished scan raises anything at all, so an
 //! image the HAL brought up, which writes ADINTCR = 0 in `ra8_adc_init`,
 //! converts and reports and owes the core nothing. The event used to be

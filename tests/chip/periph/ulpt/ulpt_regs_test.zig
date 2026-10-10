@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/ulpt_regs.zig: which register owns a byte of a ULPT
+//! Covers src/chip/periph/ulpt/ulpt_regs.zig: which register owns a byte of a ULPT
 //! channel, which matters because ULPTCR, ULPTMR1, ULPTMR2 and ULPTMR3 share
 //! one word and the three counters above them are 32-bit.
 const std = @import("std");

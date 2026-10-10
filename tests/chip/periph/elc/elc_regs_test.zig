@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/elc_regs.zig: the ELC register map, and which lanes of a
+//! Covers src/chip/periph/elc/elc_regs.zig: the ELC register map, and which lanes of a
 //! word each register occupies.
 const std = @import("std");
 const ra8 = @import("ra8");

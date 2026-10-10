@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/gpt_channel.zig: one channel's counting and the window
+//! Covers src/chip/periph/gpt/gpt_channel.zig: one channel's counting and the window
 //! it answers on.
 //!
 //! The window is driven through `gpt.Gpt` rather than by calling the

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base.mve_widen_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/mve_widen_vectors.zig: each
 //! vector runs through the `mve_widen` group with Qd, Qm, VPR, the
 //! IT byte, LR, FPSCR.LTPSIZE and FPSCR.QC set first.
 const std = @import("std");

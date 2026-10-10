@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/i3c_reset.zig: which RSTCTL bits are commands, which
+//! Covers src/chip/periph/i3c/i3c_reset.zig: which RSTCTL bits are commands, which
 //! of them take the channel back to idle, and what a store leaves behind.
 const std = @import("std");
 const ra8 = @import("ra8");

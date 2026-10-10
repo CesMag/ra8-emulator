@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/mram_otp.zig: the legal Program window and the
+//! Covers src/chip/periph/mram/mram_otp.zig: the legal Program window and the
 //! one-time-programmable rule.
 const std = @import("std");
 const ra8 = @import("ra8");

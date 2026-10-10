@@ -1,4 +1,4 @@
-//! Tests for src/chip/periph/mstp.zig.
+//! Tests for src/chip/periph/mstp/mstp.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const periph = ra8.chip.periph.registry;

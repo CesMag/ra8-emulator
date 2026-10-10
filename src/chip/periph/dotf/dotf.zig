@@ -17,8 +17,8 @@
 //!   REG00      (+0x080, 32b) AES enable, key size, mode, self-test
 //!   REG03      (+0x08C, 32b) key and IV staging window, write-only
 //!
-//! The address rules are in src/chip/periph/dotf_region.zig and the REG00 rule in
-//! src/chip/periph/dotf_control.zig, each of which states what it does not model.
+//! The address rules are in src/chip/periph/dotf/dotf_region.zig and the REG00 rule in
+//! src/chip/periph/dotf/dotf_control.zig, each of which states what it does not model.
 //! Two conversion-area configurations silicon does not allow are counted
 //! rather than refused, because the HUM records each as a requirement on the
 //! driver without saying what the hardware does when it is broken: a

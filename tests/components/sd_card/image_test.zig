@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/sd_image.zig.
+//! Covers src/components/sd_card/image.zig.
 const std = @import("std");
 const io = std.testing.io;
 const image = @import("ra8").components.sd_image;

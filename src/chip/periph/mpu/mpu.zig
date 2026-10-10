@@ -47,7 +47,7 @@
 //!
 //! THE TABLE IS WHAT ENFORCEMENT READS. A store into a read-only region is a
 //! MemManage violation on silicon, and the Zig core refuses it through
-//! src/chip/core/cpu/mpu_check.zig: src/chip/periph/mpu_fault.zig holds what it
+//! src/chip/core/cpu/mpu_check.zig: src/chip/periph/mpu/mpu_fault.zig holds what it
 //! catches, and this block is the table it reads. So a
 //! region captured wrongly here is now a fault taken wrongly rather than a
 //! line in the report, which is why `observe` says what each store meant

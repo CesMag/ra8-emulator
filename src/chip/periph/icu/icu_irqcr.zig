@@ -9,7 +9,7 @@
 //! ra8_icu_regs.h's offset enum (k_ra8_icu_off_irqcra0 = 0x0000,
 //! k_ra8_icu_off_irqcrb0 = 0x0014, k_ra8_icu_irqcrb_offset = 4).
 //!
-//! src/chip/periph/icu.zig claimed only IELSR and said so in its own header: the
+//! src/chip/periph/icu/icu.zig claimed only IELSR and said so in its own header: the
 //! rest of the ICU was "nobody's yet". So these thirty-two bytes fell through
 //! to the sparse register file, which takes any store and gives it back, and
 //! the one ordering rule the part puts on them went unwatched.

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/agt.zig: the interval timer, and the four places dev
+//! Covers src/chip/periph/agt/agt.zig: the interval timer, and the four places dev
 //! lets a misbehaving image pass.
 const std = @import("std");
 const ra8 = @import("ra8");

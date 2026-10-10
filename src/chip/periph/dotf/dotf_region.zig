@@ -18,7 +18,7 @@
 //! both were silent here. The HUM records each as a requirement on the
 //! driver without saying what the hardware does when it is broken, so
 //! neither is refused: the store lands and the run says so, the same cut
-//! src/chip/periph/pfs_route.zig makes for a prohibited pin handover.
+//! src/chip/periph/pfs/pfs_route.zig makes for a prohibited pin handover.
 //!
 //! A REVERSED PAIR. "Setting CONVAREAST[31:12] > CONVAREAED[31:12] is
 //! prohibited" (HUM Ch 45.3.1 p 3049, quoted in ra8_dotf.c

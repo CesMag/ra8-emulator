@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/i3c_regs.zig: what a read or a store of each width names
+//! Covers src/chip/periph/i3c/i3c_regs.zig: what a read or a store of each width names
 //! inside one of the I3C channel's register words, and the three things the
 //! block used to get wrong when the access was narrower than the register.
 const std = @import("std");

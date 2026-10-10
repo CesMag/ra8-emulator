@@ -1,4 +1,4 @@
-//! Tests for src/chip/periph/mstp_drops.zig.
+//! Tests for src/chip/periph/mstp/mstp_drops.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const mod = ra8.chip.periph.mstp_drops;

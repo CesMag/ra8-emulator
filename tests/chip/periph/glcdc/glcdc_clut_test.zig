@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/glcdc_clut.zig: the four CLUT planes the display
+//! Covers src/chip/periph/glcdc/glcdc_clut.zig: the four CLUT planes the display
 //! controller looks a CLUT-mode pixel up in, and which plane it reads.
 const std = @import("std");
 const ra8 = @import("ra8");

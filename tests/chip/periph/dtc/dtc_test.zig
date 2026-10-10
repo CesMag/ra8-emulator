@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/dtc.zig: the control window and the activation path that
+//! Covers src/chip/periph/dtc/dtc.zig: the control window and the activation path that
 //! turns an interrupt into a copy the CPU never sees.
 const std = @import("std");
 const ra8 = @import("ra8");

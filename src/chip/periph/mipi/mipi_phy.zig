@@ -25,13 +25,13 @@
 //!
 //! DPHYSFR IS READ-ONLY AND DERIVED. A store to it is refused and counted,
 //! the line ACMPHS draws around CMPMON and the RTC file draws around R64CNT.
-//! What it reads comes from src/chip/periph/mipi_phy_status.zig, which carries the
+//! What it reads comes from src/chip/periph/mipi/mipi_phy_status.zig, which carries the
 //! rule and states what it does not model.
 //!
 //! THE PLL COMES OUT OF RESET STOPPED, AND ITS COEFFICIENTS ARE LOCKED WHILE
 //! IT RUNS. DPHYPLOCR.PLLSTP reads 1 after reset (HUM Ch 64.2.3 p 3824,
 //! quoted in ra8_mipi_phy_regs.h), and DPHYPLFCR and DPHYESCCR only take a
-//! store while it does. Both halves live in src/chip/periph/mipi_phy_pll_lock.zig
+//! store while it does. Both halves live in src/chip/periph/mipi/mipi_phy_pll_lock.zig
 //! with the citations; the consequence here is that the lock flag comes up on
 //! the DPHYPLOCR write that ENDS the host sequence, which is the write the
 //! driver then spins on DPHYSFR for, and not on the DPHYPLFCR write three

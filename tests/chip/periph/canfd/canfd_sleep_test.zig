@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/canfd_sleep.zig: the sleep request beside the mode
+//! Covers src/chip/periph/canfd/canfd_sleep.zig: the sleep request beside the mode
 //! field, and the mode write it swallows.
 const std = @import("std");
 const ra8 = @import("ra8");

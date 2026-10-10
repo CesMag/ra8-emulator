@@ -1,6 +1,6 @@
 //! The bench's alive check, as far as a console run can see it (RA8EMU-400).
 //!
-//! scripts/hil/check_alive.sh passes an alive example when its PC keeps
+//! ra8-firmware's scripts/hil/check_alive.sh passes an alive example when its PC keeps
 //! advancing in code and its console carries none of the words in NEG_RE.
 //! A run that ends clean on its budget kept executing, so the table needs
 //! only the console half: `refused` is NEG_RE, matched on word boundaries.

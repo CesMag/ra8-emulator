@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/mpu_background.zig.
+//! Covers src/chip/periph/mpu/mpu_background.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const mpu = ra8.chip.periph.mpu;

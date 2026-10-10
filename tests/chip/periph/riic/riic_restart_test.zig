@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/riic_restart.zig: RS stands until the driver reads it
+//! Covers src/chip/periph/riic/riic_restart.zig: RS stands until the driver reads it
 //! back, and an ICDRT store made inside that window carries nothing.
 const std = @import("std");
 const ra8 = @import("ra8");

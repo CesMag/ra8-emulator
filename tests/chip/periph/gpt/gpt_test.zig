@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/gpt.zig: the saw counter the PWM images sample, and the
+//! Covers src/chip/periph/gpt/gpt.zig: the saw counter the PWM images sample, and the
 //! three places dev's wrap arithmetic lets a bad run look clean.
 const std = @import("std");
 const ra8 = @import("ra8");

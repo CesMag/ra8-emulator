@@ -13,7 +13,7 @@
 //! nothing, so a channel left mid-transfer stayed mid-transfer through
 //! bring-up: still busy, still holding the previous transaction's flags and
 //! staged bytes. The rule and its evidence live in
-//! src/chip/periph/i3c_reset.zig.
+//! src/chip/periph/i3c/i3c_reset.zig.
 //!
 //! dev drove this window from the data buffer alone. A byte written with no
 //! START became an address and selected a part, a read past what the part

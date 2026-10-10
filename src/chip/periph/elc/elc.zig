@@ -2,7 +2,7 @@
 //! without the CPU in the middle.
 //!
 //! A peripheral on this part raises a numbered event. The ICU decides which
-//! NVIC line that event drives (src/chip/periph/icu.zig); the ELC decides which
+//! NVIC line that event drives (src/chip/periph/icu/icu.zig); the ELC decides which
 //! *peripheral* it drives, so an ADC conversion can start a DMA transfer or a
 //! timer can start an ADC with no interrupt taken at all. It also owns the
 //! only way firmware has to raise an event itself: the four software event
@@ -24,7 +24,7 @@
 //! The register layout here is ra8_elc_regs.h and HUM Ch 19 p 817..836.
 //!
 //! The map itself, and which lanes of a word each register occupies, is
-//! src/chip/periph/elc_regs.zig; this file is the behaviour behind it.
+//! src/chip/periph/elc/elc_regs.zig; this file is the behaviour behind it.
 const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
 const periph = @import("../registry.zig");
@@ -85,7 +85,7 @@ pub const Elc = struct {
     /// The live WE bit of each generator. WI reads back set, so it is not
     /// stored: it is a write-side gate, not a state bit.
     armed: [generators]bool = @splat(false),
-    /// The ELSR slots and what has reached them (src/chip/periph/elc_route.zig).
+    /// The ELSR slots and what has reached them (src/chip/periph/elc/elc_route.zig).
     table: route.Table = .{},
     attribution: [attributions]u32 = @splat(0),
     pending: Due = .{},

@@ -232,8 +232,9 @@ pub const syst = struct {
 };
 
 /// The NVIC's register file. Set and clear registers are separate on
-/// hardware, and against a plain-RAM PPB both are just words: src/nvic.zig
-/// folds the clear side into the set side at the chunk boundary.
+/// hardware, and against a plain-RAM PPB both are just words:
+/// src/chip/periph/nvic.zig folds the clear side into the set side at the
+/// chunk boundary.
 pub const nvic = struct {
     pub const iser: u32 = 0xE000_E100;
     pub const icer: u32 = 0xE000_E180;

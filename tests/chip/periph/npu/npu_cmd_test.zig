@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/npu_cmd.zig: what counts as a program this model can
+//! Covers src/chip/periph/npu/npu_cmd.zig: what counts as a program this model can
 //! run, and the refusals that keep it from running one it cannot.
 const std = @import("std");
 const ra8 = @import("ra8");

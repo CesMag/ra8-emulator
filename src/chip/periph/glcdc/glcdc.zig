@@ -20,7 +20,7 @@
 //! did this model, so that poll burned its whole budget, returned a timeout,
 //! and the background colour it exists to set was never written. The bit is
 //! spent on the write here. The rule and its evidence live in
-//! src/chip/periph/glcdc_latch.zig.
+//! src/chip/periph/glcdc/glcdc_latch.zig.
 //!
 //! The block is inside the switchable graphics power domain (HUM Ch 11.5.1
 //! Table 11.7 p 480), which is gated off at reset, so it asks pdctr.zig

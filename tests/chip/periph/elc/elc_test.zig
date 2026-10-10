@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/elc.zig: the event link controller.
+//! Covers src/chip/periph/elc/elc.zig: the event link controller.
 const std = @import("std");
 const ra8 = @import("ra8");
 

@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/drw_regs.zig: the DRW register map, which is a table
+//! Covers src/chip/periph/drw/drw_regs.zig: the DRW register map, which is a table
 //! rather than behaviour, so what there is to check is that the offsets are
 //! the ones the HUM names, that they are whole words inside the window, and
 //! that no two of them are the same register.
