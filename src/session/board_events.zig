@@ -7,7 +7,7 @@ const api = @import("session_api.zig");
 pub fn attach(board: *Board, session: *api.Session) void {
     session.attachTimeBase(&board.time.base);
     session.event_sources.bindBoard(&board.bus.issuer, &board.pins, boundary.observation(board), &board.panel, &board.asks.attached_eink);
-    board.pins.observeEvents(session.event_sources.gpioTap(null));
+    board.pins.observeEvents(session.event_sources.gpioTap(&board.pins, null));
     board.event_sink = session.event_sources.boardEventSink();
     board.serial.tap = session.event_sources.uartTap(null);
     board.panel.event_hook = session.event_sources.einkHook();

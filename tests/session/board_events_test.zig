@@ -110,3 +110,47 @@ test "a watchdog refresh error publishes at the write that causes it" {
     try std.testing.expectEqual(api.Core.cpu1, events[0].core);
     try std.testing.expectEqual(@as(u64, 0), events[0].virtual_ns);
 }
+
+test "an LED follows its output latch, so a pin made an output through PmnPFS still reports it" {
+    const gpio = ra8.chip.periph.gpio;
+    var board = Board.init(std.testing.allocator);
+    defer board.deinit();
+    var session: api.Session = .{ .live = undefined };
+    ra8.session.board_events.attach(&board, &session);
+    const subscription = try session.subscribe();
+    // PCNTR3 sets then clears P600's latch. The port's direction bit stays
+    // clear, as it does for firmware that configures the pin through PmnPFS,
+    // so the pin's driven level never moves.
+    const pcntr3 = gpio.regAddress(6, gpio.pcntr3);
+    board.pins.applyWrite(pcntr3, 4, 1);
+    board.pins.applyWrite(pcntr3, 4, 1);
+    board.pins.applyWrite(pcntr3, 4, @as(u32, 1) << 16);
+    try std.testing.expectEqual(@as(u16, 0), board.pins.portLevel(6));
+    var events: [4]api.Event = undefined;
+    const got = session.pollEvents(subscription, &events).?;
+    try std.testing.expectEqual(@as(usize, 2), got.count);
+    for (events[0..2], [_]bool{ true, false }) |event, level| {
+        try std.testing.expectEqual(api.Event.Kind.led_changed, event.kind);
+        try std.testing.expectEqual(@as(u8, 0), event.payload.led.index);
+        try std.testing.expectEqual(level, event.payload.led.level);
+    }
+}
+
+test "an LED lit before the session attached is not reported again until it changes" {
+    const gpio = ra8.chip.periph.gpio;
+    var board = Board.init(std.testing.allocator);
+    defer board.deinit();
+    const pcntr3 = gpio.regAddress(3, gpio.pcntr3);
+    board.pins.applyWrite(pcntr3, 4, 1 << 3);
+    var session: api.Session = .{ .live = undefined };
+    ra8.session.board_events.attach(&board, &session);
+    const subscription = try session.subscribe();
+    board.pins.applyWrite(pcntr3, 4, 1 << 3);
+    var events: [2]api.Event = undefined;
+    try std.testing.expectEqual(@as(usize, 0), session.pollEvents(subscription, &events).?.count);
+    board.pins.applyWrite(pcntr3, 4, @as(u32, 1 << 3) << 16);
+    const got = session.pollEvents(subscription, &events).?;
+    try std.testing.expectEqual(@as(usize, 1), got.count);
+    try std.testing.expectEqual(@as(u8, 1), events[0].payload.led.index);
+    try std.testing.expectEqual(false, events[0].payload.led.level);
+}

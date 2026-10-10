@@ -24,6 +24,10 @@ pub const Sources = struct {
     uart_context: Context = undefined,
     gpio_context: Context = undefined,
     gpio_levels: [gpio.port_count]u16 = @splat(0),
+    /// The pins the GPIO tap listens to, for each LED's output latch.
+    pins: ?*const gpio.Gpio = null,
+    /// Each LED as last published: lit or not.
+    led_on: [gpio.led_count]bool = @splat(false),
     active_core: Core = .cpu0,
     observation: board_events.Observation = .{},
     eink_active: bool = false,
@@ -51,7 +55,11 @@ pub const Sources = struct {
         return .{ .ctx = &self.uart_context, .sent = uartSent };
     }
 
-    pub fn gpioTap(self: *Sources, core: ?Core) gpio.Gpio.EventTap {
+    /// The tap for `pins`: a pin change, and each LED as its output latch
+    /// stands now, so only a later change is published.
+    pub fn gpioTap(self: *Sources, pins: *const gpio.Gpio, core: ?Core) gpio.Gpio.EventTap {
+        self.pins = pins;
+        for (&self.led_on, 0..) |*on, index| on.* = pins.ledLevel(index) == 1;
         self.gpio_context = .{ .sources = self, .core = core };
         return .{ .context = &self.gpio_context, .changedFn = gpioChanged };
     }
@@ -102,10 +110,22 @@ pub const Sources = struct {
         const core = if (origin == .external) source.sources.active_core else source.sources.currentCore(source.core);
         source.sources.gpio_levels[port] = levels;
         if (changed != 0) source.sources.publish(.{ .core = core, .kind = .gpio_changed, .payload = .{ .gpio = .{ .port = port, .changed = changed, .levels = levels } } });
+        source.sources.ledsOn(port, core);
+    }
+
+    /// Publish each LED on `port` whose output latch has moved. An LED
+    /// follows its latch, as the run report and the board view read it
+    /// (board_leds.zig), and not the pin's driven level: firmware that makes
+    /// the pin an output through PmnPFS never moves the port's own direction
+    /// bit, so the driven level would never show its LED (RA8EMU-1121).
+    fn ledsOn(self: *Sources, port: u8, core: Core) void {
+        const pins = self.pins orelse return;
         for (gpio.leds, 0..) |led, index| {
-            if (led.port != port or changed & (@as(u16, 1) << led.pin) == 0) continue;
-            const high = levels & (@as(u16, 1) << led.pin) != 0;
-            source.sources.publish(.{ .core = core, .kind = .led_changed, .payload = .{ .led = .{ .index = @intCast(index), .level = high } } });
+            if (led.port != port) continue;
+            const high = pins.ledLevel(index) == 1;
+            if (high == self.led_on[index]) continue;
+            self.led_on[index] = high;
+            self.publish(.{ .core = core, .kind = .led_changed, .payload = .{ .led = .{ .index = @intCast(index), .level = high } } });
         }
     }
 

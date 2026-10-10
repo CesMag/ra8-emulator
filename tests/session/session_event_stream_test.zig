@@ -140,7 +140,7 @@ test "SCI, GPIO and LED taps publish timestamped source events" {
     serial.write(sci.win_base + 8 * sci.stride + sci.off_tdr, 1, 'Z');
     base.advance(17);
     var pins = gpio.Gpio.init();
-    pins.observeEvents(session.event_sources.gpioTap(.cpu1));
+    pins.observeEvents(session.event_sources.gpioTap(&pins, .cpu1));
     pins.applyWrite(gpio.regAddress(6, gpio.pcntr1), 4, (@as(u32, 1) << 16) | 1);
     var events: [4]stream_api.Event = undefined;
     const got = session.pollEvents(subscription, &events).?;
