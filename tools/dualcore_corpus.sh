@@ -11,7 +11,7 @@
 #
 # Both halves run on the Zig core (RA8EMU-140).
 #
-# Extra flags for `zig build` (a deps prefix, an optimize mode) come from
+# Extra flags for `zig build` (an optimize mode, for one) come from
 # ZIG_BUILD_ARGS. Exits 1 on any difference: a pair that stopped passing,
 # a console line that changed, or an expected pair missing from DIR.
 # Update the expected file in the same PR as a change that means to move

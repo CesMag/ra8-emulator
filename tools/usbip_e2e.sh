@@ -6,7 +6,7 @@
 # zig is missing.
 # usage: tools/usbip_e2e.sh EMULATOR ELF [MS [TOOL ARGS...]]
 # TOOL ARGS go to usbip_attach: [VID:PID] [LEN] [--tty].
-# ZIG_BUILD_FLAGS passes options to zig build (e.g. -Ddeps-prefix=...).
+# ZIG_BUILD_FLAGS passes options to zig build (e.g. -Doptimize=ReleaseFast).
 emu=$1
 elf=$2
 ms=${3:-5000}

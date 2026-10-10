@@ -21,9 +21,6 @@
 //! in tests/ on mirrored paths, never in a `test` block at the bottom of a
 //! source file, and tests/all.zig is the root that pulls them in.
 //!
-//! -Ddeps-prefix is accepted and ignored: the C library it pointed at is
-//! gone (RA8EMU-706), and existing invocations keep building.
-//!
 //! Zig 0.17.0, the version pinned in ra8-firmware .devcontainer/Dockerfile.
 const std = @import("std");
 const Translator = @import("translate_c").Translator;
@@ -31,7 +28,6 @@ const Translator = @import("translate_c").Translator;
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    _ = b.option([]const u8, "deps-prefix", "Ignored; kept so existing invocations still build");
     const gui = b.option(bool, "gui", "Fetch SDL3 and build ra8_gui and the GUI tests") orelse false;
 
     const firmware = b.dependency("ra8_firmware", .{});
