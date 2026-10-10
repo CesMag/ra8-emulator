@@ -13,6 +13,14 @@
 //! overruns the share shrinks it in proportion, which keeps the window at
 //! its frame rate on a host too slow for the speed asked for.
 //!
+//! A unit of board time costs about a thousand times more wall time when
+//! the core is busy than when it sleeps, and the shell cannot tell which is
+//! coming. So an overrun is remembered (RA8EMU-1127): the unit may grow back
+//! only to a ceiling of four times what fitted, and the ceiling eases up one
+//! doubling at a time while nothing overruns. An image that sleeps and then
+//! turns busy again holds the window for a few frames, not for the cost of
+//! a whole frame of busy board time.
+//!
 //! Every slice ends in a `count` stop. That is the slice's end and not the
 //! run's, so `observe` names its stop event a boundary and nothing else
 //! takes it for a stop. A pause is settled here: `halted` hands back where
@@ -33,10 +41,16 @@ const Arrival = session_link.Arrival;
 pub const frame_ns: u64 = std.time.ns_per_s / 60;
 /// The share of a frame's wall time its slices may take; the rest draws.
 pub const share_ns: u64 = frame_ns * 3 / 4;
-/// The unit a run starts from.
-pub const first_unit_ns: u64 = 100 * std.time.ns_per_us;
+/// The unit a run starts from: short, because nothing is known yet about
+/// what the image costs, and it doubles within a frame when that is little.
+pub const first_unit_ns: u64 = 20 * std.time.ns_per_us;
 /// The shortest unit a slow host is cut down to.
 pub const least_unit_ns: u64 = 2 * std.time.ns_per_us;
+/// How far over what fitted the unit may grow back after an overrun: the
+/// next surprise then holds the window for about this many shares.
+pub const ceiling_factor: u64 = 4;
+/// Frames with no overrun before the ceiling doubles: ten seconds.
+pub const ease_frames: u32 = 600;
 /// The most slices one frame sends whatever the clock says, so a clock that
 /// stands still cannot hold the frame.
 pub const max_slices: u32 = 1024;
@@ -65,6 +79,11 @@ pub const Run = struct {
     until_ns: u64 = 0,
     sent: u32 = 0,
     unit_ns: u64 = first_unit_ns,
+    /// The longest the unit may grow to. An overrun pulls it down, and it
+    /// eases back to one frame while nothing overruns.
+    ceiling_ns: u64 = frame_ns,
+    /// Frames left before the ceiling may double.
+    ease: u32 = 0,
     /// Where the last slice left the core, or where Run found it.
     address: u32 = 0,
     /// Board time when the last slice ended.
@@ -107,6 +126,12 @@ pub const Run = struct {
         self.owed_ns = if (milli == speed_field.max_wire) null else @intCast(@as(u128, frame_ns) * milli / speed_field.real_time);
         self.until_ns = now_ns +| share_ns;
         self.sent = 0;
+        if (self.ease != 0) {
+            self.ease -= 1;
+        } else if (self.ceiling_ns < frame_ns) {
+            self.ceiling_ns = @min(frame_ns, self.ceiling_ns * 2);
+            self.ease = ease_frames;
+        }
     }
 
     /// Send the frame's next slice. False when Run is not lit, a slice is
@@ -173,8 +198,10 @@ pub const Run = struct {
         if (took_ns > share_ns) {
             const fitted: u64 = @intCast(@as(u128, self.asked_ns) * share_ns / took_ns);
             self.unit_ns = @max(least_unit_ns, fitted);
+            self.ceiling_ns = @min(frame_ns, self.unit_ns *| ceiling_factor);
+            self.ease = ease_frames;
         } else if (took_ns <= share_ns / 2 and self.asked_ns == self.unit_ns) {
-            self.unit_ns = @min(frame_ns, self.unit_ns * 2);
+            self.unit_ns = @min(self.ceiling_ns, self.unit_ns * 2);
         }
     }
 };

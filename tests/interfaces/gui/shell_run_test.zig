@@ -1,8 +1,8 @@
 //! Tests for src/interfaces/gui/shell_run.zig (RA8EMU-1118): a lit run pays
 //! each frame's board time in slices against an in-process session, a
 //! slice's end is a boundary and not a stop, a pause hands back the halt,
-//! the unit follows what the host can do, and a refused slice or a real stop
-//! ends the run.
+//! the unit follows what the host can do and stays under a ceiling after an
+//! overrun, and a refused slice or a real stop ends the run.
 const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
@@ -200,6 +200,56 @@ test "a slice that overran the frame's share shrinks the unit in proportion, dow
     bench.clock.now_ns += 1000 * shell_run.share_ns;
     take(&bench.rig, &bench.run, &bench.clock, &seen);
     try std.testing.expectEqual(shell_run.least_unit_ns, bench.run.unit_ns);
+}
+
+test "after an overrun the unit grows back only to four times what fitted, and the ceiling eases up" {
+    var run: Run = .{ .lit = true };
+    var bench: Bench = undefined;
+    try bench.open();
+    defer bench.rig.deinit();
+    const link = &bench.rig.link;
+    // A slice of 100 us that took four shares of the frame: 25 us fitted.
+    run.frame(0, gui_app.speed_field.max_wire);
+    run.until_ns = std.math.maxInt(u64);
+    try std.testing.expect(run.next(link, 0));
+    _ = run.observe(.{ .response = .{ .id = run.slice_id.?, .result = .{ .ok = try advanced(run.asked_ns) } } }, 4 * shell_run.share_ns);
+    const fitted = shell_run.first_unit_ns / 4;
+    try std.testing.expectEqual(fitted, run.unit_ns);
+    try std.testing.expectEqual(fitted * shell_run.ceiling_factor, run.ceiling_ns);
+
+    // Slices answered in no time double the unit, to the ceiling and no further.
+    for (0..6) |_| {
+        try std.testing.expect(run.next(link, 0));
+        _ = run.observe(.{ .response = .{ .id = run.slice_id.?, .result = .{ .ok = try advanced(run.asked_ns) } } }, 0);
+    }
+    try std.testing.expectEqual(run.ceiling_ns, run.unit_ns);
+
+    // The ceiling holds for `ease_frames` frames, then doubles, and again.
+    const held = run.ceiling_ns;
+    for (0..shell_run.ease_frames) |_| run.frame(0, 1000);
+    try std.testing.expectEqual(held, run.ceiling_ns);
+    run.frame(0, 1000);
+    try std.testing.expectEqual(2 * held, run.ceiling_ns);
+    for (0..shell_run.ease_frames + 1) |_| run.frame(0, 1000);
+    try std.testing.expectEqual(4 * held, run.ceiling_ns);
+    // It never passes one frame of board time.
+    for (0..40 * (shell_run.ease_frames + 1)) |_| run.frame(0, 1000);
+    try std.testing.expectEqual(frame_ns, run.ceiling_ns);
+}
+
+test "a fresh overrun pulls an eased ceiling down again" {
+    var run: Run = .{ .lit = true, .unit_ns = frame_ns };
+    var bench: Bench = undefined;
+    try bench.open();
+    defer bench.rig.deinit();
+    run.frame(0, gui_app.speed_field.max_wire);
+    run.until_ns = std.math.maxInt(u64);
+    try std.testing.expect(run.next(&bench.rig.link, 0));
+    try std.testing.expectEqual(frame_ns, run.asked_ns);
+    _ = run.observe(.{ .response = .{ .id = run.slice_id.?, .result = .{ .ok = try advanced(frame_ns) } } }, 100 * shell_run.share_ns);
+    try std.testing.expectEqual(frame_ns / 100, run.unit_ns);
+    try std.testing.expectEqual(frame_ns / 100 * shell_run.ceiling_factor, run.ceiling_ns);
+    try std.testing.expectEqual(shell_run.ease_frames, run.ease);
 }
 
 test "nothing goes out unless Run is lit" {
