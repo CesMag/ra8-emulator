@@ -172,9 +172,10 @@ test "--frames fails once the session is gone instead of waiting for a load" {
     var shell = gui_app.shell_loop.Shell.init(gpa, try gui_app.pane_layout.twoCore(gpa));
     defer shell.deinit();
     shell.link = &link;
+    shell.server = shell_main.served(&session);
     var window = Headless.init(gpa, 480, 320);
     defer window.deinit();
-    try std.testing.expectError(error.ImageNotLoaded, shell_main.drive(std.testing.io, &shell, window.platform(), image, "", &session, 4));
+    try std.testing.expectError(error.ImageNotLoaded, shell_main.drive(std.testing.io, &shell, window.platform(), image, "", 4));
 }
 
 test "a bad command line or an unreadable image never opens the window" {

@@ -3,7 +3,8 @@
 //! host (the local one unless --host names a profile in the hosts file),
 //! serves the local session in-process (local_session.zig), loads the image
 //! once the session greets, and runs the shell loop (RA8EMU-763) until the
-//! window closes. The image stays halted at reset until the shell runs it.
+//! window closes, one frame every sixtieth of a second. The image stays
+//! halted at reset until Run is pressed on the time bar (RA8EMU-1118).
 //! Only the local host connects so far; SSH profiles join with RA8EMU-761.
 const std = @import("std");
 const host_profiles = @import("ra8_host").host_profiles;
@@ -25,6 +26,9 @@ const shell_registers = @import("shell_registers.zig");
 const shell_memory = @import("shell_memory.zig");
 const session_link = @import("session_link.zig");
 const local_session = @import("local_session.zig");
+const shell_run = @import("shell_run.zig");
+const shell_time = @import("shell_time.zig");
+const wall_clock = @import("wall_clock.zig");
 const proto = @import("ra8_rpc").session_rpc;
 
 const Env = proto.Client.Env;
@@ -39,8 +43,9 @@ const shell_word = "shell";
 /// Largest image the shell reads, as main does for a run.
 const max_image: usize = 64 * 1024 * 1024;
 
-/// A pause between frames so an idle shell does not spin a core.
-const frame_gap_ns: u64 = 4 * std.time.ns_per_ms;
+/// The window's frame: a lit run owes the board this much of its own time
+/// each one (shell_run.zig), so the loop holds to it.
+const frame_ns: u64 = shell_run.frame_ns;
 
 pub const Args = struct {
     image: []const u8,
@@ -173,6 +178,11 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     var shell = shell_loop.Shell.init(allocator, try pane_layout.twoCore(allocator));
     defer shell.deinit();
     shell.link = &link;
+    shell.server = served(&session);
+    var host_clock = wall_clock.Host.init(io);
+    shell.clock = host_clock.clock();
+    var time: shell_time.Time = .{};
+    shell.time = &time;
     var console = shell_console.Console.init(allocator);
     defer console.deinit();
     shell.console = &console;
@@ -201,20 +211,32 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     shell.code = &code;
     var panes: shell_panes.Panes = .{ .console = &console, .board = &board, .devices = &devices, .faults = &faults, .camera = &camera, .plug = &plug, .camera_file = &camera_file, .registers = &registers, .memory = &memory, .code = &code };
     shell.painter = panes.painter();
-    try drive(io, &shell, window, path, bytes, &session, args.frames);
+    try drive(io, &shell, window, path, bytes, args.frames);
     link.close();
 }
 
-/// Step `shell` until its window closes, loading the image once its session
-/// has greeted. A local session answers what the shell sent after each step.
-/// With `frames` it also ends after that many frames drawn with the image
-/// loaded, and fails once the image can no longer load, so a run with
-/// nobody at the window always ends.
-pub fn drive(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, path: []const u8, bytes: []const u8, session: ?*local_session.LocalSession, frames: ?u32) !void {
+/// `session` as the shell answers it: in this process, on the shell's thread.
+pub fn served(session: *local_session.LocalSession) shell_loop.Server {
+    return .{ .context = session, .answerFn = answerLocal };
+}
+
+fn answerLocal(context: *anyopaque) anyerror!void {
+    const session: *local_session.LocalSession = @ptrCast(@alignCast(context));
+    return session.answer();
+}
+
+/// Step `shell` once a frame until its window closes, loading the image once
+/// its session has greeted. With `frames` it also ends after that many
+/// frames drawn with the image loaded, and fails once the image can no
+/// longer load, so a run with nobody at the window always ends.
+pub fn drive(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, path: []const u8, bytes: []const u8, frames: ?u32) !void {
     var sent = false;
     var drawn: u32 = 0;
-    while (try shell.step(window)) {
-        if (session) |served| try served.answer();
+    var pace = wall_clock.Host.init(io);
+    const clock = pace.clock();
+    while (true) {
+        const began = clock.now();
+        if (!try shell.step(window)) return;
         if (!sent and shell.state() == .connected) {
             const link = shell.link orelse return;
             try shell.status.load(link, path, bytes);
@@ -225,7 +247,9 @@ pub fn drive(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, pa
             if (shell.status.image != null) drawn += 1;
             if (drawn == wanted) return;
         }
-        try io.sleep(.fromNanoseconds(frame_gap_ns), .awake);
+        // The rest of the frame; a frame that ran over starts the next at once.
+        const spent = clock.now() - began;
+        if (spent < frame_ns) try io.sleep(.fromNanoseconds(frame_ns - spent), .awake);
     }
 }
 

@@ -1,13 +1,15 @@
 //! The time bar's model side (RA8EMU-1086): fills the bar's plain view from
 //! the status, the speed field and the clock readout, and turns a click into
-//! a run, a step or a pause on the session link. The bar itself
-//! (gui/ui/time_bar.zig) only lays out, paints and hit-tests.
+//! a run or a pause of the shell's sliced run (gui/shell_run.zig, RA8EMU-1118)
+//! or a step on the session link. The bar itself (gui/ui/time_bar.zig) only
+//! lays out, paints and hit-tests.
 const proto = @import("ra8_rpc").session_rpc;
 const bar = @import("ui/time_bar.zig");
 const status_bar = @import("status_bar.zig");
 const speed_field = @import("speed_field.zig");
 const time_readout = @import("time_readout.zig");
 const session_link = @import("session_link.zig");
+const shell_run = @import("shell_run.zig");
 
 const Status = status_bar.Status;
 const Link = session_link.Link;
@@ -37,15 +39,23 @@ pub fn view(texts: *Texts, status: *const Status, field: *const speed_field.Fiel
     };
 }
 
-/// A click on `control`. Run continues from wherever the core stopped (the
-/// session refuses a fresh run once started) for `run_budget` instructions;
-/// Step runs one; Pause asks the session to stop. The field takes the
-/// keyboard in the shell, so a click on it sends nothing.
-pub fn press(control: bar.Control, status: *Status, link: *Link, run_budget: u64) !void {
+/// A click on `control`. Run lights `run` on a halted core, and the shell's
+/// frames keep it going in slices from there; nothing is sent here, so the
+/// window never waits on a run. Pause stops it between slices. Step runs
+/// one instruction on a halted core. The field takes the keyboard in the
+/// shell, so a click on it sends nothing.
+pub fn press(control: bar.Control, status: *Status, run: *shell_run.Run, link: *Link) !void {
     switch (control) {
-        .run => try status.go(link, proto.RunMode.cont, run_budget),
-        .step => try status.go(link, proto.RunMode.step, step_budget),
-        .pause => try status.pause(link),
+        .run => {
+            const at = switch (status.run) {
+                .halted => |halt| halt.address,
+                .unknown, .running => return,
+            };
+            run.start(at);
+            status.running();
+        },
+        .step => if (!run.lit and status.run == .halted) try status.go(link, proto.RunMode.step, step_budget),
+        .pause => run.pause(),
         .field => {},
     }
 }

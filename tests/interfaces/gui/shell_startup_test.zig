@@ -113,6 +113,7 @@ fn settle(startup: *shell_startup.Startup, devices: *shell_devices.Devices) !voi
     var shell = shell_loop.Shell.init(gpa, try gui_app.pane_layout.twoCore(gpa));
     defer shell.deinit();
     shell.link = &link;
+    shell.server = shell_main.served(&session);
     shell.devices = devices;
     shell.startup = startup;
     const bytes = try std.Io.Dir.cwd().readFileAlloc(io, image, gpa, .limited(1 << 20));
@@ -120,7 +121,7 @@ fn settle(startup: *shell_startup.Startup, devices: *shell_devices.Devices) !voi
     var headless = Headless.init(gpa, 480, 320);
     defer headless.deinit();
     var settled = Settled{ .inner = &headless, .startup = startup, .devices = devices };
-    try shell_main.drive(io, &shell, settled.window(), image, bytes, &session, null);
+    try shell_main.drive(io, &shell, settled.window(), image, bytes, null);
     try std.testing.expect(settled.done());
 }
 

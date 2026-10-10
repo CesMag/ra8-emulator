@@ -11,6 +11,7 @@ const font = ra8.render.font;
 const pane_layout = gui_app.pane_layout;
 const status_bar = gui_app.status_bar;
 const strip = gui_app.status_strip;
+const time_bar = gui_app.time_bar;
 const frame = gui_app.shell_frame;
 const State = gui_app.session_link.State;
 
@@ -68,10 +69,17 @@ test "panes and pane titles name each kind and core" {
     try std.testing.expectEqualStrings("CPU1", frame.coreName(.cpu1));
 }
 
-test "the panes take the window above the status strip" {
+test "the panes take the window above the time bar and the status strip" {
     const area = frame.panesArea(width, height);
-    try std.testing.expectEqual(draw_list.Rect{ .x = 0, .y = 0, .w = width, .h = height - strip.height }, area);
+    try std.testing.expectEqual(draw_list.Rect{ .x = 0, .y = 0, .w = width, .h = height - strip.height - time_bar.height }, area);
     try std.testing.expectEqual(@as(i32, 0), frame.panesArea(width, 4).h);
+}
+
+test "the time bar's row sits on top of the status strip, under the panes" {
+    const row = frame.barArea(width, height);
+    try std.testing.expectEqual(frame.panesArea(width, height).h, row.y);
+    try std.testing.expectEqual(strip.area(width, height).y, row.y + row.h);
+    try std.testing.expectEqual(@as(i32, width), row.w);
 }
 
 test "a leaf splits into a title bar over its body" {

@@ -33,7 +33,8 @@ pub const Image = struct {
 pub const Run = union(enum) {
     unknown,
     running,
-    /// Stopped at `address`; `reason` is null when the stop came from a load.
+    /// Stopped at `address`; `reason` is null when the stop came from a load
+    /// or from pausing a run the shell kept going in slices.
     halted: struct { address: u32, reason: ?proto.StopReason },
 };
 
@@ -41,13 +42,11 @@ pub const Run = union(enum) {
 pub const Refusal = enum {
     load,
     run,
-    pause,
 
     pub fn message(self: Refusal) []const u8 {
         return switch (self) {
             .load => "the session refused the image",
             .run => "the session refused to run",
-            .pause => "the session refused to pause",
         };
     }
 };
@@ -61,7 +60,6 @@ pub const Status = struct {
     load_id: ?u32 = null,
     pc_id: ?u32 = null,
     run_id: ?u32 = null,
-    pause_id: ?u32 = null,
 
     /// Load `bytes` (read from `path`) on this core, then read where it halted.
     pub fn load(self: *Status, link: *Link, path: []const u8, bytes: []const u8) !void {
@@ -76,8 +74,17 @@ pub const Status = struct {
         self.run = .running;
     }
 
-    pub fn pause(self: *Status, link: *Link) !void {
-        self.pause_id = try link.send(proto.CoreOnly, .pause, .{ .core = self.core });
+    /// Run is lit: the shell keeps the core going in slices (shell_run.zig),
+    /// so no one request stands for the run.
+    pub fn running(self: *Status) void {
+        self.run = .running;
+        self.refused = null;
+    }
+
+    /// Where a run kept going in slices was left when it was paused. A stop
+    /// with a reason of its own arrives as a stop event instead.
+    pub fn haltedAt(self: *Status, address: u32) void {
+        self.run = .{ .halted = .{ .address = address, .reason = null } };
     }
 
     /// Fold one arrival from the link into the model.
@@ -113,9 +120,6 @@ pub const Status = struct {
                 self.run = .unknown;
                 self.refuse(.run);
             }
-        } else if (id == self.pause_id) {
-            self.pause_id = null;
-            if (result == .err) self.refuse(.pause);
         }
     }
 

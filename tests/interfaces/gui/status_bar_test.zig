@@ -37,9 +37,9 @@ test "the status line reads each connection, image and run state" {
         try status.text(.{ .connected = .{ .version = 1, .caps = 0 } }, &buf),
     );
     status.run = .running;
-    status.refused = .pause;
+    status.refused = .run;
     try std.testing.expectEqualStrings(
-        "closed | app.elf ba7816bf8f01cfea | running | the session refused to pause",
+        "closed | app.elf ba7816bf8f01cfea | running | the session refused to run",
         try status.text(.closed, &buf),
     );
 }
@@ -113,4 +113,19 @@ test "a corpus ELF loads, steps and runs through a local session, and the status
 
     local.end();
     try std.testing.expectEqual(std.process.Child.Term{ .exited = 0 }, try local.reap());
+}
+
+test "a run the shell keeps going in slices reads as running, and its pause as a halt with no reason" {
+    var status: status_bar.Status = .{};
+    status.image = status_bar.Image.of("app.elf", "abc");
+    status.refused = .run;
+    status.running();
+    try std.testing.expectEqual(status_bar.Run.running, status.run);
+    try std.testing.expectEqual(@as(?status_bar.Refusal, null), status.refused);
+    status.haltedAt(0x0200_0040);
+    var buf: [256]u8 = undefined;
+    try std.testing.expectEqualStrings(
+        "closed | app.elf ba7816bf8f01cfea | halted at 0x02000040",
+        try status.text(.closed, &buf),
+    );
 }

@@ -61,7 +61,9 @@ ra8_emulator app.elf --gdb 3333              # serve gdb, each core a thread
 An ordinary run takes breakpoints and dumps too: `--break-sym`, `--watch`,
 `--dump-regs` and `--dump-mem`. A `-Dgui` build adds a second executable, `ra8_gui`:
 `ra8_gui <elf>` opens the windowed debugger on the image, with its session
-in the same process. `serve` and `ctl` run a
+in the same process. The image opens halted; Run, Pause and Step on the
+time bar along the foot of the window run it, and the field beside them
+takes a speed (`0.5`, `2`, `max`). `serve` and `ctl` run a
 session in one process and drive it from another, locally or over TCP.
 
 ## Library

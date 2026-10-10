@@ -6,8 +6,12 @@
 //! typing, and the registers leaves (RA8EMU-821), read again after a load
 //! or a stop, with the memory leaves following each core's SP and the
 //! disassembly leaves its PC; a press on a leaf's
-//! title changes what it shows (RA8EMU-800). Then it draws the shell frame (RA8EMU-764) and shows it
-//! through the platform seam, so SDL and the headless platform run it alike.
+//! title changes what it shows (RA8EMU-800). The time bar (RA8EMU-1118)
+//! takes its clicks and typing, and while Run is lit each frame pays the
+//! board its slices here: a session served in this process answers on this
+//! thread between them, so the frame never waits on more than one slice.
+//! Then it draws the shell frame (RA8EMU-764) and shows it through the
+//! platform seam, so SDL and the headless platform run it alike.
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const raster = @import("ra8_render").raster;
@@ -29,10 +33,23 @@ const shell_camera_file = @import("shell_camera_file.zig");
 const shell_startup = @import("shell_startup.zig");
 const shell_registers = @import("shell_registers.zig");
 const shell_memory = @import("shell_memory.zig");
+const shell_time = @import("shell_time.zig");
+const wall_clock = @import("wall_clock.zig");
 
 /// Most arrivals taken off the link in one frame, so a chatty session
 /// cannot starve the window.
 pub const max_arrivals: usize = 64;
+
+/// A session served in this process (local_session.zig): asked, it answers
+/// everything the shell has sent, on the shell's own thread.
+pub const Server = struct {
+    context: *anyopaque,
+    answerFn: *const fn (context: *anyopaque) anyerror!void,
+
+    pub fn answer(self: Server) !void {
+        return self.answerFn(self.context);
+    }
+};
 
 pub const Shell = struct {
     allocator: std.mem.Allocator,
@@ -55,6 +72,16 @@ pub const Shell = struct {
     registers: ?*shell_registers.Pair = null,
     memory: ?*shell_memory.Pair = null,
     code: ?*shell_memory.Pair = null,
+    /// The time bar's models: the run, the speed field and the clock.
+    time: ?*shell_time.Time = null,
+    /// The session when it is served in this process; null for a remote one.
+    server: ?Server = null,
+    /// The wall clock a run is paced against; without one time stands still.
+    clock: ?wall_clock.Clock = null,
+    /// The last pump took everything the session had sent.
+    drained: bool = true,
+    /// Where the time bar was drawn this frame.
+    bar: draw_list.Rect = .{ .x = 0, .y = 0, .w = 0, .h = 0 },
     /// The splitter being dragged, from its button press to its release.
     held: ?pane_layout.Gutter = null,
     open: bool = true,
@@ -83,9 +110,11 @@ pub const Shell = struct {
         const height: i32 = @intCast(size.height);
         var solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         defer solved.deinit(self.allocator);
+        self.bar = shell_frame.barArea(width, height);
         while (window.poll()) |event| self.handle(event, &solved);
         if (!self.open) return false;
-        try self.pump();
+        try self.exchange();
+        try self.paySlices();
         solved.deinit(self.allocator);
         solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         var list = draw_list.DrawList.init(self.allocator, size.width, size.height);
@@ -94,6 +123,7 @@ pub const Shell = struct {
             .layout = &self.layout,
             .solved = &solved,
             .strip = status_capture.strip(&self.status, self.state()),
+            .bar = if (self.time) |time| time.view(&self.status) else .{},
             .width = width,
             .height = height,
             .painter = self.painter,
@@ -129,6 +159,9 @@ pub const Shell = struct {
                 self.layout.drag(found, if (axis == .across) at.x else at.y);
             },
             .text, .key => {
+                if (self.time) |time| if (self.link) |link| {
+                    if (time.handle(event, link)) return;
+                };
                 if (self.plug) |plug| _ = plug.handle(event);
                 if (self.camera_file) |file| _ = file.handle(event);
             },
@@ -136,11 +169,58 @@ pub const Shell = struct {
         }
     }
 
-    /// Offer a press to both text fields, so the one it misses lets go.
+    /// Offer a press to the text fields and the time bar, so each one it
+    /// misses lets the keyboard go.
     fn pressFields(self: *Shell, x: i32, y: i32) bool {
         const in_plug = if (self.plug) |plug| plug.press(x, y) else false;
         const in_file = if (self.camera_file) |file| file.press(x, y) else false;
-        return in_plug or in_file;
+        return self.pressBar(x, y) or in_plug or in_file;
+    }
+
+    fn pressBar(self: *Shell, x: i32, y: i32) bool {
+        const time = self.time orelse return false;
+        const link = self.link orelse return false;
+        return time.press(self.bar, x, y, &self.status, link);
+    }
+
+    /// The wall clock, or zero for a shell that was given none.
+    fn now(self: *const Shell) u64 {
+        const clock = self.clock orelse return 0;
+        return clock.now();
+    }
+
+    /// One round with the session: send what is due and take what has
+    /// arrived, and when the session is served in this process let it answer
+    /// and take that too.
+    fn exchange(self: *Shell) !void {
+        try self.pump();
+        const server = self.server orelse return;
+        try server.answer();
+        try self.pump();
+    }
+
+    /// Pay what this frame owes a lit run (shell_run.zig), one slice at a
+    /// time: each is answered and taken before the next goes out, and none
+    /// goes out while the session's earlier output is still unread. A
+    /// session in another process answers in its own time, so it gets one
+    /// slice a frame.
+    fn paySlices(self: *Shell) !void {
+        const time = self.time orelse return;
+        const link = self.link orelse return;
+        time.frame(link, self.now());
+        while (self.drained and time.run.next(link, self.now())) {
+            const server = self.server orelse return;
+            try server.answer();
+            try self.pump();
+        }
+    }
+
+    /// A pause the time bar settled: the status bar shows the halt, and the
+    /// core's leaves read it again.
+    fn settle(self: *Shell) void {
+        const time = self.time orelse return;
+        if (!time.settle(&self.status)) return;
+        if (self.registers) |registers| registers.refresh();
     }
 
     /// Feed what the session sent into the status bar model and the leaves.
@@ -158,9 +238,15 @@ pub const Shell = struct {
         if (self.registers) |registers| registers.attach(link);
         if (self.memory) |memory| memory.attach(link);
         if (self.code) |code| code.attach(link);
+        self.drained = false;
         var taken: usize = 0;
         while (taken < max_arrivals) : (taken += 1) {
-            const arrival = link.pump() orelse return;
+            const arrival = link.pump() orelse {
+                self.drained = true;
+                break;
+            };
+            // A slice's end is not a stop: the run goes on.
+            if (self.time) |time| if (time.observe(arrival, self.now()) == .boundary) continue;
             const loading = self.status.load_id;
             self.status.observe(link, arrival);
             const answered = loading != null and self.status.load_id == null;
@@ -180,6 +266,7 @@ pub const Shell = struct {
                 devices.want = true;
             };
         }
+        self.settle();
     }
 
     /// The registers, memory and code leaves: all start over after a load,

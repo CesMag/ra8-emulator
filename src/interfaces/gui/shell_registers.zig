@@ -178,6 +178,12 @@ pub const Pair = struct {
         for (&self.cores) |*model| model.reload();
     }
 
+    /// The cores halted with no stop event of their own, as a paused run
+    /// does (shell_run.zig): read them again.
+    pub fn refresh(self: *Pair) void {
+        for (&self.cores) |*model| model.want = true;
+    }
+
     /// Route a left press at (`x`, `y`) to a registers leaf's group
     /// header. Returns whether a group folded or unfolded.
     pub fn clickIn(self: *Pair, layout: *const pane_layout.Layout, solved: *const pane_layout.Solved, x: i32, y: i32) bool {

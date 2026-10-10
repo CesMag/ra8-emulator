@@ -279,3 +279,10 @@ test "a leaf with nothing published ignores header presses" {
     try std.testing.expect(!model.toggle(body, header.x + 1, header.y + 1));
     try std.testing.expect(!model.fold[0]);
 }
+
+test "a halt with no stop event makes both cores due for a read" {
+    var pair: gui_app.shell_registers.Pair = .{};
+    try std.testing.expect(!pair.cores[0].want and !pair.cores[1].want);
+    pair.refresh();
+    try std.testing.expect(pair.cores[0].want and pair.cores[1].want);
+}

@@ -1,13 +1,15 @@
 //! The shell frame (RA8EMU-764): the docked window chrome drawn from the
 //! pane layout (RA8EMU-754). Each leaf gets a title bar naming its pane and
-//! the core it is bound to, the splitters show as gutters, and the status
-//! strip (RA8EMU-759) runs along the bottom. What goes inside a leaf comes
-//! from a painter, so the window loop fills it and a test can leave it bare.
+//! the core it is bound to, the splitters show as gutters, and the time bar
+//! (RA8EMU-807) and the status strip (RA8EMU-759) run along the bottom. What
+//! goes inside a leaf comes from a painter, so the window loop fills it and a
+//! test can leave it bare.
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const pane_layout = @import("pane_layout.zig");
 const status_strip = @import("status_strip.zig");
+const time_bar = @import("time_bar.zig");
 const colors = @import("colors.zig");
 
 const Color = draw_list.Color;
@@ -36,6 +38,9 @@ pub const Shell = struct {
     solved: *const Solved,
     /// The status strip's view, from gui/status_capture.zig.
     strip: status_strip.Strip,
+    /// The time bar's view, from gui/shell_time.zig; a bare frame draws it
+    /// with nothing lit.
+    bar: time_bar.View = .{},
     width: i32,
     height: i32,
     painter: ?Painter = null,
@@ -61,9 +66,15 @@ pub fn coreName(core: pane_layout.Core) []const u8 {
     };
 }
 
-/// The panes' share of the window: everything above the status strip.
+/// The panes' share of the window: everything above the time bar and the
+/// status strip.
 pub fn panesArea(width: i32, height: i32) Rect {
-    return .{ .x = 0, .y = 0, .w = width, .h = @max(0, height - status_strip.height) };
+    return .{ .x = 0, .y = 0, .w = width, .h = @max(0, height - status_strip.height - time_bar.height) };
+}
+
+/// The time bar's row, on top of the status strip.
+pub fn barArea(width: i32, height: i32) Rect {
+    return .{ .x = 0, .y = height - status_strip.height - time_bar.height, .w = width, .h = time_bar.height };
 }
 
 pub fn titleOf(area: Rect) Rect {
@@ -86,6 +97,7 @@ pub fn draw(list: *draw_list.DrawList, shell: Shell) !void {
         const pane = shell.layout.pane(placed.index) orelse continue;
         try drawLeaf(list, pane, placed.area, shell.painter);
     }
+    try time_bar.draw(list, barArea(shell.width, shell.height), shell.bar);
     const strip = status_strip.area(shell.width, shell.height);
     try status_strip.draw(list, strip, &shell.strip);
 }

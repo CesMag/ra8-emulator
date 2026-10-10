@@ -1,7 +1,8 @@
 //! Host tests for the time bar (RA8EMU-807): where each control sits, what a
 //! click lands on, a pinned CPU-backend golden frame, a narrow bar that never
-//! paints past its area, and clicks on step, run and pause that drive a
-//! corpus ELF through a spawned `serve --stdio` child.
+//! paints past its area, and clicks on step, run and pause: a step goes to
+//! a spawned `serve --stdio` child, and run and pause light and unlight the
+//! shell's sliced run (shell_run_test.zig runs the slices).
 const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
@@ -15,6 +16,7 @@ const time_readout = gui_app.time_readout;
 const session_link = gui_app.session_link;
 const bar = gui_app.time_bar;
 const capture = gui_app.time_bar_capture;
+const Run = gui_app.shell_run.Run;
 const proto = ra8.rpc.session_rpc;
 const Link = session_link.Link;
 const Status = status_bar.Status;
@@ -152,7 +154,7 @@ test "an empty bar draws nothing" {
 }
 
 fn pending(status: *const Status) bool {
-    return status.load_id != null or status.pc_id != null or status.pause_id != null or status.run == .running;
+    return status.load_id != null or status.pc_id != null or status.run == .running;
 }
 
 /// Pump the link into the status until nothing is outstanding, for ten seconds.
@@ -175,14 +177,14 @@ fn connect(link: *Link) !void {
 }
 
 /// Click the middle of `control` in `area` and press what the hit test found.
-fn click(area: Rect, control: bar.Control, status: *Status, link: *Link) !void {
+fn click(area: Rect, control: bar.Control, status: *Status, run: *Run, link: *Link) !void {
     const at = middle(bar.Layout.of(area).rect(control));
     const found = bar.hit(area, at[0], at[1]) orelse return error.Missed;
     try std.testing.expectEqual(control, found);
-    try capture.press(found, status, link, 1000);
+    try capture.press(found, status, run, link);
 }
 
-test "clicks on step, run and pause drive a served session" {
+test "a click on step drives a served session, and run and pause light and unlight the sliced run" {
     const gpa = std.testing.allocator;
     var local: session_link.Local = undefined;
     try local.spawn(std.testing.io, test_paths.emulator, elf_path);
@@ -203,22 +205,31 @@ test "clicks on step, run and pause drive a served session" {
     const reset_pc = status.run.halted.address;
     const area: Rect = .{ .x = 0, .y = 0, .w = 480, .h = bar.height };
 
-    try click(area, .step, &status, &link);
+    var run: Run = .{};
+
+    try click(area, .step, &status, &run, &link);
     try settle(&link, &status);
     try std.testing.expectEqual(@as(?proto.StopReason, .stepped), status.run.halted.reason);
-    try std.testing.expect(status.run.halted.address != reset_pc);
+    const stepped_to = status.run.halted.address;
+    try std.testing.expect(stepped_to != reset_pc);
 
-    try click(area, .run, &status, &link);
+    // Run sends nothing: it lights the run, and the shell's frames pay it.
+    try click(area, .run, &status, &run, &link);
     try std.testing.expectEqual(status_bar.Run.running, status.run);
-    try settle(&link, &status);
-    try std.testing.expect(status.run == .halted);
-    try std.testing.expectEqual(@as(?status_bar.Refusal, null), status.refused);
+    try std.testing.expect(run.lit);
+    try std.testing.expectEqual(@as(?u32, null), status.run_id);
+    try std.testing.expectEqual(stepped_to, run.address);
 
-    try click(area, .pause, &status, &link);
-    try std.testing.expect(status.pause_id != null);
-    try settle(&link, &status);
+    // A step while it runs is not sent either.
+    try click(area, .step, &status, &run, &link);
+    try std.testing.expectEqual(@as(?u32, null), status.run_id);
 
-    try click(area, .field, &status, &link);
+    try click(area, .pause, &status, &run, &link);
+    try std.testing.expect(!run.lit);
+    status.haltedAt(run.halted() orelse return error.NoHalt);
+    try std.testing.expectEqual(stepped_to, status.run.halted.address);
+
+    try click(area, .field, &status, &run, &link);
     try std.testing.expect(!pending(&status));
 
     local.end();

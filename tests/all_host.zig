@@ -103,6 +103,10 @@ test {
     _ = @import("interfaces/gui/session_touch_wire_test.zig");
     _ = @import("interfaces/gui/shell_frame_test.zig");
     _ = @import("interfaces/gui/shell_loop_test.zig");
+    _ = @import("interfaces/gui/wall_clock_test.zig");
+    _ = @import("interfaces/gui/shell_run_test.zig");
+    _ = @import("interfaces/gui/shell_time_test.zig");
+    _ = @import("interfaces/gui/shell_run_live_test.zig");
     _ = @import("interfaces/gui/shell_panes_test.zig");
     _ = @import("interfaces/gui/shell_console_test.zig");
     _ = @import("interfaces/gui/shell_board_test.zig");
