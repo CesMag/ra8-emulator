@@ -10,7 +10,7 @@
 const std = @import("std");
 const boot = @import("ra8_chip").core.cpu.boot;
 const api = @import("session_api.zig");
-const fault_schedule = @import("../components/fault_schedule.zig");
+const fault_schedule = @import("ra8_components").fault_schedule;
 const timebase = @import("ra8_chip").periph.timebase;
 
 pub const Applier = struct {

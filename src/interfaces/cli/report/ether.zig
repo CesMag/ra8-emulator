@@ -8,7 +8,7 @@
 //! the PHY measures itself, are the other two.
 const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
-const eth_phy = @import("../../../components/eth_phy/phy.zig");
+const eth_phy = @import("ra8_components").eth_phy;
 const eth_mac = @import("ra8_chip").periph.eth_mac;
 const eth = @import("ra8_chip").periph.eth;
 const net = @import("../../../board/net.zig");

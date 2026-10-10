@@ -5,7 +5,7 @@
 //! refusal counts are the same sums the human report prints.
 const Board = @import("../../../board/board.zig").Board;
 const Host = @import("ra8_chip").periph.usbhs.Host;
-const Echo = @import("../../../components/usb_echo/device.zig").Device;
+const Echo = @import("ra8_components").usb_echo.Device;
 const usb_cable = @import("usb_cable.zig");
 const json_usbfs = @import("json_usbfs.zig");
 

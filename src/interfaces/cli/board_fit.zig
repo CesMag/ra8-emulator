@@ -13,8 +13,8 @@ const Board = @import("../../board/board.zig").Board;
 const usb_disk_option = @import("usb_disk_option.zig");
 const pacing = @import("../../board/run/pacing.zig");
 const profile = @import("../../board/profile.zig");
-const request = @import("../../components/request.zig");
-const tape = @import("../../components/esp32c6_hosted/esp_tape.zig");
+const request = @import("ra8_components").request;
+const tape = @import("ra8_components").esp_tape;
 const tape_dir = @import("ra8_host").tape_dir;
 
 /// A replay that met a request it has no recording for fails the run.

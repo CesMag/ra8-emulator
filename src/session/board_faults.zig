@@ -8,10 +8,10 @@
 //! part on that line lets it go. SPI and UART channels go through
 //! session_faults_lines.zig.
 const std = @import("std");
-const endpoint = @import("../components/endpoint.zig");
-const fault = @import("../components/fault.zig");
-const fault_spec = @import("../components/fault_spec.zig");
-const fault_lines = @import("../components/fault_lines.zig");
+const endpoint = @import("ra8_components").endpoint;
+const fault = @import("ra8_components").fault;
+const fault_spec = @import("ra8_components").fault_spec;
+const fault_lines = @import("ra8_components").fault_lines;
 const riic_bus = @import("ra8_chip").periph.riic_bus;
 const spi = @import("ra8_chip").periph.spi;
 const sci = @import("ra8_chip").periph.sci;

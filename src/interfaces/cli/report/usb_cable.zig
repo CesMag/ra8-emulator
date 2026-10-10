@@ -2,7 +2,7 @@
 //! device jack: what crossed it, and where the device's state got to. A
 //! host with no cable in says nothing here; the echo device's lines
 //! cover it.
-pub const Loop = @import("../../../components/usb_loop_cable/cable.zig").Loop;
+pub const Loop = @import("ra8_components").usb_loop_cable.Loop;
 const usbfs = @import("ra8_chip").periph.usbfs;
 
 pub fn section(plugged: ?*const Loop, out: anytype) !void {

@@ -6,7 +6,7 @@ const std = @import("std");
 const source_spec = @import("ra8_host").camera.source_spec;
 const source_open = @import("ra8_host").camera.source_open;
 const frame_source = @import("ra8_chip").periph.frame_source;
-const hosted = @import("../../components/camera_ov5640/hosted.zig");
+const hosted = @import("ra8_components").camera.hosted;
 
 /// The source `spec` names, ready to hand to the CEU. A picture that cannot
 /// be read or decoded says why and refuses the run.

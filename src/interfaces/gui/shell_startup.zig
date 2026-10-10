@@ -6,8 +6,8 @@
 const std = @import("std");
 const proto = @import("../rpc/session_rpc.zig");
 const session_link = @import("session_link.zig");
-const request = @import("../../components/request.zig");
-const parts = @import("../../components/parts.zig");
+const request = @import("ra8_components").request;
+const parts = @import("ra8_components").parts;
 
 /// The `--attach` asks plus the two `--click` parts.
 pub const max_plugs: usize = request.max + 2;

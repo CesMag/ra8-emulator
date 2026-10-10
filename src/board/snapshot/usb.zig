@@ -10,7 +10,7 @@
 const std = @import("std");
 const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
-const stick_half = @import("../../components/usb_stick/stick_snapshot.zig");
+const stick_half = @import("ra8_components").stick_snapshot;
 
 pub const Error = file.Error || fields.Error || error{Missing};
 

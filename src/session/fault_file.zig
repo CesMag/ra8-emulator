@@ -12,7 +12,7 @@ const Board = @import("../board/board.zig").Board;
 const session_plug = @import("board_plug.zig");
 const session_faults = @import("board_faults.zig");
 const session_schedule = @import("board_schedule.zig");
-const fault_schedule = @import("../components/fault_schedule.zig");
+const fault_schedule = @import("ra8_components").fault_schedule;
 
 pub const Applier = session_schedule.Applier;
 

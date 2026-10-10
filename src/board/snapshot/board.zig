@@ -24,7 +24,7 @@ const sections = .{
     @import("wire.zig"),
     @import("ra8_chip").periph.drw_snapshot,
     @import("ra8_chip").periph.glcdc_snapshot,
-    @import("../../components/eink_it8951/panel_snapshot.zig"),
+    @import("ra8_components").panel_snapshot,
     @import("ra8_chip").snapshot.clocks,
     @import("ra8_chip").snapshot.security,
     @import("ra8_chip").snapshot.controllers,
@@ -37,7 +37,7 @@ const sections = .{
     @import("usb.zig"),
     @import("rswitch.zig"),
     @import("ra8_chip").periph.npu_snapshot,
-    @import("../../components/esp32c6_hosted/c6_snapshot.zig"),
+    @import("ra8_components").c6_snapshot,
 };
 
 pub fn save(board: anytype, writer: anytype) !void {

@@ -1,10 +1,10 @@
 //! Fit the CLI's SD card options onto the board's card.
 const std = @import("std");
 const Board = @import("../../board/board.zig").Board;
-const sd_format = @import("../../components/sd_card/format.zig");
-const sd_advice = @import("../../components/sd_card/format_advice.zig");
-const sd_image = @import("../../components/sd_card/image.zig");
-const sd_mkimage = @import("../../components/sd_card/mkimage.zig");
+const sd_format = @import("ra8_components").sd_format;
+const sd_advice = @import("ra8_components").sd_format_advice;
+const sd_image = @import("ra8_components").sd_image;
+const sd_mkimage = @import("ra8_components").sd_mkimage;
 const disk_file = @import("ra8_host").disk_file;
 const host_folder = @import("ra8_host").folder;
 

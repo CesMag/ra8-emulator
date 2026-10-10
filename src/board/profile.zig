@@ -1,6 +1,6 @@
 //! Versioned board composition files: fitted devices and external memory.
 const std = @import("std");
-const request = @import("../components/request.zig");
+const request = @import("ra8_components").request;
 const external = @import("external_memory.zig");
 
 pub const max_fits: usize = 4;

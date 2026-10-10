@@ -10,7 +10,7 @@ const served_setup = @import("../rpc/served_setup.zig");
 const proto = @import("../rpc/session_rpc.zig");
 const source_spec = @import("ra8_host").camera.source_spec;
 const source_open = @import("ra8_host").camera.source_open;
-const hosted = @import("../../components/camera_ov5640/hosted.zig");
+const hosted = @import("ra8_components").camera.hosted;
 const camera_install = @import("../../board/camera_install.zig");
 const Board = @import("../../board/board.zig").Board;
 

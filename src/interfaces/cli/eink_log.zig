@@ -1,8 +1,8 @@
 //! Per-refresh JSONL records requested with `--eink-log PATH` (RA8EMU-552).
 const std = @import("std");
 const Board = @import("../../board/board.zig").Board;
-const eink = @import("../../components/eink_it8951/panel.zig");
-const refresh = @import("../../components/eink_it8951/refresh.zig");
+const eink = @import("ra8_components").eink;
+const refresh = @import("ra8_components").eink_refresh;
 const json = @import("report/json.zig");
 
 pub const Entry = struct {

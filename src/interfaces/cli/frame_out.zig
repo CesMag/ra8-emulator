@@ -6,8 +6,8 @@
 //! the user LEDs as the pins left them (board_view.zig).
 const std = @import("std");
 const Board = @import("../../board/board.zig").Board;
-const eink = @import("../../components/eink_it8951/panel.zig");
-const eink_wire = @import("../../components/eink_it8951/wire.zig");
+const eink = @import("ra8_components").eink;
+const eink_wire = @import("ra8_components").eink_wire;
 const png = @import("../render/png.zig");
 const board_view = @import("../render/board_view.zig");
 const board_leds = @import("../../session/board_leds.zig");

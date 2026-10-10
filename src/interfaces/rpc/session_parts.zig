@@ -10,9 +10,9 @@ const std = @import("std");
 const rpc = @import("ra8_rpc");
 const proto = @import("session_rpc.zig");
 const handlers = @import("session_handlers.zig");
-const endpoint = @import("../../components/endpoint.zig");
-const request = @import("../../components/request.zig");
-const fault_spec = @import("../../components/fault_spec.zig");
+const endpoint = @import("ra8_components").endpoint;
+const request = @import("ra8_components").request;
+const fault_spec = @import("ra8_components").fault_spec;
 
 const Context = handlers.Context;
 const Ack = rpc.Outcome(proto.Ack);

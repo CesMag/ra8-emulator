@@ -4,13 +4,13 @@ const part = @import("ra8_chip").core.part;
 const place = @import("../../session/place.zig");
 const pc_hits = @import("../../session/pc_hits.zig");
 const mem_dump = @import("../../session/mem_dump.zig");
-const gt911 = @import("../../components/touch_gt911/gt911.zig");
+const gt911 = @import("ra8_components").gt911;
 const world_flags = @import("world_flags.zig");
-const max17048 = @import("../../components/gauge_max17048/max17048.zig");
-const sd_format = @import("../../components/sd_card/format.zig");
+const max17048 = @import("ra8_components").max17048;
+const sd_format = @import("ra8_components").sd_format;
 const cpu_choice = @import("ra8_chip").core.cpu.choice;
 const rtos_load = @import("../../session/rtos_load.zig");
-const request = @import("../../components/request.zig");
+const request = @import("ra8_components").request;
 pub const ctl_args = @import("ctl_args.zig");
 pub const rtc_start = @import("../../session/rtc_start.zig");
 pub const usage = @import("cli_usage.zig").text;
@@ -103,7 +103,7 @@ pub const Options = struct {
     board_profile: ?[]const u8 = null,
     detach_c6: bool = false,
     /// `--net-record DIR` / `--net-replay DIR`: the C6's host traffic (RA8EMU-560).
-    net_tape: ?@import("../../components/esp32c6_hosted/esp_tape.zig").Spec = null,
+    net_tape: ?@import("ra8_components").esp_tape.Spec = null,
     /// `--attach NAME@ENDPOINT`: extra catalog models, in the order asked.
     attaches: [request.max]request.Request = undefined,
     attach_count: usize = 0,

@@ -10,7 +10,7 @@ const std = @import("std");
 const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
 const options_half = @import("ra8_chip").periph.mram_snapshot;
-const nor_half = @import("../../components/nor_flash/flash_snapshot.zig");
+const nor_half = @import("ra8_components").flash_snapshot;
 
 pub const Error = file.Error || fields.Error || error{ Missing, OutOfMemory };
 const controller_wiring = .{ "part", "octa" };

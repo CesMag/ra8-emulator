@@ -11,13 +11,13 @@
 //! which device answers. GPIO goes to the port block's pin table, one model
 //! per pin.
 const std = @import("std");
-const catalog = @import("../components/catalog.zig");
-const endpoint = @import("../components/endpoint.zig");
-const parts = @import("../components/parts.zig");
-const request = @import("../components/request.zig");
+const catalog = @import("ra8_components").catalog;
+const endpoint = @import("ra8_components").endpoint;
+const parts = @import("ra8_components").parts;
+const request = @import("ra8_components").request;
 const profile = @import("profile.zig");
-const fault_spec = @import("../components/fault_spec.zig");
-const eink = @import("../components/eink_it8951/panel.zig");
+const fault_spec = @import("ra8_components").fault_spec;
+const eink = @import("ra8_components").eink;
 const Board = @import("board.zig").Board;
 
 pub const Error = error{ ChannelTaken, NothingFitted };

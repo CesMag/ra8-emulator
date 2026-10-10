@@ -30,7 +30,7 @@ const doc = @import("ra8_chip").periph.doc;
 const dotf = @import("ra8_chip").periph.dotf;
 const drw = @import("ra8_chip").periph.drw;
 const dtc = @import("ra8_chip").periph.dtc;
-const eink = @import("../components/eink_it8951/panel.zig");
+const eink = @import("ra8_components").eink;
 const elc = @import("ra8_chip").periph.elc;
 const glcdc = @import("ra8_chip").periph.glcdc;
 const gpio = @import("ra8_chip").periph.gpio;
@@ -44,7 +44,7 @@ const lvd = @import("ra8_chip").periph.lvd;
 const mipi_csi = @import("ra8_chip").periph.mipi_csi;
 const mipi_dsi = @import("ra8_chip").periph.mipi_dsi;
 const mipi_phy = @import("ra8_chip").periph.mipi_phy;
-const modem = @import("../components/modem_at/modem.zig");
+const modem = @import("ra8_components").modem_at;
 const net = @import("net.zig");
 const mram = @import("ra8_chip").periph.mram;
 const sdramc = @import("ra8_chip").periph.sdramc;
@@ -79,13 +79,13 @@ const mpu_guard = @import("ra8_chip").core.mpu_guard;
 const scb = @import("ra8_chip").periph.scb;
 const fault_clear = @import("ra8_chip").periph.fault_clear;
 const sci = @import("ra8_chip").periph.sci;
-const esp_hosted = @import("../components/esp32c6_hosted/esp_hosted.zig");
+const esp_hosted = @import("ra8_components").esp_hosted;
 const sci_input = @import("ra8_chip").periph.sci_input;
-const gt911 = @import("../components/touch_gt911/gt911.zig");
-const sd_card = @import("../components/sd_card/card.zig");
-const sd_card_line = @import("../components/sd_card/card_line.zig");
-const sd_format = @import("../components/sd_card/format.zig");
-const bus_card = @import("../components/sd_card/bus_card.zig");
+const gt911 = @import("ra8_components").gt911;
+const sd_card = @import("ra8_components").sd_card;
+const sd_card_line = @import("ra8_components").sd_card_line;
+const sd_format = @import("ra8_components").sd_format;
+const bus_card = @import("ra8_components").sd_bus_card;
 const sdhi = @import("ra8_chip").periph.sdhi;
 const spi = @import("ra8_chip").periph.spi;
 const sram = @import("ra8_chip").periph.sram;
@@ -95,7 +95,7 @@ const usb = @import("usb.zig");
 const iwdt = @import("ra8_chip").periph.iwdt;
 const wdt = @import("ra8_chip").periph.wdt;
 const xspi = @import("ra8_chip").periph.xspi;
-const nor_flash = @import("../components/nor_flash/flash.zig");
+const nor_flash = @import("ra8_components").nor_flash;
 
 pub const Board = struct {
     /// Where a catalog model's device goes on this board (RA8EMU-490).
@@ -217,7 +217,7 @@ pub const Board = struct {
     console_input: sci_input.Input = .{},
     /// Host touches sampled at each board boundary under `--touch @PATH`.
     touch_input: gt911.host.Input = .{},
-    input_script: @import("../components/touch_gt911/input_script.zig").Script = .{},
+    input_script: @import("ra8_components").input_script.Script = .{},
     /// The system I2C bus: the RIIC controller and the port expander and
     /// camera on it. Populated in attach(), the way the SPI line is.
     wire: i2c.Wire = .{},

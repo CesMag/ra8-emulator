@@ -52,13 +52,13 @@ pub const Sock = struct {
 
     /// Receives host bytes; 0 is the host's close. A replay answers only
     /// once the guest has sent everything recorded before the answer.
-    pub fn recv(self: *Sock, out: []u8, flags: u32) !usize {
+    pub fn recv(self: *Sock, out: []u8, how: host_net.Receive) !usize {
         if (self.reader) |*reader| {
             const got = reader.take(out);
             if (got != 0 or (reader.closed() and !self.datagram)) return got;
             return error.WouldBlock;
         }
-        const got = try self.net.?.recv(self.socket.?, out, flags);
+        const got = try self.net.?.recv(self.socket.?, out, how);
         if (self.writer) |*writer| {
             const dir: tape.Dir = if (got == 0 and !self.datagram) .closed else .host;
             writer.put(dir, out[0..@min(got, out.len)]);

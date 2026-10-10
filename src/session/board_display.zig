@@ -3,7 +3,7 @@ const std = @import("std");
 const Board = @import("../board/board.zig").Board;
 const display_settled = @import("../board/display_settled.zig");
 const FrameCapture = @import("../board/frame_capture.zig").FrameCapture;
-const eink = @import("../components/eink_it8951/panel.zig");
+const eink = @import("ra8_components").eink;
 const session_display = @import("session_display.zig");
 
 pub const Error = error{ Timeout, NoVirtualProgress, NoFrame };

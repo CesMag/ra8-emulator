@@ -12,16 +12,16 @@
 //! only when the run asks for them with `click`; by default those addresses
 //! stay silent, the same as the bench.
 const bus = @import("ra8_chip").periph.riic_bus;
-const catalog = @import("../components/catalog.zig");
-const endpoint = @import("../components/endpoint.zig");
-const gt911 = @import("../components/touch_gt911/gt911.zig");
+const catalog = @import("ra8_components").catalog;
+const endpoint = @import("ra8_components").endpoint;
+const gt911 = @import("ra8_components").gt911;
 const i3c = @import("ra8_chip").periph.i3c;
-const lsm6dso = @import("../components/imu_lsm6dso/lsm6dso.zig");
-const max17048 = @import("../components/gauge_max17048/max17048.zig");
-const ov5640 = @import("../components/camera_ov5640/ov5640_sccb.zig");
-const parts = @import("../components/parts.zig");
+const lsm6dso = @import("ra8_components").lsm6dso;
+const max17048 = @import("ra8_components").max17048;
+const ov5640 = @import("ra8_components").ov5640;
+const parts = @import("ra8_components").parts;
 const periph = @import("ra8_chip").periph.registry;
-const pi4ioe = @import("../components/expander_pi4ioe/pi4ioe.zig");
+const pi4ioe = @import("ra8_components").pi4ioe;
 const riic = @import("ra8_chip").periph.riic;
 const timebase = @import("ra8_chip").periph.timebase;
 

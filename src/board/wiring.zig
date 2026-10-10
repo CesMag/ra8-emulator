@@ -25,8 +25,8 @@ const plug = @import("plug.zig");
 const bkup = @import("ra8_chip").periph.bkup;
 const dmac = @import("ra8_chip").periph.dmac;
 const drw = @import("ra8_chip").periph.drw;
-const eink = @import("../components/eink_it8951/panel.zig");
-const modem = @import("../components/modem_at/modem.zig");
+const eink = @import("ra8_components").eink;
+const modem = @import("ra8_components").modem_at;
 const ckcr = @import("ra8_chip").periph.ckcr;
 const octaclk = @import("ra8_chip").periph.octaclk;
 const mrms = @import("ra8_chip").periph.mrms;
@@ -44,9 +44,9 @@ const cpscu = @import("ra8_chip").periph.cpscu;
 const dtc = @import("ra8_chip").periph.dtc;
 const vscr = @import("ra8_chip").periph.vscr;
 const pdctr = @import("ra8_chip").periph.pdctr;
-const sd_card = @import("../components/sd_card/card.zig");
-const sd_card_line = @import("../components/sd_card/card_line.zig");
-const bus_line = @import("../components/sd_card/bus_line.zig");
+const sd_card = @import("ra8_components").sd_card;
+const sd_card_line = @import("ra8_components").sd_card_line;
+const bus_line = @import("ra8_components").sd_bus_line;
 
 /// The module-stop shadow, the attribution words that decide which of its
 /// bits a Secure store may move, and the gate the rest of the bus hangs off.

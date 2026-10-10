@@ -266,7 +266,7 @@ pub const Bridge = struct {
         if (in_flight >= flow.receive_window) return;
         const available: usize = @intCast(flow.receive_window - @as(u16, @intCast(in_flight)));
         var payload: [eth.tcp_payload_max]u8 = undefined;
-        const got = flow.sock.recv(payload[0..@min(payload.len, available)], 0) catch |err| switch (err) {
+        const got = flow.sock.recv(payload[0..@min(payload.len, available)], .copied) catch |err| switch (err) {
             error.WouldBlock => return,
             else => {
                 self.hardTcpError(index);

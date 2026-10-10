@@ -6,8 +6,8 @@
 //! and clears only change that wrapper's mode, so nothing ever stacks. A
 //! wrapper whose part was since swapped out is treated as gone.
 const std = @import("std");
-const fault_lines = @import("../components/fault_lines.zig");
-const fault_spec = @import("../components/fault_spec.zig");
+const fault_lines = @import("ra8_components").fault_lines;
+const fault_spec = @import("ra8_components").fault_spec;
 
 pub const Error = error{ NothingFitted, WrongMode } || std.mem.Allocator.Error;
 

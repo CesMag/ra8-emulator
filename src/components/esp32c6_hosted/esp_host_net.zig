@@ -10,6 +10,9 @@ pub const Handle = enum(usize) { _ };
 pub const Address = std.Io.net.Ip4Address;
 pub const Kind = enum { stream, datagram };
 pub const Connect = enum { done, pending };
+/// What a receive reports: the bytes it copied into `out`, or a datagram's
+/// whole size even when `out` was too small to hold it.
+pub const Receive = enum { copied, whole_datagram };
 
 pub const Net = struct {
     open: *const fn (kind: Kind) anyerror!Handle,
@@ -20,13 +23,14 @@ pub const Net = struct {
     finished: *const fn (socket: Handle) anyerror!void,
     /// Never raises a signal when the peer has closed; the host sees to that.
     send: *const fn (socket: Handle, bytes: []const u8) anyerror!usize,
-    recv: *const fn (socket: Handle, out: []u8, flags: u32) anyerror!usize,
+    recv: *const fn (socket: Handle, out: []u8, how: Receive) anyerror!usize,
     shutdownSend: *const fn (socket: Handle) anyerror!void,
     close: *const fn (socket: Handle) void,
 
     /// The Net over a host socket namespace: `Fd`, `Kind`, `Connect` and
-    /// `Want` types and `open`, `connect`, `readyFor`, `finished`, `send`,
-    /// `recv`, `shutdownSend` and `close` functions over an `Fd`.
+    /// `Want` types, `open`, `connect`, `readyFor`, `finished`, `send`,
+    /// `recv`, `shutdownSend` and `close` functions over an `Fd`, and
+    /// `whole_datagram`, the host's receive flag for a datagram's whole size.
     pub fn of(comptime Host: type) Net {
         return .{
             .open = Over(Host).open,
@@ -62,8 +66,11 @@ fn Over(comptime Host: type) type {
         fn send(socket: Handle, bytes: []const u8) anyerror!usize {
             return Host.send(fdOf(socket), bytes);
         }
-        fn recv(socket: Handle, out: []u8, flags: u32) anyerror!usize {
-            return Host.recv(fdOf(socket), out, flags);
+        fn recv(socket: Handle, out: []u8, how: Receive) anyerror!usize {
+            return Host.recv(fdOf(socket), out, switch (how) {
+                .copied => 0,
+                .whole_datagram => Host.whole_datagram,
+            });
         }
         fn shutdownSend(socket: Handle) anyerror!void {
             return Host.shutdownSend(fdOf(socket));

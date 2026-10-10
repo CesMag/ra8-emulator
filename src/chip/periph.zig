@@ -1,6 +1,6 @@
 //! The chip's on-chip blocks, re-exported from root.zig as `ra8.periph`.
 //! Every entry is a block inside the MCU or a contract one of them declares
-//! for a part; the parts themselves are in components/components.zig, and
+//! for a part; the parts themselves are in src/components (ra8_components), and
 //! the host adapters in neither (ADR 0004, knowledge base article
 //! RA8EMU-A-2).
 pub const adc = @import("periph/adc/adc.zig");

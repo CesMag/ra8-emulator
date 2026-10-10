@@ -15,8 +15,11 @@ const Fake = struct {
     pub const Connect = enum { done, pending };
     pub const Want = enum { readable, writable };
 
+    pub const whole_datagram: u32 = 0x20;
+
     var opened: ?Kind = null;
     var closed: ?Fd = null;
+    var recv_flags: u32 = 0;
 
     pub fn open(kind: Kind) !Fd {
         opened = kind;
@@ -32,7 +35,8 @@ const Fake = struct {
     pub fn send(_: Fd, bytes: []const u8) !usize {
         return bytes.len;
     }
-    pub fn recv(_: Fd, out: []u8, _: u32) !usize {
+    pub fn recv(_: Fd, out: []u8, flags: u32) !usize {
+        recv_flags = flags;
         @memcpy(out[0..2], "hi");
         return 2;
     }
@@ -54,8 +58,11 @@ test "a socket goes through the Net the application handed over" {
     try std.testing.expect(try sock.ready());
     try std.testing.expectEqual(@as(usize, 3), try sock.send("abc"));
     var out: [4]u8 = undefined;
-    try std.testing.expectEqual(@as(usize, 2), try sock.recv(&out, 0));
+    try std.testing.expectEqual(@as(usize, 2), try sock.recv(&out, .copied));
     try std.testing.expectEqualStrings("hi", out[0..2]);
+    try std.testing.expectEqual(@as(u32, 0), Fake.recv_flags);
+    _ = try sock.recv(&out, .whole_datagram);
+    try std.testing.expectEqual(Fake.whole_datagram, Fake.recv_flags);
     sock.close();
     try std.testing.expectEqual(@as(?Fake.Fd, 7), Fake.closed);
 }

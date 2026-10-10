@@ -18,6 +18,9 @@ pub const Address = std.Io.net.Ip4Address;
 pub const Kind = enum { stream, datagram };
 pub const Connect = enum { done, pending };
 pub const Want = enum { readable, writable };
+/// The receive flag that reports a datagram's whole size when it did not
+/// fit the buffer. Winsock has none: it fails the receive instead.
+pub const whole_datagram: u32 = if (on_windows) 0 else posix.MSG.TRUNC;
 
 pub const Error = error{
     WouldBlock,
@@ -84,7 +87,7 @@ pub fn send(fd: Fd, bytes: []const u8) Error!usize {
     return check(system.sendto(fd, @ptrCast(bytes.ptr), bytes.len, socket_flags.nosignal, null, 0));
 }
 
-/// Bytes received; with MSG_TRUNC on a datagram it is the full size.
+/// Bytes received; with `whole_datagram` on a datagram it is the full size.
 pub fn recv(fd: Fd, out: []u8, flags: u32) Error!usize {
     if (on_windows) return win.recvBytes(fd, out);
     return check(system.recvfrom(fd, @ptrCast(out.ptr), out.len, flags, null, null));

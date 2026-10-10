@@ -6,12 +6,12 @@ const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
 const ether = @import("ether.zig");
 const riic_report = @import("riic.zig");
-const modem_line = @import("../../../components/modem_at/modem.zig");
-const pi4ioe = @import("../../../components/expander_pi4ioe/pi4ioe.zig");
-const ov5640 = @import("../../../components/camera_ov5640/ov5640_sccb.zig");
-const gt911 = @import("../../../components/touch_gt911/gt911.zig");
-const lsm6dso = @import("../../../components/imu_lsm6dso/lsm6dso.zig");
-const max17048 = @import("../../../components/gauge_max17048/max17048.zig");
+const modem_line = @import("ra8_components").modem_at;
+const pi4ioe = @import("ra8_components").pi4ioe;
+const ov5640 = @import("ra8_components").ov5640;
+const gt911 = @import("ra8_components").gt911;
+const lsm6dso = @import("ra8_components").lsm6dso;
+const max17048 = @import("ra8_components").max17048;
 
 /// One block per controller that saw traffic. A transmit made out of
 /// operation mode moves nothing on silicon, and a delivery with no receive

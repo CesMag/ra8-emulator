@@ -53,8 +53,8 @@ const sau = @import("ra8_chip").periph.sau;
 const scb = @import("ra8_chip").periph.scb;
 const fault_clear = @import("ra8_chip").periph.fault_clear;
 const sci = @import("ra8_chip").periph.sci;
-const sd_card = @import("../components/sd_card/card.zig");
-const bus_card = @import("../components/sd_card/bus_card.zig");
+const sd_card = @import("ra8_components").sd_card;
+const bus_card = @import("ra8_components").sd_bus_card;
 const sdhi = @import("ra8_chip").periph.sdhi;
 const spi = @import("ra8_chip").periph.spi;
 const sram = @import("ra8_chip").periph.sram;
@@ -62,7 +62,7 @@ const ssie = @import("ra8_chip").periph.ssie;
 const ulpt = @import("ra8_chip").periph.ulpt;
 const wdt = @import("ra8_chip").periph.wdt;
 const xspi = @import("ra8_chip").periph.xspi;
-const nor_flash = @import("../components/nor_flash/flash.zig");
+const nor_flash = @import("ra8_components").nor_flash;
 
 /// A fresh board, with nothing on the bus yet.
 pub fn build(allocator: std.mem.Allocator) Board {

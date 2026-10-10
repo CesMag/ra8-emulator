@@ -5,7 +5,7 @@
 //! anything. The R-Switch Ethernet lines (report/ether.zig) and the USB
 //! host lines follow under their own subtask.
 const Board = @import("../../../board/board.zig").Board;
-const modem_line = @import("../../../components/modem_at/modem.zig");
+const modem_line = @import("ra8_components").modem_at;
 const json_i2c = @import("json_i2c.zig");
 
 /// The whole `network` object, keyed inside the document.

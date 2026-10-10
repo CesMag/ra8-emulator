@@ -4,7 +4,7 @@
 const Board = @import("../../../board/board.zig").Board;
 const Writer = @import("../report.zig").Writer;
 const Host = @import("ra8_chip").periph.usbhs.Host;
-const Echo = @import("../../../components/usb_echo/device.zig").Device;
+const Echo = @import("ra8_components").usb_echo.Device;
 const usb_cable = @import("usb_cable.zig");
 
 /// One line per SCI channel that moved bytes, plus the last console line the

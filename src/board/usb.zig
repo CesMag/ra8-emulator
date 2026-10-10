@@ -10,10 +10,10 @@ const Bounded = @import("ra8_chip").core.bounded.Bounded;
 const periph = @import("ra8_chip").periph.registry;
 const usbfs = @import("ra8_chip").periph.usbfs;
 const usbhs = @import("ra8_chip").periph.usbhs;
-const usb_echo = @import("../components/usb_echo/device.zig");
-const usb_echo_far = @import("../components/usb_echo/far.zig");
-const usb_loop_cable = @import("../components/usb_loop_cable/cable.zig");
-const usb_stick = @import("../components/usb_stick/stick.zig");
+const usb_echo = @import("ra8_components").usb_echo;
+const usb_echo_far = @import("ra8_components").usb_echo_far;
+const usb_loop_cable = @import("ra8_components").usb_loop_cable;
+const usb_stick = @import("ra8_components").usb_stick;
 
 pub const Due = Bounded(u16, 1);
 

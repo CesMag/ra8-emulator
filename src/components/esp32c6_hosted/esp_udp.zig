@@ -99,7 +99,7 @@ pub const Bridge = struct {
         }
         if (queue.len >= 2) return;
         var payload: [eth.udp_payload_max + 1]u8 = undefined;
-        const got = flow.sock.recv(&payload, std.posix.MSG.TRUNC) catch |err| switch (err) {
+        const got = flow.sock.recv(&payload, .whole_datagram) catch |err| switch (err) {
             error.WouldBlock => return,
             else => {
                 flow.close();

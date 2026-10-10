@@ -5,7 +5,7 @@
 //! Its own file so cli.zig keeps room for flags: what a contact spec looks
 //! like is a separate question from which flags exist.
 const std = @import("std");
-const gt911 = @import("../components/touch_gt911/gt911.zig");
+const gt911 = @import("ra8_components").gt911;
 
 /// Whether `flag` is one of the touch flags this file reads.
 pub fn claims(flag: []const u8) bool {

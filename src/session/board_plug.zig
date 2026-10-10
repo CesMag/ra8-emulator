@@ -12,16 +12,16 @@
 //! then each plug the session made and each unplug, so a client can list
 //! the parts without reaching into a bus.
 const std = @import("std");
-const endpoint = @import("../components/endpoint.zig");
-const catalog = @import("../components/catalog.zig");
-const parts = @import("../components/parts.zig");
-const fault_lines = @import("../components/fault_lines.zig");
+const endpoint = @import("ra8_components").endpoint;
+const catalog = @import("ra8_components").catalog;
+const parts = @import("ra8_components").parts;
+const fault_lines = @import("ra8_components").fault_lines;
 const riic_bus = @import("ra8_chip").periph.riic_bus;
 const spi = @import("ra8_chip").periph.spi;
 const session_api = @import("session_api.zig");
 const plug = @import("../board/plug.zig");
 const Board = @import("../board/board.zig").Board;
-const eink = @import("../components/eink_it8951/panel.zig");
+const eink = @import("ra8_components").eink;
 
 pub const Error = error{NothingFitted};
 
