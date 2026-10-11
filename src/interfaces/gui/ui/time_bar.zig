@@ -7,6 +7,8 @@
 //! answers clicks.
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
+const widget_paint = @import("ra8_render").widget_paint;
+const widget = @import("ra8_widget");
 const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
@@ -104,11 +106,14 @@ pub fn draw(list: *draw_list.DrawList, theme: *const Theme, bar: Rect, view: Vie
     try list.fill(bar, theme.ribbon_bg);
     try list.fill(.{ .x = bar.x, .y = bar.y, .w = bar.w, .h = 1 }, theme.border);
     const layout = Layout.of(bar);
+    var target = widget_paint.Target{ .list = list };
+    const paint = target.paint();
     for ([_]Control{ .run, .pause, .step }) |control| {
-        try button(list, theme, layout.rect(control), control, view);
+        try button(&paint, theme, layout.rect(control), control, view);
     }
     try fieldBox(list, theme, layout.field, view);
-    try text(list, layout.clock, view.clock, theme.muted);
+    try clock(&paint, theme, layout.clock, view);
+    if (target.failed) return error.OutOfMemory;
 }
 
 fn lights(control: Control, view: View) bool {
@@ -119,24 +124,69 @@ fn lights(control: Control, view: View) bool {
     };
 }
 
-fn button(list: *draw_list.DrawList, theme: *const Theme, area: Rect, control: Control, view: View) !void {
+/// The control as the firmware's push-button widget (RA8EMU-1158): the
+/// widget owns the face, border and label look; the theme only fills the
+/// descriptor, with the lit look on `face_pressed`.
+fn button(paint: *const widget.types.Paint, theme: *const Theme, area: Rect, control: Control, view: View) !void {
     if (area.empty()) return;
     const on = lights(control, view);
-    const bg = if (on) switch (control) {
-        .run => theme.runLit(),
-        .pause => theme.pauseLit(),
-        .step => theme.step_active,
-        .field => theme.accent,
-    } else theme.face;
-    const btn_border = if (on) switch (control) {
-        .run => theme.good,
-        .pause => theme.highlight,
-        .step => theme.step_active,
-        .field => theme.accent,
-    } else theme.control_border;
-    try list.fill(area, bg);
-    try outline(list, area, btn_border);
-    try font.centred(list, area, control.label(), if (on) theme.background else theme.ink);
+    var descriptor = widget.button.Button{
+        .paint = paint,
+        .text = switch (control) {
+            .run => "Run",
+            .pause => "Pause",
+            .step => "Step",
+            .field => "",
+        },
+        .on_press = null,
+        .fg = word(if (on) theme.background else theme.ink),
+        .face = word(theme.face),
+        .face_pressed = word(switch (control) {
+            .run => theme.runLit(),
+            .pause => theme.pauseLit(),
+            .step => theme.step_active,
+            .field => theme.accent,
+        }),
+        .border = word(if (on) switch (control) {
+            .run => theme.good,
+            .pause => theme.highlight,
+            .step => theme.step_active,
+            .field => theme.accent,
+        } else theme.control_border),
+        .presses = 0,
+        .pad = 3,
+        .border_w = 1,
+        .alignment = .center,
+        .pressed = on,
+        .reserved = 0,
+    };
+    var w: widget.types.Widget = undefined;
+    _ = widget.button.ra8_widget_button_init(&w, &descriptor);
+    w.rect = .{ .x = area.x, .y = area.y, .w = area.w, .h = area.h };
+    w.vt.?.render.?(&w);
+}
+
+/// The clock readout as the firmware's label widget, one line on the bar's
+/// own background.
+fn clock(paint: *const widget.types.Paint, theme: *const Theme, area: Rect, view: View) !void {
+    if (area.empty()) return;
+    var buf: [160]u8 = undefined;
+    const n = @min(view.clock.len, buf.len - 1);
+    @memcpy(buf[0..n], view.clock);
+    buf[n] = 0;
+    var descriptor = widget.label.Label{
+        .paint = paint,
+        .text = buf[0..n :0].ptr,
+        .fg = word(theme.muted),
+        .bg = word(theme.ribbon_bg),
+        .pad = pad,
+        .alignment = .left,
+        .face = .sans,
+    };
+    var w: widget.types.Widget = undefined;
+    _ = widget.label.ra8_widget_label_init(&w, &descriptor);
+    w.rect = .{ .x = area.x, .y = area.y, .w = area.w, .h = area.h };
+    w.vt.?.render.?(&w);
 }
 
 fn fieldBox(list: *draw_list.DrawList, theme: *const Theme, area: Rect, view: View) !void {
