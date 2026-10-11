@@ -14,6 +14,8 @@ const session_plug = @import("ra8_session").board_plug;
 const session_api = @import("ra8_session").api;
 const region_map = @import("ra8_session").region_map;
 const symbols = @import("ra8_session").symbols;
+const rtos_names = @import("ra8_session").rtos_names;
+const rtos_hook = @import("ra8_session").rtos_hook;
 const region_map_json = @import("ra8_session").region_map_json;
 const region_map_text = @import("ra8_session").region_map_text;
 const periph_list = @import("ra8_session").periph_list;
@@ -57,6 +59,8 @@ pub const Served = struct {
         self.context.clock = board_rtc.clock(self.owner.board());
         self.context.peripherals = .{ .context = &self.owner, .listFn = listPeriph };
         self.context.camera = .{ .context = self, .setFn = setCamera };
+        self.context.trace_on = .{ .context = self, .onFn = traceOn };
+        self.context.thread_names = .{ .context = self, .nameFn = threadName };
     }
 
     /// Sample CPU0's call stacks every `every` instructions and answer
@@ -87,6 +91,21 @@ pub const Served = struct {
         cpu1.* = .{};
         try cpu1.open(self.gpa, self.io, &self.owner, path);
         self.second = cpu1;
+    }
+
+    /// RA8EMU-832: turn RTOS tracing on; safe to call when it already is.
+    fn traceOn(context: *anyopaque) bool {
+        const self: *Served = @ptrCast(@alignCast(context));
+        return self.owner.traceIfRtos();
+    }
+
+    /// The name of the thread whose control block is at `thread` on `core`,
+    /// read from its TX_THREAD; cpu1 has no reader here.
+    fn threadName(context: *anyopaque, core: usize, thread: u32, buffer: []u8) ?[]const u8 {
+        if (core != 0 or thread == 0) return null;
+        const self: *Served = @ptrCast(@alignCast(context));
+        const memory = rtos_hook.Memory{ .guest = self.owner.guest() };
+        return rtos_names.name(memory, thread, buffer[0..rtos_names.longest]);
     }
 
     pub fn deinit(self: *Served) void {

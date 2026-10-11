@@ -2,7 +2,7 @@
 //! stream (RA8EMU-192) already publishes every load, pause, stop, write,
 //! breakpoint, speed change, scheduled input, fault switch, plug and LED
 //! change (RA8EMU-811); this drains its own queue and sends each kind the wire names as a `session`
-//! event. Kinds with their own topic (uart, lcd) or no wire name are skipped.
+//! event. Kinds with their own topic (uart, lcd, trace) or no wire name are skipped.
 const std = @import("std");
 const proto = @import("session_rpc.zig");
 const api = @import("ra8_session").api;
@@ -11,15 +11,26 @@ const Context = @import("session_handlers.zig").Context;
 /// Events read from the stream per pass.
 const batch = 64;
 
+/// Stream kinds the trace topic serves instead of the session topic (RA8EMU-832).
+const trace_kinds = [_][]const u8{ "rtos_switch", "rtos_idle", "isr_enter", "isr_leave" };
+
+fn onTrace(name: []const u8) bool {
+    for (trace_kinds) |trace| if (std.mem.eql(u8, name, trace)) return true;
+    return false;
+}
+
 /// The wire kind of each stream kind, by the stream kind's value; built by
-/// name, so a wire kind with no stream event fails the build.
+/// name, so a wire kind with no stream event fails the build. Trace kinds
+/// have wire names but go out on Topic.trace (RA8EMU-832), so they map null.
 const wire_kinds = table: {
     for (@typeInfo(proto.EventKind).@"enum".field_names) |name| {
-        if (!@hasField(api.Event.Kind, name)) @compileError("no stream event for wire kind " ++ name);
+        if (!onTrace(name) and !@hasField(api.Event.Kind, name)) @compileError("no stream event for wire kind " ++ name);
     }
     const names = @typeInfo(api.Event.Kind).@"enum".field_names;
     var kinds: [names.len]?proto.EventKind = undefined;
-    for (names, 0..) |name, index| kinds[index] = if (@hasField(proto.EventKind, name)) @field(proto.EventKind, name) else null;
+    for (names, 0..) |name, index| {
+        kinds[index] = if (!onTrace(name) and @hasField(proto.EventKind, name)) @field(proto.EventKind, name) else null;
+    }
     break :table kinds;
 };
 
@@ -45,6 +56,7 @@ pub fn pump(context: *Context, server: anytype, tx: []u8) !void {
         const read = context.session.pollEvents(id, &events) orelse return;
         if (read.dropped != 0) std.debug.print("serve: {d} session events dropped before a client read them\n", .{read.dropped});
         for (events[0..read.count]) |event| {
+            if (event.payload == .rtos) continue; // its own trace topic (RA8EMU-832)
             const kind = wireKind(event.kind) orelse continue;
             const of: proto.Core = @fromBackingInt(@intCast(@backingInt(event.core)));
             if (!context.wants(of, .session)) continue;

@@ -12,6 +12,7 @@ pub const served_setup = @import("served_setup.zig");
 pub const session_advance = @import("session_advance.zig");
 pub const session_camera = @import("session_camera.zig");
 pub const session_event_feed = @import("session_event_feed.zig");
+pub const session_trace_feed = @import("session_trace_feed.zig");
 pub const session_files = @import("session_files.zig");
 pub const session_input = @import("session_input.zig");
 pub const session_lcd_feed = @import("session_lcd_feed.zig");

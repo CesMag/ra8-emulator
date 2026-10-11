@@ -52,6 +52,20 @@ pub const Listing = struct {
     listFn: *const fn (*anyopaque, []u8) anyerror![]const u8,
 };
 
+/// Turns RTOS tracing on for this image (RA8EMU-832); a server without
+/// one sends nothing on the trace topic.
+pub const TraceOn = struct {
+    context: *anyopaque,
+    onFn: *const fn (*anyopaque) bool,
+};
+
+/// Reads a thread's name from its TX_THREAD for the trace topic
+/// (RA8EMU-832); a server without one sends trace events with empty names.
+pub const ThreadNames = struct {
+    context: *anyopaque,
+    nameFn: *const fn (*anyopaque, usize, u32, []u8) ?[]const u8,
+};
+
 const topic_count = @typeInfo(proto.Topic).@"enum".field_names.len;
 
 pub const Context = struct {
@@ -71,6 +85,9 @@ pub const Context = struct {
     /// The event-stream queue session events are read from while any core
     /// wants the session topic (RA8EMU-942).
     session_feed: ?usize = null,
+    /// The event-stream queue RTOS events are read from while any core
+    /// wants the trace topic (RA8EMU-832).
+    trace_feed: ?usize = null,
     /// Owns each captured panel frame. A server without one, or a session
     /// without a display, refuses lcd_dirty.
     gpa: ?std.mem.Allocator = null,
@@ -91,6 +108,10 @@ pub const Context = struct {
     /// Loaded ThreadX modules' own symbols, asked before the image's
     /// (RA8EMU-1141); null names module code from the image alone.
     modules: ?*const @import("ra8_session").txm_debug.Table = null,
+    /// Turns RTOS tracing on when a client first wants the trace topic.
+    trace_on: ?TraceOn = null,
+    /// Reads a thread's name for the trace topic.
+    thread_names: ?ThreadNames = null,
 
     pub fn wants(self: *const Context, of: proto.Core, topic: proto.Topic) bool {
         return self.topics[@backingInt(of)] & bit(topic) != 0;
@@ -223,6 +244,11 @@ pub fn subscribe(context: *Context, args: proto.Subscription) Ack {
     if (args.topic == .session and context.session_feed == null) {
         context.session_feed = context.session.subscribe() catch |err| return refuse(proto.Ack, err);
     }
+    if (args.topic == .trace and context.trace_feed == null) {
+        const on = context.trace_on orelse return .{ .err = code(app_codes.refused) };
+        if (!on.onFn(on.context)) return .{ .err = code(app_codes.refused) };
+        context.trace_feed = context.session.subscribe() catch |err| return refuse(proto.Ack, err);
+    }
     if (args.topic == .lcd_dirty and context.lcd_feed == null) {
         const display = context.session.display orelse return .{ .err = code(app_codes.refused) };
         if (context.gpa == null) return .{ .err = code(app_codes.refused) };
@@ -239,6 +265,7 @@ pub fn unsubscribe(context: *Context, args: proto.Subscription) Ack {
     if (!context.wants(.cpu0, .uart) and !context.wants(.cpu1, .uart)) release(context, &context.uart_feed);
     if (!context.wants(.cpu0, .lcd_dirty) and !context.wants(.cpu1, .lcd_dirty)) unwatch(context);
     if (!context.wants(.cpu0, .session) and !context.wants(.cpu1, .session)) release(context, &context.session_feed);
+    if (!context.wants(.cpu0, .trace) and !context.wants(.cpu1, .trace)) release(context, &context.trace_feed);
     return ack;
 }
 
@@ -249,6 +276,7 @@ pub fn forget(context: *Context) void {
     release(context, &context.uart_feed);
     unwatch(context);
     release(context, &context.session_feed);
+    release(context, &context.trace_feed);
 }
 
 /// Give up the panel feed, and the watch on the panel that came with it.

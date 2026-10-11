@@ -192,6 +192,13 @@ pub const Harness = struct {
         return true;
     }
 
+    /// Turn RTOS tracing on unless it already is; false when the image
+    /// has no ThreadX current-thread pointer to trace.
+    pub fn traceIfRtos(self: *Harness) bool {
+        if (self.state.tracer != null) return true;
+        return self.traceRtos();
+    }
+
     /// Sample CPU0's call stacks into `into` (RA8EMU-833), named by the
     /// opened image and tagged with the thread when traceRtos() found one.
     /// `into` stays put until `unsampleStacks` or deinit.

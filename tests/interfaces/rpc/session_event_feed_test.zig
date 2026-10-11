@@ -15,7 +15,11 @@ test "stream kinds the wire names map to the same wire kind" {
 test "stream kinds with their own topic or no wire name are skipped" {
     try std.testing.expect(feed.wireKind(.uart_byte) == null);
     try std.testing.expect(feed.wireKind(.lcd_frame) == null);
+    // RTOS kinds carry the trace topic instead (RA8EMU-832).
+    try std.testing.expect(feed.wireKind(.rtos_switch) == null);
+    try std.testing.expect(feed.wireKind(.rtos_idle) == null);
     try std.testing.expect(feed.wireKind(.isr_enter) == null);
+    try std.testing.expect(feed.wireKind(.isr_leave) == null);
 }
 
 test "an LED change carries its index and level in the address" {
