@@ -12,6 +12,8 @@ const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const Theme = @import("colors.zig").Theme;
+const widget_paint = @import("ra8_render").widget_paint;
+const widget = @import("ra8_widget");
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
@@ -198,41 +200,89 @@ pub fn valueOrigin(cell: Rect) struct { x: i32, y: i32 } {
     return .{ .x = cell.x + 2 + @as(i32, @intCast(font.textWidth(name_len))), .y = cell.y + 2 };
 }
 
+/// Draw the pane through the shared Paint table (RA8EMU-1159): background
+/// and band fills dispatch through the table, and the text is the
+/// firmware's label widget, one label per name and value, so no pane code
+/// emits raw glyph commands.
 pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, now: Snapshot, before: ?Snapshot, fold: Fold) !void {
     if (slotRect(area, 0) == null) return;
-    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
+    var target = widget_paint.Target{ .list = list };
+    const paint = target.paint();
+    fillArea(&paint, area, word(theme.background));
     const count = groupCount(now.mve);
     for (groups[0..count], fold[0..count], 0..) |group, folded, which| {
         const header = headerRect(area, fold, which) orelse break;
-        try drawHeader(list, theme, header, group.name, folded);
+        drawHeader(&paint, theme, header, group.name, folded);
         if (folded) continue;
         for (group.first..group.first + group.len) |index| {
             const cell = cellRect(area, fold, index) orelse break;
             const at = valueIndex(index);
-            try drawCell(list, theme, cell, label(index), now.values[at], now.changedAt(before, at));
+            drawCell(&paint, theme, cell, label(index), now.values[at], now.changedAt(before, at));
         }
     }
 }
 
-fn drawHeader(list: *draw_list.DrawList, theme: *const Theme, cell: Rect, name: []const u8, folded: bool) !void {
-    try font.draw(list, cell.x + 2, cell.y + 2, if (folded) "+" else "-", theme.accent);
-    try font.draw(list, cell.x + 2 + @as(i32, @intCast(font.textWidth(2))), cell.y + 2, name, theme.accent);
+fn drawHeader(table: *const widget.types.Paint, theme: *const Theme, cell: Rect, name: []const u8, folded: bool) void {
+    const bg = word(theme.background);
+    const fg = word(theme.accent);
+    var marker: [1]u8 = undefined;
+    marker[0] = if (folded) '+' else '-';
+    drawText(table, cell.x + 2, cell.y + 2, marker[0..], fg, bg);
+    drawText(table, cell.x + 2 + @as(i32, @intCast(font.textWidth(2))), cell.y + 2, name, fg, bg);
 }
 
-fn drawCell(list: *draw_list.DrawList, theme: *const Theme, cell: Rect, name: []const u8, value: u32, moved: bool) !void {
+fn drawCell(table: *const widget.types.Paint, theme: *const Theme, cell: Rect, name: []const u8, value: u32, moved: bool) void {
     const is_pc = std.mem.eql(u8, name, "pc");
+    const band = if (is_pc) theme.pc_band_bg else if (moved) theme.dirty_cell_bg else theme.background;
     if (is_pc) {
-        try list.fill(cell, theme.pc_band_bg);
+        fillArea(table, cell, word(theme.pc_band_bg));
     } else if (moved) {
-        try list.fill(cell, theme.dirty_cell_bg);
+        fillArea(table, cell, word(theme.dirty_cell_bg));
     }
     const name_color = if (is_pc) theme.pc_cyan else theme.muted;
-    try font.draw(list, cell.x + 2, cell.y + 2, name, name_color);
+    drawText(table, cell.x + 2, cell.y + 2, name, word(name_color), word(band));
     var buffer: [8]u8 = undefined;
-    const text = try std.fmt.bufPrint(&buffer, "{X:0>8}", .{value});
+    const text = std.fmt.bufPrint(&buffer, "{X:0>8}", .{value}) catch return;
     const at = valueOrigin(cell);
     const val_color = if (is_pc) theme.pc_cyan else if (moved) theme.highlight else theme.ink;
-    try font.draw(list, at.x, at.y, text, val_color);
+    drawText(table, at.x, at.y, text, word(val_color), word(band));
+}
+
+/// One line of text as the firmware's label widget (RA8EMU-1159): the label
+/// owns the face and the aligned rendering; the rect is this line's cell.
+fn drawText(table: *const widget.types.Paint, x: i32, y: i32, text: []const u8, fg: u32, bg: u32) void {
+    var buffer: [64]u8 = undefined;
+    const n = @min(text.len, buffer.len - 1);
+    @memcpy(buffer[0..n], text[0..n]);
+    buffer[n] = 0;
+    var descriptor = widget.label.Label{
+        .paint = table,
+        .text = buffer[0..n :0].ptr,
+        .fg = fg,
+        .bg = bg,
+        .pad = 0,
+        .alignment = .left,
+        .face = .sans,
+    };
+    var w: widget.types.Widget = undefined;
+    _ = widget.label.ra8_widget_label_init(&w, &descriptor);
+    w.rect = .{
+        .x = x,
+        .y = y,
+        .w = @intCast(font.textWidth(text.len)),
+        .h = @intCast(font.cell_h),
+    };
+    w.vt.?.render.?(&w);
+}
+
+/// `area` filled with `color` through the shared Paint table.
+fn fillArea(table: *const widget.types.Paint, area: Rect, color: u32) void {
+    table.fill_rect.?(table.user, area.x, area.y, area.w, area.h, color);
+}
+
+/// `color` as the widget's 0x00RRGGBB colour word.
+fn word(color: Color) u32 {
+    return @as(u32, color.r) << 16 | @as(u32, color.g) << 8 | color.b;
 }

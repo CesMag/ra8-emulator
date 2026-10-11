@@ -30,35 +30,75 @@ fn weightOf(value: u8) gfx.Weight {
     return if (value == 1) .bold else .regular;
 }
 
+/// The deepest clip nesting the desktop Paint backend holds. Every
+/// interpreter push is balanced with a pop, so this is headroom.
+pub const max_clips = 16;
+
 /// A Paint backend over `fb`: the clip stack and every primitive the shared
 /// table serves. Text goes through ra8_gfx's faces at pixel level, the way
 /// the firmware's host backend draws it.
 pub const Backend = struct {
-    allocator: std.mem.Allocator,
     fb: *raster.Framebuffer,
-    clips: std.ArrayListUnmanaged(Rect) = .empty,
+    clips: [max_clips]Rect = undefined,
+    depth: usize = 0,
 
-    pub fn init(allocator: std.mem.Allocator, fb: *raster.Framebuffer) Backend {
-        return .{ .allocator = allocator, .fb = fb };
+    pub fn init(fb: *raster.Framebuffer) Backend {
+        return .{ .fb = fb };
     }
 
     pub fn deinit(self: *Backend) void {
-        self.clips.deinit(self.allocator);
+        _ = self;
     }
 
     /// The clip later draws land in: the whole surface when none is pushed.
     pub fn clip(self: *const Backend) Rect {
-        const items = self.clips.items;
-        return if (items.len == 0) self.fb.bounds() else items[items.len - 1];
+        return if (self.depth == 0) self.fb.bounds() else self.clips[self.depth - 1];
     }
 
     /// Narrow the clip to `area` until the matching popClip.
     pub fn pushClip(self: *Backend, area: Rect) !void {
-        try self.clips.append(self.allocator, self.clip().intersect(area));
+        if (self.depth >= max_clips) return error.ClipOverflow;
+        self.clips[self.depth] = self.clip().intersect(area);
+        self.depth += 1;
     }
 
     pub fn popClip(self: *Backend) void {
-        _ = self.clips.pop();
+        if (self.depth > 0) self.depth -= 1;
+    }
+
+    /// Draw every command in `list` through the shared Paint table. Fills
+    /// and lines dispatch through the table (alpha fills through
+    /// fill_rect_alpha); glyphs and image quads keep raster.zig's own path
+    /// as the documented temporary until RA8EMU-1159 moves the panes onto
+    /// ra8_widget, because the Paint ABI carries no coverage atlas or
+    /// scaled quad.
+    pub fn drawCommands(self: *Backend, list: *const draw_list.DrawList, atlas: ?raster.Atlas) void {
+        for (list.commands.items) |*command| {
+            self.pushClip(command.clip) catch continue;
+            defer self.popClip();
+            const table = self.paint();
+            switch (command.shape) {
+                .fill => |shape| if (shape.color.a == 255) {
+                    table.fill_rect.?(table.user, shape.area.x, shape.area.y, shape.area.w, shape.area.h, colorWord(shape.color));
+                } else {
+                    table.fill_rect_alpha.?(table.user, shape.area.x, shape.area.y, shape.area.w, shape.area.h, colorWord(shape.color), shape.color.a);
+                },
+                .line => |shape| if (shape.color.a == 255) {
+                    table.draw_line.?(table.user, shape.x0, shape.y0, shape.x1, shape.y1, colorWord(shape.color));
+                } else {
+                    raster.line(self.fb, shape, self.clip());
+                },
+                .glyph => |shape| if (atlas) |cells| raster.glyph(self.fb, cells, shape, self.clip()),
+                .image => |shape| raster.image(self.fb, shape, self.clip()),
+            }
+        }
+    }
+
+    /// Draw a whole list into `fb` through a fresh backend: the desktop
+    /// framebuffer's one interpretation path.
+    pub fn drawAll(fb: *raster.Framebuffer, list: *const draw_list.DrawList, atlas: ?raster.Atlas) void {
+        var backend = Backend.init(fb);
+        backend.drawCommands(list, atlas);
     }
 
     /// The shared Paint table, every member bound.
@@ -80,6 +120,11 @@ pub const Backend = struct {
         };
     }
 };
+
+/// The widget colour word (0x00RRGGBB) for an opaque colour.
+fn colorWord(color: Color) u32 {
+    return (@as(u32, color.r) << 16) | (@as(u32, color.g) << 8) | color.b;
+}
 
 fn backendOf(user: ?*anyopaque) *Backend {
     return @ptrCast(@alignCast(user.?));

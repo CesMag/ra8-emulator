@@ -63,18 +63,12 @@ fn mix(src: u8, dst: u8, a: u32, rest: u32) u8 {
 }
 
 /// Draw every command in `list` into `target`, in order. Glyphs need
-/// `atlas`; without one they draw nothing.
+/// `atlas`; without one they draw nothing. The interpretation runs through
+/// the shared Paint table (RA8EMU-1157): raster.zig is the desktop
+/// framebuffer's pixel backend, paint_backend.zig the one painter path.
 pub fn draw(target: *Framebuffer, list: *const draw_list.DrawList, atlas: ?Atlas) void {
-    for (list.commands.items) |command| {
-        const clip = command.clip.intersect(target.bounds());
-        if (clip.empty()) continue;
-        switch (command.shape) {
-            .fill => |shape| fillRect(target, shape.area.intersect(clip), shape.color),
-            .line => |shape| line(target, shape, clip),
-            .glyph => |shape| if (atlas) |cells| glyph(target, cells, shape, clip),
-            .image => |shape| image(target, shape, clip),
-        }
-    }
+    const paint_backend = @import("paint_backend.zig");
+    paint_backend.Backend.drawAll(target, list, atlas);
 }
 
 pub fn fillRect(target: *Framebuffer, area: Rect, color: Color) void {
@@ -109,7 +103,7 @@ pub fn line(target: *Framebuffer, shape: draw_list.Line, clip: Rect) void {
     }
 }
 
-fn glyph(target: *Framebuffer, atlas: Atlas, shape: draw_list.Glyph, clip: Rect) void {
+pub fn glyph(target: *Framebuffer, atlas: Atlas, shape: draw_list.Glyph, clip: Rect) void {
     const area = shape.area.intersect(clip);
     var y = area.y;
     while (y < area.y + area.h) : (y += 1) {
@@ -127,7 +121,7 @@ fn glyph(target: *Framebuffer, atlas: Atlas, shape: draw_list.Glyph, clip: Rect)
 }
 
 /// Nearest-neighbour scale of the image into its area.
-fn image(target: *Framebuffer, shape: draw_list.Quad, clip: Rect) void {
+pub fn image(target: *Framebuffer, shape: draw_list.Quad, clip: Rect) void {
     const source = shape.image;
     const area = shape.area.intersect(clip);
     if (area.empty() or source.width == 0 or source.height == 0) return;

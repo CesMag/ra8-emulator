@@ -21,7 +21,7 @@ const Surface = struct {
         errdefer allocator.destroy(fb);
         fb.* = try raster.Framebuffer.init(allocator, width, height);
         @memset(fb.pixels, draw_list.Color.rgb(0, 0, 0));
-        return .{ .fb = fb, .backend = backend_mod.Backend.init(allocator, fb), .allocator = allocator };
+        return .{ .fb = fb, .backend = backend_mod.Backend.init(fb), .allocator = allocator };
     }
 
     fn deinit(self: *Surface) void {
