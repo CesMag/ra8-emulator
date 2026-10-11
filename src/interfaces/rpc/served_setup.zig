@@ -62,6 +62,12 @@ pub const Served = struct {
     /// Sample CPU0's call stacks every `every` instructions and answer
     /// `folded` from them (RA8EMU-833), tagged with the ThreadX thread when
     /// the image has one. Call once, after open.
+    /// Name loaded ThreadX modules from their paired ELFs (RA8EMU-1141);
+    /// `pairs` outlives the server.
+    pub fn pairModules(self: *Served, pairs: []const @import("ra8_session").txm_debug.Pair) void {
+        self.context.modules = self.owner.pairModules(pairs);
+    }
+
     pub fn sampleStacks(self: *Served, every: u32) !void {
         const stacks = try self.gpa.create(harness.stacks.Stacks);
         stacks.* = .{ .every = @max(every, 1) };

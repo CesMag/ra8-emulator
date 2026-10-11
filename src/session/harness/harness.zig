@@ -29,6 +29,7 @@ const step_hook = @import("../step_hook.zig");
 const symbols = @import("../symbols.zig");
 const txm_modules = @import("../txm_modules.zig");
 const txm_publish = @import("../txm_publish.zig");
+const txm_debug = @import("../txm_debug.zig");
 const watch_bus = @import("../watch_bus.zig");
 const rtos_hook = step_hook.rtos_hook;
 const rtos_publish = step_hook.rtos_publish;
@@ -112,6 +113,8 @@ const State = struct {
     listener: rtos_hook.zig.Listener,
     publisher: rtos_publish.Publisher,
     module_watch: txm_publish.Watcher,
+    /// Set by watchModules and pairModules; the state is built without defaults.
+    modules: txm_debug.Table,
 
     fn advance(context: *anyopaque, max_ns: u64) anyerror!void {
         const self: *State = @ptrCast(@alignCast(context));
@@ -211,8 +214,17 @@ pub const Harness = struct {
         const head = symbols.addressOf(state.image, txm_modules.list_symbol) orelse return false;
         state.module_watch = .{ .head_at = head, .memory = .{ .guest = self.guest() }, .stream = &state.session.event_stream, .inner = state.session.live.boundary, .time = &state.board.time.base };
         state.module_watch.fault_at = symbols.addressOf(state.image, txm_publish.fault_symbol);
+        state.modules = .{ .pairs = &.{} };
+        state.module_watch.table = &state.modules;
         state.session.live.boundary = state.module_watch.hook();
         return true;
+    }
+
+    /// The module ELFs `--app FILE.ra8app=MODULE.elf` paired (RA8EMU-1141),
+    /// placed as their modules load; `pairs` outlives the harness.
+    pub fn pairModules(self: *Harness, pairs: []const txm_debug.Pair) *const txm_debug.Table {
+        self.state.modules = .{ .pairs = pairs };
+        return &self.state.modules;
     }
 
     /// Snapshot and restore of this run's file (RA8EMU-768).

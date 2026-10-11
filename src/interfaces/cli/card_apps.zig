@@ -78,6 +78,25 @@ fn labelIn(bytes: []const u8) []const u8 {
     return field[0 .. std.mem.indexOfScalar(u8, field, 0) orelse field.len];
 }
 
+/// The paired values among `values`, each with its display name and module
+/// ELF, for a debugger to place as modules load; nothing is printed and
+/// unpaired values are skipped. Free with `unload`.
+pub fn paired(io: std.Io, allocator: std.mem.Allocator, values: []const []const u8, out: []Staged) ![]Staged {
+    var count: usize = 0;
+    errdefer unload(allocator, out[0..count]);
+    for (values) |value| {
+        const paths = split(value);
+        const module = paths.elf orelse continue;
+        const bytes = try readFile(io, allocator, paths.app);
+        out[count] = .{ .name = std.fs.path.basename(paths.app), .bytes = bytes };
+        count += 1;
+        _ = try ra8app.parse(bytes);
+        out[count - 1].label = labelIn(bytes);
+        out[count - 1].elf = try readFile(io, allocator, module);
+    }
+    return out[0..count];
+}
+
 pub fn unload(allocator: std.mem.Allocator, apps: []const Staged) void {
     for (apps) |app| {
         allocator.free(app.bytes);

@@ -9,6 +9,9 @@ const served_setup = @import("ra8_rpc").served_setup;
 const loop = @import("serve_loop.zig");
 const listen = @import("serve_listen.zig");
 const card_setup = @import("card_setup.zig");
+const card_apps = @import("card_apps.zig");
+const txm_debug = @import("ra8_session").txm_debug;
+const elf = @import("ra8_board").image.elf;
 
 pub const usage =
     \\usage: ra8_emulator serve [--profile-folded] [--cpu1 CPU1.elf] --stdio <firmware.elf>
@@ -69,6 +72,12 @@ fn parseWhere(argv: []const []const u8) ?Asked {
     return .{ .where = .{ .listen = spec }, .elf = argv[4] };
 }
 
+/// Each paired app's display name and module ELF, as the session places them.
+fn pairUp(apps: []const card_apps.Staged, into: *[card_apps.max_apps]txm_debug.Pair) ![]const txm_debug.Pair {
+    for (apps, 0..) |app, index| into[index] = .{ .label = app.label, .image = try elf.Image.init(app.elf.?) };
+    return into[0..apps.len];
+}
+
 /// Serve `argv` (`ra8_emulator serve ...`) and return the exit code.
 pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !u8 {
     const asked = parse(argv) orelse {
@@ -85,6 +94,17 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         std.debug.print("serve: cannot fill the SD card: {s}\n", .{@errorName(err)});
         return 1;
     };
+    var staged: [card_apps.max_apps]card_apps.Staged = undefined;
+    const apps = card_apps.paired(io, allocator, asked.sdhi.appPaths(), &staged) catch |err| {
+        std.debug.print("serve: cannot read a module ELF: {s}\n", .{@errorName(err)});
+        return 1;
+    };
+    defer card_apps.unload(allocator, apps);
+    var pairs: [card_apps.max_apps]txm_debug.Pair = undefined;
+    setup.pairModules(pairUp(apps, &pairs) catch |err| {
+        std.debug.print("serve: a module ELF is not an ELF: {s}\n", .{@errorName(err)});
+        return 1;
+    });
     if (asked.cpu1) |path| setup.openSecond(path) catch |err| {
         std.debug.print("serve: cannot bring up CPU1 from {s}: {s}\n", .{ path, @errorName(err) });
         return 1;

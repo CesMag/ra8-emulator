@@ -15,6 +15,7 @@
 //! publishes `module_faulted` for the loaded module whose code holds the
 //! location.
 const txm = @import("txm_modules.zig");
+const txm_debug = @import("txm_debug.zig");
 const rtos_hook = @import("rtos_hook.zig");
 const stream_mod = @import("event_stream.zig");
 const zig_boundary = @import("zig_boundary.zig");
@@ -97,6 +98,9 @@ pub const Watcher = struct {
     /// Where the image keeps the fault record; null watches no faults.
     fault_at: ?u32 = null,
     fault: Fault = .{},
+    /// Paired module ELFs placed on each load and dropped on each unload
+    /// (RA8EMU-1141); null places none.
+    table: ?*txm_debug.Table = null,
 
     /// Publish every load, unload and module fault since the last read.
     pub fn poll(self: *Watcher) void {
@@ -107,8 +111,19 @@ pub const Watcher = struct {
         const at = self.nowNs();
         for (found[0..changed]) |one| {
             self.stream.publish(.{ .core = .cpu0, .virtual_ns = at, .kind = one.kind, .address = one.instance });
+            self.place(one);
         }
         self.pollFault(now[0..count], at);
+    }
+
+    /// Keep the table in step with one load or unload.
+    fn place(self: *Watcher, one: Change) void {
+        const table = self.table orelse return;
+        if (one.kind != .module_loaded) return table.unloaded(one.instance);
+        const entry = txm.module(self.memory, one.instance) orelse return;
+        var buffer: [txm.longest]u8 = undefined;
+        const named = txm.name(self.memory, entry, &buffer) orelse return;
+        _ = table.loaded(one.instance, named, entry.code_start);
     }
 
     fn pollFault(self: *Watcher, modules: []const txm.Module, at: u64) void {

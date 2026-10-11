@@ -124,3 +124,21 @@ test "a paired app keeps its module ELF under the header's display name" {
     try std.testing.expectEqualStrings("Hello", apps[0].label);
     try std.testing.expectEqualStrings("module elf", apps[0].elf.?);
 }
+
+test "only paired values are read for a debugger" {
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const bytes = sample();
+    try tmp.dir.writeFile(io, .{ .sub_path = "hello.ra8app", .data = &bytes });
+    try tmp.dir.writeFile(io, .{ .sub_path = "hello.elf", .data = "module elf" });
+    const app = try pathIn(tmp, "hello.ra8app");
+    defer std.testing.allocator.free(app);
+    const value = try std.fmt.allocPrint(std.testing.allocator, "{s}=.zig-cache/tmp/{s}/hello.elf", .{ app, tmp.sub_path });
+    defer std.testing.allocator.free(value);
+    var out: [card_apps.max_apps]card_apps.Staged = undefined;
+    const apps = try card_apps.paired(io, std.testing.allocator, &.{ app, value }, &out);
+    defer card_apps.unload(std.testing.allocator, apps);
+    try std.testing.expectEqual(@as(usize, 1), apps.len);
+    try std.testing.expectEqualStrings("Hello", apps[0].label);
+    try std.testing.expectEqualStrings("module elf", apps[0].elf.?);
+}

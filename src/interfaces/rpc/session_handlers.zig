@@ -88,6 +88,9 @@ pub const Context = struct {
     folding: ?Folding = null,
     /// Snapshots the RTC counters for `rtc`; a server without one refuses it.
     clock: ?session_rtc.Clock = null,
+    /// Loaded ThreadX modules' own symbols, asked before the image's
+    /// (RA8EMU-1141); null names module code from the image alone.
+    modules: ?*const @import("ra8_session").txm_debug.Table = null,
 
     pub fn wants(self: *const Context, of: proto.Core, topic: proto.Topic) bool {
         return self.topics[@backingInt(of)] & bit(topic) != 0;
