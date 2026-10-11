@@ -1,10 +1,10 @@
-//! Tests for --realtime, --speed, --run-for and the pace line (src/board/run/pacing.zig).
+//! Tests for --realtime, --speed, --run-for and the pace line (src/session/run/pacing.zig).
 const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 const parse = cli_app.cli.parse;
 const clocks = ra8.chip.periph.clocks;
-const time_policy = ra8.board.run;
+const time_policy = ra8.session.run;
 const realtime = time_policy.pacing;
 
 test "a run is unpaced unless it asks for --realtime" {

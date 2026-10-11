@@ -1,5 +1,4 @@
-//! Tests for the run policy still under src/chip/periph/time: it leaves for the
-//! session in RA8EMU-1047, so it never passes through src/chip.
+//! Tests for the run policy under src/session/run (RA8EMU-1047).
 test {
     _ = @import("pacer_test.zig");
     _ = @import("pacing_test.zig");

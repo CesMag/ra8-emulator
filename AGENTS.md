@@ -38,7 +38,7 @@ A module imports only modules below it, and only the adapters and the
 applications import `ra8_host`. `ra8_rpc_wire` is ra8-firmware's wire library
 (named `ra8_rpc` there), and `ra8_widget` and `ra8_widget_host` are its widget
 libraries. Every module's root file is `root.zig` in its own directory. Inside
-`ra8_board`, the run policy (pacing, speed, soak) is `src/board/run/` and the
+`ra8_board`, the run policy (pacing, speed, soak) is `src/session/run/` and the
 image loader is `src/board/image/`.
 
 An executable's entry file is a root of its own beside its application

@@ -14,7 +14,7 @@ const idler = @import("idler.zig");
 const zig_run = cli_app.zig_run;
 const cpu_boot = ra8.chip.core.cpu.boot;
 const memmap = ra8.chip.core.memmap;
-const soak = ra8.board.run.soak;
+const soak = ra8.session.run.soak;
 
 const hz: u64 = 1_000_000;
 const ns_per_s: u64 = 1_000_000_000;

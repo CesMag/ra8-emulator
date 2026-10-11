@@ -1,7 +1,7 @@
-//! Tests for src/board/run/soak/soak.zig.
+//! Tests for src/session/run/soak/soak.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const soak = ra8.board.run.soak;
+const soak = ra8.session.run.soak;
 
 test "an unarmed soak ignores events and prints nothing" {
     var state = soak.Soak{};

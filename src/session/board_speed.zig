@@ -3,8 +3,8 @@
 //! lands on the board's pacing at once, between commands.
 const session_api = @import("api.zig");
 const clocks = @import("ra8_chip").periph.clocks;
-const pacer = @import("ra8_board").run.pacer;
-const pacing = @import("ra8_board").run.pacing;
+const pacer = @import("run.zig").pacer;
+const pacing = @import("run.zig").pacing;
 
 pub const BoardSpeed = struct {
     time: *clocks.Time,

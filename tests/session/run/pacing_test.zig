@@ -1,8 +1,8 @@
-//! Covers src/board/run/pacing.zig against a fake clock.
+//! Covers src/session/run/pacing.zig against a fake clock.
 const std = @import("std");
 const ra8 = @import("ra8");
 const clocks = ra8.chip.periph.clocks;
-const time_policy = ra8.board.run;
+const time_policy = ra8.session.run;
 
 const Pacing = time_policy.pacing.Pacing;
 const us = std.time.ns_per_us;

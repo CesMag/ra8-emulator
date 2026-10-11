@@ -1,7 +1,7 @@
-//! Covers src/board/run/pacer.zig against a fake clock.
+//! Covers src/session/run/pacer.zig against a fake clock.
 const std = @import("std");
 const ra8 = @import("ra8");
-const pacer = ra8.board.run.pacer;
+const pacer = ra8.session.run.pacer;
 
 const Pacer = pacer.Pacer;
 const ms = std.time.ns_per_ms;

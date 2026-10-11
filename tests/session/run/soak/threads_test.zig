@@ -1,7 +1,7 @@
-//! Tests for src/board/run/soak/threads.zig.
+//! Tests for src/session/run/soak/threads.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const soak = ra8.board.run.soak;
+const soak = ra8.session.run.soak;
 
 const base: u32 = 0x2000_0000;
 const head: u32 = base;

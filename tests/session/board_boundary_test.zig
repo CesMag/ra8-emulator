@@ -10,7 +10,7 @@ const Board = ra8.board.board.Board;
 const Machine = ra8.session.stop_machine.Machine;
 const zig_boundary = ra8.session.step_hook.zig_boundary;
 const board_boundary = ra8.session.board_boundary;
-const pacing = ra8.board.run.pacing;
+const pacing = ra8.session.run.pacing;
 
 /// 64 bytes of RAM at address 0, the vector table first.
 const Ram = struct {
@@ -48,7 +48,7 @@ fn ram() Ram {
 const FakeWall = struct {
     at: u64 = 0,
 
-    fn clock(self: *FakeWall) ra8.board.run.pacer.Clock {
+    fn clock(self: *FakeWall) ra8.session.run.pacer.Clock {
         return .{ .ctx = self, .nowFn = now, .sleepFn = sleep };
     }
 

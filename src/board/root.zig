@@ -1,13 +1,12 @@
 //! ra8_board: the board as a library (ADR 0004 sections 2 and 3, knowledge
 //! base article RA8EMU-A-2). Board construction and wiring, the boundary,
 //! the core clock, the event sink, the plug layer, the board profile, the
-//! image loader, board memory and sizing, run policy, and the snapshot of a
+//! image loader, board memory and sizing, the run hook, and the snapshot of a
 //! whole board and run. It imports the chip, the components and the
 //! snapshot format, and nothing above it.
 //!
 //! The board's own files are exported by name. Each namespace below is the
 //! index file beside its directory.
-pub const run = @import("run.zig");
 pub const image = @import("image.zig");
 pub const snapshot = @import("snapshot.zig");
 pub const sizing = @import("sizing.zig");

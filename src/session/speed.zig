@@ -6,7 +6,7 @@
 //! the nearest one; one that rounds to zero is refused, not paused, since
 //! pause is Session.pause.
 const std = @import("std");
-const speed = @import("ra8_board").run.speed;
+const speed = @import("run.zig").speed;
 
 /// Where a running engine takes the new factor, in thousandths of real time,
 /// or null to run unpaced as `--speed max` does (RA8EMU-714).

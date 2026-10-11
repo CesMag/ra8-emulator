@@ -1,7 +1,7 @@
-//! Tests for src/board/run/soak/watch.zig.
+//! Tests for src/session/run/soak/watch.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
-const soak = ra8.board.run.soak;
+const soak = ra8.session.run.soak;
 
 /// Four words of memory at 0x2000_0000; anything else is unreadable.
 const Fake = struct {
