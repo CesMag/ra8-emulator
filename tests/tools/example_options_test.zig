@@ -8,6 +8,15 @@ test "an image with no entry runs with no extra flags" {
     try std.testing.expectEqual(@as(usize, 0), options.flags("blink_hal.elf").len);
 }
 
+test "the RA8P1-built examples run on the ra8p1" {
+    for ([_][]const u8{ "cpu1_pingpong_ra8p1.elf", "npu_vela_conv.elf" }) |image| {
+        const got = options.flags(image);
+        try std.testing.expectEqual(@as(usize, 2), got.len);
+        try std.testing.expectEqualStrings("--device", got[0]);
+        try std.testing.expectEqualStrings("ra8p1", got[1]);
+    }
+}
+
 test "the Click-module examples run with the module fitted" {
     for ([_][]const u8{ "battery_monitor_demo.elf", "imu_lsm6dso_demo.elf", "smbus_demo.elf" }) |image| {
         const got = options.flags(image);

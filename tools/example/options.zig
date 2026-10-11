@@ -115,6 +115,7 @@ pub const extras = [_]Extra{
     .{ .image = "battery_monitor_demo.elf", .flags = &click },
     .{ .image = "blink_m33_hal.elf", .flags = &one_second },
     .{ .image = "cpu1_pingpong_ra8p1.elf", .flags = &ra8p1 },
+    .{ .image = "npu_vela_conv.elf", .flags = &ra8p1 },
     .{ .image = "epub_open.elf", .flags = &formatted },
     .{ .image = "display_pal_animation.elf", .flags = &one_second },
     .{ .image = "epub_toc.elf", .flags = &formatted },
