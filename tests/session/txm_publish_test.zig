@@ -50,3 +50,28 @@ test "an emptied list unloads everything" {
     try std.testing.expectEqual(.module_unloaded, into[0].kind);
     try std.testing.expectEqual(@as(usize, 0), known.count);
 }
+
+fn coded(instance: u32, start: u32, size: u32) txm.Module {
+    var entry = module(instance);
+    entry.code_start = start;
+    entry.code_size = size;
+    return entry;
+}
+
+test "a fault location belongs to the module whose code holds it" {
+    const modules = [_]txm.Module{ coded(0x2000_0100, 0x6000_0000, 0x400), coded(0x2000_0600, 0x6000_1000, 0x200) };
+    try std.testing.expectEqual(@as(?u32, 0x2000_0600), publish.owner(&modules, 0x6000_1010));
+    try std.testing.expectEqual(@as(?u32, 0x2000_0100), publish.owner(&modules, 0x6000_0000));
+    try std.testing.expectEqual(@as(?u32, null), publish.owner(&modules, 0x6000_0400));
+    try std.testing.expectEqual(@as(?u32, null), publish.owner(&modules, 0x5FFF_FFFE));
+}
+
+test "only a new thread or location in the fault record is a fresh fault" {
+    const none = publish.Fault{};
+    const first = publish.Fault{ .thread = 0x2000_0900, .code = 0x6000_0010 };
+    try std.testing.expect(!publish.fresh(none, none));
+    try std.testing.expect(publish.fresh(none, first));
+    try std.testing.expect(!publish.fresh(first, first));
+    try std.testing.expect(publish.fresh(first, .{ .thread = 0x2000_0900, .code = 0x6000_0020 }));
+    try std.testing.expect(!publish.fresh(first, none));
+}

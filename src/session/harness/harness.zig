@@ -199,7 +199,7 @@ pub const Harness = struct {
         into.unwatch(0, &self.state.cpu);
     }
 
-    /// Publish ThreadX module loads and unloads on the session's event
+    /// Publish ThreadX module loads, unloads and faults on the session's event
     /// stream (RA8EMU-1139), read from the Module Manager's list at each
     /// chunk boundary. False when the image has no Module Manager; call
     /// once, after open.
@@ -207,6 +207,7 @@ pub const Harness = struct {
         const state = self.state;
         const head = symbols.addressOf(state.image, txm_modules.list_symbol) orelse return false;
         state.module_watch = .{ .head_at = head, .memory = .{ .guest = self.guest() }, .stream = &state.session.event_stream, .inner = state.session.live.boundary, .time = &state.board.time.base };
+        state.module_watch.fault_at = symbols.addressOf(state.image, txm_publish.fault_symbol);
         state.session.live.boundary = state.module_watch.hook();
         return true;
     }

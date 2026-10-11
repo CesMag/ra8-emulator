@@ -6,6 +6,14 @@
 //! boundary and publishes `module_loaded` for an instance that appeared and
 //! `module_unloaded` for one that left, the instance's address in the
 //! event's address. The wire carries both as session events.
+//!
+//! A module's memory fault is handled by the guest, so the run never stops
+//! on it. The Module Manager's fault handler records it in
+//! `_txm_module_manager_memory_fault_info` (TXM_MODULE_MANAGER_MEMORY_FAULT_INFO
+//! in the Cortex-M33 port's txm_module_port.h: the faulting thread at 0, the
+//! code location at 4). When that pair changes to a new fault, the Watcher
+//! publishes `module_faulted` for the loaded module whose code holds the
+//! location.
 const txm = @import("txm_modules.zig");
 const rtos_hook = @import("rtos_hook.zig");
 const stream_mod = @import("event_stream.zig");
@@ -25,6 +33,29 @@ pub const Known = struct {
         return false;
     }
 };
+
+/// Where the Module Manager records the last memory fault.
+pub const fault_symbol = "_txm_module_manager_memory_fault_info";
+
+/// The fault record's thread and code location as last read.
+pub const Fault = struct {
+    thread: u32 = 0,
+    code: u32 = 0,
+};
+
+/// Whether `now` records a fault `last` did not: a thread is set and the
+/// pair differs.
+pub fn fresh(last: Fault, now: Fault) bool {
+    return now.thread != 0 and (now.thread != last.thread or now.code != last.code);
+}
+
+/// The instance whose code holds `pc`, or null when none does.
+pub fn owner(modules: []const txm.Module, pc: u32) ?u32 {
+    for (modules) |entry| {
+        if (pc >= entry.code_start and pc - entry.code_start < entry.code_size) return entry.instance;
+    }
+    return null;
+}
 
 /// One instance that appeared or left.
 pub const Change = struct {
@@ -63,8 +94,11 @@ pub const Watcher = struct {
     /// The board's time base, for each event's stamp; null stamps zero.
     time: ?*const timebase.TimeBase = null,
     known: Known = .{},
+    /// Where the image keeps the fault record; null watches no faults.
+    fault_at: ?u32 = null,
+    fault: Fault = .{},
 
-    /// Publish every load and unload since the last read.
+    /// Publish every load, unload and module fault since the last read.
     pub fn poll(self: *Watcher) void {
         var now: [most]txm.Module = undefined;
         const count = txm.loaded(self.memory, self.head_at, &now);
@@ -74,6 +108,17 @@ pub const Watcher = struct {
         for (found[0..changed]) |one| {
             self.stream.publish(.{ .core = .cpu0, .virtual_ns = at, .kind = one.kind, .address = one.instance });
         }
+        self.pollFault(now[0..count], at);
+    }
+
+    fn pollFault(self: *Watcher, modules: []const txm.Module, at: u64) void {
+        const base = self.fault_at orelse return;
+        const thread = txm.word(self.memory, base) orelse return;
+        const read = Fault{ .thread = thread, .code = txm.word(self.memory, base +% 4) orelse return };
+        defer self.fault = read;
+        if (!fresh(self.fault, read)) return;
+        const instance = owner(modules, read.code) orelse return;
+        self.stream.publish(.{ .core = .cpu0, .virtual_ns = at, .kind = .module_faulted, .address = instance });
     }
 
     fn nowNs(self: *const Watcher) u64 {

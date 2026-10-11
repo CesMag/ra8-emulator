@@ -118,7 +118,8 @@ pub fn name(memory: anytype, entry: Module, buffer: *[longest]u8) ?[]const u8 {
     return buffer[0..count];
 }
 
-fn word(memory: anytype, at: u32) ?u32 {
+/// The little-endian word at `at`, or null when it cannot be read.
+pub fn word(memory: anytype, at: u32) ?u32 {
     var bytes: [4]u8 = undefined;
     if (!memory.read(at, &bytes)) return null;
     return std.mem.readInt(u32, &bytes, .little);
