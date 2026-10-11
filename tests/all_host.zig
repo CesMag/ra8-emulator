@@ -74,6 +74,8 @@ test {
     _ = @import("interfaces/gui/disasm_pane_test.zig");
     _ = @import("interfaces/gui/source_pane_test.zig");
     _ = @import("interfaces/gui/stack_pane_test.zig");
+    _ = @import("interfaces/gui/flame_model_test.zig");
+    _ = @import("interfaces/gui/flame_pane_test.zig");
     _ = @import("interfaces/gui/ui/hex_entry_test.zig");
     _ = @import("interfaces/gui/ui/colors_test.zig");
     _ = @import("interfaces/gui/ui/contrast_test.zig");
