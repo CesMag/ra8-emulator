@@ -115,3 +115,31 @@ test "a pending interrupt is never skipped past" {
     _ = rig.cpu.run(100);
     try std.testing.expectEqual(@as(u32, 1), rig.fake.taken);
 }
+
+test "a park loop's skip notes the core parked (RA8EMU-1120)" {
+    var rig: Rig = .{};
+    try rig.init(&park_loop);
+    defer rig.deinit();
+    _ = rig.cpu.run(1001);
+    try std.testing.expect(rig.cpu.trip.parked);
+}
+
+test "a run that retires no whole trips clears the park note" {
+    var rig: Rig = .{};
+    try rig.init(&park_loop);
+    defer rig.deinit();
+    _ = rig.cpu.run(1001);
+    var counter: Counter = .{};
+    rig.cpu.retire_listener = counter.listener();
+    _ = rig.cpu.run(10);
+    try std.testing.expect(!rig.cpu.trip.parked);
+}
+
+test "a taken exception clears the park note" {
+    var rig: Rig = .{};
+    try rig.init(&park_loop);
+    defer rig.deinit();
+    _ = rig.cpu.run(1001);
+    rig.cpu.trip.reclaim(&rig.cpu, false, true);
+    try std.testing.expect(!rig.cpu.trip.parked);
+}

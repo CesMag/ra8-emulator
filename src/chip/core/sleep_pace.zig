@@ -32,6 +32,18 @@ pub fn still(cpu: *Cpu) bool {
     return pending == null;
 }
 
+/// Whether the core spins on a loop whose trips change nothing
+/// (src/chip/core/cpu/park.zig, fixed_trip.zig) with nothing pending, so
+/// only an interrupt the board raises at a boundary can move it, just as
+/// for a core asleep in WFI (RA8EMU-1120). A fetch guard turns the skip
+/// off, so the note it left is stale under one.
+pub fn parked(cpu: *Cpu) bool {
+    if (!cpu.trip.parked or cpu.waiting != null or cpu.fetch_guard != null) return false;
+    const from = cpu.source orelse return false;
+    const pending = from.winner(cpu.bus) catch return false;
+    return pending == null;
+}
+
 /// The width the next stretch gets. `normal` is what the run would use
 /// otherwise; `edges` are cycles until each known next event.
 pub fn width(normal: u32, asleep: bool, edges: []const u64) u32 {

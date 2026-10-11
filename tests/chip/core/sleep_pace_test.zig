@@ -78,3 +78,31 @@ test "an awake core is not still" {
     var cpu = try asleep(&ram, &fake, nop);
     try std.testing.expect(!sleep_pace.still(&cpu));
 }
+
+test "a core parked on a loop with nothing pending reaches like a sleeping one" {
+    var ram: fixture.Ram = .{};
+    var fake: Fake = .{};
+    var cpu = try asleep(&ram, &fake, nop);
+    try std.testing.expect(!sleep_pace.parked(&cpu));
+    cpu.trip.parked = true;
+    try std.testing.expect(sleep_pace.parked(&cpu));
+}
+
+test "a parked core with an exception pending keeps the normal width" {
+    var ram: fixture.Ram = .{};
+    var fake: Fake = .{};
+    var cpu = try asleep(&ram, &fake, nop);
+    cpu.trip.parked = true;
+    cpu.regs.primask = 1;
+    fake.pending = .{ .number = 15, .priority = 0x80 };
+    try std.testing.expect(!sleep_pace.parked(&cpu));
+}
+
+test "a park note on a core in wfi is left to still" {
+    var ram: fixture.Ram = .{};
+    var fake: Fake = .{};
+    var cpu = try asleep(&ram, &fake, wfi);
+    cpu.trip.parked = true;
+    try std.testing.expect(!sleep_pace.parked(&cpu));
+    try std.testing.expect(sleep_pace.still(&cpu));
+}

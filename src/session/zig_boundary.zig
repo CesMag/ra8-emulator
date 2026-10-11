@@ -39,6 +39,8 @@ pub const Boundary = struct {
 /// As zig_drive.runClocked, passing `edge` after every chunk.
 pub fn run(core: zig_core.ZigCore, machine: *stop_machine.Machine, count: u64, watch: ?*watch_bus.WatchBus, clock: ?*zig_cycles.Clock, edge: Boundary) Error!zig_drive.Ended {
     const normal: u32 = @max(edge.chunk, 1);
+    // A park noted before this call may predate a debugger edit.
+    core.cpu.trip.parked = false;
     var left = count;
     while (left > 0) {
         const want = @min(left, widthOf(core, machine, edge, normal));
@@ -54,13 +56,14 @@ pub fn run(core: zig_core.ZigCore, machine: *stop_machine.Machine, count: u64, w
 }
 
 /// The next chunk's width: `normal`, reached to the board's next edge by its
-/// `sleepFn` while the core sleeps with nothing to wake it, as a plain run's
+/// `sleepFn` while the core sleeps or sits parked on a loop that changes
+/// nothing (RA8EMU-1120) with nothing to wake it, as a plain run's
 /// stretch is (src/chip/core/cpu/boot.zig widthOf), or by its `awakeFn` while
 /// the core runs. Anything armed in the stop machine keeps the normal width,
 /// so a stop lands where it always did.
 fn widthOf(core: zig_core.ZigCore, machine: *stop_machine.Machine, edge: Boundary, normal: u32) u64 {
     if (!machine.quiet()) return normal;
-    const reach = if (sleep_pace.still(core.cpu)) edge.sleepFn else edge.awakeFn;
+    const reach = if (sleep_pace.still(core.cpu) or sleep_pace.parked(core.cpu)) edge.sleepFn else edge.awakeFn;
     const far = reach orelse return normal;
     return @max(normal, far(edge.context, normal));
 }

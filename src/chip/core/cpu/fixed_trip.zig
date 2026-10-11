@@ -90,6 +90,9 @@ pub const Watch = struct {
     repeated: [max_repeats]Repeat = undefined,
     repeats: usize = 0,
     rec: counted.Recorder = .{},
+    /// `run` retired whole trips of a loop that changes nothing and has taken
+    /// no exception since, so the core sits parked on it (RA8EMU-1120).
+    parked: bool = false,
 
     /// Called before each instruction `run` executes: instructions to retire
     /// at once from the PC, or 0 to step as usual.
@@ -113,6 +116,7 @@ pub const Watch = struct {
         if (!self.changed and self.before.same(cpu)) {
             self.drop(cpu);
             if (left < trip) return 0;
+            self.parked = true;
             return self.retire(left / trip) * trip;
         }
         if (!self.before.sameButLow(cpu)) return self.missed(cpu);
@@ -126,6 +130,8 @@ pub const Watch = struct {
                 const trips = @min(bound, left / trip);
                 if (trips != 0) self.rec.apply(&cpu.regs, self.inner, trips) catch return self.missed(cpu);
                 self.drop(cpu);
+                // A bounded poll leaves its loop once the bound runs out.
+                self.parked = false;
                 return self.retire(trips) * trip;
             },
         }
@@ -207,6 +213,7 @@ pub const Watch = struct {
     /// Back on the recorder after the poll, unless it took an exception: a
     /// trip an exception interrupts is not watched on.
     pub fn reclaim(self: *Watch, cpu: *Cpu, lent: bool, taken: bool) void {
+        if (taken) self.parked = false;
         if (!lent) return;
         if (taken) return self.miss(cpu);
         cpu.bus = .{ .ctx = self, .vtable = &vtable, .gate = self.inner.gate, .miss = self.inner.miss, .tally = self.inner.tally };

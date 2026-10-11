@@ -133,6 +133,7 @@ fn quietRun(core: zig_core.ZigCore, watch: ?*watch_bus.WatchBus, left: u64) Quie
 
 /// One quiet instruction, its interrupt poll first.
 fn quietOne(core: zig_core.ZigCore, watch: ?*watch_bus.WatchBus) Quiet {
+    core.cpu.trip.parked = false;
     _ = dispatch.poll(core.cpu) catch return .{ .ran = 0, .stop = .{ .bus_fault = core.register(.pc) } };
     if (quietStep(core, watch)) |stopped| return .{ .ran = 0, .stop = stopped };
     return .{ .ran = 1 };

@@ -320,6 +320,7 @@ pub const Cpu = struct {
         if (self.quiet) |q| q.stir();
         defer self.trip.drop(self);
         var left = count;
+        self.trip.parked = false;
         while (left > 0) : (left -= 1) {
             const lent = self.trip.lend(self);
             const taken = exception.dispatch.poll(self) catch return .{ .bus_fault = self.regs.pc };
@@ -336,8 +337,7 @@ pub const Cpu = struct {
             // trip changes nothing (RA8EMU-463) go by at once.
             // A guard sees every arrival, so no trips are skipped under one.
             if (self.fetch_guard) |guard| if (guard.holds(self.regs.pc)) return .count;
-            var trips = if (self.fetch_guard == null) park.skippable(self, left) else 0;
-            if (trips == 0 and self.fetch_guard == null) trips = self.trip.observe(self, left);
+            const trips = if (self.fetch_guard == null) park.trips(self, left) else 0;
             if (trips != 0) {
                 self.retired += trips;
                 left -= trips - 1;

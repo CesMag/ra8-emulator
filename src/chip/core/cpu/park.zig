@@ -30,6 +30,17 @@ pub fn skippable(cpu: *const Cpu, left: u64) u64 {
     return left - left % trip;
 }
 
+/// Instructions `run` may retire at once from the PC: whole trips round a
+/// park loop, else round a loop whose trip changes nothing (RA8EMU-463).
+/// A park or fixed trip skip notes the core parked on its trip watch, so a
+/// boundary can tell a parked core from a busy one (RA8EMU-1120).
+pub fn trips(cpu: *Cpu, left: u64) u64 {
+    const n = skippable(cpu, left);
+    if (n == 0) return cpu.trip.observe(cpu, left);
+    cpu.trip.parked = true;
+    return n;
+}
+
 /// The tracked block starting at the PC, when nothing watches single
 /// instructions and the poll has settled, so no trip round a loop there can
 /// change what is pending before the stretch ends. Shared with
