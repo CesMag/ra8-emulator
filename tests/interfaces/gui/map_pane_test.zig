@@ -176,3 +176,82 @@ test "marks that never set the SP draw the plain pane" {
     layout.marks = .{ .current = 0, .low = 0, .base = stack.base, .size = stack.size };
     try std.testing.expectEqual(plain, try digest(dark, &layout, null, "/tmp/map815_plain.ppm"));
 }
+
+const boot_slots = ra8.session.boot_slots;
+const dfu_layout = boot_slots.layout;
+const trigger_at: u32 = 0x220F_FF00;
+const mram_size = 0x0010_0000;
+
+/// A fake MRAM staged the way boot_slots_test stages one, so the overlay
+/// tests read real headers out of `map_layout.slots`.
+const Mram = struct {
+    bytes: []u8,
+    trigger: [4]u8 = .{ 0, 0, 0, 0 },
+
+    fn init() !Mram {
+        const bytes = try std.testing.allocator.alloc(u8, mram_size);
+        @memset(bytes, 0xFF);
+        return .{ .bytes = bytes };
+    }
+
+    fn deinit(self: *Mram) void {
+        std.testing.allocator.free(self.bytes);
+    }
+
+    pub fn read(self: *const Mram, address: u32, into: []u8) !void {
+        if (address == trigger_at and into.len == 4) {
+            @memcpy(into, &self.trigger);
+            return;
+        }
+        if (address < dfu_layout.mram_base or address - dfu_layout.mram_base + into.len > self.bytes.len)
+            return error.Unmapped;
+        @memcpy(into, self.bytes[address - dfu_layout.mram_base ..][0..into.len]);
+    }
+
+    fn stage(self: *Mram, which: boot_slots.Which, seq: u32, len: u32, corrupt: bool) void {
+        const at = boot_slots.baseOf(which) - dfu_layout.mram_base;
+        const body = self.bytes[at..][0..len];
+        for (body, 0..) |*byte, i| byte.* = @truncate(i *% 31 +% seq);
+        const crc = std.hash.Crc32.hash(body);
+        const fields = [_]u32{ dfu_layout.header_magic, seq, len, crc, dfu_layout.run_base, 0, 0, 0 };
+        const header = self.bytes[at + dfu_layout.header_offset ..][0..dfu_layout.header_size];
+        for (fields, 0..) |field, i| std.mem.writeInt(u32, header[i * 4 ..][0..4], field, .little);
+        if (corrupt) body[len / 2] ^= 0x01;
+    }
+};
+
+test "a guest with both slots valid overlays them with the newer slot booted" {
+    var layout = try laidOut();
+    var mram = try Mram.init();
+    defer mram.deinit();
+    mram.stage(.a, 3, 0x1000, false);
+    mram.stage(.b, 4, 0x2040, false);
+    layout.slots = map_layout.slots(&mram, trigger_at, &region_map.ek_ra8d2);
+    const dfu = layout.slots.?;
+    try std.testing.expectEqual(map_layout.SlotState.State.valid, dfu.a.state);
+    try std.testing.expectEqual(map_layout.SlotState.State.valid, dfu.b.state);
+    try std.testing.expectEqual(boot_slots.Which.b, dfu.booted.?);
+    try std.testing.expectEqual(dfu_layout.run_base, dfu.run_base);
+    try std.testing.expectEqual(@as(u64, 2482856036502827657), try digest(dark, &layout, null, "/tmp/map778_boot.ppm"));
+}
+
+test "a bad-CRC newer slot leaves the older slot booted" {
+    var layout = try laidOut();
+    var mram = try Mram.init();
+    defer mram.deinit();
+    mram.stage(.a, 5, 0x1000, false);
+    mram.stage(.b, 7, 0x2040, true);
+    layout.slots = map_layout.slots(&mram, trigger_at, &region_map.ek_ra8d2);
+    const dfu = layout.slots.?;
+    try std.testing.expectEqual(map_layout.SlotState.State.bad_crc, dfu.b.state);
+    try std.testing.expectEqual(boot_slots.Which.a, dfu.booted.?);
+    try std.testing.expectEqual(@as(u64, 6609514058959215016), try digest(dark, &layout, null, "/tmp/map778_badcrc.ppm"));
+}
+
+test "a guest with no dfu layout carries no overlay" {
+    var layout = try laidOut();
+    var mram = try Mram.init();
+    defer mram.deinit();
+    layout.slots = map_layout.slots(&mram, trigger_at, &region_map.ek_ra8d2);
+    try std.testing.expectEqual(@as(?map_layout.Slots, null), layout.slots);
+}

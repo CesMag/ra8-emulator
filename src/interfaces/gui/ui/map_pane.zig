@@ -11,6 +11,7 @@ const font = @import("ra8_render").font;
 const Theme = @import("colors.zig").Theme;
 const layout_mod = @import("../map_layout.zig");
 const region_map = @import("ra8_session").region.map;
+const boot_slots = @import("ra8_session").boot_slots;
 const Layout = layout_mod.Layout;
 const Block = layout_mod.Block;
 const Rect = draw_list.Rect;
@@ -88,6 +89,7 @@ pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, layout: 
     try list.pushClip(area);
     defer list.popClip();
     for (bars, 0..) |region, slot| try drawBar(list, theme, layout, barRect(area, slot, bars.len), region, hover);
+    try drawSlots(list, theme, layout, area, bars);
     if (hover) |index| try drawHover(list, theme, area, layout, bars, index);
 }
 
@@ -163,4 +165,77 @@ fn centre(layout: *const Layout, area: Rect, bars: []const usize, block: Block) 
     const slot = std.mem.indexOfScalar(usize, bars, block.region) orelse return null;
     const box = blockRect(layout, barRect(area, slot, bars.len), block);
     return .{ .x = box.x + @divTrunc(box.w, 2), .y = box.y + @divTrunc(box.h, 2) };
+}
+
+/// The dfu A/B boot-slot overlay (RA8EMU-778): an outline around the
+/// bootloader and each slot on the MRAM bar, in the slot state's colour and
+/// labelled, and an arrow from the slot the bootloader picks down to its
+/// copy-to-run base on the SRAM bar.
+fn drawSlots(list: *draw_list.DrawList, theme: *const Theme, layout: *const Layout, area: Rect, bars: []const usize) !void {
+    const dfu = layout.slots orelse return;
+    const mram = regionOf(layout, boot_slots.layout.mram_base) orelse return;
+    const slot = std.mem.indexOfScalar(usize, bars, mram) orelse return;
+    const bar = barRect(area, slot, bars.len);
+    const reg = layout.map.regions[mram];
+    const boot = layout_mod.Slots.bootloader();
+    const box = slotRect(bar, reg, boot);
+    try edges(list, box, theme.pc_cyan);
+    try font.draw(list, box.x + 2, box.y + 2, font.fit("bootloader", @intCast(bar.w - 4)), theme.ink);
+    const box_a = try drawSlot(list, theme, bar, reg, .a, dfu.a);
+    const box_b = try drawSlot(list, theme, bar, reg, .b, dfu.b);
+    if (dfu.booted) |which| {
+        try drawRun(list, theme, layout, area, bars, dfu.run_base, if (which == .a) box_a else box_b);
+    }
+}
+
+/// Outlines one slot on the bar and labels it; returns the outline box.
+fn drawSlot(list: *draw_list.DrawList, theme: *const Theme, bar: Rect, reg: region_map.Region, which: boot_slots.Which, state: layout_mod.SlotState) !Rect {
+    const range = [2]u32{ boot_slots.baseOf(which), boot_slots.layout.slot_size };
+    const box = slotRect(bar, reg, range);
+    const border = switch (state.state) {
+        .empty => theme.muted,
+        .valid => theme.good,
+        .bad_crc => theme.bad,
+    };
+    try edges(list, box, border);
+    var buffer: [32]u8 = undefined;
+    const text = switch (state.state) {
+        .valid => try std.fmt.bufPrint(&buffer, "{s}{d}", .{ state.label(which), state.seq }),
+        else => state.label(which),
+    };
+    try font.draw(list, box.x + 2, box.y + 2, font.fit(text, @intCast(bar.w - 4)), theme.ink);
+    return box;
+}
+
+/// A tick at the copy-to-run base on its bar and the arrow to it.
+fn drawRun(list: *draw_list.DrawList, theme: *const Theme, layout: *const Layout, area: Rect, bars: []const usize, run_base: u32, from: Rect) !void {
+    const sram = regionOf(layout, run_base) orelse return;
+    const slot = std.mem.indexOfScalar(usize, bars, sram) orelse return;
+    const bar = barRect(area, slot, bars.len);
+    const reg = layout.map.regions[sram];
+    const y = addressY(bar, reg, run_base);
+    try list.fill(.{ .x = bar.x + 1, .y = y - 1, .w = bar.w - 2, .h = 3 }, theme.good);
+    const x = from.x + @divTrunc(from.w, 2);
+    try list.line(x, from.y + from.h, x, y, theme.ink);
+}
+
+/// A 1px outline around `box`.
+fn edges(list: *draw_list.DrawList, box: Rect, border: draw_list.Color) !void {
+    try list.fill(.{ .x = box.x, .y = box.y, .w = box.w, .h = 1 }, border);
+    try list.fill(.{ .x = box.x, .y = box.y + box.h - 1, .w = box.w, .h = 1 }, border);
+    try list.fill(.{ .x = box.x, .y = box.y, .w = 1, .h = box.h }, border);
+    try list.fill(.{ .x = box.x + box.w - 1, .y = box.y, .w = 1, .h = box.h }, border);
+}
+
+/// The screen rect of an address range in its region's bar, at least one
+/// pixel tall, the same scaling the blocks use.
+fn slotRect(bar: Rect, reg: region_map.Region, range: [2]u32) Rect {
+    const top = addressY(bar, reg, range[0]);
+    const bottom = addressY(bar, reg, @as(u64, range[0]) + range[1]);
+    return .{ .x = bar.x + 1, .y = top, .w = bar.w - 2, .h = @max(1, bottom - top) };
+}
+
+/// The region index holding `address`, or null.
+fn regionOf(layout: *const Layout, address: u32) ?usize {
+    return region_map.regionAt(layout.map.regions, address, 1);
 }

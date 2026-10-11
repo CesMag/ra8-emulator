@@ -6,7 +6,9 @@
 
 const Image = @import("ra8_session").symbols.Image;
 const region_map = @import("ra8_session").region.map;
+const boot_slots = @import("ra8_session").boot_slots;
 const sections = @import("ra8_session").sections;
+const session_api = @import("ra8_session").api;
 
 pub const Kind = enum { code, read_only, initialised, zero_fill, no_init, stack };
 
@@ -59,6 +61,8 @@ pub const Layout = struct {
     count: usize = 0,
     /// The live stack marks, when a core is attached (RA8EMU-815).
     marks: ?Marks = null,
+    /// The dfu boot-slot overlay, when a caller read the guest's slots (RA8EMU-778).
+    slots: ?Slots = null,
 
     pub fn items(self: *const Layout) []const Block {
         return self.blocks[0..self.count];
@@ -125,3 +129,92 @@ fn kindOf(kind: sections.Kind) Kind {
         .no_init => .no_init,
     };
 }
+
+/// One A/B slot's header state on the MRAM bar (RA8EMU-778).
+pub const SlotState = struct {
+    pub const State = enum { empty, valid, bad_crc };
+
+    state: State,
+    /// The header's sequence number; only meaningful when valid.
+    seq: u32 = 0,
+
+    pub fn label(self: SlotState, which: boot_slots.Which) []const u8 {
+        return switch (self.state) {
+            .empty => switch (which) {
+                .a => "A empty",
+                .b => "B empty",
+            },
+            .bad_crc => switch (which) {
+                .a => "A bad",
+                .b => "B bad",
+            },
+            .valid => switch (which) {
+                .a => "A seq ",
+                .b => "B seq ",
+            },
+        };
+    }
+};
+
+/// The dfu A/B boot-slot overlay (RA8EMU-778): the bootloader, both slots'
+/// header states, which slot the bootloader would copy to run, and the run
+/// base. Populated beside the image by callers that read guest memory, and
+/// left null so the pane draws nothing when the guest carries no dfu layout.
+pub const Slots = struct {
+    a: SlotState,
+    b: SlotState,
+    /// The slot the bootloader would boot, null when it stays in DFU.
+    booted: ?boot_slots.Which,
+    /// Where the bootloader copies the booted body, drawn on the SRAM bar.
+    run_base: u32,
+
+    /// The range in guest memory the pane outlines for a slot: start, size.
+    pub fn part(which: boot_slots.Which) [2]u32 {
+        return switch (which) {
+            .a => .{ boot_slots.layout.slot_a_base, boot_slots.layout.slot_size },
+            .b => .{ boot_slots.layout.slot_b_base, boot_slots.layout.slot_size },
+        };
+    }
+
+    pub fn bootloader() [2]u32 {
+        return .{ boot_slots.layout.mram_base, boot_slots.layout.bootloader_size };
+    }
+};
+
+/// Reads the dfu layout out of `source` (anything with
+/// `read(address: u32, into: []u8) !void` over guest memory) and returns
+/// the overlay, or null when the guest carries no dfu layout: a read
+/// failure, a region map that does not cover the bootloader, and no slot
+/// header with the magic. `trigger_address` resolves g_dfu_trigger from the
+/// image, or null to leave the trigger unknown.
+pub fn slots(source: anytype, trigger_address: ?u32, regions: []const region_map.Region) ?Slots {
+    const report = boot_slots.read(source, trigger_address) catch return null;
+    if (region_map.regionAt(regions, boot_slots.layout.mram_base, boot_slots.layout.bootloader_size) == null) return null;
+    if (!report.a.magic_ok and !report.b.magic_ok) return null;
+    return .{
+        .a = slotState(report.a),
+        .b = slotState(report.b),
+        .booted = switch (report.action) {
+            .dfu => null,
+            .boot_a => .a,
+            .boot_b => .b,
+        },
+        .run_base = report.run_base,
+    };
+}
+
+fn slotState(slot: boot_slots.Slot) SlotState {
+    if (!slot.magic_ok) return .{ .state = .empty };
+    if (slot.valid) return .{ .state = .valid, .seq = slot.header.seq };
+    return .{ .state = .bad_crc };
+}
+
+/// Reads guest memory through one core's session, the source `slots` takes.
+pub const SessionSource = struct {
+    session: *session_api.Session,
+    core: session_api.Core,
+
+    pub fn read(self: SessionSource, address: u32, into: []u8) anyerror!void {
+        try self.session.read(self.core, address, into);
+    }
+};
