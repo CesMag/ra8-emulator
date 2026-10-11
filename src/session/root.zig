@@ -25,6 +25,7 @@ pub const board_state = @import("board_state.zig");
 pub const boot_slots = @import("boot_slots.zig");
 pub const break_list = @import("break_list.zig");
 pub const break_table = @import("break_table.zig");
+pub const session_breaks = @import("session_breaks.zig");
 pub const breakpoint = @import("breakpoint.zig");
 pub const call_decode = @import("call_decode.zig");
 pub const commands = @import("commands.zig");

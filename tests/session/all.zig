@@ -7,6 +7,7 @@ test {
     _ = @import("run_policy_test.zig");
     _ = @import("breakpoint_test.zig");
     _ = @import("break_table_test.zig");
+    _ = @import("session_breaks_test.zig");
     _ = @import("stop_machine_test.zig");
     _ = @import("watch_table_test.zig");
     _ = @import("call_decode_test.zig");
