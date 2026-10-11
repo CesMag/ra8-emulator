@@ -8,6 +8,7 @@
 //! core goes on to. Memory is read through the core view, whose reads
 //! peek and so take nothing from a FIFO (RA8EMU-938).
 const cpu_mod = @import("ra8_chip").core.cpu.cpu;
+const TimeBase = @import("ra8_chip").periph.timebase.TimeBase;
 const core_view = @import("core_view.zig");
 const rtos_trace = @import("rtos_trace.zig");
 const stack_samples = @import("stack_samples.zig");
@@ -23,8 +24,10 @@ pub const Sampler = struct {
     starts: ?stack_walk.Starts = null,
     store: *stack_samples.Store,
     trace: ?*const rtos_trace.Trace = null,
-    /// Virtual time, borrowed.
-    clock: *const u64,
+    /// Virtual time, borrowed; read only when `time` is null.
+    clock: ?*const u64 = null,
+    /// The board's time base, borrowed; stamps samples when set (RA8EMU-833).
+    time: ?*const TimeBase = null,
     /// Whoever was listening before, told first.
     next: ?cpu_mod.RetireListener = null,
     left: u32 = 0,
@@ -52,7 +55,13 @@ pub const Sampler = struct {
         const psp = self.view.register(.psp) catch return self.lose();
         var stack: [stack_samples.limits.depth]u32 = undefined;
         const count = stack_walk.stackOf(self.frame, registers, psp, self.view, self.starts, &stack);
-        self.store.push(self.core, self.thread(), self.clock.*, stack[0..count]);
+        self.store.push(self.core, self.thread(), self.stamp(), stack[0..count]);
+    }
+
+    fn stamp(self: *const Sampler) u64 {
+        if (self.time) |base| return base.now();
+        const clock = self.clock orelse return 0;
+        return clock.*;
     }
 
     fn thread(self: *const Sampler) u32 {

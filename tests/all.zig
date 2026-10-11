@@ -9,6 +9,7 @@ test {
     _ = @import("chip/core/systick_bank_test.zig");
     _ = @import("session/harness/harness_test.zig");
     _ = @import("session/harness/files_test.zig");
+    _ = @import("session/harness/stacks_test.zig");
     _ = @import("board/profile_test.zig");
     _ = @import("board/external_memory_test.zig");
     _ = @import("board/external_backing_test.zig");

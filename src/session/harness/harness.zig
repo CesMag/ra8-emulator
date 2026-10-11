@@ -30,6 +30,7 @@ const rtos_hook = step_hook.rtos_hook;
 const rtos_publish = step_hook.rtos_publish;
 const Cpu0 = @import("ra8_board").cpu0_store.Cpu0;
 const decode = @import("ra8_chip").core.cpu.decode;
+pub const stacks = @import("stacks.zig");
 
 pub const limits = struct {
     pub const max_elf_bytes = 64 * 1024 * 1024;
@@ -179,6 +180,19 @@ pub const Harness = struct {
         state.publisher = .{ .trace = &tracer.trace, .stream = &state.session.event_stream, .inner = state.session.live.boundary, .time = &state.board.time.base };
         state.session.live.boundary = state.publisher.hook();
         return true;
+    }
+
+    /// Sample CPU0's call stacks into `into` (RA8EMU-833), named by the
+    /// opened image and tagged with the thread when traceRtos() found one.
+    /// `into` stays put until `unsampleStacks` or deinit.
+    pub fn sampleStacks(self: *Harness, into: *stacks.Stacks) void {
+        const state = self.state;
+        const trace = if (state.tracer) |*found| &found.trace else null;
+        into.watch(0, &state.cpu, &state.image, &state.board.time.base, trace);
+    }
+
+    pub fn unsampleStacks(self: *Harness, into: *stacks.Stacks) void {
+        into.unwatch(0, &self.state.cpu);
     }
 
     /// Snapshot and restore of this run's file (RA8EMU-768).
