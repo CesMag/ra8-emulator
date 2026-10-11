@@ -2,3 +2,4 @@
 zig-out/
 zig-pkg/
 build/
+.ra8-emulator/

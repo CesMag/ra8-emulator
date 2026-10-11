@@ -9,6 +9,7 @@ pub const platform = @import("platform.zig");
 pub const headless = @import("headless.zig");
 pub const camera_panel = @import("camera_panel.zig");
 pub const camera_open = @import("camera_open.zig");
+pub const camera_always = @import("camera_always.zig");
 pub const camera_view = @import("ui/camera_view.zig");
 pub const session_link = @import("session_link.zig");
 pub const status_bar = @import("status_bar.zig");

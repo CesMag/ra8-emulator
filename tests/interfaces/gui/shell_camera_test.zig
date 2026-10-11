@@ -1,7 +1,8 @@
 //! Host tests for the shell's camera leaf (RA8EMU-796): the pick's spec text,
 //! one ask per change while connected, the webcam's consent flag, the
-//! session's answer moving the ring, clicks routed into the leaf's panel, and
-//! the leaf painting the panel.
+//! session's answer moving the ring, clicks routed into the leaf's panel, the
+//! leaf painting the panel, and Always kept in the project between starts
+//! (RA8EMU-1124).
 const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
@@ -19,6 +20,7 @@ const camera_view = gui_app.camera_view;
 const session_link = gui_app.session_link;
 const shell_camera = gui_app.shell_camera;
 const Camera = shell_camera.Camera;
+const store = ra8.host.camera.always;
 const Env = proto.Client.Env;
 
 /// A link that has finished its greeting, writing into a pipe nobody answers.
@@ -137,6 +139,73 @@ test "a press in the camera leaf picks in its panel; one elsewhere does not" {
     try std.testing.expect(!camera.clickIn(&layout, &solved, 1, frame.bodyOf(solved.panes.items[0].area).y + 1));
     try std.testing.expect(camera.clickIn(&layout, &solved, button.x + 1, button.y + 1));
     try std.testing.expectEqual(gui_app.camera_panel.Kind.pipe, camera.panel.active);
+}
+
+/// The leaf as ra8_gui starts it in `project` with `--camera-source webcam`.
+fn startOnWebcam(camera: *Camera, project: std.Io.Dir) void {
+    camera.kept = .begin(std.testing.io, project, &camera.panel);
+    shell_camera.start(camera, .{ .kind = .webcam });
+}
+
+test "Always answered in the leaf is found by the next start, until the leaf takes it back" {
+    const gpa = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    var wire: Wire = .{};
+    try wire.open();
+    defer wire.close();
+    var layout = try cameraLayout(gpa);
+    defer layout.deinit();
+    var solved = try frame.solve(&layout, gpa, 480, 320);
+    defer solved.deinit(gpa);
+    const at = shell_camera.layoutIn(try cameraBody(&layout, &solved));
+
+    // No marker: the start asks, and nothing goes to the session.
+    var first: Camera = .{};
+    startOnWebcam(&first, tmp.dir);
+    first.attach(&wire.link);
+    try std.testing.expect(first.panel.asking);
+    try std.testing.expectEqual(@as(?u32, null), first.asked);
+    const always = at.dialog(.always);
+    try std.testing.expect(first.clickIn(&layout, &solved, always.x + 1, always.y + 1));
+    try std.testing.expect(store.load(std.testing.io, tmp.dir));
+
+    // The marker: the start is already allowing, and the ask carries the consent.
+    var second: Camera = .{};
+    startOnWebcam(&second, tmp.dir);
+    try std.testing.expect(!second.panel.asking);
+    try std.testing.expect((try gui_app.camera_open.spec(second.panel, second.args)).allow_webcam);
+    second.attach(&wire.link);
+    try std.testing.expect(second.asked != null);
+    try std.testing.expectEqual(gui_app.camera_panel.Kind.webcam, second.asked_kind);
+    const forget = at.withdraw();
+    try std.testing.expect(second.clickIn(&layout, &solved, forget.x + 1, forget.y + 1));
+    try std.testing.expect(!store.load(std.testing.io, tmp.dir));
+
+    // Taken back: the next start asks again.
+    var third: Camera = .{};
+    startOnWebcam(&third, tmp.dir);
+    third.attach(&wire.link);
+    try std.testing.expect(third.panel.asking);
+    try std.testing.expectEqual(@as(?u32, null), third.asked);
+}
+
+test "an Always the project did not keep is the leaf's note" {
+    const gpa = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    try tmp.dir.writeFile(std.testing.io, .{ .sub_path = store.dir_name, .data = "" });
+    var layout = try cameraLayout(gpa);
+    defer layout.deinit();
+    var solved = try frame.solve(&layout, gpa, 480, 320);
+    defer solved.deinit(gpa);
+    const always = shell_camera.layoutIn(try cameraBody(&layout, &solved)).dialog(.always);
+    var camera: Camera = .{ .status = .switched };
+    startOnWebcam(&camera, tmp.dir);
+    try std.testing.expectEqualStrings("the session switched source", camera.note().?);
+    try std.testing.expect(camera.clickIn(&layout, &solved, always.x + 1, always.y + 1));
+    try std.testing.expect(camera.panel.always);
+    try std.testing.expectEqualStrings(gui_app.camera_always.not_kept, camera.note().?);
 }
 
 fn holds(pixels: *const raster.Framebuffer, area: draw_list.Rect, color: draw_list.Color) bool {

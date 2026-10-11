@@ -5,9 +5,9 @@
 //! only Allow once or Always for this project makes the webcam the active
 //! source; Cancel leaves the old source running. Allow once lasts until the
 //! user picks another source, so coming back to the webcam asks again.
-//! Always holds for the rest of the run. `changes` counts switches so the
+//! Always holds until it is withdrawn, and camera_always.zig keeps it in
+//! the project between runs (RA8EMU-1124). `changes` counts switches so the
 //! runner knows to reopen the CEU's source mid-run without a restart.
-//! Drawing the panel and persisting Always to the project are later slices.
 const source_spec = @import("ra8_host").camera.source_spec;
 
 pub const Kind = source_spec.Kind;
@@ -20,7 +20,8 @@ pub const Panel = struct {
     active: Kind = .gradient,
     /// The webcam permission dialog is open.
     asking: bool = false,
-    /// Always for this project was answered this run.
+    /// Always for this project stands: answered this run, or in an earlier
+    /// one that kept it, and not withdrawn since.
     always: bool = false,
     /// How many times `active` has changed.
     changes: u32 = 0,
@@ -48,6 +49,12 @@ pub const Panel = struct {
                 self.switchTo(.webcam);
             },
         }
+    }
+
+    /// The user took Always back. A webcam that is the source stays the
+    /// source, as after Allow once: the next pick of the webcam asks again.
+    pub fn withdraw(self: *Panel) void {
+        self.always = false;
     }
 
     /// The "camera on" indicator: lit only while the webcam is the source.
