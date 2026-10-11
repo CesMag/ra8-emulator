@@ -91,6 +91,9 @@ pub const Shell = struct {
     time: ?*shell_time.Time = null,
     /// The session when it is served in this process; null for a remote one.
     server: ?Server = null,
+    /// The per-user listener outside clients (ctl, IDEs) connect to
+    /// (RA8EMU-1156); null when it could not bind.
+    listener: ?Server = null,
     /// The wall clock a run is paced against; without one time stands still.
     clock: ?wall_clock.Clock = null,
     /// The last pump took everything the session had sent.
@@ -271,8 +274,8 @@ pub const Shell = struct {
     /// and take that too.
     fn exchange(self: *Shell) !void {
         try self.pump();
-        const server = self.server orelse return;
-        try server.answer();
+        if (self.server) |server| try server.answer();
+        if (self.listener) |listener| try listener.answer();
         try self.pump();
     }
 
@@ -288,6 +291,7 @@ pub const Shell = struct {
         while (self.drained and time.run.next(link, self.now())) {
             const server = self.server orelse return;
             try server.answer();
+            if (self.listener) |listener| try listener.answer();
             try self.pump();
         }
     }

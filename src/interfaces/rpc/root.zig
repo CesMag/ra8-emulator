@@ -9,6 +9,7 @@
 //! as `ra8_rpc_wire`.
 pub const card_apps = @import("card_apps.zig");
 pub const child_transport = @import("child_transport.zig");
+pub const host_listener = @import("host_listener.zig");
 pub const served_setup = @import("served_setup.zig");
 pub const session = @import("session/session.zig");
 pub const backtrace_wire = @import("backtrace_wire.zig");

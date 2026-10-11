@@ -28,6 +28,8 @@ const shell_memory = @import("memory.zig");
 const session_link = @import("../session_link.zig");
 const local_session = @import("../local_session.zig");
 const card_apps = @import("ra8_rpc").card_apps;
+const host_listener = @import("ra8_rpc").host_listener;
+const served_server = @import("ra8_rpc").session.server;
 const shell_run = @import("run.zig");
 const shell_time = @import("time.zig");
 const wall_clock = @import("../wall_clock.zig");
@@ -177,7 +179,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
     var recorder = window_stills.Recorder{ .allocator = allocator, .inner = window, .io = io, .dir = stills_dir orelse std.Io.Dir.cwd(), .stem = "window", .every = args.stills_every };
     const shown = if (stills_dir != null) recorder.platform() else window;
     var startup = args.startup;
-    local(allocator, io, shown, args, &startup, bytes) catch |err| switch (err) {
+    local(allocator, io, env, shown, args, &startup, bytes) catch |err| switch (err) {
         error.ImageNotLoaded => {
             std.debug.print("ra8_gui: the session did not load {s}\n", .{args.image});
             return 1;
@@ -188,7 +190,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
 }
 
 /// Serve the image in-process and run the shell on it.
-fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, args: Args, startup: *shell_startup.Startup, bytes: []const u8) !void {
+fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Environ.Map, window: platform.Platform, args: Args, startup: *shell_startup.Startup, bytes: []const u8) !void {
     const path = args.image;
     var session: local_session.LocalSession = undefined;
     try session.open(allocator, io, path);
@@ -197,6 +199,11 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
         std.debug.print("ra8_gui: cannot stage the apps: {s}\n", .{@errorName(err)});
         return err;
     };
+    // Outside clients (ctl, IDEs) reach the same session the panes show
+    // (RA8EMU-1156). Nothing auto-starts: no bind, no hosting, and the
+    // file stays away; a client then starts ra8_gui itself.
+    var hosted: ?Hosted = null;
+    defer if (hosted) |*h| h.deinit();
     const rx = try allocator.alloc(u8, 2 * Env.max_frame);
     const tx = try allocator.alloc(u8, Env.max_frame);
     var link: session_link.Link = undefined;
@@ -207,6 +214,12 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     defer shell.deinit();
     shell.link = &link;
     shell.server = served(&session);
+    if (host_listener.Listener.bind(allocator, io, env)) |bound| {
+        hosted = .{ .listener = bound, .context = &session.setup.context, .tx = try allocator.alloc(u8, Env.max_frame), .gpa = allocator };
+        const h = &hosted.?;
+        h.announce(path);
+        shell.listener = .{ .context = h, .answerFn = answerHosted };
+    } else |_| {}
     var host_clock = wall_clock.Host.init(io);
     shell.clock = host_clock.clock();
     var time: shell_time.Time = .{};
@@ -249,6 +262,35 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     shell.painter = panes.painter();
     try drive(io, &shell, window, path, bytes, args.frames);
     link.close();
+}
+
+/// The per-user listener and the session it serves (RA8EMU-1156): the
+/// listener must stay put once the shell holds it, so it lives here whole.
+const Hosted = struct {
+    listener: host_listener.Listener,
+    context: *served_server.Context,
+    tx: []u8,
+    gpa: std.mem.Allocator,
+
+    /// List the one session, with no gdb port yet (RA8EMU-1156 part 2).
+    fn announce(self: *Hosted, elf: []const u8) void {
+        const sessions = [_]host_listener.Session{.{ .gdb_port = null, .elf = elf }};
+        self.listener.announce(&sessions) catch {};
+    }
+
+    fn answer(self: *Hosted) !void {
+        return self.listener.answer(self.context, self.tx);
+    }
+
+    fn deinit(self: *Hosted) void {
+        self.listener.deinit();
+        self.gpa.free(self.tx);
+    }
+};
+
+fn answerHosted(context: *anyopaque) anyerror!void {
+    const hosted: *Hosted = @ptrCast(@alignCast(context));
+    return hosted.answer();
 }
 
 /// `session` as the shell answers it: in this process, on the shell's thread.
