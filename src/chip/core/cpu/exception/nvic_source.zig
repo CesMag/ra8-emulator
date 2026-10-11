@@ -18,6 +18,7 @@ const nvic_banked = @import("../../../periph/nvic/banked.zig");
 const scs_alias = @import("../../../periph/scs_alias.zig");
 const nvic = @import("../../../periph/nvic/nvic.zig");
 const nvic_clear = @import("../../../periph/nvic/clear.zig");
+const memmap = @import("../../memmap.zig");
 const Entry = @import("active.zig").Entry;
 const Source = @import("source.zig").Source;
 
@@ -26,12 +27,21 @@ const Port = struct {
     through: bus.Bus,
     /// The running state, set to Secure while the Non-secure copy is reached.
     banked: ?*banked_mod.Banked = null,
+    /// ICSR and SHPR3, both copies, as one pick already read them: the fold
+    /// and the pick each read them, and every read crosses the whole bus
+    /// (RA8EMU-1120). Neither register changes on a read; a write forgets.
+    memo: Memo = .{},
 
     pub fn readWord(self: *Port, address: u32) bus.Error!u32 {
-        return self.through.readWord(address);
+        const slot = Memo.slotOf(address) orelse return self.through.readWord(address);
+        if (self.memo.get(slot)) |value| return value;
+        const value = try self.through.readWord(address);
+        self.memo.put(slot, value);
+        return value;
     }
 
     pub fn writeWord(self: *Port, address: u32, value: u32) bus.Error!void {
+        if (Memo.slotOf(address)) |slot| self.memo.forget(slot);
         var bytes: [4]u8 = undefined;
         @import("std").mem.writeInt(u32, &bytes, value, .little);
         return self.through.write(address, &bytes);
@@ -62,6 +72,41 @@ const Port = struct {
 
     fn restore(self: *Port, was: ?banked_mod.State) void {
         if (self.banked) |state| state.current = was orelse return;
+    }
+};
+
+/// Words a pick reads more than once, read once.
+const Memo = struct {
+    values: [4]u32 = @splat(0),
+    known: u4 = 0,
+
+    fn slotOf(address: u32) ?u2 {
+        const icsr = memmap.scb.icsr;
+        const shpr3 = memmap.scb.shpr3;
+        const alias = scs_alias.offset;
+        if (address == icsr) return 0;
+        if (address == shpr3) return 1;
+        if (address == icsr + alias) return 2;
+        if (address == shpr3 + alias) return 3;
+        return null;
+    }
+
+    fn get(self: *const Memo, slot: u2) ?u32 {
+        if (self.known & bit(slot) == 0) return null;
+        return self.values[slot];
+    }
+
+    fn put(self: *Memo, slot: u2, value: u32) void {
+        self.values[slot] = value;
+        self.known |= bit(slot);
+    }
+
+    fn forget(self: *Memo, slot: u2) void {
+        self.known &= ~bit(slot);
+    }
+
+    fn bit(slot: u2) u4 {
+        return @as(u4, 1) << slot;
     }
 };
 

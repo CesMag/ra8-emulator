@@ -317,8 +317,11 @@ pub const Nvic = struct {
         var word: u16 = 0;
         while (!quiet and word < irq_words) : (word += 1) {
             const offset = 4 * @as(u32, word);
-            const ready = (try core.readWord(memmap.nvic.ispr + offset)) &
-                (try core.readWord(memmap.nvic.iser + offset));
+            // A word with no line enabled is the common case: skip its pends
+            // (RA8EMU-1120, each read crosses the whole bus).
+            const enabled = try core.readWord(memmap.nvic.iser + offset);
+            if (enabled == 0) continue;
+            const ready = enabled & (try core.readWord(memmap.nvic.ispr + offset));
             if (ready == 0) continue;
             var bit: u5 = 0;
             while (true) : (bit += 1) {
