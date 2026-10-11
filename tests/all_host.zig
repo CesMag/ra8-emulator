@@ -94,6 +94,7 @@ test {
     _ = @import("interfaces/gui/ui/pane_layout_test.zig");
     _ = @import("interfaces/gui/console_log_test.zig");
     _ = @import("interfaces/gui/console_scroll_test.zig");
+    _ = @import("interfaces/gui/console_save_test.zig");
     _ = @import("interfaces/gui/ui/console_pane_test.zig");
     _ = @import("interfaces/gui/platform_test.zig");
     _ = @import("interfaces/gui/session_link_test.zig");

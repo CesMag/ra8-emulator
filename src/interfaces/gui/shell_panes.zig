@@ -20,6 +20,7 @@ const font = @import("ra8_render").font;
 const pane_layout = @import("ui/pane_layout.zig");
 const shell_frame = @import("ui/shell_frame.zig");
 const console_pane = @import("ui/console_pane.zig");
+const console_strip = @import("ui/console_strip.zig");
 const shell_console = @import("shell_console.zig");
 const shell_board = @import("shell_board.zig");
 const shell_board_input = @import("shell_board_input.zig");
@@ -91,7 +92,10 @@ pub fn noteAt(body: Rect) ?struct { x: i32, y: i32, room: u32 } {
 fn paint(context: *anyopaque, list: *draw_list.DrawList, theme: *const Theme, pane: pane_layout.Pane, body: Rect) anyerror!void {
     const self: *Panes = @ptrCast(@alignCast(context));
     if (pane.kind == .console) if (self.console) |console| {
-        if (console.hasOutput()) return console_pane.draw(list, theme, body, &console.log, console.scroll.back);
+        if (console.hasOutput()) {
+            try console_strip.draw(list, theme, body, console.saved);
+            return console_pane.draw(list, theme, console_strip.below(body), &console.log, console.scroll.back);
+        }
     };
     if (pane.kind == .devices) if (self.devices) |devices| {
         if (self.plug) |plug| if (devices.answered and !devices.refused) {

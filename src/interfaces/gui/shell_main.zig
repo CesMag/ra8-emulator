@@ -195,6 +195,8 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     shell.time = &time;
     var console = shell_console.Console.init(allocator);
     defer console.deinit();
+    // Saves go to the project directory, where ra8_gui was started.
+    console.save_to = .{ .io = io, .dir = std.Io.Dir.cwd() };
     shell.console = &console;
     var board = shell_board.Board.init(allocator);
     defer board.deinit();
