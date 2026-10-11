@@ -23,6 +23,12 @@ pub const peripheral_base: u32 = 0x4000_0000;
 /// itself reads AIRCR and SHCSR every instruction (RA8EMU-418).
 pub const ppb_base: u32 = 0xE000_0000;
 
+/// ICER and ICPR, sixteen words each, and the SCS's Non-secure alias.
+const icer: u32 = 0xE000_E180;
+const icpr: u32 = 0xE000_E280;
+const clear_span: u32 = 0x40;
+const scs_alias_offset: u32 = 0x0002_0000;
+
 /// What a poll's decision read outside the bus. A hush holds only while
 /// this is unchanged: CPSIE, MSR BASEPRI or an exception entry or return
 /// the source never heard about all move it (RA8EMU-437).
@@ -53,6 +59,10 @@ pub const QuietSource = struct {
     /// The hush found nothing pending at all, so it holds whatever the key.
     clear: bool = false,
     key: Key = .{ .primask = 0, .basepri = 0, .faultmask = 0, .depth = 0, .running = 0 },
+    /// ICER or ICPR may hold a write the NVIC source has not folded yet:
+    /// set by a store to either, a latch, or `stirAll`, and cleared by the
+    /// source once it folds (NvicSource.clear_due, RA8EMU-1120).
+    clear_due: bool = true,
 
     pub fn source(self: *QuietSource) Source {
         return .{ .ctx = self, .vtable = &.{ .winner = winner, .taken = taken, .returned = returned } };
@@ -72,6 +82,13 @@ pub const QuietSource = struct {
         self.settled = false;
         self.answered = false;
         self.hushed = false;
+    }
+
+    /// As `stir`, for a change the core's own bus never saw (the debugger
+    /// wrote state): the clear registers are folded again too.
+    pub fn stirAll(self: *QuietSource) void {
+        self.clear_due = true;
+        self.stir();
     }
 
     /// The poll could take nothing: nothing pending (RA8EMU-429), or a
@@ -133,12 +150,19 @@ pub const QuietSource = struct {
     fn write(ctx: *anyopaque, address: u32, bytes: []const u8) bus_mod.Error!void {
         const self: *QuietSource = @ptrCast(@alignCast(ctx));
         if (address >= peripheral_base) self.stir();
+        if (clearRegister(address)) self.clear_due = true;
         return self.memory.write(address, bytes);
     }
 
     fn latch(ctx: *anyopaque, address: u32, bits: u32) bus_mod.Error!void {
         const self: *QuietSource = @ptrCast(@alignCast(ctx));
-        self.stir();
+        self.stirAll();
         return self.memory.latch(address, bits);
+    }
+
+    /// ICER or ICPR, in either copy of the SCS.
+    fn clearRegister(address: u32) bool {
+        const at = if (address >= ppb_base + scs_alias_offset) address - scs_alias_offset else address;
+        return (at >= icer and at < icer + clear_span) or (at >= icpr and at < icpr + clear_span);
     }
 };

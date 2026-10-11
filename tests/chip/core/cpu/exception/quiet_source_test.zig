@@ -245,3 +245,34 @@ test "a repeat passes through to the real bus and stirs only when it reads" {
     probe.allow = false;
     try std.testing.expect(!quiet.bus().repeat(0x5002_00C0, 4, 3));
 }
+
+test "a store to ICER or ICPR, in either SCS copy, marks the clear registers due" {
+    var probe: LatchProbe = .{};
+    var fake: Fake = .{};
+    var quiet: QuietSource = .{ .inner = fake.source(), .memory = probe.view() };
+    const through = quiet.bus();
+    const word = [_]u8{ 1, 0, 0, 0 };
+    quiet.clear_due = false;
+    try through.write(0xE000_E100, &word); // ISER
+    try through.write(0xE000_E200, &word); // ISPR
+    try std.testing.expect(!quiet.clear_due);
+    try through.write(0xE000_E184, &word); // ICER1
+    try std.testing.expect(quiet.clear_due);
+    quiet.clear_due = false;
+    try through.write(0xE002_E280, &word); // ICPR0, Non-secure alias
+    try std.testing.expect(quiet.clear_due);
+}
+
+test "stirAll and a latch mark the clear registers due; a plain stir does not" {
+    var probe: LatchProbe = .{};
+    var fake: Fake = .{};
+    var quiet: QuietSource = .{ .inner = fake.source(), .memory = probe.view() };
+    quiet.clear_due = false;
+    quiet.stir();
+    try std.testing.expect(!quiet.clear_due);
+    quiet.stirAll();
+    try std.testing.expect(quiet.clear_due);
+    quiet.clear_due = false;
+    try quiet.bus().latch(0xE000_ED28, 1);
+    try std.testing.expect(quiet.clear_due);
+}

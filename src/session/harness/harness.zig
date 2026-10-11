@@ -270,6 +270,7 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     state.quiet = .{ .inner = state.pending.source(), .memory = state.watching.view() };
     state.cpu = .{ .bus = state.quiet.bus(), .source = state.quiet.source(), .quiet = &state.quiet };
     state.pending.banked = &state.cpu.banked;
+    state.pending.clear_due = &state.quiet.clear_due;
     state.decoded = .{};
     state.cpu.decoded = &state.decoded;
     state.formed = try formBlocks();

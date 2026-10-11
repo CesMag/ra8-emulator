@@ -66,7 +66,7 @@ pub fn runClocked(core: zig_core.ZigCore, machine: *stop_machine.Machine, count:
 pub fn runCounted(core: zig_core.ZigCore, machine: *stop_machine.Machine, count: u64, watch: ?*watch_bus.WatchBus, clock: ?*zig_cycles.Clock, retired: *u64) Ended {
     // The board moved, or the debugger wrote state, since the last chunk:
     // the poll asks the source afresh before trusting a hush again.
-    if (core.cpu.quiet) |hushing| hushing.stir();
+    if (core.cpu.quiet) |hushing| hushing.stirAll();
     var left = count;
     while (left > 0) {
         // Nothing armed: run as a plain run does. The watch bus stays armed

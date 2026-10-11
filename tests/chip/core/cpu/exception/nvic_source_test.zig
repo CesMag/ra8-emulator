@@ -11,6 +11,7 @@ const iser0: u32 = 0xE000_E100;
 const ispr0: u32 = 0xE000_E200;
 const iabr0: u32 = 0xE000_E300;
 const ipr0: u32 = 0xE000_E400;
+const icer0: u32 = 0xE000_E180;
 
 test "nothing pending gives no winner" {
     var ram: fixture.Ram = .{};
@@ -145,4 +146,32 @@ test "a Non-secure SysTick pended while Non-secure runs is taken Non-secure only
     try source.taken(routed.view(), 15);
     try std.testing.expectEqual(@as(u32, 0), ram.word(icsr + 0x2_0000));
     try std.testing.expect((try source.winner(routed.view())) == null);
+}
+
+test "the clear registers are folded only while marked due, and the fold clears the mark" {
+    var ram: fixture.Ram = .{};
+    var due = false;
+    var nvic: NvicSource = .{ .clear_due = &due };
+    ram.putWord(iser0, 1 << 3);
+    ram.putWord(ispr0, 1 << 3);
+    ram.putWord(icer0, 1 << 3);
+    const source = nvic.source();
+    // Not due: ICER is left alone, so line 3 is still enabled and wins.
+    try std.testing.expectEqual(@as(u9, 16 + 3), (try source.winner(ram.view())).?.number);
+    try std.testing.expectEqual(@as(u32, 1 << 3), ram.word(icer0));
+    due = true;
+    try std.testing.expect((try source.winner(ram.view())) == null);
+    try std.testing.expectEqual(@as(u32, 0), ram.word(iser0));
+    try std.testing.expectEqual(@as(u32, 0), ram.word(icer0));
+    try std.testing.expect(!due);
+}
+
+test "a source with no mark folds the clear registers every pick" {
+    var ram: fixture.Ram = .{};
+    var nvic: NvicSource = .{};
+    ram.putWord(iser0, 1 << 3);
+    ram.putWord(ispr0, 1 << 3);
+    ram.putWord(icer0, 1 << 3);
+    try std.testing.expect((try nvic.source().winner(ram.view())) == null);
+    try std.testing.expectEqual(@as(u32, 0), ram.word(iser0));
 }

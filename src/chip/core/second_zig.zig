@@ -79,6 +79,7 @@ pub const SecondZig = struct {
         // CPACR reaches CPU1's own FP state (RA8EMU-950).
         self.board.scs.fp = &self.cpu.fp;
         self.pending.banked = &self.cpu.banked;
+        self.pending.clear_due = &self.quiet.clear_due;
         self.check = .{ .unit = units.regions };
         self.board.check = &self.check;
         self.cpu.mpu = &self.check;

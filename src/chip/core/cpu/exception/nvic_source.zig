@@ -116,6 +116,9 @@ pub const NvicSource = struct {
     banked: ?*banked_mod.Banked = null,
     /// The banked exception the last winner took from the Non-secure copy.
     last_non_secure: ?u9 = null,
+    /// Set when ICER or ICPR may hold a write the fold has not undone yet
+    /// (QuietSource.clear_due). Null folds them on every pick.
+    clear_due: ?*bool = null,
 
     pub fn source(self: *NvicSource) Source {
         return .{ .ctx = self, .vtable = &.{ .winner = winner, .taken = taken, .returned = returned } };
@@ -128,11 +131,23 @@ pub const NvicSource = struct {
         defer port.restore(was);
         // Fold the write-to-clear registers first, as the model's own
         // dispatch does: on this bus they are plain memory.
-        try nvic_clear.registers(&port, nvic.irq_words, nvic.clear_bits);
+        if (self.linesDue()) {
+            try nvic_clear.lines(&port, nvic.irq_words);
+            if (self.clear_due) |due| due.* = false;
+        }
+        try nvic_clear.pends(&port, nvic.clear_bits);
         try nvic_banked.fold(&port);
         const found = (try self.model.pick(&port, null)) orelse return null;
         self.last_non_secure = if (found.non_secure) @intCast(found.number) else null;
         return .{ .number = @intCast(found.number), .priority = found.priority, .non_secure = found.non_secure };
+    }
+
+    /// Whether the IRQ lines' clear registers need folding this pick: the
+    /// six reads are skipped while nothing can have written them
+    /// (RA8EMU-1120).
+    fn linesDue(self: *const NvicSource) bool {
+        const due = self.clear_due orelse return true;
+        return due.*;
     }
 
     fn taken(ctx: *anyopaque, through: bus.Bus, number: u9) bus.Error!void {

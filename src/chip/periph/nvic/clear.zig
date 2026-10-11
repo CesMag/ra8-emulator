@@ -24,13 +24,24 @@ pub const Bits = struct {
 ///
 /// The one behaviour this cannot give back is the read side: on hardware ICER
 /// reads as the enable state, here it reads as zero.
+/// Both halves: the IRQ lines' clear registers, then ICSR's.
 pub fn registers(core: anytype, irq_words: u16, bits: Bits) !void {
+    try lines(core, irq_words);
+    try pends(core, bits);
+}
+
+/// ICER into ISER and ICPR into ISPR, word by word.
+pub fn lines(core: anytype, irq_words: u16) !void {
     var word: u16 = 0;
     while (word < irq_words) : (word += 1) {
         const offset = 4 * @as(u32, word);
         try fold(core, memmap.nvic.icer + offset, memmap.nvic.iser + offset);
         try fold(core, memmap.nvic.icpr + offset, memmap.nvic.ispr + offset);
     }
+}
+
+/// ICSR's PENDSTCLR and PENDSVCLR into their set bits.
+pub fn pends(core: anytype, bits: Bits) !void {
     const icsr = try core.readWord(memmap.scb.icsr);
     var next = icsr;
     if (icsr & bits.pendstclr != 0) next &= ~(bits.pendstclr | bits.pendstset);

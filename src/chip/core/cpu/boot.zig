@@ -186,6 +186,7 @@ fn runOn(out: anytype, memory: Bus, vector_base: u32, budget: u64, ran: ?*u64, b
         .{ .bus = w.busFn(w.context, memory), .source = w.sourceFn(w.context, pending.source()) }
     else
         .{ .bus = quiet.bus(), .source = quiet.source(), .quiet = &quiet };
+    if (wrap == null) pending.clear_due = &quiet.clear_due;
     pending.banked = &cpu.banked;
     if (watch.peer) |other| exclusive_peer.pair(&cpu, other);
     defer if (watch.peer) |other| exclusive_peer.unpair(&cpu, other);
