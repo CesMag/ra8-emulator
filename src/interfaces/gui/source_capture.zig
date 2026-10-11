@@ -18,8 +18,16 @@ comptime {
 /// Reads `core`'s pc, finds its line in `sections`, and reads up to
 /// `row_count` lines of that file from `dir`, the current one in the middle.
 pub fn capture(session: *session_api.Session, core: session_api.Core, sections: dwarf_line.Sections, io: std.Io, dir: std.Io.Dir, row_count: usize) anyerror!source_pane.Snapshot {
-    var snapshot: source_pane.Snapshot = .{ .pc = try session.register(core, .pc) };
-    const place = (dwarf_line.lookup(sections, snapshot.pc) catch null) orelse return snapshot;
+    const pc = try session.register(core, .pc);
+    const place = (dwarf_line.lookup(sections, pc) catch null) orelse return .{ .pc = pc };
+    return captureAt(pc, place, io, dir, row_count);
+}
+
+/// Reads up to `row_count` lines of `place`'s file from `dir` with
+/// `place`'s line current and in the middle; `pc` is the address shown.
+/// A flame graph click (RA8EMU-837) opens a function's first line this way.
+pub fn captureAt(pc: u32, place: dwarf_line.Place, io: std.Io, dir: std.Io.Dir, row_count: usize) anyerror!source_pane.Snapshot {
+    var snapshot: source_pane.Snapshot = .{ .pc = pc };
     var spelled: std.Io.Writer = .fixed(&snapshot.path_buf);
     session_source.path(&spelled, place.file) catch return snapshot;
     snapshot.path_len = spelled.buffered().len;

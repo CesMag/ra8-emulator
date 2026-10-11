@@ -62,6 +62,7 @@ pub const stack_pane = @import("ui/stack_pane.zig");
 pub const shell_stack = @import("shell_stack.zig");
 pub const flame_model = @import("flame_model.zig");
 pub const flame_pane = @import("ui/flame_pane.zig");
+pub const flame_open = @import("flame_open.zig");
 pub const hex_entry = @import("ui/hex_entry.zig");
 pub const pane_edit = @import("pane_edit.zig");
 pub const present_gate = @import("present_gate.zig");
