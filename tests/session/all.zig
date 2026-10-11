@@ -97,4 +97,5 @@ test {
     _ = @import("../interfaces/cli/report/json_sd_test.zig");
     _ = @import("../interfaces/cli/report/json_watched_test.zig");
     _ = @import("../interfaces/cli/report/json_load_test.zig");
+    _ = @import("../interfaces/cli/report/json_txm_test.zig");
 }

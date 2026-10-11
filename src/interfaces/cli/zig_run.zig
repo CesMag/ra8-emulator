@@ -96,16 +96,17 @@ pub fn run(out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timeba
         if (options.ctl_cpu_load) return ctlLoad(out, loadOf(clock.memory, if (tracer.*) |*found| found else null, clock.cpu1), status);
         var frames = try frames_out.Run.initForCli(std.heap.page_allocator, io, board, options.frames);
         defer frames.deinit(board);
+        const modules = txm_report.list(symbols.addressOf(image, txm_modules.list_symbol), rtos_hook.Memory{ .guest = clock.memory });
         if (options.report_json) {
             const load = loadOf(clock.memory, if (tracer.*) |*found| found else null, clock.cpu1);
-            try json_run.document(out, board, .{ .engine = "zig", .elapsed = ran.*, .elapsed_cycles = clock.wall_cycles, .external = clock.memory, .bus_errors = clock.bus_tally, .where = .{ .image = image, .profile = profile_table }, .dumps = &.{ .registers = .{ .zig = final }, .memory = clock.memory, .image = image, .options = &options, .io = io, .watched = watched }, .load = if (options.cpu_load) &load else null, .eink_log = if (options.frames.eink_log != null) &eink_recorder else null });
+            try json_run.document(out, board, .{ .engine = "zig", .elapsed = ran.*, .elapsed_cycles = clock.wall_cycles, .external = clock.memory, .bus_errors = clock.bus_tally, .where = .{ .image = image, .profile = profile_table }, .dumps = &.{ .registers = .{ .zig = final }, .memory = clock.memory, .image = image, .options = &options, .io = io, .watched = watched }, .load = if (options.cpu_load) &load else null, .modules = &modules, .eink_log = if (options.frames.eink_log != null) &eink_recorder else null });
         } else try report_run.zigCore(out, board, clock.policy, timebase.*, ran.*, clock.bus_tally);
         if (profile_table) |table| try profileOut(out, io, image, table.*, options);
         try report_run.cpu1(out, if (clock.cpu1) |second| &second.second else null);
         // Globals a memory-probe verdict reads, out of the Zig core's memory.
         if (!options.report_json) try textDumps(out, io, board, clock.memory, final, image, options, watched);
         if (tracer.*) |*found| try rtos_hook.report.all(out, io, options, found, rtos_hook.Memory{ .guest = clock.memory });
-        if (!options.report_json) try txm_report.print(out, symbols.addressOf(image, txm_modules.list_symbol), rtos_hook.Memory{ .guest = clock.memory });
+        if (!options.report_json) try txm_report.write(out, &modules);
         if (clock.cpu1) |second| try rtos_hook.second.printOn(out, io, options, second.guest());
         try finishFrames(out, io, board, options, &frames, &audio);
     } else if (options.ctl_cpu_load) {

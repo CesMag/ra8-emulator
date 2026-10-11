@@ -48,6 +48,8 @@ pub const json_timing = @import("json_timing.zig");
 pub const json_sites = @import("json_sites.zig");
 pub const json_dumps = @import("json_dumps.zig");
 pub const json_load = @import("json_load.zig");
+pub const json_txm = @import("json_txm.zig");
+const txm_report = @import("ra8_session").txm_report;
 const eink_log = @import("../eink_log.zig");
 
 pub const schema = "ra8-report/1";
@@ -71,6 +73,8 @@ pub const Run = struct {
     dumps: ?*const json_dumps.Dumps = null,
     /// The `--cpu-load` table per core (RA8EMU-266); null when not asked.
     load: ?*const json_load.Load = null,
+    /// The loaded ThreadX modules (RA8EMU-1139); no key when none.
+    modules: ?*const txm_report.Listed = null,
     eink_log: ?*const eink_log.Run = null,
 };
 
@@ -104,6 +108,7 @@ pub fn document(out: anytype, board: *Board, of: Run) !void {
     try json_sites.section(&j, of.sites);
     try json_dumps.section(&j, board, of.dumps);
     try json_load.section(&j, of.load);
+    try json_txm.section(&j, of.modules);
     try j.close('}');
     try out.writeByte('\n');
 }
