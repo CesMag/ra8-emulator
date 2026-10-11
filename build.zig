@@ -232,10 +232,12 @@ fn testBinary(b: *std.Build, name: []const u8, root: []const u8, target: std.Bui
     return tests;
 }
 
-/// The serve test (RA8EMU-737) spawns the emulator this build produced.
+/// The serve test (RA8EMU-737) spawns the emulator this build produced;
+/// guest images built from Zig source ride along (RA8EMU-955).
 fn testPaths(b: *std.Build, tests: *std.Build.Step.Compile, exe: *std.Build.Step.Compile) void {
     const paths = b.addOptions();
     paths.addOptionPath("emulator", exe.getEmittedBin());
+    @import("tests/fixtures/guests.zig").add(b, paths);
     tests.root_module.addOptions("test_paths", paths);
 }
 
