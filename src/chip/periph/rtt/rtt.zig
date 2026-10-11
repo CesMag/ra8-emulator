@@ -144,9 +144,13 @@ pub const Rtt = struct {
     }
 
     /// The first validated block in one staged window, latched.
+    /// Candidates are found by jumping to the ID's first byte rather than
+    /// trying every offset, so a scan over RAM with no block in it costs a
+    /// memchr, not a compare per byte (RA8EMU-1120).
     fn match(self: *Rtt, memory: Guest, at: u32, staged: []const u8, starts: u32) bool {
-        var index: usize = 0;
-        while (index < starts and index + block.id.len <= staged.len) : (index += 1) {
+        var from: usize = 0;
+        while (std.mem.indexOfScalarPos(u8, staged, from, block.id[0])) |index| : (from = index + 1) {
+            if (index >= starts or index + block.id.len > staged.len) return false;
             if (!block.idAt(staged, index)) continue;
             const candidate = at + @as(u32, @intCast(index));
             const up = self.readUp(memory, candidate) orelse continue;

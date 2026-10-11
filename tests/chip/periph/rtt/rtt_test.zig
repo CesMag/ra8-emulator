@@ -216,3 +216,21 @@ test "a run that drained text is not quiet" {
     fixture.settle();
     try std.testing.expect(!fixture.model.quiet());
 }
+
+test "a stray first ID byte and a partial ID ahead of the block do not hide it" {
+    var fixture = try Fixture.open();
+    defer fixture.close();
+    try fixture.core.write(cb_at - 16, "SSEGGER RT");
+    try fixture.plant(cb_at, ring_at, ring_size, 1);
+    fixture.settle();
+    try std.testing.expectEqual(@as(?u32, cb_at), fixture.model.found);
+}
+
+test "a scan over RAM with only stray first ID bytes finds nothing" {
+    var fixture = try Fixture.open();
+    defer fixture.close();
+    try fixture.core.write(cb_at, "S S SEGGER");
+    fixture.settle();
+    try std.testing.expectEqual(@as(?u32, null), fixture.model.found);
+    try std.testing.expectEqual(@as(u32, 1), fixture.model.scans);
+}
