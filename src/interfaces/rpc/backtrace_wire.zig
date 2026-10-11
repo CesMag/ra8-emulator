@@ -1,7 +1,7 @@
 //! Packs a Backtrace's frames (RA8EMU-1125): each StackFrame as the codec
 //! encodes it, one length byte before it, so both ends walk the list
 //! without the codec carrying arrays.
-const proto = @import("session_rpc.zig");
+const proto = @import("session/rpc.zig");
 
 pub const Error = error{ Oversize, Truncated };
 

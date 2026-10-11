@@ -144,13 +144,13 @@ test "the PPB is backed per store and starts zeroed (RA8EMU-416)" {
 test "configured external memory shares NOR and instruments SDRAM aliases" {
     var board = ra8.board.board.Board.init(std.testing.allocator);
     defer board.deinit();
-    var config = ra8.board.external_memory.Config{};
+    var config = ra8.board.external.memory.Config{};
     config.ospi.size = 1024 * 1024;
     config.sdram.size = 1024 * 1024;
     try board.nor.resize(config.ospi.size);
     var store = try Store.init(null);
     defer store.deinit();
-    var external = try ra8.board.external_backing.Backing.init(try ra8.board.external_memory.Layout.init(config), board.nor.window());
+    var external = try ra8.board.external.backing.Backing.init(try ra8.board.external.memory.Layout.init(config), board.nor.window());
     defer external.deinit();
     store.attachExternal(external.port());
     const cpu = ra8.chip.core.cpu.memory.guest.Guest{ .store = &store, .initiator = .cpu0 };

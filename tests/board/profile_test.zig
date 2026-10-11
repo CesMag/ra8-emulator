@@ -24,7 +24,7 @@ test "profiles parse controller-supported external memory" {
     );
     try std.testing.expectEqual(@as(u32, 67_108_864), profile.memory.ospi.size);
     try std.testing.expectEqual(@as(u8, 4), profile.memory.ospi.width);
-    try std.testing.expectEqual(ra8.board.external_memory.Burst.single, profile.memory.ospi.burst);
+    try std.testing.expectEqual(ra8.board.external.memory.Burst.single, profile.memory.ospi.burst);
     try std.testing.expectEqual(@as(u32, 33_554_432), profile.memory.sdram.size);
     try std.testing.expectEqual(@as(u32, 5000), profile.memory.window_cycles);
 }

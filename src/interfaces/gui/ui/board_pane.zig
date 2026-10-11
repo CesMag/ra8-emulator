@@ -4,7 +4,7 @@
 //! session's led_changed events (RA8EMU-811) and the two user switches as hit
 //! rects. Layout is a pure function of the area; the panel image keeps its
 //! own aspect inside its slot. The shell (RA8EMU-201) places the pane.
-//! gui/board_capture.zig folds the session's events into `Leds`; this pane
+//! gui/board.capture.zig folds the session's events into `Leds`; this pane
 //! never imports the session or the chip.
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
@@ -24,7 +24,7 @@ const shape_h: u32 = 2;
 const pad: i32 = 4;
 
 /// The board's user LEDs and their lit RGB565 words, in the chip's order;
-/// gui/board_capture.zig checks both against the chip at comptime.
+/// gui/board.capture.zig checks both against the chip at comptime.
 pub const led_count: usize = 3;
 pub const led_rgb565 = [led_count]u16{ 0x001F, 0x07E0, 0xF800 };
 
@@ -32,7 +32,7 @@ pub const switch_count: usize = 2;
 pub const switch_names = [switch_count][]const u8{ "SW1", "SW2" };
 pub const led_names = [led_count][]const u8{ "LED1", "LED2", "LED3" };
 
-/// What the LEDs show; gui/board_capture.zig folds the session's
+/// What the LEDs show; gui/board.capture.zig folds the session's
 /// led_changed events into it.
 pub const Leds = struct {
     on: [led_count]bool = @splat(false),

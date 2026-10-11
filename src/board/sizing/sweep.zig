@@ -5,7 +5,7 @@
 //! takes the longer of its compute and its memory traffic, and the stall is
 //! what memory adds on top of compute.
 const std = @import("std");
-const external = @import("../external_memory.zig");
+const external = @import("../external/memory.zig");
 const workload = @import("workload.zig");
 const matrix = @import("matrix.zig");
 

@@ -11,7 +11,7 @@
 //! that runs the code, so it can be tested without one.
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
-const place = @import("place.zig");
+const place = @import("place/place.zig");
 const symbols = @import("symbols.zig");
 const spacing_mod = @import("spacing.zig");
 const tally_mod = @import("tally.zig");

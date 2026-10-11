@@ -35,6 +35,6 @@ test "serve without --stdio prints its usage and exits 2" {
     defer std.testing.allocator.free(result.stdout);
     defer std.testing.allocator.free(result.stderr);
     try std.testing.expectEqual(std.process.Child.Term{ .exited = 2 }, result.term);
-    try std.testing.expectEqualStrings(cli_app.serve_main.usage, result.stderr);
+    try std.testing.expectEqualStrings(cli_app.serve.main.usage, result.stderr);
     try std.testing.expectEqualStrings("", result.stdout);
 }

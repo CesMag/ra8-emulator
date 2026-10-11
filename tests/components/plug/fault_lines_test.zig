@@ -2,7 +2,7 @@
 //! AT modem (UART).
 const std = @import("std");
 const ra8 = @import("ra8");
-const lines = ra8.components.model.fault_lines;
+const lines = ra8.components.model.fault.lines;
 const eink = ra8.components.eink;
 const modem = ra8.components.modem_at;
 

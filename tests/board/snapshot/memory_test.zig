@@ -56,15 +56,15 @@ test "only non-zero pages are written" {
 }
 
 test "external fabric counters and pending contention survive a snapshot" {
-    var config = ra8.board.external_memory.Config{};
+    var config = ra8.board.external.memory.Config{};
     config.ospi.size = 1024 * 1024;
     config.sdram.size = 1024 * 1024;
-    const layout = try ra8.board.external_memory.Layout.init(config);
+    const layout = try ra8.board.external.memory.Layout.init(config);
     var flash1 = ra8.components.nor_flash.Flash.init(std.testing.allocator);
     defer flash1.deinit();
     var first = try memory.Store.init(null);
     defer first.deinit();
-    var external1 = try ra8.board.external_backing.Backing.init(layout, flash1.window());
+    var external1 = try ra8.board.external.backing.Backing.init(layout, flash1.window());
     defer external1.deinit();
     first.attachExternal(external1.port());
     external1.fabric.note(.cpu0, layout.locate(0x6800_0040, 4).?, .read, 4);
@@ -76,7 +76,7 @@ test "external fabric counters and pending contention survive a snapshot" {
     defer flash2.deinit();
     var second = try memory.Store.init(null);
     defer second.deinit();
-    var external2 = try ra8.board.external_backing.Backing.init(layout, flash2.window());
+    var external2 = try ra8.board.external.backing.Backing.init(layout, flash2.window());
     defer external2.deinit();
     second.attachExternal(external2.port());
     const section = (try file.Reader.find(list.written(), .memory)).?;
@@ -91,7 +91,7 @@ test "external fabric counters and pending contention survive a snapshot" {
     defer flash3.deinit();
     var mismatched = try memory.Store.init(null);
     defer mismatched.deinit();
-    var external3 = try ra8.board.external_backing.Backing.init(try ra8.board.external_memory.Layout.init(changed), flash3.window());
+    var external3 = try ra8.board.external.backing.Backing.init(try ra8.board.external.memory.Layout.init(changed), flash3.window());
     defer external3.deinit();
     mismatched.attachExternal(external3.port());
     try std.testing.expectError(error.LayoutMismatch, memory.load(&mismatched, section.payload));

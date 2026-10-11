@@ -9,7 +9,7 @@
 //! neither, and goes through console.zig (RA8EMU-723).
 const std = @import("std");
 const builtin = @import("builtin");
-const pipe_windows = @import("camera/pipe_windows.zig");
+const pipe_windows = @import("camera/pipe/windows.zig");
 const host_console = @import("console.zig");
 
 pub const Handle = std.posix.fd_t;

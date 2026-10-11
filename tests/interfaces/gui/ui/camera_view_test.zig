@@ -9,7 +9,7 @@ const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const view = gui_app.camera_view;
-const Panel = gui_app.camera_panel.Panel;
+const Panel = gui_app.camera.panel.Panel;
 const Rect = draw_list.Rect;
 
 const layout = view.Layout{ .x = 10, .y = 20 };
@@ -52,7 +52,7 @@ fn pixel(frame: *const raster.Framebuffer, at: Rect) draw_list.Color {
 test "every source has its button and the active one is ringed" {
     var frame = try render(.{});
     defer frame.deinit(std.testing.allocator);
-    for (std.enums.values(gui_app.camera_panel.Kind)) |kind| {
+    for (std.enums.values(gui_app.camera.panel.Kind)) |kind| {
         try std.testing.expectEqual(view.colorOf(dark, kind), pixel(&frame, layout.source(kind)));
     }
     const gradient = layout.source(.gradient);
@@ -125,7 +125,7 @@ test "while Always stands its button shows, whole and clear of the dialog's thre
     try std.testing.expectEqual(dark.hue.blue, pixel(&standing, at));
     try std.testing.expect(inked(&standing, at, view.inkOn(dark, dark.hue.blue)) > 40);
     try std.testing.expect(ra8.render.font.textWidth(view.withdraw_label.len) <= at.w - 2);
-    for (std.enums.values(gui_app.camera_panel.Answer)) |reply| {
+    for (std.enums.values(gui_app.camera.panel.Answer)) |reply| {
         const answer = layout.dialog(reply);
         try std.testing.expect(at.x >= answer.x + answer.w);
         try std.testing.expectEqual(answer.y, at.y);
@@ -162,13 +162,13 @@ test "a second click where Always was answered does not take it back" {
 test "every source and dialog button carries a label in ink that reads on it" {
     var frame = try render(.{ .asking = true });
     defer frame.deinit(std.testing.allocator);
-    for (std.enums.values(gui_app.camera_panel.Kind)) |kind| {
+    for (std.enums.values(gui_app.camera.panel.Kind)) |kind| {
         const ink = view.inkOn(dark, view.colorOf(dark, kind));
         try std.testing.expect(!std.meta.eql(ink, view.colorOf(dark, kind)));
         try std.testing.expect(inked(&frame, layout.source(kind), ink) > 10);
         try std.testing.expect(view.labelOf(kind).len <= 3);
     }
-    for (std.enums.values(gui_app.camera_panel.Answer)) |reply| {
+    for (std.enums.values(gui_app.camera.panel.Answer)) |reply| {
         try std.testing.expect(inked(&frame, layout.dialog(reply), view.inkOn(dark, view.answerColor(dark, reply))) > 5);
     }
 }

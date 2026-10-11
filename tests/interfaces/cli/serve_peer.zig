@@ -3,8 +3,8 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const test_paths = @import("test_paths");
-const proto = ra8.rpc.session_rpc;
-const rpc = ra8.rpc.session_server.rpc_lib;
+const proto = ra8.rpc.session.rpc;
+const rpc = ra8.rpc.session.server.rpc_lib;
 
 pub const image_path = "tests/fixtures/fpu/fp_basic.elf";
 const Env = proto.Client.Env;

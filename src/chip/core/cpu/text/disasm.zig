@@ -3,7 +3,7 @@
 const decode = @import("../decode/decode.zig");
 const Instr = @import("../instr.zig").Instr;
 const table = @import("table.zig");
-const vpst = @import("mve_vpst.zig");
+const vpst = @import("mve/vpst.zig");
 const Text = @import("text.zig").Text;
 
 /// The text of instr, or null when it has no printer.
@@ -39,9 +39,9 @@ pub const Stream = struct {
         }
         if (std.mem.eql(u8, hit.group, "mve_vcmp") or std.mem.eql(u8, hit.group, "mve_vcmp_fp")) {
             const mask: u4 = if (std.mem.eql(u8, hit.group, "mve_vcmp"))
-                @import("../ops/mve_vcmp.zig").fields(instr).?.mask
+                @import("../ops/mve/vcmp/vcmp.zig").fields(instr).?.mask
             else
-                @import("../ops/mve_vcmp_fp.zig").fields(instr).?.mask;
+                @import("../ops/mve/vcmp/fp.zig").fields(instr).?.mask;
             if (mask != 0) {
                 self.pattern = vpst.pattern(instr);
                 self.next = 0;

@@ -3,7 +3,7 @@
 //! shows. Nothing blocks; the shell calls `pump` once a frame.
 const std = @import("std");
 const rpc = @import("ra8_rpc_wire");
-const proto = @import("ra8_rpc").session_rpc;
+const proto = @import("ra8_rpc").session.rpc;
 const Stdio = @import("ra8_rpc").stdio_transport.Stdio;
 
 const Env = proto.Client.Env;

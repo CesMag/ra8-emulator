@@ -16,7 +16,7 @@ const endpoint = @import("ra8_components").endpoint;
 const parts = @import("ra8_components").parts;
 const request = @import("ra8_components").request;
 const profile = @import("profile.zig");
-const fault_spec = @import("ra8_components").fault_spec;
+const fault_spec = @import("ra8_components").fault.spec;
 const eink = @import("ra8_components").eink;
 const Board = @import("board.zig").Board;
 

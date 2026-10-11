@@ -13,7 +13,7 @@
 //!   MMFAR 0xE000_ED34: the address, valid only while MMARVALID stands.
 
 /// MemManage, exception 4 (DDI0553 B3.6).
-const status = @import("../fault_status.zig");
+const status = @import("../fault/status.zig");
 
 pub const exception: u16 = 4;
 

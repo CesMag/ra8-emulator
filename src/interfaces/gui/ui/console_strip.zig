@@ -4,7 +4,7 @@
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const console_pane = @import("console_pane.zig");
-const console_save = @import("../console_save.zig");
+const console_save = @import("../console/save.zig");
 const Theme = @import("colors.zig").Theme;
 
 const Rect = draw_list.Rect;

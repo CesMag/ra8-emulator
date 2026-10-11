@@ -5,9 +5,9 @@
 //! a pipe or socket is only for a remote session.
 const std = @import("std");
 const rpc = @import("ra8_rpc_wire");
-const served = @import("ra8_rpc").session_server;
+const served = @import("ra8_rpc").session.server;
 const served_setup = @import("ra8_rpc").served_setup;
-const proto = @import("ra8_rpc").session_rpc;
+const proto = @import("ra8_rpc").session.rpc;
 
 pub const LocalSession = struct {
     setup: served_setup.Served,

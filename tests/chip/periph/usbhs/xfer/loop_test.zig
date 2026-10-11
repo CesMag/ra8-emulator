@@ -6,7 +6,7 @@ const usbfs = ra8.chip.periph.usbfs;
 const regs = ra8.chip.periph.usbhs.regs;
 const usbhs_pipe = ra8.chip.periph.usbhs.pipe;
 const xfer = ra8.chip.periph.usbhs.xfer;
-const Loop = ra8.components.usb_loop_cable.Loop;
+const Loop = ra8.components.usb.loop_cable.Loop;
 
 fn at(offset: u32) u32 {
     return usbfs.window.base + offset;

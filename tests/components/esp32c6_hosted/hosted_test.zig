@@ -86,7 +86,7 @@ test {
     _ = @import("station_test.zig");
     _ = @import("queue_test.zig");
     _ = @import("eth_test.zig");
-    _ = @import("dns_test.zig");
+    _ = @import("dns/dns_test.zig");
     _ = @import("net_test.zig");
     _ = @import("tape/tape_test.zig");
     _ = @import("host_net_test.zig");

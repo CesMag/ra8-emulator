@@ -9,7 +9,7 @@
 //! needs an operator this model does not run yet, is a parse fault. Every
 //! fault raises the interrupt too, and cmd_end stays clear.
 const std = @import("std");
-const Guest = @import("../../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../../core/cpu/memory/guest/guest.zig").Guest;
 const npu = @import("../npu.zig");
 const vela = @import("vela.zig");
 

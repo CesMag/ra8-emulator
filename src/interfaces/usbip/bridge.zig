@@ -12,7 +12,7 @@ const listen = @import("listen.zig");
 const server = @import("server.zig");
 const session = @import("session.zig");
 const usbfs = @import("ra8_chip").periph.usbfs;
-const sock_ready = @import("ra8_host").sock_ready;
+const sock_ready = @import("ra8_host").sock.ready;
 
 /// What one poll changed.
 pub const Event = enum { none, listening, attached, hung_up, unusable };

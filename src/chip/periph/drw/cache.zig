@@ -23,7 +23,7 @@
 //! a pixel is not in memory until a flush, not a cycle count.
 const std = @import("std");
 
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 
 /// CACHECTL bits (HUM Ch 62.2.4 p 3694). The enables are state, the two
 /// flushes are write-one pulses, and the whole register is write-only.

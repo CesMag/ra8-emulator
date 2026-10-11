@@ -46,5 +46,5 @@ test "--gdb takes a port, after the second core's image when there is one" {
 
 test {
     // tests/all.zig is at its 400-line limit; the Zig front's tests ride here.
-    _ = @import("zig_debug_front_test.zig");
+    _ = @import("zig/debug_front_test.zig");
 }

@@ -3,8 +3,8 @@ const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 const profile = @import("ra8_session").profile;
 const symbols = @import("ra8_session").symbols;
-const stack_samples = @import("ra8_session").stack_samples;
-const stack_profile = @import("ra8_session").stack_profile;
+const stack_samples = @import("ra8_session").stack.samples;
+const stack_profile = @import("ra8_session").stack.profile;
 const Writer = @import("../report.zig").Writer;
 
 pub fn write(out: Writer, io: std.Io, image: elf.Image, table: profile.Table, path: ?[]const u8, thread: ?u32) !void {

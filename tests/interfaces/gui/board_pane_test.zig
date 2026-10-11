@@ -11,8 +11,8 @@ const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const font = ra8.render.font;
 const pane = gui_app.board_pane;
-const capture = gui_app.board_capture;
-const proto = ra8.rpc.session_rpc;
+const capture = gui_app.board.capture;
+const proto = ra8.rpc.session.rpc;
 const Rect = draw_list.Rect;
 const Color = draw_list.Color;
 

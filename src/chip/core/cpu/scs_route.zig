@@ -2,7 +2,7 @@
 //! Security state of the core making it (RA8EMU-272).
 //!
 //! The rules are src/chip/periph/scs_alias.zig (which bank the access names) and
-//! src/chip/periph/scb_bank.zig (where that bank's copy lives). Secure code on
+//! src/chip/periph/scb/bank.zig (where that bank's copy lives). Secure code on
 //! the normal window reaches the Secure copy and on the alias window the
 //! Non-secure one; Non-secure code on the normal window reaches the
 //! Non-secure copy, and on the alias window reads zero and writes nothing.
@@ -16,7 +16,7 @@
 //! the registers wired so far.
 
 const alias = @import("../../periph/scs_alias.zig");
-const scb_bank = @import("../../periph/scb_bank.zig");
+const scb_bank = @import("../../periph/scb/bank.zig");
 const banked = @import("../banked.zig");
 const systick_bank = @import("../systick_bank.zig");
 
@@ -58,7 +58,7 @@ pub const Split = struct {
     shared: u32,
     /// The Non-secure copy of the banked bits (0xE002_EDxx).
     non_secure: u32,
-    /// The banked bits, as src/chip/periph/scb_bank.zig bankedBits gives them.
+    /// The banked bits, as src/chip/periph/scb/bank.zig bankedBits gives them.
     mask: u32,
     view: alias.View,
     /// Write-one-to-clear (CFSR): a write names the bits to clear.

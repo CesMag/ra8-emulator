@@ -43,7 +43,7 @@ pub const cache = @import("cache.zig");
 
 /// Straight-line runs of decoded instructions (RA8EMU-403).
 pub const block = @import("../block/block.zig");
-pub const block_cache = @import("../block_cache.zig");
+pub const block_cache = @import("../block/cache.zig");
 pub const code_lines = @import("../code_lines.zig");
 
 /// The disassembler built on this table (RA8EMU-17).

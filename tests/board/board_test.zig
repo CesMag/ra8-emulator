@@ -292,7 +292,7 @@ test "a soak run notes a watchdog reset as its event at the virtual time it came
     var unit = board();
     defer unit.deinit();
     var ppb = Ppb{};
-    var asked: ra8.session.run_policy.RunPolicy = .{};
+    var asked: ra8.session.run.policy.RunPolicy = .{};
     asked.soak.armed = true;
     asked.attach(&unit);
     unit.time.base.advance(2_500_000_000);
@@ -308,7 +308,7 @@ test "a run without --run-for keeps no soak event for a watchdog reset" {
     var unit = board();
     defer unit.deinit();
     var ppb = Ppb{};
-    var asked: ra8.session.run_policy.RunPolicy = .{};
+    var asked: ra8.session.run.policy.RunPolicy = .{};
     asked.attach(&unit);
     unit.heartbeat.reset_requested = true;
     try unit.takeResetRequests(&ppb);

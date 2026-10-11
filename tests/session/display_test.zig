@@ -2,13 +2,13 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const api = ra8.session.api;
-const Host = ra8.session.board_display.Host;
+const Host = ra8.session.board.display.Host;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const bus = ra8.chip.core.cpu.bus;
 const Store = ra8.chip.core.cpu.memory.store.Store;
 const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const Machine = ra8.session.stop_machine.Machine;
-const zig_session = ra8.session.step_hook.zig_session;
+const zig_session = ra8.session.step_hook.zig.session;
 const gt911 = ra8.components.gt911;
 const eink = ra8.components.eink;
 const eink_wire = ra8.components.eink.wire;
@@ -84,7 +84,7 @@ test "tap reaches GT911, settles e-ink, and returns a changed native grayscale f
     var machine = Machine{};
     const live: zig_session.ZigSession = .{ .core = .{ .cpu = &cpu }, .machine = &machine, .budget = 1000 };
     var session: api.Session = .{ .live = live };
-    ra8.session.board_events.attach(&board, &session);
+    ra8.session.board.events.attach(&board, &session);
     const event_id = try session.subscribe();
 
     var guest_store = try Store.init(null);

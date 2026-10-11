@@ -1,5 +1,5 @@
 //! Call stacks sampled in a served session (RA8EMU-833, part 1 of 2): a
-//! stack_sampler.Sampler on a core's retire path, stamped with the board's
+//! stack.sampler.Sampler on a core's retire path, stamped with the board's
 //! virtual time and tagged with the RTOS thread when the harness traces
 //! one. The store is what the session wire's folded request reads.
 //!
@@ -7,11 +7,11 @@
 const elf = @import("ra8_board").image.elf;
 const cpu_mod = @import("ra8_chip").core.cpu.cpu;
 const TimeBase = @import("ra8_chip").periph.timebase.TimeBase;
-const dwarf_line = @import("../dwarf_line/dwarf_line.zig");
-const rtos_trace = @import("../rtos_trace.zig");
-const stack_profile = @import("../stack_profile.zig");
-const stack_sampler = @import("../stack_sampler.zig");
-const stack_samples = @import("../stack_samples.zig");
+const dwarf_line = @import("../dwarf/line/line.zig");
+const rtos_trace = @import("../rtos/trace.zig");
+const stack_profile = @import("../stack/profile.zig");
+const stack_sampler = @import("../stack/sampler.zig");
+const stack_samples = @import("../stack/samples.zig");
 
 /// One sample every this many retired instructions, unless set otherwise.
 pub const default_every: u32 = 1000;

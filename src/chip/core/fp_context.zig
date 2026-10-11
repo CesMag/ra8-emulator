@@ -15,7 +15,7 @@
 //! and FPCXT_S (15). FPSCR_nzcvqc, VPR and P0 are left to stop the run.
 //!
 //! The effects follow the Zig core's VMRS/VMSR of the same registers
-//! (src/chip/core/cpu/ops/fp_system.zig). Two things are fixed: FPCCR.ASPEN is taken as its reset
+//! (src/chip/core/cpu/ops/fp.system.zig). Two things are fixed: FPCCR.ASPEN is taken as its reset
 //! value 1, so CONTROL.FPCA alone says whether a context is active, and
 //! FPDSCR as its reset value 0, the FPSCR a fresh context starts with.
 

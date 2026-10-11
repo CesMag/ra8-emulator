@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const canfd = ra8.chip.periph.canfd;
 const fifo = ra8.chip.periph.canfd.fifo;
-const rx_config = ra8.chip.periph.canfd.rx_config;
+const rx_config = ra8.chip.periph.canfd.rx.config;
 
 /// CFDRFCC.RFDC = 001b, the four-message depth ra8_canfd.c programs.
 const depth_4: u32 = 1 << 8;

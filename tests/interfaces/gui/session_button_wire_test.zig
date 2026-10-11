@@ -6,11 +6,11 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const test_paths = @import("test_paths");
-const proto = ra8.rpc.session_rpc;
+const proto = ra8.rpc.session.rpc;
 const session_link = gui_app.session_link;
 const pane = gui_app.board_pane;
-const capture = gui_app.board_capture;
-const input = gui_app.board_input;
+const capture = gui_app.board.capture;
+const input = gui_app.board.input;
 const Link = session_link.Link;
 const Env = proto.Client.Env;
 

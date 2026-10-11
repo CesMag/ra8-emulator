@@ -10,9 +10,9 @@
 //! raises what the core reports.
 
 const memmap = @import("../core/memmap.zig");
-const status = @import("fault_status.zig");
-const fault_route = @import("fault_route.zig");
-const fault_take = @import("fault_take.zig");
+const status = @import("fault/status.zig");
+const fault_route = @import("fault/route.zig");
+const fault_take = @import("fault/take.zig");
 const nvic = @import("nvic/nvic.zig");
 
 pub const Error = error{NotUsageFault};

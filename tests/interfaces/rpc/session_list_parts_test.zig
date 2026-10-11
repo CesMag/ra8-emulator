@@ -3,9 +3,9 @@
 //! too_long when the parts do not fit one reply.
 const std = @import("std");
 const ra8 = @import("ra8");
-const proto = ra8.rpc.session_rpc;
-const server = ra8.rpc.session_server;
-const parts = ra8.rpc.session_parts;
+const proto = ra8.rpc.session.rpc;
+const server = ra8.rpc.session.server;
+const parts = ra8.rpc.session.parts;
 const api = ra8.session.api;
 
 const Stub = struct {

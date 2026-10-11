@@ -6,7 +6,7 @@
 //! The board's blocks attach over the store, CPU0's PPB windows are primed
 //! into it, and the image (and any `--ns` half) is loaded into it, in the
 //! order the engine path does all three. Since RA8EMU-592 a `--cpu zig` run
-//! opens no engine at all: src/interfaces/cli/zig_main.zig attaches with
+//! opens no engine at all: src/interfaces/cli/zig/main.zig attaches with
 //! `attachStore` and reads everything back off the store.
 //!
 //! A run with a second core goes on the store too: CPU1 gets a store of its
@@ -15,8 +15,8 @@
 const elf = @import("image/elf.zig");
 const read_image = @import("image/load.zig");
 const Store = @import("ra8_chip").core.cpu.memory.store.Store;
-const external = @import("external_memory.zig");
-const backing = @import("external_backing.zig");
+const external = @import("external/memory.zig");
+const backing = @import("external/backing.zig");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const loader = @import("ra8_chip").core.cpu.memory.load;
 const wiring = @import("wiring.zig");

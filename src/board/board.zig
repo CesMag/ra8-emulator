@@ -77,7 +77,7 @@ const mpu = @import("ra8_chip").periph.mpu;
 const sau = @import("ra8_chip").periph.sau;
 const mpu_guard = @import("ra8_chip").core.mpu_guard;
 const scb = @import("ra8_chip").periph.scb;
-const fault_clear = @import("ra8_chip").periph.fault_clear;
+const fault_clear = @import("ra8_chip").periph.fault.clear;
 const sci = @import("ra8_chip").periph.sci;
 const esp_hosted = @import("ra8_components").esp_hosted;
 const sci_input = @import("ra8_chip").periph.sci.input;
@@ -90,7 +90,7 @@ const spi = @import("ra8_chip").periph.spi;
 const sram = @import("ra8_chip").periph.sram;
 const ssie = @import("ra8_chip").periph.ssie;
 const ulpt = @import("ra8_chip").periph.ulpt;
-const usb = @import("usb.zig");
+const usb = @import("usb/usb.zig");
 const iwdt = @import("ra8_chip").periph.iwdt;
 const wdt = @import("ra8_chip").periph.wdt;
 const xspi = @import("ra8_chip").periph.xspi;
@@ -161,7 +161,7 @@ pub const Board = struct {
     /// An unset CMS keeps the IDAU's bit-28 answer for code (RA8EMU-389/420).
     memory_monitors: pscu.samon.Unit = .{},
     /// OSPI/SDRAM geometry and timing from the board profile (RA8EMU-643).
-    external_memory: @import("external_memory.zig").Config = .{},
+    external_memory: @import("external/memory.zig").Config = .{},
     /// The IDAU over those words and address bit 28 (RA8EMU-277). Pointed
     /// at sram_attribution in attach(), where the board's address is final.
     idau: sau.idau.Map = .{},
@@ -321,7 +321,7 @@ pub const Board = struct {
     host: mipi_dsi.MipiDsi,
     causes: reset.Reset,
     control: scb.Scb,
-    /// CPU0's owed CFSR/HFSR clears: src/chip/periph/fault_clear.zig.
+    /// CPU0's owed CFSR/HFSR clears: src/chip/periph/fault/clear.zig.
     clears: fault_clear.Clears,
     /// The Arm cache window in the PPB: the geometry the firmware reads out
     /// of CTR before every by-address maintenance call, and the maintenance

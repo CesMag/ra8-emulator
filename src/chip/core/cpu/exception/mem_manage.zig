@@ -5,15 +5,15 @@
 //! (RA8EMU-368) sets IACCVIOL alone and leaves MMFAR as it was, as the
 //! architecture says. The fault routes against SHCSR.MEMFAULTENA, SHPR1.PRI_4 and the
 //! execution priority with the same rules UsageFault uses
-//! (src/chip/periph/fault_route.zig); escalated, it owes HFSR.FORCED. The handler
+//! (src/chip/periph/fault/route.zig); escalated, it owes HFSR.FORCED. The handler
 //! is entered with the faulting instruction stacked as the return address. A
 //! HardFault that cannot preempt is lockup, which the caller reports as a
 //! stop instead.
 
 const std = @import("std");
 const memmap = @import("../../memmap.zig");
-const fault_route = @import("../../../periph/fault_route.zig");
-const status = @import("../../../periph/fault_status.zig");
+const fault_route = @import("../../../periph/fault/route.zig");
+const status = @import("../../../periph/fault/status.zig");
 const active = @import("active.zig");
 const dispatch = @import("dispatch.zig");
 const fault = @import("fault.zig");

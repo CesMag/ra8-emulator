@@ -2,7 +2,7 @@
 //! the run limits, whether a script wants more, and the poll gdb's
 //! interrupt comes through.
 //!
-//! The session is src/session/zig_session.zig, driven by src/session/zig_script.zig
+//! The session is src/session/zig/session.zig, driven by src/session/zig/script.zig
 //! for scripts and by the GDB server in src/interfaces/gdb for gdb.
 pub const Error = error{ AlreadyRunning, NoSymbols, Unresolved, CoreNotAttached };
 

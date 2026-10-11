@@ -7,7 +7,7 @@
 //! one image share pages, and a page already backed is refused.
 const loaded_image = @import("../../loaded_image.zig");
 const option_window = @import("../../../periph/mram/window.zig");
-const Guest = @import("guest.zig").Guest;
+const Guest = @import("guest/guest.zig").Guest;
 
 pub const Error = error{ MapFailed, WriteFailed };
 

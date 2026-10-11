@@ -3,7 +3,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const bus = ra8.chip.core.cpu.bus;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
-const zig_core = ra8.session.step_hook.zig_core;
+const zig_core = ra8.session.step_hook.zig.core;
 const View = ra8.session.step_hook.core_view.View;
 
 /// 64 bytes of RAM at address 0, the vector table first.

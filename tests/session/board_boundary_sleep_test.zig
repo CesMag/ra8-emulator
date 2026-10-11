@@ -1,4 +1,4 @@
-//! Covers the debugger run's sleep reach (RA8EMU-767): src/session/zig_boundary.zig
+//! Covers the debugger run's sleep reach (RA8EMU-767): src/session/zig/boundary.zig
 //! widens a chunk while the core sleeps with nothing to wake it, and
 //! src/session/board_boundary.zig names how far, to the board's next edge.
 const std = @import("std");
@@ -8,11 +8,11 @@ const store_board = @import("../interfaces/cli/store_board.zig");
 
 const memmap = ra8.chip.core.memmap;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
-const GuestBus = ra8.chip.core.cpu.memory.guest_bus.GuestBus;
+const GuestBus = ra8.chip.core.cpu.memory.guest.bus.GuestBus;
 const NvicSource = ra8.chip.core.cpu.exception.nvic_source.NvicSource;
 const Machine = ra8.session.stop_machine.Machine;
-const zig_boundary = ra8.session.step_hook.zig_boundary;
-const BoardBoundary = ra8.session.board_boundary.BoardBoundary;
+const zig_boundary = ra8.session.step_hook.zig.boundary;
+const BoardBoundary = ra8.session.board.boundary.BoardBoundary;
 
 /// Counts the boundaries a run passes and the instructions they carry.
 const Counter = struct {

@@ -10,7 +10,7 @@ const eink = @import("ra8_components").eink;
 const eink_wire = @import("ra8_components").eink.wire;
 const png = @import("ra8_render").png;
 const board_view = @import("ra8_render").board_view;
-const board_leds = @import("ra8_session").board_leds;
+const board_leds = @import("ra8_session").board.leds;
 
 /// The panel's size, the size of the view that was written, and whether
 /// the GLCDC gave a frame (when it did not, the panel is drawn dark).

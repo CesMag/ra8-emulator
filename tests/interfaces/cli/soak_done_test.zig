@@ -10,7 +10,7 @@ const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 
-const zig_run = cli_app.zig_run;
+const zig_run = cli_app.zig.run;
 const cpu_boot = ra8.chip.core.cpu.boot;
 const soak = ra8.session.run.soak;
 
@@ -37,7 +37,7 @@ fn runSoak(overflow: bool) !Ended {
     defer board.deinit();
     try store_board.attach(&board, core);
     board.time.base.setRate(hz);
-    var asked: ra8.session.run_policy.RunPolicy = .{};
+    var asked: ra8.session.run.policy.RunPolicy = .{};
     asked.soak.armed = true;
     asked.attach(&board);
     var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };

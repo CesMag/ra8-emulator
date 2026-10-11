@@ -17,9 +17,9 @@
 //! it would stop again without moving, and a single step that counted it
 //! would never leave. So the first event after every resume is let through,
 //! and only then does the machine start asking.
-const break_table = @import("break_table.zig");
+const break_table = @import("breaks/table.zig");
 const breakpoint = @import("breakpoint.zig");
-const watch_table = @import("watch_table.zig");
+const watch_table = @import("watch/table.zig");
 const fpb = @import("fpb.zig");
 const dwt = @import("ra8_chip").periph.dwt;
 const itm = @import("ra8_chip").periph.itm;

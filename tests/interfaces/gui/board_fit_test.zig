@@ -7,7 +7,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const pane = gui_app.board_pane;
-const touch = gui_app.board_touch;
+const touch = gui_app.board.touch;
 const Rect = ra8.render.draw_list.Rect;
 
 const width: u32 = 1024;

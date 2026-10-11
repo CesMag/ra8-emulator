@@ -5,7 +5,7 @@ const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const Instr = ra8.chip.core.cpu.instr.Instr;
 const regs = ra8.chip.core.cpu.regs;
 const mrs_msr = ra8.chip.core.cpu.ops.mrs_msr;
-const branch_wide = ra8.chip.core.cpu.ops.branch_wide;
+const branch_wide = ra8.chip.core.cpu.ops.branch.wide;
 
 fn wide(hw1: u16, hw2: u16) Instr {
     return .{ .address = 0, .hw1 = hw1, .hw2 = hw2, .size = 4 };

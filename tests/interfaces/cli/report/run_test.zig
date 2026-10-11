@@ -48,7 +48,7 @@ test "a quiet board prints no console line" {
 }
 
 /// Run `busErrors` into a scratch file and return what it wrote.
-fn busLine(buf: []u8, tally: ra8.chip.periph.fault_status.bus.Tally) ![]const u8 {
+fn busLine(buf: []u8, tally: ra8.chip.periph.fault.status.bus.Tally) ![]const u8 {
     var dir = std.testing.tmpDir(.{});
     defer dir.cleanup();
     const file = try dir.dir.createFile(std.testing.io, "bus.txt", .{ .read = true });

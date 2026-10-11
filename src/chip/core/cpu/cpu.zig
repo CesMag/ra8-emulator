@@ -6,7 +6,7 @@ const reset_mod = @import("reset.zig");
 const decode = @import("decode/decode.zig");
 const divide = @import("ops/divide.zig");
 const decode_cache = @import("decode/cache.zig");
-const block_cache = @import("block_cache.zig");
+const block_cache = @import("block/cache.zig");
 const cond = @import("cond.zig");
 const it_state = @import("it_state.zig");
 /// What step() does with a nonzero EPSR.ECI (RA8EMU-453).
@@ -20,8 +20,7 @@ const sysreg = @import("sysreg.zig");
 const park = @import("park.zig");
 pub const fixed_trip = @import("fixed_trip.zig");
 pub const trip_decode = @import("trip_decode.zig");
-pub const counted_bound = @import("counted_bound.zig");
-pub const counted_trip = @import("counted_trip.zig");
+pub const counted = @import("counted/counted.zig");
 const Until = @import("../until.zig").Until;
 /// Public so its tests reach it without a root export.
 pub const systick_cut = @import("systick_cut.zig");

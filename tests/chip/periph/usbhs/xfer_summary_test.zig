@@ -3,8 +3,8 @@
 //! the same packets a poller does.
 const std = @import("std");
 const ra8 = @import("ra8");
-const device = ra8.components.usb_echo;
-const echo_far = ra8.components.usb_echo.far;
+const device = ra8.components.usb.echo;
+const echo_far = ra8.components.usb.echo.far;
 const regs = ra8.chip.periph.usbhs.regs;
 const usbhs_pipe = ra8.chip.periph.usbhs.pipe;
 const xfer = ra8.chip.periph.usbhs.xfer;

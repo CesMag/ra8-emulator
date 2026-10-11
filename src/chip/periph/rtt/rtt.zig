@@ -47,7 +47,7 @@
 //! fills the ring faster than the probe empties it.
 const std = @import("std");
 
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 const memmap = @import("../../core/memmap.zig");
 pub const block = @import("block.zig");
 const text = @import("line.zig");

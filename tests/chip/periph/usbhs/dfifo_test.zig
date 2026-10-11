@@ -6,8 +6,8 @@ const ra8 = @import("ra8");
 const dfifo = ra8.chip.periph.usbhs.dfifo;
 const regs = ra8.chip.periph.usbhs.regs;
 const usbhs = ra8.chip.periph.usbhs;
-const echo_device = ra8.components.usb_echo;
-const echo_far = ra8.components.usb_echo.far;
+const echo_device = ra8.components.usb.echo;
+const echo_far = ra8.components.usb.echo.far;
 
 /// MBW programmed for a 16-bit access, aimed at `pipe`.
 fn sel16(pipe: u16) u16 {

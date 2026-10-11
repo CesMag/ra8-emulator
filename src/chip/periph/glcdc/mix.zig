@@ -9,7 +9,7 @@
 //! background image, which is the whole reason there are two layers, has
 //! never been in a witness from that tree at all.
 const std = @import("std");
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 const clut = @import("clut.zig");
 const scan = @import("scan.zig");
 const blend = @import("blend.zig");

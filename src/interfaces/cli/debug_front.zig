@@ -27,7 +27,7 @@
 const std = @import("std");
 const cli = @import("cli.zig");
 const cpu_choice = @import("ra8_chip").core.cpu.choice;
-const zig_debug_front = @import("zig_debug_front.zig");
+const zig_debug_front = @import("zig/debug_front.zig");
 const script = @import("ra8_session").script;
 
 pub const usage =

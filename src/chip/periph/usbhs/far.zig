@@ -1,6 +1,6 @@
 //! What the HS host jack talks to. The chip owns this contract: the part on
-//! the far end (src/components/usb_echo, or the self-loop cable in
-//! src/components/usb_loop_cable) implements it and the board plugs it in,
+//! the far end (src/components/usb/echo, or the self-loop cable in
+//! src/components/usb/loop_cable) implements it and the board plugs it in,
 //! so this block never imports a part.
 
 /// How the far end has ended the control transfer so far.

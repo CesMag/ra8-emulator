@@ -1,0 +1,13 @@
+//! board: the files of src/session/board/.
+
+pub const boundary = @import("boundary.zig");
+pub const camera = @import("camera.zig");
+pub const display = @import("display.zig");
+pub const events = @import("events.zig");
+pub const faults = @import("faults/faults.zig");
+pub const leds = @import("leds.zig");
+pub const plug = @import("plug.zig");
+pub const rtc = @import("rtc.zig");
+pub const schedule = @import("schedule.zig");
+pub const speed = @import("speed.zig");
+pub const state = @import("state.zig");

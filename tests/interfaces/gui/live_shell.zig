@@ -7,11 +7,11 @@ const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const Manual = @import("manual_clock.zig").Manual;
 
-const proto = ra8.rpc.session_rpc;
+const proto = ra8.rpc.session.rpc;
 const Env = proto.Client.Env;
 const draw_list = ra8.render.draw_list;
 const bar = gui_app.time_bar;
-const shell_frame = gui_app.shell_frame;
+const shell_frame = gui_app.shell.frame;
 const Headless = gui_app.headless.Headless;
 
 pub const width = 640;
@@ -22,15 +22,15 @@ pub const Live = struct {
     rx: []u8,
     tx: []u8,
     link: gui_app.session_link.Link,
-    shell: gui_app.shell_loop.Shell,
+    shell: gui_app.shell.loop.Shell,
     window: Headless,
     clock: Manual,
-    time: gui_app.shell_time.Time,
-    registers: gui_app.shell_registers.Pair,
-    stack: gui_app.shell_stack.Pair,
-    board: gui_app.shell_board.Board,
-    pointer: gui_app.shell_board_input.Pointer,
-    panes: gui_app.shell_panes.Panes,
+    time: gui_app.shell.time.Time,
+    registers: gui_app.shell.registers.Pair,
+    board: gui_app.shell.board.Board,
+    pointer: gui_app.shell.board.input.Pointer,
+    panes: gui_app.shell.panes.Panes,
+    stack: gui_app.shell.stack.Pair,
 
     /// Opens in place and steps until `image` has loaded and halted. The
     /// bar's speed starts at `milli` thousandths of real time: the fixture
@@ -52,7 +52,7 @@ pub const Live = struct {
         self.pointer = .{};
         self.panes = .{ .board = &self.board, .board_input = &self.pointer, .stack = &self.stack };
         self.shell.link = &self.link;
-        self.shell.server = gui_app.shell_main.served(&self.session);
+        self.shell.server = gui_app.shell.main.served(&self.session);
         self.shell.clock = self.clock.clock();
         self.shell.time = &self.time;
         self.shell.registers = &self.registers;

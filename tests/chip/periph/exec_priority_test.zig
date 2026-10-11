@@ -2,7 +2,7 @@
 
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.chip.periph.fault_status.exec;
+const mod = ra8.chip.periph.fault.status.exec;
 
 test "nothing boosts thread mode with both masks clear" {
     try std.testing.expectEqual(@as(?u8, null), mod.boosted(null, 0, 0));
@@ -31,7 +31,7 @@ test "BASEPRI only boosts when it is more urgent than the handler" {
 }
 
 test "a boosted priority makes an enabled fault escalate" {
-    const route = ra8.chip.periph.fault_status.route;
+    const route = ra8.chip.periph.fault.status.route;
     const shpr1: u32 = 0x0000_4000; // BusFault at 0x40
     const taken = route.route(.bus_fault, 1 << 17, shpr1, mod.boosted(null, 0, 0x40));
     try std.testing.expect(taken.escalated);

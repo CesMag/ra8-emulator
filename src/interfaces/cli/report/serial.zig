@@ -4,8 +4,8 @@
 const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
 const Host = @import("ra8_chip").periph.usbhs.Host;
-const Echo = @import("ra8_components").usb_echo.Device;
-const usb_cable = @import("usb_cable.zig");
+const Echo = @import("ra8_components").usb.echo.Device;
+const usb_cable = @import("usb/cable.zig");
 
 /// One line per SCI channel that moved bytes, plus the last console line the
 /// firmware printed. A TDR write made with CCR0.TE clear never leaves the

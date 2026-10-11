@@ -2,7 +2,7 @@
 //! and seeding CPU1 with no engine open (RA8EMU-571).
 const std = @import("std");
 const ra8 = @import("ra8");
-const mod = ra8.chip.core.second_core;
+const mod = ra8.chip.core.second.core;
 const memmap = ra8.chip.core.memmap;
 const Board = ra8.board.board.Board;
 const scb = ra8.chip.periph.scb;
@@ -164,5 +164,5 @@ test "CPU1's image and VTOR are seeded into a store with no engine open" {
 }
 
 test {
-    _ = @import("second_state_test.zig");
+    _ = @import("second/state_test.zig");
 }

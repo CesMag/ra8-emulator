@@ -16,8 +16,8 @@ pub const geometry = @import("geometry.zig");
 
 const Event = gui.platform.Event;
 const Size = gui.platform.Size;
-const window_size = gui.window_size;
-const window_keys = gui.window_keys;
+const window_size = gui.window.size;
+const window_keys = gui.window.keys;
 
 pub const Error = error{ SdlInit, SdlWindow, SdlRenderer, SdlTexture, SdlPresent };
 

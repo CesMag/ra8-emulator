@@ -11,10 +11,10 @@
 //! theirs and runs their arithmetic over a plain register file, so there
 //! is one definition.
 const Instr = @import("cpu/instr.zig").Instr;
-const imm = @import("cpu/ops/long_shift.zig");
-const by_reg = @import("cpu/ops/long_shift_reg.zig");
-const sat = @import("cpu/ops/long_shift_sat.zig");
-const sat64 = @import("cpu/ops/long_shift_sat64.zig");
+const imm = @import("cpu/ops/long/shift/shift.zig");
+const by_reg = @import("cpu/ops/long/shift/reg.zig");
+const sat = @import("cpu/ops/long/shift/sat.zig");
+const sat64 = @import("cpu/ops/long/shift/sat64.zig");
 
 /// Every form is one 32-bit encoding.
 pub const width: u32 = 4;

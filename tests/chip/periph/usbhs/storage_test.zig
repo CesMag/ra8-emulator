@@ -2,9 +2,9 @@
 //! an OUT pipe comes back as data and a CSW on the IN pipe.
 const std = @import("std");
 const ra8 = @import("ra8");
-const device = ra8.components.usb_echo;
-const echo_far = ra8.components.usb_echo.far;
-const msc = ra8.components.usb_stick;
+const device = ra8.components.usb.echo;
+const echo_far = ra8.components.usb.echo.far;
+const msc = ra8.components.usb.stick;
 const regs = ra8.chip.periph.usbhs.regs;
 const setup = ra8.chip.periph.usbhs.setup;
 const usbhs_pipe = ra8.chip.periph.usbhs.pipe;

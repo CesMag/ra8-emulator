@@ -12,10 +12,10 @@ const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const memmap = ra8.chip.core.memmap;
 const stop_machine = ra8.session.stop_machine;
 const step_hook = ra8.session.step_hook;
-const watch_table = ra8.session.watch_table;
-const watch_bus = step_hook.watch_bus;
-const zig_drive = step_hook.zig_drive;
-const ZigCore = step_hook.zig_core.ZigCore;
+const watch_table = ra8.session.watch.table;
+const watch_bus = step_hook.watch.bus;
+const zig_drive = step_hook.zig.drive;
+const ZigCore = step_hook.zig.core.ZigCore;
 
 const image = struct {
     const base: u32 = memmap.sram_base;

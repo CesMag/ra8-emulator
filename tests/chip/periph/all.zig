@@ -26,8 +26,8 @@ test {
     _ = @import("mpu/ns_test.zig");
     _ = @import("canfd/error_flags_test.zig");
     _ = @import("canfd/fifo_test.zig");
-    _ = @import("canfd/rx_config_test.zig");
-    _ = @import("canfd/rx_status_test.zig");
+    _ = @import("canfd/rx/config_test.zig");
+    _ = @import("canfd/rx/status_test.zig");
     _ = @import("canfd/sleep_test.zig");
     _ = @import("canfd/tx_status_test.zig");
     _ = @import("canfd/canfd_test.zig");
@@ -193,12 +193,12 @@ test {
     _ = @import("rtc/reset_test.zig");
     _ = @import("rtc/source_test.zig");
     _ = @import("rtc/rtc_test.zig");
-    _ = @import("scb_test.zig");
+    _ = @import("scb/scb_test.zig");
     _ = @import("cpuid_test.zig");
-    _ = @import("fault_status_test.zig");
-    _ = @import("fault_clear_test.zig");
+    _ = @import("fault/status_test.zig");
+    _ = @import("fault/clear_test.zig");
     _ = @import("afsr_test.zig");
-    _ = @import("fault_route_test.zig");
+    _ = @import("fault/route_test.zig");
     _ = @import("bus_fault_test.zig");
     _ = @import("exec_priority_test.zig");
     _ = @import("usage_fault_test.zig");
@@ -210,7 +210,7 @@ test {
     _ = @import("sau/sau_test.zig");
     _ = @import("sau/attribution_test.zig");
     _ = @import("scs_alias_test.zig");
-    _ = @import("scb_bank_test.zig");
+    _ = @import("scb/bank_test.zig");
     _ = @import("sci/line_test.zig");
     _ = @import("sci/error_latches_test.zig");
     _ = @import("sci/ring_test.zig");

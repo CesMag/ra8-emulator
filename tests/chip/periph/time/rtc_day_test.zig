@@ -9,7 +9,7 @@ const cli_app = @import("cli_app");
 const soaker = @import("../../../interfaces/cli/soaker.zig");
 const store_board = @import("../../../interfaces/cli/store_board.zig");
 
-const zig_run = cli_app.zig_run;
+const zig_run = cli_app.zig.run;
 const cpu_boot = ra8.chip.core.cpu.boot;
 const pacing = ra8.session.run.pacing;
 const pacer = ra8.session.run.pacer;
@@ -51,7 +51,7 @@ fn runDay(start: Calendar) !Day {
     board.time.base.setRate(hz);
     board.clock.seed(start);
     var wall: FakeWall = .{};
-    var asked: ra8.session.run_policy.RunPolicy = .{ .pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), hundred_x) };
+    var asked: ra8.session.run.policy.RunPolicy = .{ .pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), hundred_x) };
     asked.attach(&board);
     var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .idle_skip = true };

@@ -4,7 +4,7 @@
 //! backtrace answer (RA8EMU-1125) unpacked by gui/shell_stack.zig. The
 //! columns line up, a click maps to its frame, a pane too narrow draws
 //! nothing, and the stop rasterises to a pinned golden frame. The walk
-//! itself is tested in tests/interfaces/rpc/session_backtrace_test.zig.
+//! itself is tested in tests/interfaces/rpc/session/backtrace_test.zig.
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
 const light = &@import("gui_app").colors.palettes.light;
@@ -16,8 +16,8 @@ const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const font = ra8.render.font;
 const pane = gui_app.stack_pane;
-const server = ra8.rpc.session_server;
-const proto = ra8.rpc.session_rpc;
+const server = ra8.rpc.session.server;
+const proto = ra8.rpc.session.rpc;
 
 const Rect = draw_list.Rect;
 /// Room for 64 characters past the pc and six rows.
@@ -54,8 +54,8 @@ fn walk(opened: *ra8.session.harness.Harness) !pane.Snapshot {
     var scratch: [proto.backtrace_bytes]u8 = undefined;
     var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
     context.mapping = .{ .context = opened, .mapFn = noMap, .imageFn = imageOf };
-    return switch (ra8.rpc.session_backtrace.backtrace(&context, .{ .core = .cpu0 })) {
-        .ok => |chain| gui_app.shell_stack.unpack(chain),
+    return switch (ra8.rpc.session.backtrace.backtrace(&context, .{ .core = .cpu0 })) {
+        .ok => |chain| gui_app.shell.stack.unpack(chain),
         .err => error.Refused,
     };
 }

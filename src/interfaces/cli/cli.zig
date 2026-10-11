@@ -9,14 +9,14 @@ const world_flags = @import("world_flags.zig");
 const max17048 = @import("ra8_components").max17048;
 const sd_format = @import("ra8_components").sd_card.format;
 const cpu_choice = @import("ra8_chip").core.cpu.choice;
-const rtos_load = @import("ra8_session").rtos_load;
+const rtos_load = @import("ra8_session").rtos.load;
 const request = @import("ra8_components").request;
-pub const ctl_args = @import("ctl_args.zig");
-const rtc_start = @import("ra8_session").rtc_start;
+pub const ctl = @import("ctl/ctl.zig");
+const rtc_start = @import("ra8_session").rtc.start;
 pub const usage = @import("usage.zig").text;
-pub const card_setup = @import("card_setup.zig");
+pub const card = @import("card/card.zig");
 pub const console_output = @import("console_output.zig");
-pub const host_bytes = @import("host_bytes.zig");
+pub const host = @import("host/host.zig");
 /// How many `--dump-sym` names one run will carry: the suite asks for at most
 /// two (progress and failure counters), so this is a little room above that.
 pub const dump_limit: usize = 8;
@@ -61,13 +61,13 @@ pub const Options = struct {
     /// way it has always come up: blank, with no volume on it at all.
     sd_new: ?sd_format.Kind = null,
     /// The volume label that format gives the card.
-    sd_label: []const u8 = card_setup.default_label,
+    sd_label: []const u8 = card.setup.default_label,
     /// The card's size in MiB. Null keeps the image's own default.
     sd_size_mb: ?u32 = null,
     /// Raw SDHC image file to attach to the SPI card.
     sd_path: ?[]const u8 = null,
     sd_save: bool = false, // `--sd-save`: write the card back over sd_path at the end
-    sdhi: card_setup.Sdhi = .{}, // `--sd-image PATH` [`--sd-writable`]: the SDHI card
+    sdhi: card.setup.Sdhi = .{}, // `--sd-image PATH` [`--sd-writable`]: the SDHI card
     /// A disk in the HS jack's USB stick: "blank" or a raw image path.
     usb_disk: ?[]const u8 = null,
     /// `--usbip PORT`: export the FS device to usbip hosts during the run.
@@ -75,9 +75,9 @@ pub const Options = struct {
     /// `--frame-out PATH`: the panel as a PNG at the end of the run (RA8EMU-73).
     frame_out: ?[]const u8 = null,
     panel_only: bool = false, // `--panel-only`: only the glass, at its own size
-    frames: @import("frames_args.zig").Options = .{},
+    frames: @import("frames/args.zig").Options = .{},
     audio: @import("audio_out.zig").Options = .{}, // `--audio-out`, `--audio-rate`
-    rtc_start: ?@import("ra8_session").rtc_start.Start = null,
+    rtc_start: ?@import("ra8_session").rtc.start.Start = null,
     speed: ?u64 = null, // `--speed`/`--realtime`: thousandths of 1x; null runs flat out
     run_for: bool = false, // `--run-for`: a watchdog reset ends the run (RA8EMU-186)
     idle_skip: bool = true, // a sleeping core runs to its next edge; `--no-idle-skip` steps it
@@ -137,14 +137,14 @@ pub const Options = struct {
     /// A place whose stores to record, as the command line spelled it.
     /// Null watches nothing and costs the run nothing.
     watch_place: ?[]const u8 = null,
-    /// `--trace-rtos`: record ThreadX thread switches. src/session/rtos_hook.zig.
+    /// `--trace-rtos`: record ThreadX thread switches. src/session/rtos.hook.zig.
     trace_rtos: bool = false,
     /// `--trace-rtos-out FILE`: also write the trace there (RA8EMU-345).
     trace_rtos_out: ?[]const u8 = null,
     /// `--report json`: the end-of-run report as one JSON line (RA8EMU-347).
     report_json: bool = false,
     /// `--cpu-load`: CPU load per thread and ISR, per core, from the same
-    /// hook. src/session/rtos_report.zig.
+    /// hook. src/session/rtos.report.zig.
     cpu_load: bool = false,
     /// `ctl cpu-load`: print just the load object after a one-shot image run.
     ctl_cpu_load: bool = false,
@@ -310,7 +310,7 @@ fn parseRun(argv: []const []const u8) !Options {
 /// Parse the available one-shot CPU-load command through the ordinary run
 /// options, translating its shorter window flags.
 fn parseCtl(argv: []const []const u8) !Options {
-    const args = try ctl_args.parse(argv);
+    const args = try ctl.args.parse(argv);
     var options = try parseRun(args.slice());
     options.ctl_cpu_load = true;
     options.cpu_load = true;
@@ -321,7 +321,7 @@ fn parseCtl(argv: []const []const u8) !Options {
 /// `parse` to keep each chain inside the length gate. True when the flag was
 /// one of these and `index` has been walked past any value it took.
 fn parseDebug(options: *Options, argv: []const []const u8, index: *usize) !bool {
-    if (try @import("frames_args.zig").parse(&options.frames, argv, index)) return true;
+    if (try @import("frames/args.zig").parse(&options.frames, argv, index)) return true;
     if (try @import("state_args.zig").parse(&options.state, argv, index)) return true;
     const flag = argv[index.*];
     if (std.mem.eql(u8, flag, "--cpu1")) {

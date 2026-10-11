@@ -1,6 +1,6 @@
 //! The Zig core's bus in a full run: the peripheral windows go to the
 //! board's peripheral bus, and everything else goes to the core's own
-//! store (src/chip/core/cpu/memory/guest_bus.zig).
+//! store (src/chip/core/cpu/memory/guest/bus.zig).
 //!
 //! Both the Secure window and its Non-secure alias route to the one
 //! peripheral bus, which folds the alias itself. A peripheral access is one
@@ -8,26 +8,26 @@
 //! rather than split, since splitting would change what the peripheral sees.
 const std = @import("std");
 const bus = @import("bus.zig");
-const GuestBus = @import("memory/guest_bus.zig").GuestBus;
+const GuestBus = @import("memory/guest/bus.zig").GuestBus;
 const registry = @import("../../periph/registry.zig");
 const memmap = @import("../memmap.zig");
 const sau = @import("../../periph/sau/sau.zig");
 const mpu = @import("../../periph/mpu/mpu.zig");
 const mpu_ns = @import("../../periph/mpu/ns.zig");
 /// Public so a test can build the latch without a root export.
-pub const fault_clear = @import("../../periph/fault_clear.zig");
+pub const fault_clear = @import("../../periph/fault/clear.zig");
 const fp_state = @import("fpu/state.zig");
 const fp_scb = @import("fpu/scb.zig");
 const banked = @import("../banked.zig");
 /// Public so its tests reach it without a root export.
 pub const scs_route = @import("scs_route.zig");
-const fault_status = @import("../../periph/fault_status.zig");
+const fault_status = @import("../../periph/fault/status.zig");
 /// Public so its tests reach it without a root export.
 pub const mpu_check = @import("mpu_check.zig");
 const systick_cut = @import("systick_cut.zig");
 const itm_port = @import("../../periph/itm.zig");
 
-/// CFSR's banked bits, UFSR and MMFSR (src/chip/periph/scb_bank.zig).
+/// CFSR's banked bits, UFSR and MMFSR (src/chip/periph/scb/bank.zig).
 const cfsr_banked: u32 = 0xFFFF_00FF;
 
 pub const BoardBus = struct {

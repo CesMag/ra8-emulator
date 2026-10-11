@@ -6,11 +6,11 @@
 //! `loopBack`; it holds a device pointer), the usbip bridge hook, the HS
 //! transfer's far-end pointer and the echo device's pointer to the stick. A
 //! load keeps the target's. The MSC target saves its own half
-//! (components/usb_stick/snapshot.zig, RA8EMU-1104), after the rest.
+//! (components/usb/stick/snapshot.zig, RA8EMU-1104), after the rest.
 const std = @import("std");
 const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
-const stick_half = @import("ra8_components").usb_stick.snapshot;
+const stick_half = @import("ra8_components").usb.stick.snapshot;
 
 pub const Error = file.Error || fields.Error || error{Missing};
 

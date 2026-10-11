@@ -7,24 +7,24 @@
 //! session to install, so neither application carries a copy of that.
 const std = @import("std");
 const harness = @import("ra8_session").harness;
-const cpu1_bringup = @import("ra8_session").cpu1_bringup;
-const board_camera = @import("ra8_session").board_camera;
-const board_rtc = @import("ra8_session").board_rtc;
-const session_plug = @import("ra8_session").board_plug;
+const board_camera = @import("ra8_session").board.camera;
+const board_rtc = @import("ra8_session").board.rtc;
+const session_plug = @import("ra8_session").board.plug;
+const cpu1_bringup = @import("ra8_session").cpu1.bringup;
 const session_api = @import("ra8_session").api;
-const region_map = @import("ra8_session").region_map;
+const region_map = @import("ra8_session").region.map;
+const region_map_json = @import("ra8_session").region.map.json;
+const region_map_text = @import("ra8_session").region.map.text;
 const symbols = @import("ra8_session").symbols;
-const rtos_names = @import("ra8_session").rtos_names;
-const rtos_hook = @import("ra8_session").rtos_hook;
-const region_map_json = @import("ra8_session").region_map_json;
-const region_map_text = @import("ra8_session").region_map_text;
+const rtos_names = @import("ra8_session").rtos.names;
+const rtos_hook = @import("ra8_session").rtos.hook;
 const periph_list = @import("ra8_session").periph_list;
-const stack_samples = @import("ra8_session").stack_samples;
-const stack_profile = @import("ra8_session").stack_profile;
+const stack_samples = @import("ra8_session").stack.samples;
+const stack_profile = @import("ra8_session").stack.profile;
 const source_spec = @import("ra8_host").camera.source_spec;
 const source_open = @import("ra8_host").camera.source_open;
-const proto = @import("session_rpc.zig");
-const served = @import("session_server.zig");
+const proto = @import("session/rpc.zig");
+const served = @import("session/server.zig");
 
 pub const Served = struct {
     owner: harness.Harness,
@@ -68,7 +68,7 @@ pub const Served = struct {
     /// the image has one. Call once, after open.
     /// Name loaded ThreadX modules from their paired ELFs (RA8EMU-1141);
     /// `pairs` outlives the server.
-    pub fn pairModules(self: *Served, pairs: []const @import("ra8_session").txm_debug.Pair) void {
+    pub fn pairModules(self: *Served, pairs: []const @import("ra8_session").txm.debug.Pair) void {
         self.context.modules = self.owner.pairModules(pairs);
     }
 

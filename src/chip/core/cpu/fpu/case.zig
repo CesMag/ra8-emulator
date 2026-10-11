@@ -169,7 +169,7 @@ pub fn Select(comptime B: type) type {
         a: B,
         b: B,
         nzcv: u4,
-        condition: @import("select.zig").Cond,
+        condition: @import("select/select.zig").Cond,
     };
 }
 

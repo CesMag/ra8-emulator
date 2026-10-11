@@ -1,8 +1,8 @@
-//! Covers src/session/run_policy.zig: what a run asked for, attached to a
+//! Covers src/session/run/policy.zig: what a run asked for, attached to a
 //! board, and what the board tells it through run_hook (RA8EMU-1047).
 const std = @import("std");
 const ra8 = @import("ra8");
-const RunPolicy = ra8.session.run_policy.RunPolicy;
+const RunPolicy = ra8.session.run.policy.RunPolicy;
 const Board = ra8.board.board.Board;
 
 test "a run's policy holds no pacing and no armed soak until a run asks" {

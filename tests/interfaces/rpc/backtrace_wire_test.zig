@@ -4,7 +4,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 
-const proto = ra8.rpc.session_rpc;
+const proto = ra8.rpc.session.rpc;
 const backtrace_wire = ra8.rpc.backtrace_wire;
 
 const long_name: [proto.frame_name_cap]u8 = @splat('n');

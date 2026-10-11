@@ -6,7 +6,7 @@
 //! corresponding BusFault. Neither fault makes MMFAR or BFAR valid.
 
 const Cpu = @import("../cpu.zig").Cpu;
-const status = @import("../../../periph/fault_status.zig");
+const status = @import("../../../periph/fault/status.zig");
 
 pub const Failure = enum { mem_manage, bus_fault };
 pub const Phase = enum { stacking, unstacking };

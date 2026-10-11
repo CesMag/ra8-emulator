@@ -6,7 +6,7 @@ const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
 const local_session = gui_app.local_session;
-const proto = ra8.rpc.session_rpc;
+const proto = ra8.rpc.session.rpc;
 
 const image = "tests/fixtures/fpu/fp_basic.elf";
 

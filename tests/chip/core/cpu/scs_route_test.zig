@@ -90,7 +90,7 @@ test "VTOR round trip from each state and through the alias on CPU1" {
     try roundTrip(.cpu1);
 }
 
-const SysTicks = ra8.chip.periph.scb_bank.SysTicks;
+const SysTicks = ra8.chip.periph.scb.bank.SysTicks;
 const icsr: u32 = 0xE000_ED04;
 const scr: u32 = 0xE000_ED10;
 const ccr: u32 = 0xE000_ED14;

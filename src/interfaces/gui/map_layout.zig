@@ -5,7 +5,7 @@
 //! ui/map_pane.zig paints it.
 
 const Image = @import("ra8_session").symbols.Image;
-const region_map = @import("ra8_session").region_map;
+const region_map = @import("ra8_session").region.map;
 const sections = @import("ra8_session").sections;
 
 pub const Kind = enum { code, read_only, initialised, zero_fill, no_init, stack };

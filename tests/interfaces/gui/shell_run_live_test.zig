@@ -10,10 +10,10 @@ const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const Live = @import("live_shell.zig").Live;
 
-const proto = ra8.rpc.session_rpc;
+const proto = ra8.rpc.session.rpc;
 const bar = gui_app.time_bar;
 const codes = gui_app.speed_field.codes;
-const frame_ns = gui_app.shell_run.frame_ns;
+const frame_ns = gui_app.shell.run.frame_ns;
 
 /// Blinks LED1 twice and then parks in a loop, so it never stops by itself.
 /// Its clock is 1 GHz and the session runs a few million instructions a

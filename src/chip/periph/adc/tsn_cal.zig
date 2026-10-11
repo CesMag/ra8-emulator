@@ -13,7 +13,7 @@
 //! firmware's integer maths turns that code into 26.000 degC, the same
 //! plausible deterministic die the ADC model already promised. A page an
 //! image already mapped keeps its bytes, the way mram/window.zig does.
-const Guest = @import("../../core/cpu/memory/guest.zig");
+const Guest = @import("../../core/cpu/memory/guest/guest.zig");
 
 pub const page: u32 = 0x1000;
 

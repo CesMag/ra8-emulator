@@ -115,7 +115,7 @@ test "a fault on a fitted part wraps it where it sits, and NACKs when disconnect
     try board.wire.attach(&bus);
     const registry = &board.wire.touchline.devices;
     try std.testing.expect(registry.answering(0x5D) != null);
-    const ask = try model.fault_spec.parse("@i2c:touch@0x5D=disconnected");
+    const ask = try model.fault.spec.parse("@i2c:touch@0x5D=disconnected");
     var wanted = ask.target;
     wanted.fault = ask.mode;
     try plug.fitted(&board, arena.allocator(), wanted);
@@ -131,7 +131,7 @@ test "a fault on an empty endpoint has nothing fitted to wrap" {
     var board = Board.init(std.testing.allocator);
     defer board.deinit();
     try board.wire.attach(&bus);
-    const ask = try model.fault_spec.parse("@i2c:riic@0x37=nack:2");
+    const ask = try model.fault.spec.parse("@i2c:riic@0x37=nack:2");
     var wanted = ask.target;
     wanted.fault = ask.mode;
     try std.testing.expectError(plug.Error.NothingFitted, plug.fitted(&board, arena.allocator(), wanted));

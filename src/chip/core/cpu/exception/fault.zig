@@ -3,7 +3,7 @@
 //! The core decides that an instruction faults; this file latches the UFSR
 //! bit in CFSR, routes the fault against SHCSR, SHPR1 and the execution
 //! priority with the rules in
-//! src/chip/periph/fault_route.zig, owes HFSR.FORCED when it escalates to
+//! src/chip/periph/fault/route.zig, owes HFSR.FORCED when it escalates to
 //! HardFault, and enters the handler with the faulting instruction stacked
 //! as the return address (or, for INVPC on a refused exception return,
 //! tail-chains it onto the frame the return left behind). A HardFault that cannot preempt either (FAULTMASK
@@ -12,8 +12,8 @@
 const std = @import("std");
 const bus = @import("../bus.zig");
 const memmap = @import("../../memmap.zig");
-const fault_route = @import("../../../periph/fault_route.zig");
-const status = @import("../../../periph/fault_status.zig");
+const fault_route = @import("../../../periph/fault/route.zig");
+const status = @import("../../../periph/fault/status.zig");
 const active = @import("active.zig");
 const dispatch = @import("dispatch.zig");
 const Cpu = @import("../cpu.zig").Cpu;

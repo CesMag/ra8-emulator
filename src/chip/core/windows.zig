@@ -5,8 +5,8 @@
 const sau = @import("../periph/sau/sau.zig");
 const mpu = @import("../periph/mpu/mpu.zig");
 const mpu_guard = @import("mpu_guard.zig");
-const scb = @import("../periph/scb.zig");
-const fault_clear = @import("../periph/fault_clear.zig");
+const scb = @import("../periph/scb/scb.zig");
+const fault_clear = @import("../periph/fault/clear.zig");
 
 /// The state that lives inside one core rather than on the bus: its SAU,
 /// its MPU table and the guard that enforces that table. CPU0's are the

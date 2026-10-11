@@ -13,8 +13,8 @@ const api = ra8.session.api;
 const boot = ra8.chip.core.cpu.boot;
 const elf = ra8.board.image.elf;
 const loader = ra8.chip.core.cpu.memory.load;
-const zig_run = cli_app.zig_run;
-const session_plug = ra8.session.board_plug;
+const zig_run = cli_app.zig.run;
+const session_plug = ra8.session.board.plug;
 const Endpoint = ra8.components.model.endpoint.Endpoint;
 
 const image_bytes = @embedFile("../fixtures/plug/gauge_poll.elf");

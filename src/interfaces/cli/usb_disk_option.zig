@@ -3,7 +3,7 @@
 //! lives here, not in the board).
 const std = @import("std");
 const usb = @import("ra8_board").usb;
-const usb_plug = @import("ra8_board").usb_plug;
+const usb_plug = @import("ra8_board").usb.plug;
 const disk_file = @import("ra8_host").disk_file;
 
 /// The disk bytes a spec names, owned by `allocator`.

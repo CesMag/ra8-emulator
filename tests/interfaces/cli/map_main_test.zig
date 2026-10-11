@@ -1,11 +1,11 @@
-//! `ra8_emulator --map`: the binary prints region_map_text's map of the
+//! `ra8_emulator --map`: the binary prints region.map.text's map of the
 //! EK-RA8D2 fixture and exits 0, and refuses a missing image.
 const std = @import("std");
 const ra8 = @import("ra8");
 const test_paths = @import("test_paths");
 const elf = ra8.board.image.elf;
-const region_map_text = ra8.session.region_map_text;
-const region_map = ra8.session.region_map;
+const region_map_text = ra8.session.region.map.text;
+const region_map = ra8.session.region.map;
 
 const fixture = "tests/fixtures/sections/fault_crashlog_hil.elf";
 const image_bytes = @embedFile("../../fixtures/sections/fault_crashlog_hil.elf");

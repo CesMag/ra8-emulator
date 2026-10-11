@@ -80,7 +80,7 @@ test "--run-for is a window of the image's own milliseconds (RA8EMU-762)" {
 test "--run-for times a run as --ms does and keeps the 1 GHz ceiling" {
     const ten = try parse(&[_][]const u8{ "emu", "a.elf", "--run-for", "10s" });
     const same = try parse(&[_][]const u8{ "emu", "a.elf", "--ms", "10000" });
-    const stop_sym = cli_app.zig_run.stop_sym;
+    const stop_sym = cli_app.zig.run.stop_sym;
     try std.testing.expectEqual(stop_sym.deadline(same.ms).?.periods, stop_sym.deadline(ten.ms).?.periods);
     try std.testing.expectEqual(same.budgetFor(false), ten.budgetFor(false));
     // An image that never arms SysTick still gets 10 s at 1 GHz, plus boot.

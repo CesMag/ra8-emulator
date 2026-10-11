@@ -6,7 +6,7 @@
 //! script can be checked line by line before anything runs.
 //!
 //! A place (`target`, `0x22000054`, `target+4`, `@s_open+0x40`, `fw.zig:8`)
-//! is kept as written. src/session/place.zig parses it, and the session
+//! is kept as written. src/session/place/place.zig parses it, and the session
 //! resolves it against the image, because only the session holds one.
 //!
 //! The words follow gdb's where gdb has one, so a session reads the way a
@@ -38,7 +38,7 @@
 //! A `#` starts a comment, and a blank line is nothing at all, so a script
 //! can explain itself.
 const std = @import("std");
-const watch_table = @import("watch_table.zig");
+const watch_table = @import("watch/table.zig");
 
 pub const Error = error{ UnknownCommand, MissingArgument, ExtraArgument, BadNumber, BadCore, BadSwitch };
 

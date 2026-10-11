@@ -7,7 +7,7 @@ pub const after = @import("report/after.zig");
 /// The board view's PNG writer (RA8EMU-73).
 pub const png = @import("ra8_render").png;
 pub const frame_out = @import("frame_out.zig");
-pub const frames_out = @import("frames_out.zig");
+pub const frames = @import("frames/frames.zig");
 pub const undefined_sites = @import("report/undefined.zig");
 /// Stills of the host window (RA8EMU-500).
 const Board = @import("ra8_board").board.Board;
@@ -43,21 +43,8 @@ const time = @import("report/time.zig");
 const timers = @import("report/timers.zig");
 pub const watchdog = @import("report/watchdog.zig");
 /// Public so its tests can reach it; root.zig is at the gate's 400 lines.
-pub const usb = @import("report/usb.zig");
-pub const usb_cable = @import("report/usb_cable.zig");
-pub const json = @import("report/json.zig");
-pub const json_run = @import("report/json_run.zig");
-pub const json_protect = @import("report/json_protect.zig");
-pub const json_mem = @import("report/json_mem.zig");
-pub const json_clock = @import("report/json_clock.zig");
-pub const json_modules = @import("report/json_modules.zig");
-pub const json_timers = @import("report/json_timers.zig");
-pub const json_watch = @import("report/json_watch.zig");
-pub const json_serial = @import("report/json_serial.zig");
-pub const json_storage = @import("report/json_storage.zig");
-pub const json_riic = @import("report/json_riic.zig");
-pub const json_net = @import("report/json_net.zig");
-pub const json_i2c = @import("report/json_i2c.zig");
+pub const usb = @import("report/usb/usb.zig");
+pub const json = @import("report/json/json.zig");
 const gpio = @import("ra8_chip").periph.gpio;
 const poeg = @import("ra8_chip").periph.poeg;
 const reset = @import("ra8_chip").periph.reset;

@@ -8,7 +8,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const elf = ra8.board.image.elf;
-const region_map = ra8.session.region_map;
+const region_map = ra8.session.region.map;
 const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const font = ra8.render.font;
@@ -88,7 +88,7 @@ test "a click on a block gives its start, which moves the memory pane there" {
     const at = middle(&layout, index);
     const address = pane.click(&layout, area, at.x, at.y).?;
     try std.testing.expectEqual(layout.blocks[index].start, address);
-    var memory: gui_app.shell_memory.Memory = .{ .core = .cpu0 };
+    var memory: gui_app.shell.memory.Memory = .{ .core = .cpu0 };
     memory.follow(address, memory.seen);
     try std.testing.expectEqual(address, memory.address);
     try std.testing.expect(memory.want);

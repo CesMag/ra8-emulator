@@ -1,6 +1,6 @@
 //! The function behind the far-end device's bulk endpoints when a part is
 //! plugged in there (a USB stick's mass-storage target, for one). The chip
-//! owns this contract: the part (src/components/usb_stick) implements it and
+//! owns this contract: the part (src/components/usb/stick) implements it and
 //! the board plugs it in, so this block never imports a part.
 pub const Function = struct {
     context: *anyopaque,

@@ -12,7 +12,7 @@
 const std = @import("std");
 const image = @import("image.zig");
 const fat = @import("fat.zig");
-const format = @import("format.zig");
+const format = @import("format/format.zig");
 const dirent = @import("dirent.zig");
 
 pub const Error = error{ UnsupportedEntry, FileTooLarge, TooManyNames, NoCardFits, WriteRefused };

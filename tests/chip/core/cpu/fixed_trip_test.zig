@@ -8,8 +8,8 @@ const QuietSource = ra8.chip.core.cpu.exception.quiet_source.QuietSource;
 const BlockCache = ra8.chip.core.cpu.decode.block_cache.BlockCache;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const memmap = ra8.chip.core.memmap;
-const bus_fault = ra8.chip.periph.fault_status.bus;
-const status = ra8.chip.periph.fault_status;
+const bus_fault = ra8.chip.periph.fault.status.bus;
+const status = ra8.chip.periph.fault.status;
 const Stop = ra8.chip.core.cpu.cpu.Stop;
 const fixed_trip = ra8.chip.core.cpu.cpu.fixed_trip;
 

@@ -8,30 +8,30 @@ const stop_machine = @import("stop_machine.zig");
 const itm = @import("ra8_chip").periph.itm;
 const breakpoint = @import("breakpoint.zig");
 const core_view = @import("core_view.zig");
-const watch_table = @import("watch_table.zig");
-const zig_drive = @import("zig_drive.zig");
-const zig_session = @import("zig_session.zig");
+const watch_table = @import("watch/table.zig");
+const zig_drive = @import("zig/drive.zig");
+const zig_session = @import("zig/session.zig");
 const input_script = @import("ra8_components").input_script;
 const gt911 = @import("ra8_components").gt911;
 const BoardTick = @import("ra8_chip").core.tick.Tick;
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const session_display = @import("display.zig");
-const board_faults = @import("board_faults/board_faults.zig");
+const board_faults = @import("board/faults/faults.zig");
 const endpoint = @import("ra8_components").endpoint;
-const fault_spec = @import("ra8_components").fault_spec;
+const fault_spec = @import("ra8_components").fault.spec;
 const TimeBase = @import("ra8_chip").periph.timebase.TimeBase;
 const elf = @import("ra8_board").image.elf;
 const symbols = @import("symbols.zig");
 const widget_tree = @import("widget_tree.zig");
 const tap_part = @import("tap_part.zig");
 const session_speed = @import("speed.zig");
-const event_sources = @import("event_sources.zig");
-pub const Core = @import("event_stream.zig").Core;
-pub const EventStream = @import("event_stream.zig").Stream;
+const event_sources = @import("event/sources.zig");
+pub const Core = @import("event/stream.zig").Core;
+pub const EventStream = @import("event/stream.zig").Stream;
 pub const Error = error{ CoreNotAttached, NoLoader, NoInput, NoFaults, NoPlugs, NoTime, TooManySubscribers };
 pub const Run = zig_session.Command;
 pub const Ended = zig_drive.Ended;
-pub const BreakId = @import("break_table.zig").Id;
+pub const BreakId = @import("breaks/table.zig").Id;
 pub const WatchId = watch_table.Id;
 pub const Register = core_view.Cortex;
 pub const Button = input_script.Button;
@@ -53,7 +53,7 @@ pub const Endpoint = endpoint.Endpoint;
 pub const FaultMode = fault_spec.Mode;
 pub const SpeedHook = session_speed.Hook;
 pub const EventClock = struct { context: *anyopaque, nowFn: *const fn (*anyopaque) u64 };
-pub const Event = @import("event_stream.zig").Event;
+pub const Event = @import("event/stream.zig").Event;
 const BoardRun = struct { tick: BoardTick, guest: Guest };
 pub const Session = struct {
     live: zig_session.ZigSession,
@@ -376,7 +376,7 @@ pub const Session = struct {
     }
 
     /// Copy queued events without running subscriber code on the engine thread.
-    pub fn pollEvents(self: *Session, id: usize, out: []Event) ?@import("event_stream.zig").Read {
+    pub fn pollEvents(self: *Session, id: usize, out: []Event) ?@import("event/stream.zig").Read {
         return self.event_stream.read(id, out);
     }
 

@@ -3,8 +3,8 @@
 //! old turn, now through second_zig_run.Driver on a Store, no engine.
 const std = @import("std");
 const ra8 = @import("ra8");
-const second_core = ra8.chip.core.second_core;
-const Driver = second_core.zig_run.Driver;
+const second_core = ra8.chip.core.second.core;
+const Driver = second_core.zig.run.Driver;
 const Store = ra8.chip.core.cpu.memory.store.Store;
 const Guest = ra8.chip.core.cpu.memory.guest.Guest;
 const Units = second_core.zig.Units;

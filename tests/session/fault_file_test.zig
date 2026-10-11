@@ -12,7 +12,7 @@ const fault_file = ra8.session.fault_file;
 const boot = ra8.chip.core.cpu.boot;
 const elf = ra8.board.image.elf;
 const loader = ra8.chip.core.cpu.memory.load;
-const zig_run = cli_app.zig_run;
+const zig_run = cli_app.zig.run;
 
 const image_bytes = @embedFile("../fixtures/plug/gauge_poll.elf");
 const counts_at: u32 = 0x2200_0100;
@@ -65,7 +65,7 @@ test "a soak run applies every scheduled event at its exact virtual time" {
     try store_board.attach(&board, core);
     const loaded = try ra8.board.image.load.read(image);
     _ = try loader.image(core, loaded.image());
-    var asked: ra8.session.run_policy.RunPolicy = .{};
+    var asked: ra8.session.run.policy.RunPolicy = .{};
     asked.soak.armed = true; // as `--run-for` arms it
     asked.attach(&board);
 

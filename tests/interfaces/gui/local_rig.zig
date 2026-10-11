@@ -4,9 +4,9 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
-const proto = ra8.rpc.session_rpc;
+const proto = ra8.rpc.session.rpc;
 const Env = proto.Client.Env;
-const Status = gui_app.status_bar.Status;
+const Status = gui_app.status.bar.Status;
 
 pub const Rig = struct {
     session: gui_app.local_session.LocalSession,

@@ -94,7 +94,7 @@ test "public harness streams ThreadX switches and exceptions in time order" {
     session.live.budget = 2_000_000;
     _ = try session.run(.cpu0, .cont);
 
-    var events: [256]ra8.session.event_stream.Event = undefined;
+    var events: [256]ra8.session.event.stream.Event = undefined;
     const read = session.pollEvents(id, &events) orelse return error.NoEvents;
     var switches: usize = 0;
     var entries: usize = 0;
@@ -120,7 +120,7 @@ test "public harness reports no RTOS trace for an image without ThreadX" {
     try std.testing.expect(!opened.traceRtos());
 }
 
-const StreamEvent = ra8.session.event_stream.Event;
+const StreamEvent = ra8.session.event.stream.Event;
 
 fn isRtos(event: StreamEvent) bool {
     return switch (event.kind) {
@@ -161,7 +161,7 @@ test "public harness streams the same RTOS events --trace-rtos records" {
             .leave => .isr_leave,
         };
         try std.testing.expectEqual(kind, got.kind);
-        try std.testing.expectEqual(ra8.session.event_stream.Core.cpu0, got.core);
+        try std.testing.expectEqual(ra8.session.event.stream.Core.cpu0, got.core);
         try std.testing.expectEqual(@as(u1, 0), want.core);
         try std.testing.expectEqual(state.publisher.nsOf(want.when), got.virtual_ns);
         try std.testing.expectEqual(want.thread, got.payload.rtos.thread);
@@ -177,7 +177,7 @@ fn retiredAfter(stall: bool) !struct { retired: u64, recorded: usize, dropped: u
     const id = if (stall) try session.subscribe() else null;
     session.live.budget = 2_000_000;
     _ = try session.run(.cpu0, .cont);
-    var batch: [ra8.session.event_stream.capacity]StreamEvent = undefined;
+    var batch: [ra8.session.event.stream.capacity]StreamEvent = undefined;
     const dropped = if (id) |held| (session.pollEvents(held, &batch) orelse return error.NoEvents).dropped else 0;
     const trace = &opened.state.tracer.?.trace;
     return .{ .retired = opened.primaryCpu().retired, .recorded = trace.len, .dropped = dropped, .total = trace.len + trace.dropped };
@@ -188,7 +188,7 @@ test "a subscriber that never reads does not change the run" {
     const stalled = try retiredAfter(true);
     try std.testing.expectEqual(free.retired, stalled.retired);
     try std.testing.expectEqual(free.recorded, stalled.recorded);
-    if (stalled.total > ra8.session.event_stream.capacity) try std.testing.expect(stalled.dropped > 0);
+    if (stalled.total > ra8.session.event.stream.capacity) try std.testing.expect(stalled.dropped > 0);
 }
 
 test "RA8EMU-950: a session core sees CPACR, so fp_basic's first VADD lands" {

@@ -7,10 +7,10 @@ const ra8 = @import("ra8");
 const test_paths = @import("test_paths");
 
 const setup = ra8.rpc.served_setup;
-const folded = ra8.rpc.session_folded;
-const proto = ra8.rpc.session_rpc;
-const stack_samples = ra8.session.stack_samples;
-const stack_profile = ra8.session.stack_profile;
+const folded = ra8.rpc.session.folded;
+const proto = ra8.rpc.session.rpc;
+const stack_samples = ra8.session.stack.samples;
+const stack_profile = ra8.session.stack.profile;
 
 fn ask(context: anytype, core: proto.FoldedAsk) ![]const u8 {
     return switch (folded.folded(context, core)) {

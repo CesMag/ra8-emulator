@@ -5,7 +5,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 
-const zig_stop = cli_app.zig_run.stop_sym;
+const zig_stop = cli_app.zig.run.stop_sym;
 const secure_bytes = @embedFile("../fixtures/trustzone/tz_nsc_cgc_usb.elf");
 const ns_bytes = @embedFile("../fixtures/trustzone/tz_nsc_cgc_usb_ns.elf");
 const counter = "g_tz_nsc_cgc_usb_match";

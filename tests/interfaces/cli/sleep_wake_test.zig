@@ -13,7 +13,7 @@ const cli_app = @import("cli_app");
 const idler = @import("idler.zig");
 const store_board = @import("store_board.zig");
 
-const zig_run = cli_app.zig_run;
+const zig_run = cli_app.zig.run;
 const cpu_boot = ra8.chip.core.cpu.boot;
 
 const hz: u64 = 25_000;

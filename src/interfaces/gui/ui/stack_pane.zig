@@ -6,7 +6,7 @@
 //! band. A frame an exception interrupted carries a muted '~' in its gutter.
 //!
 //! The session walks the chain (rpc/session_backtrace.zig) and
-//! gui/shell_stack.zig copies names into the snapshot, so `draw` holds no
+//! gui/shell/stack.zig copies names into the snapshot, so `draw` holds no
 //! slice into the link's buffer and the shell keeps a snapshot past a reload.
 //! The pane never imports the session.
 const std = @import("std");
@@ -19,7 +19,7 @@ const Rect = draw_list.Rect;
 
 pub const pad: i32 = 4;
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
-/// The most frames a backtrace walks; gui/shell_stack.zig checks it
+/// The most frames a backtrace walks; gui/shell/stack.zig checks it
 /// against the wire's limit at comptime.
 pub const max_frames: usize = 32;
 /// Characters a function name and a file name keep.

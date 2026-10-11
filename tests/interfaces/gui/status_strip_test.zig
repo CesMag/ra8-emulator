@@ -11,9 +11,9 @@ const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const font = ra8.render.font;
-const status_bar = gui_app.status_bar;
+const status_bar = gui_app.status.bar;
 const strip = gui_app.status_strip;
-const capture = gui_app.status_capture;
+const capture = gui_app.status.capture;
 const State = gui_app.session_link.State;
 
 const up: State = .{ .connected = .{ .version = 1, .caps = 0 } };

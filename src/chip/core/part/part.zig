@@ -20,7 +20,7 @@ pub const clock = @import("clock.zig");
 /// (R01DS0439EJ0130) and RA8D2 (R01DS0493EJ0130) datasheets, Rev.1.30 p2,
 /// say the same: "Embeds two Systick timers: Secure and Non-secure
 /// instance". With two, SHPR3.PRI_15 and SHCSR.SYSTICKACT are banked
-/// (src/chip/periph/scb_bank.zig).
+/// (src/chip/periph/scb/bank.zig).
 pub const cpu0_systicks: u2 = 2;
 
 /// SysTick timers on CPU1, the Cortex-M33: also two. A Cortex-M33 has two

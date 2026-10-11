@@ -118,19 +118,19 @@ test "a halt request on a halted session is dropped" {
 
 test "a watched write stops after the instruction that made it" {
     var machine = Machine{};
-    const id = try machine.watches.add(try ra8.session.watch_table.Watch.span(0x2000_0040, 4, .write));
+    const id = try machine.watches.add(try ra8.session.watch.table.Watch.span(0x2000_0040, 4, .write));
     machine.proceed();
     _ = machine.onInstruction(at(0x100));
     try std.testing.expectEqual(@as(?stop_machine.Stop, null), machine.onInstruction(at(0x102)));
     machine.onAccess(0x2000_0040, 4, .write, null);
     const stop = machine.onInstruction(at(0x104)).?;
     try std.testing.expectEqual(id, stop.watchpoint.id);
-    try std.testing.expectEqual(ra8.session.watch_table.Access.write, stop.watchpoint.access);
+    try std.testing.expectEqual(ra8.session.watch.table.Access.write, stop.watchpoint.access);
 }
 
 test "a watched access on a halted session is ignored" {
     var machine = Machine{};
-    _ = try machine.watches.add(try ra8.session.watch_table.Watch.span(0x2000_0040, 4, .access));
+    _ = try machine.watches.add(try ra8.session.watch.table.Watch.span(0x2000_0040, 4, .access));
     machine.onAccess(0x2000_0040, 4, .read, null);
     machine.step();
     _ = machine.onInstruction(at(0x100));
@@ -139,7 +139,7 @@ test "a watched access on a halted session is ignored" {
 
 test "resuming clears a watch stop that was already reported" {
     var machine = Machine{};
-    _ = try machine.watches.add(try ra8.session.watch_table.Watch.span(0x2000_0040, 4, .write));
+    _ = try machine.watches.add(try ra8.session.watch.table.Watch.span(0x2000_0040, 4, .write));
     machine.proceed();
     _ = machine.onInstruction(at(0x100));
     machine.onAccess(0x2000_0040, 4, .write, null);
@@ -212,7 +212,7 @@ test "C_STEP written without a debugger attached is ignored" {
 
 test "breaks and watches are numbered from one sequence" {
     var machine = Machine{};
-    const watch = try ra8.session.watch_table.Watch.span(0x2200_0054, 4, .write);
+    const watch = try ra8.session.watch.table.Watch.span(0x2200_0054, 4, .write);
     try std.testing.expectEqual(@as(u32, 1), try machine.addBreak(.{ .address = 0x2200_0008 }));
     try std.testing.expectEqual(@as(u32, 2), try machine.addWatch(watch));
     try std.testing.expectEqual(@as(u32, 3), try machine.addBreak(.{ .address = 0x2200_0010 }));

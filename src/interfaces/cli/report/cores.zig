@@ -10,7 +10,7 @@ const cpscu = @import("ra8_chip").periph.cpscu;
 const cpu_ctrl = @import("ra8_chip").periph.cpu_ctrl;
 const mpu = @import("ra8_chip").periph.mpu;
 const sau = @import("ra8_chip").periph.sau;
-const second_core = @import("ra8_chip").core.second_core;
+const second_core = @import("ra8_chip").core.second.core;
 
 /// What CPU0 did with the second-core release handshake. ACT going up means
 /// the handshake completed, never by itself that a second core is fetching:
@@ -137,7 +137,7 @@ fn partitions(board: *Board, out: Writer) !void {
 
 /// The same lines for any core's SAU, under the name that core answers to.
 /// Taken apart from `partitions` because the SAU is core-private: CPU1
-/// carries one of its own (src/chip/core/second_core.zig), and its map is a
+/// carries one of its own (src/chip/core/second/core.zig), and its map is a
 /// different map, not a second opinion about CPU0's.
 pub fn partitionsOf(out: Writer, label: []const u8, unit: *const sau.Sau) !void {
     if (unit.quiet()) return;

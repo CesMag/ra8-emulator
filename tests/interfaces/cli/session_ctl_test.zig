@@ -78,7 +78,7 @@ test "ctl --json drives load, run, step, pause, regs and mem against a running s
     defer refused.deinit();
     try std.testing.expectEqual(Term{ .exited = 1 }, refused.term);
     try std.testing.expectEqualStrings("Refused", refused.field("error").string);
-    try std.testing.expectEqual(@as(i64, ra8.rpc.session_server.app_codes.too_long), try expectInteger(refused.field("code")));
+    try std.testing.expectEqual(@as(i64, ra8.rpc.session.server.app_codes.too_long), try expectInteger(refused.field("code")));
 }
 
 fn stoppedAt(answer: *const Answer) !struct { reason: []const u8, pc: i64 } {
@@ -163,7 +163,7 @@ test "ctl parse: --json anywhere, register names, budgets and memory reads" {
     const a = arena.allocator();
     const regs = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "tcp::7000", "regs", "pc", "sp", "--json" });
     try std.testing.expect(regs.json);
-    try std.testing.expectEqualSlices(ra8.rpc.session_rpc.Register, &.{ .pc, .sp }, regs.command.regs);
+    try std.testing.expectEqualSlices(ra8.rpc.session.rpc.Register, &.{ .pc, .sp }, regs.command.regs);
     const ran = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "run", "--budget", "0x10" });
     try std.testing.expect(!ran.json);
     try std.testing.expectEqual(@as(u64, 16), ran.command.run);
@@ -191,7 +191,7 @@ test "ctl parse: speed, break and watch" {
     const unbrk = try ctl.parse(a, &(base ++ [_][]const u8{ "break", "--clear", "3" }));
     try std.testing.expectEqual(@as(u32, 3), unbrk.command.clear_break);
     const watch = try ctl.parse(a, &(base ++ [_][]const u8{ "watch", "0x20000000", "access" }));
-    try std.testing.expectEqual(ra8.rpc.session_rpc.Access.access, watch.command.set_watch.access);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.Access.access, watch.command.set_watch.access);
     const unwatch = try ctl.parse(a, &(base ++ [_][]const u8{ "watch", "--clear", "2" }));
     try std.testing.expectEqual(@as(u32, 2), unwatch.command.clear_watch);
     try std.testing.expectError(error.UnknownAccess, ctl.parse(a, &(base ++ [_][]const u8{ "watch", "0", "poke" })));
@@ -299,12 +299,12 @@ test "ctl parse: plug, unplug and fault" {
     const a = arena.allocator();
     const base = [_][]const u8{ "ra8", "ctl", "--connect", "unix:/s" };
     const plug = try ctl.parse(a, &(base ++ [_][]const u8{ "plug", "button@gpio:p005" }));
-    try std.testing.expectEqual(ra8.rpc.session_rpc.Method.plug, plug.command.part.method);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.Method.plug, plug.command.part.method);
     try std.testing.expectEqualStrings("button@gpio:p005", plug.command.part.text);
     const clear = try ctl.parse(a, &(base ++ [_][]const u8{ "fault", "--clear", "i2c:riic@0x36" }));
-    try std.testing.expectEqual(ra8.rpc.session_rpc.Method.clear_fault, clear.command.part.method);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.Method.clear_fault, clear.command.part.method);
     const set = try ctl.parse(a, &(base ++ [_][]const u8{ "fault", "@i2c:riic@0x37=nack:2" }));
-    try std.testing.expectEqual(ra8.rpc.session_rpc.Method.set_fault, set.command.part.method);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.Method.set_fault, set.command.part.method);
     try std.testing.expectError(error.BadArguments, ctl.parse(a, &(base ++ [_][]const u8{"unplug"})));
 }
 
@@ -313,11 +313,11 @@ test "ctl parse: snapshot and restore take one path" {
     defer arena.deinit();
     const a = arena.allocator();
     const saved = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "snapshot", "/tmp/run.ra8snap", "--json" });
-    try std.testing.expectEqual(ra8.rpc.session_rpc.Method.snapshot, saved.command.files.method);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.Method.snapshot, saved.command.files.method);
     try std.testing.expectEqualStrings("/tmp/run.ra8snap", saved.command.files.path);
     try std.testing.expect(saved.json);
     const back = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "restore", "run.ra8snap" });
-    try std.testing.expectEqual(ra8.rpc.session_rpc.Method.restore, back.command.files.method);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.Method.restore, back.command.files.method);
     try std.testing.expectError(error.BadArguments, ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "restore" }));
 }
 
@@ -338,7 +338,7 @@ test "ctl parse: folded takes an optional thread and an optional window" {
     defer arena.deinit();
     const a = arena.allocator();
     const all = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded" });
-    try std.testing.expectEqual(ra8.rpc.session_rpc.all_threads, all.command.folded.thread);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.all_threads, all.command.folded.thread);
     const one = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded", "0x22025060" });
     try std.testing.expectEqual(@as(u32, 0x22025060), one.command.folded.thread);
     const window = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded", "100", "200" });

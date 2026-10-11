@@ -13,7 +13,7 @@ const tables = "src\x00\x00main.c\x00\x01\x00\x00/abs/boot.s\x00\x00\x00\x00\x00
 // advance_line +6; copy (0x1004, line 7); advance_pc 1 op; end_sequence.
 const program = [_]u8{ 0x00, 0x05, 0x02, 0x00, 0x10, 0x00, 0x00, 0x01, 0x02, 0x02, 0x04, 0x02, 0x03, 0x06, 0x01, 0x02, 0x01, 0x00, 0x01, 0x01 };
 
-fn said(sections: ra8.session.dwarf_line.Sections, address: u32, expected: []const u8) !void {
+fn said(sections: ra8.session.dwarf.line.Sections, address: u32, expected: []const u8) !void {
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();
     try session_source.line(&out.writer, sections, address);
@@ -24,7 +24,7 @@ test "info line names the file under its directory and the row's addresses" {
     var list: std.ArrayList(u8) = .empty;
     defer list.deinit(std.testing.allocator);
     try unit(&list, 4, 2, tables, &program);
-    const sections = ra8.session.dwarf_line.Sections{ .line = list.items };
+    const sections = ra8.session.dwarf.line.Sections{ .line = list.items };
     try said(sections, 0x1002, "Line 1 of \"src/main.c\" starts at address 0x00001000 and ends at 0x00001004.\n");
     try said(sections, 0x1005, "Line 7 of \"/abs/boot.s\" starts at address 0x00001004 and ends at 0x00001006.\n");
     try said(sections, 0x1006, "No line number information available for address 0x00001006\n");
@@ -38,7 +38,7 @@ test "info line ends where the line changes, past rows on the same line" {
     var list: std.ArrayList(u8) = .empty;
     defer list.deinit(std.testing.allocator);
     try unit(&list, 4, 2, tables, &repeated);
-    const sections = ra8.session.dwarf_line.Sections{ .line = list.items };
+    const sections = ra8.session.dwarf.line.Sections{ .line = list.items };
     try said(sections, 0x1000, "Line 1 of \"src/main.c\" starts at address 0x00001000 and ends at 0x00001004.\n");
     try said(sections, 0x1003, "Line 1 of \"src/main.c\" starts at address 0x00001002 and ends at 0x00001004.\n");
 }
@@ -82,7 +82,7 @@ test "list keeps the start of an overlong line and carries on after it" {
     try std.testing.expectEqual(session_source.limits.line_bytes + 3 + 7, out.written().len);
 }
 
-fn sourced(dir: std.Io.Dir, sections: ra8.session.dwarf_line.Sections, address: u32, expected: []const u8) !void {
+fn sourced(dir: std.Io.Dir, sections: ra8.session.dwarf.line.Sections, address: u32, expected: []const u8) !void {
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();
     try session_source.list(&out.writer, sections, std.testing.io, dir, address);
@@ -97,7 +97,7 @@ test "list reads the line's file under its directory, or says it is missing" {
     var list: std.ArrayList(u8) = .empty;
     defer list.deinit(std.testing.allocator);
     try unit(&list, 4, 2, tables, &program);
-    const sections = ra8.session.dwarf_line.Sections{ .line = list.items };
+    const sections = ra8.session.dwarf.line.Sections{ .line = list.items };
     try sourced(tmp.dir, sections, 0x1000, "1\t1\n2\t2\n3\t3\n4\t4\n5\t5\n6\t6\n7\t7\n8\t8\n9\t9\n10\t10\n");
     try sourced(tmp.dir, sections, 0x1004, "7\t/abs/boot.s: No such file or directory.\n");
     try sourced(tmp.dir, sections, 0x2000, "No line number information available for address 0x00002000\n");
@@ -113,7 +113,7 @@ test "a backtrace frame gets at FILE:LINE, and nothing without a line" {
     var list: std.ArrayList(u8) = .empty;
     defer list.deinit(std.testing.allocator);
     try unit(&list, 4, 2, tables, &program);
-    const sections = ra8.session.dwarf_line.Sections{ .line = list.items };
+    const sections = ra8.session.dwarf.line.Sections{ .line = list.items };
     var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer out.deinit();
     try session_source.at(&out.writer, sections, 0x1002);

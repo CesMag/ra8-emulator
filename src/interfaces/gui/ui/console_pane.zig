@@ -8,7 +8,7 @@
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const console_log = @import("../console_log.zig");
+const console_log = @import("../console/log.zig");
 const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;

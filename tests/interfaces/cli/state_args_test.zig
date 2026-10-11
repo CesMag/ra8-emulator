@@ -3,7 +3,7 @@
 const std = @import("std");
 const cli_app = @import("cli_app");
 
-const state_args = cli_app.zig_run.state_args;
+const state_args = cli_app.zig.run.state_args;
 
 test "both flags take a path and leave the index on it" {
     var options: state_args.Options = .{};

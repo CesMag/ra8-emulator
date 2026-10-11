@@ -13,7 +13,7 @@ const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const font = ra8.render.font;
-const flame = gui_app.flame_model;
+const flame = gui_app.flame.model;
 const pane = gui_app.flame_pane;
 const Rect = draw_list.Rect;
 

@@ -3,7 +3,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 const itm = ra8.chip.periph.itm;
-const itm_console = cli_app.zig_run.itm_console;
+const itm_console = cli_app.zig.run.itm_console;
 
 const demcr = ra8.chip.core.memmap.scb.demcr;
 const trcena: u32 = 1 << 24;

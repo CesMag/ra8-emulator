@@ -4,15 +4,15 @@
 //! is a precise BusFault when the run records refused addresses on its bus
 //! (`Bus.miss`): CFSR PRECISERR and BFARVALID, BFAR the address. The fault
 //! routes against SHCSR.BUSFAULTENA, SHPR1.PRI_5 and the execution priority
-//! (src/chip/periph/fault_route.zig); escalated, it owes HFSR.FORCED. The handler
+//! (src/chip/periph/fault/route.zig); escalated, it owes HFSR.FORCED. The handler
 //! is entered with the faulting instruction stacked as the return address,
 //! and `Bus.tally` counts it. A run that records nothing, or a HardFault that
 //! cannot preempt, stops instead.
 
 const std = @import("std");
 const memmap = @import("../../memmap.zig");
-const fault_route = @import("../../../periph/fault_route.zig");
-const status = @import("../../../periph/fault_status.zig");
+const fault_route = @import("../../../periph/fault/route.zig");
+const status = @import("../../../periph/fault/status.zig");
 const afsr = @import("../../../periph/afsr.zig");
 const active = @import("active.zig");
 const dispatch = @import("dispatch.zig");

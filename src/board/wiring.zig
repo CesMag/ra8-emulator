@@ -16,10 +16,10 @@ const mpu_guard = @import("ra8_chip").core.mpu_guard;
 const cpuid = @import("ra8_chip").periph.cpuid;
 const dwt = @import("ra8_chip").periph.dwt;
 const scb = @import("ra8_chip").periph.scb;
-const fault_clear = @import("ra8_chip").periph.fault_clear;
+const fault_clear = @import("ra8_chip").periph.fault.clear;
 
 const Board = @import("board.zig").Board;
-const second_wiring = @import("ra8_chip").core.second_wiring;
+const second_wiring = @import("ra8_chip").core.second.wiring;
 const plug = @import("plug.zig");
 
 const bkup = @import("ra8_chip").periph.bkup;

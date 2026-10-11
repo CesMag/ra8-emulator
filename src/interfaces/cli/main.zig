@@ -4,7 +4,7 @@
 //! debugger shell are ra8_gui (src/interfaces/gui/main.zig).
 //!
 //! This file opens the ELF and hands the run to the Zig core
-//! (src/interfaces/cli/zig_main.zig). A debugger command line goes to the
+//! (src/interfaces/cli/zig/main.zig). A debugger command line goes to the
 //! debug front instead. Everything it calls is the cli_app module (root.zig),
 //! which reaches the machine through the library modules.
 const std = @import("std");
@@ -23,9 +23,9 @@ pub fn main(init: std.process.Init) !u8 {
     if (argv.len >= 3 and std.mem.eql(u8, argv[1], "ctl") and std.mem.eql(u8, argv[2], "probe")) return app.probe_ctl.run(allocator, io, argv);
     if (argv.len >= 3 and std.mem.eql(u8, argv[1], "ctl") and (std.mem.eql(u8, argv[2], "--connect") or std.mem.eql(u8, argv[2], "--host"))) return app.session_ctl.run(allocator, io, init.environ_map, argv);
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "--map")) return app.map_main.run(allocator, io, argv);
-    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "serve")) return app.serve_main.run(allocator, io, argv);
-    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "sweep")) return app.sweep_cli.run(io, init.environ_map, argv);
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "serve")) return app.serve.main.run(allocator, io, argv);
+    if (argv.len >= 2 and std.mem.eql(u8, argv[1], "sweep")) return app.sweep.cli.run(io, init.environ_map, argv);
     const options = app.cli.parse(argv) catch return app.debug_front.refused(allocator, io, argv);
     const image = app.image_file.open(io, allocator, options.path) catch return 1;
-    return app.zig_run.main_path.run(allocator, io, image, options);
+    return app.zig.run.main_path.run(allocator, io, image, options);
 }

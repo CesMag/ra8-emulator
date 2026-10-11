@@ -74,15 +74,15 @@ pub const command = @import("../command.zig");
 pub const crc = @import("../crc.zig");
 pub const dump = @import("../dump.zig");
 pub const fat = @import("../fat.zig");
-pub const format = @import("../format.zig");
-pub const format_advice = @import("../format_advice.zig");
+pub const format = @import("../format/format.zig");
+pub const format_advice = @import("../format/advice.zig");
 pub const dirent = @import("../dirent.zig");
 pub const mkimage = @import("../mkimage.zig");
 pub const reply = @import("../reply.zig");
 pub const trace = @import("../trace.zig");
 pub const write = @import("../write.zig");
-pub const bus_card = @import("../bus_card.zig");
-pub const bus_line = @import("../bus_line.zig");
+pub const bus_card = @import("../bus/card.zig");
+pub const bus_line = @import("../bus/line.zig");
 pub const snapshot = @import("../snapshot.zig");
 
 /// Which SPI_B channel the card is wired to. The model's own rule; see the

@@ -9,7 +9,7 @@ const memmap = ra8.chip.core.memmap;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const Stop = ra8.chip.core.cpu.cpu.Stop;
 const Profile = ra8.chip.core.cpu.decode.profile.Profile;
-const Tally = ra8.chip.periph.fault_status.bus.Tally;
+const Tally = ra8.chip.periph.fault.status.bus.Tally;
 
 const bus_handler: u32 = fixture.base + 0x1C0;
 const hard_handler: u32 = fixture.base + 0x1E0;

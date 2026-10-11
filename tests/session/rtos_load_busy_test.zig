@@ -13,12 +13,12 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const memmap = ra8.chip.core.memmap;
-const rtos_hook = ra8.session.step_hook.rtos_hook;
+const rtos_hook = ra8.session.step_hook.rtos.hook;
 const rtos_load = rtos_hook.load;
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;
 const Store = ra8.chip.core.cpu.memory.store.Store;
 const Guest = ra8.chip.core.cpu.memory.guest.Guest;
-const GuestBus = ra8.chip.core.cpu.memory.guest_bus.GuestBus;
+const GuestBus = ra8.chip.core.cpu.memory.guest.bus.GuestBus;
 
 const pointer: u32 = memmap.sram_base + 0x1ABC;
 const thread_a: u32 = memmap.sram_base + 0x10F0;

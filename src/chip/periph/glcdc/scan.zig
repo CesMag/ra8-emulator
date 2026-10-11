@@ -15,7 +15,7 @@
 //! layer's palette, hashes the decoded colours, and refuses the cases that
 //! are not a picture.
 const std = @import("std");
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 const clut = @import("clut.zig");
 
 /// FNV-1a-32, the same basis and prime dev's framebuffer hash uses, so a

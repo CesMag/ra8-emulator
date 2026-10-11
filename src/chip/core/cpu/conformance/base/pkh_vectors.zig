@@ -3,7 +3,7 @@
 //! PKHBT keeps Rn[15:0] and takes the top halfword of Rm LSL #0..31, PKHTB
 //! keeps Rn[31:16] and takes the bottom halfword of Rm ASR #1..32 (#0
 //! encodes #32), with no flag changes. SP or PC in any register, a set
-//! hw2[4] or hw2[15], S set and the dp_shifted rows are left unclaimed.
+//! hw2[4] or hw2[15], S set and the dp.shifted rows are left unclaimed.
 const vector = @import("../vector.zig");
 
 /// The flags held before the instruction (N and C), which must survive.
@@ -62,7 +62,7 @@ pub const all = [_]V{
     vec("a set hw2[4] is unclaimed", in(0x0012, 0), none),
     vec("a set hw2[15] is unclaimed", in(0x8002, 0), none),
     vec("S set is unclaimed", .{ .hw1 = 0xEAD1, .hw2 = 0x0002 }, none),
-    vec("orr belongs to dp_shifted", .{ .hw1 = 0xEA41, .hw2 = 0x0002 }, none),
+    vec("orr belongs to dp.shifted", .{ .hw1 = 0xEA41, .hw2 = 0x0002 }, none),
     vec("the 16-bit space is unclaimed", .{ .hw1 = pkh, .hw2 = 0x0002, .size = 2 }, none),
 };
 

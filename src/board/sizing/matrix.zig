@@ -4,7 +4,7 @@
 //! profile to. Each size sits at its controller's ceiling while timing is
 //! measured, because timing does not depend on it; the report picks the
 //! smallest size that holds the workload afterwards.
-const external = @import("../external_memory.zig");
+const external = @import("../external/memory.zig");
 
 pub const ospi_widths = [_]u8{ 1, 2, 4, 8 };
 pub const ospi_clocks = [_]u32{ 41_666_667, 83_333_333, 166_666_667 };

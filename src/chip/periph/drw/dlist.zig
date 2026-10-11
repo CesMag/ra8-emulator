@@ -12,7 +12,7 @@
 //! low byte) followed by one value word, and end-of-list words whose low
 //! byte is 0xFF with the argument in byte 1. Multi-index packing was never
 //! observed, so the reader stops on it rather than guessing.
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 
 pub const encoding = struct {
     pub const index_mask: u32 = 0xFF;

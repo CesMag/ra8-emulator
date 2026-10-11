@@ -5,8 +5,8 @@
 //! in order.
 const std = @import("std");
 const usbip_export = @import("ra8_usbip").exported;
-const rtc_start = @import("ra8_session").rtc_start;
-const RunPolicy = @import("ra8_session").run_policy.RunPolicy;
+const rtc_start = @import("ra8_session").rtc.start;
+const RunPolicy = @import("ra8_session").run.policy.RunPolicy;
 const cli = @import("cli.zig");
 const host_sock = @import("ra8_host").sock;
 const host_worker = @import("ra8_host").worker;
@@ -64,10 +64,10 @@ pub fn fit(board: *Board, allocator: std.mem.Allocator, io: std.Io, options: cli
     board.c6.useWorker(.of(host_worker));
     if (options.net_tape) |spec| board.c6.useTape(.init(spec.mode, .of(tape_dir, try tape_dir.open(io, spec.dir, spec.mode == .record))));
     board.capture.source = try camera_source.open(allocator, io, options.camera, &board.wire.sensor.format);
-    try cli.card_setup.prepare(board, io, options.trace_sd, options.sd_path, options.sd_size_mb, options.sd_new, options.sd_label);
-    try cli.card_setup.prepareSdhi(board, io, options.sdhi);
+    try cli.card.setup.prepare(board, io, options.trace_sd, options.sd_path, options.sd_size_mb, options.sd_new, options.sd_label);
+    try cli.card.setup.prepareSdhi(board, io, options.sdhi);
     queueTouches(board, options);
-    if (options.touch_in) |path| board.touch_input.source = try cli.host_bytes.open(io, "--touch @", path);
+    if (options.touch_in) |path| board.touch_input.source = try cli.host.bytes.open(io, "--touch @", path);
     if (options.input_script) |path| {
         const content = try std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .limited(1024 * 1024));
         defer allocator.free(content);

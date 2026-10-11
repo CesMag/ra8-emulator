@@ -21,7 +21,7 @@
 //! only thing a narrow store can merge its untouched lanes into.
 const std = @import("std");
 
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 pub const blend = @import("blend.zig");
 pub const cache = @import("cache.zig");
 pub const dlist = @import("dlist.zig");

@@ -6,8 +6,8 @@
 //! one line saying which, so a corpus sweep can tell how far each image
 //! gets; main then prints the board's own report (report/run.zig, zigCore).
 const std = @import("std");
-const Guest = @import("memory/guest.zig").Guest;
-const GuestBus = @import("memory/guest_bus.zig").GuestBus;
+const Guest = @import("memory/guest/guest.zig").Guest;
+const GuestBus = @import("memory/guest/bus.zig").GuestBus;
 const BoardBus = @import("board_bus.zig").BoardBus;
 const registry = @import("../../periph/registry.zig");
 const cpu_mod = @import("cpu.zig");
@@ -16,14 +16,14 @@ const Choice = @import("choice.zig").Choice;
 const NvicSource = @import("exception/nvic_source.zig").NvicSource;
 const QuietSource = @import("exception/quiet_source.zig").QuietSource;
 const DecodeCache = @import("decode/cache.zig").DecodeCache;
-const BlockCache = @import("block_cache.zig").BlockCache;
+const BlockCache = @import("block/cache.zig").BlockCache;
 const sau = @import("../../periph/sau/sau.zig");
 const SauSource = @import("sau_source.zig").SauSource;
 const DataGate = @import("data_gate.zig").Gate;
 const Attribution = @import("attribution.zig").Attribution;
 const mpu = @import("../../periph/mpu/mpu.zig");
-const fault_clear = @import("../../periph/fault_clear.zig");
-const fault_status = @import("../../periph/fault_status.zig");
+const fault_clear = @import("../../periph/fault/clear.zig");
+const fault_status = @import("../../periph/fault/status.zig");
 const bus_fault = @import("../../periph/bus_fault.zig");
 const Bus = @import("bus.zig").Bus;
 const code_lines = @import("code_lines.zig");
@@ -64,7 +64,7 @@ pub const Boundary = struct {
 
 /// A debugger listening to a `--cpu zig` run: handed the bus and the
 /// exception source the core would use, it returns the ones the core uses
-/// instead (src/session/rtos_zig.zig, RA8EMU-261).
+/// instead (src/session/rtos/zig.zig, RA8EMU-261).
 pub const Wrap = struct {
     context: *anyopaque,
     busFn: *const fn (context: *anyopaque, inner: Bus) Bus,

@@ -5,7 +5,7 @@
 //! a chunk moves it, and the skipped time lands on whoever owned the core.
 const std = @import("std");
 const ra8 = @import("ra8");
-const rtos_hook = ra8.session.step_hook.rtos_hook;
+const rtos_hook = ra8.session.step_hook.rtos.hook;
 
 const pointer: u32 = 0x2200_1ABC;
 const thread_a: u32 = 0x2200_10F0;

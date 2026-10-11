@@ -104,20 +104,20 @@ test "--ns names the Non-Secure companion image, and is off by default" {
 
 test {
     _ = @import("../../session/touch_spec_test.zig");
-    _ = @import("../../session/rtc_start_test.zig");
+    _ = @import("../../session/rtc/start_test.zig");
     _ = @import("realtime_test.zig");
     _ = @import("../../session/duration_test.zig");
     _ = @import("../../session/fault_file_test.zig");
     _ = @import("../render/png_test.zig");
     _ = @import("frame_out_test.zig");
-    _ = @import("frames_args_test.zig");
+    _ = @import("frames/args_test.zig");
     _ = @import("state_args_test.zig");
-    _ = @import("frames_out_test.zig");
+    _ = @import("frames/out_test.zig");
     _ = @import("video_out_test.zig");
     _ = @import("gif_out_test.zig");
     _ = @import("audio_out_test.zig");
     _ = @import("audio_tone_test.zig");
-    _ = @import("ctl_args_test.zig");
+    _ = @import("ctl/args_test.zig");
 }
 
 test "--cpu-load-from and --cpu-load-to set the load window and turn --cpu-load on" {

@@ -3,7 +3,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
 const profiles = ra8.host.profiles;
-const host_spawn = cli_app.host_spawn;
+const host_spawn = cli_app.host.spawn;
 
 const text =
     \\# lab machines

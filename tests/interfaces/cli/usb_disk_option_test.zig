@@ -7,9 +7,9 @@ const usb = ra8.board.usb;
 const option = cli_app.usb_disk_option;
 
 test "blank needs no file" {
-    const disk = try option.load(std.testing.allocator, io, ra8.board.usb_plug.blank_spec);
+    const disk = try option.load(std.testing.allocator, io, ra8.board.usb.plug.blank_spec);
     defer std.testing.allocator.free(disk);
-    try std.testing.expectEqual(ra8.board.usb_plug.blank_len, disk.len);
+    try std.testing.expectEqual(ra8.board.usb.plug.blank_len, disk.len);
 }
 
 test "an image file is read whole" {

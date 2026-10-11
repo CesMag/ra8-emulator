@@ -6,9 +6,9 @@ const std = @import("std");
 const ra8 = @import("ra8");
 
 const setup = ra8.rpc.served_setup;
-const served = ra8.rpc.session_server;
-const proto = ra8.rpc.session_rpc;
-const camera = ra8.rpc.session_camera;
+const served = ra8.rpc.session.server;
+const proto = ra8.rpc.session.rpc;
+const camera = ra8.rpc.session.camera;
 const rpc = served.rpc_lib;
 
 const image = "tests/fixtures/fpu/fp_basic.elf";

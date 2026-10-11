@@ -13,14 +13,14 @@ const functions = @import("ra8_session").functions;
 const profile = functions.profile;
 const elf = @import("ra8_board").image.elf;
 const std = @import("std");
-const stack_samples = @import("ra8_session").stack_samples;
+const stack_samples = @import("ra8_session").stack.samples;
 const tally = @import("ra8_session").tally;
 const pc_hits = @import("ra8_session").pc_hits;
 const clocks = @import("ra8_chip").periph.clocks;
 const lob = @import("ra8_chip").core.lob;
 const bus_fault = @import("ra8_chip").periph.bus_fault;
 const console_output = @import("console_output.zig");
-const second_core = @import("ra8_chip").core.second_core;
+const second_core = @import("ra8_chip").core.second.core;
 
 pub const Parts = struct {
     /// Where finished console lines go: `--console` and `--until`.

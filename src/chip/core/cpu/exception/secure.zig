@@ -3,7 +3,7 @@
 //! src/chip/periph/secure_fault.zig says what each cause latches; this file does
 //! the rest the way src/chip/core/cpu/exception/fault.zig does for UsageFault:
 //! routes exception 7 against SHCSR.SECUREFAULTENA, SHPR1.PRI_7 and the
-//! execution priority (src/chip/periph/fault_route.zig), owes HFSR.FORCED when
+//! execution priority (src/chip/periph/fault/route.zig), owes HFSR.FORCED when
 //! it escalates to HardFault, reports lockup when even HardFault cannot
 //! preempt, and enters the handler with the faulting instruction stacked as
 //! the return address. SFSR is latched either way, so a HardFault handler
@@ -12,8 +12,8 @@
 const std = @import("std");
 const bus = @import("../bus.zig");
 const memmap = @import("../../memmap.zig");
-const fault_route = @import("../../../periph/fault_route.zig");
-const status = @import("../../../periph/fault_status.zig");
+const fault_route = @import("../../../periph/fault/route.zig");
+const status = @import("../../../periph/fault/status.zig");
 const secure_fault = @import("../../../periph/secure_fault.zig");
 const fault = @import("fault.zig");
 const active = @import("active.zig");

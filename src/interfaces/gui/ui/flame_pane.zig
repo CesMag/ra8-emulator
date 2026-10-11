@@ -1,6 +1,6 @@
 //! The flame graph pane (RA8EMU-835): one row of boxes per stack depth
 //! under the model's zoom root, the root on top. A box's width is its
-//! total's share of its parent's box (gui/flame_model.zig owns the edges).
+//! total's share of its parent's box (gui/flame/model.zig owns the edges).
 //! A box's colour comes from an FNV-1a hash of its name over the theme's
 //! hues, so a function keeps its colour between refreshes and zooms. The
 //! hovered box sits on the highlight, and the bottom line reads its name,
@@ -9,7 +9,7 @@ const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const Theme = @import("colors.zig").Theme;
-const flame_model = @import("../flame_model.zig");
+const flame_model = @import("../flame/model.zig");
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;

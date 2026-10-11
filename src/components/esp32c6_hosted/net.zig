@@ -1,7 +1,7 @@
 //! Host TCP/UDP sockets behind the ESP32-C6 station interface.
 const std = @import("std");
-const dns = @import("dns.zig");
-const dns_host = @import("dns_host.zig");
+const dns = @import("dns/dns.zig");
+const dns_host = @import("dns/host.zig");
 const worker = @import("worker.zig");
 const eth = @import("eth.zig");
 const frame = @import("frame.zig");

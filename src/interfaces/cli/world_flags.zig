@@ -7,16 +7,16 @@ const std = @import("std");
 const cli = @import("cli.zig");
 const touch_spec = @import("ra8_session").touch_spec;
 const request = @import("ra8_components").request;
-const fault_spec = @import("ra8_components").fault_spec;
+const fault_spec = @import("ra8_components").fault.spec;
 const source_spec = @import("ra8_host").camera.source_spec;
 const sci_reply = @import("ra8_chip").periph.sci.reply;
-const rtc_start = @import("ra8_session").rtc_start;
+const rtc_start = @import("ra8_session").rtc.start;
 const speed = @import("ra8_session").run.speed;
 const duration = @import("ra8_session").duration;
 const timebase = @import("ra8_chip").periph.timebase;
 
 const Options = cli.Options;
-const card_setup = cli.card_setup;
+const card_setup = cli.card.setup;
 
 /// Whether the argument at `index` was one of these flags. True walks
 /// `index` past any value it took; false leaves it where it was.

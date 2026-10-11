@@ -20,7 +20,7 @@ const op = @import("../op.zig");
 const Cpu = @import("../cpu.zig").Cpu;
 const Instr = @import("../instr.zig").Instr;
 const control_bits = @import("../regs.zig").control_bits;
-const fp_gate = @import("fp_gate.zig");
+const fp_gate = @import("fp/gate.zig");
 
 pub const encodings = struct {
     /// hw1 with D ([6]) masked out.

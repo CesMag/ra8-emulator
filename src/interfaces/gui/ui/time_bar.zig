@@ -1,7 +1,7 @@
 //! The time bar (RA8EMU-807): run, pause and step buttons, the speed field
 //! and the clock readout as one row of draw-list commands, plus the hit test
 //! that maps a click to a control. It paints plain values; the status, the
-//! speed field and the readout models fill them in gui/time_bar_capture.zig,
+//! speed field and the readout models fill them in gui/time.bar_capture.zig,
 //! which also turns a click into a run, step or pause (RA8EMU-1086). The shell
 //! (RA8EMU-201) places the bar; this file only lays it out, paints it and
 //! answers clicks.
@@ -18,7 +18,7 @@ pub const gap: i32 = 4;
 pub const control_h: i32 = font.glyph_h + 6;
 /// The controls, a pixel of border on top, and air around them.
 pub const height: i32 = control_h + 7;
-/// The longest speed text the field shows; gui/time_bar_capture.zig pins it
+/// The longest speed text the field shows; gui/time.bar_capture.zig pins it
 /// to the speed field's own limit.
 pub const field_chars: usize = 12;
 

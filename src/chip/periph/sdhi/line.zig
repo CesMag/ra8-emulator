@@ -1,7 +1,7 @@
 //! The card slot as SDHI0 sees it (ADR 0004): the words an SD card answers
 //! with, which the controller drops into SD_RSP10..76, and the card itself
 //! behind a line the board plugs in. The card is a part outside the MCU
-//! (src/components/sd_card/bus_card.zig); the controller only talks to this.
+//! (src/components/sd_card/bus/card.zig); the controller only talks to this.
 //!
 //! With nothing plugged in the slot is `absent`: it holds nothing, never
 //! reaches the transfer state, refuses CMD2, CMD3 and every block, and its

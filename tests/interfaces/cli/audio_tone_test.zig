@@ -7,7 +7,7 @@ const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 
 const elf = ra8.board.image.elf;
-const zig_run = cli_app.zig_run;
+const zig_run = cli_app.zig.run;
 const cpu_boot = ra8.chip.core.cpu.boot;
 const loader = ra8.chip.core.cpu.memory.load;
 const audio_out = cli_app.report.audio_out;

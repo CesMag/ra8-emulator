@@ -38,6 +38,7 @@
 //! Zig 0.17.0, the version pinned in ra8-firmware .devcontainer/Dockerfile.
 const std = @import("std");
 const Translator = @import("translate_c").Translator;
+const gui_smoke = @import("build/gui_smoke.zig");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -81,9 +82,11 @@ pub fn build(b: *std.Build) void {
     // tools/terms.zig is the terminology half, tested the same way.
     const terms_mod = toolModule(b, target, optimize, "tools/terms.zig");
 
-    // tools/example_table.zig prints the RA8EMU-66 pass table; the tests read
+    // tools/example/table.zig prints the RA8EMU-66 pass table; the tests read
     // its parser through the same module the executable is built from.
-    const table_mod = toolModule(b, target, optimize, "tools/example_table.zig");
+    const table_mod = toolModule(b, target, optimize, "tools/example/table.zig");
+    // The hil config sits outside tools/example/, so it comes in as a module.
+    table_mod.addImport("hil_conf", toolModule(b, target, optimize, "tools/hil/conf.zig"));
     const table = b.addRunArtifact(b.addExecutable(.{ .name = "example_table", .root_module = table_mod }));
     table.addPassthruArgs();
     b.step("examples", "Print the example pass table: -- EMULATOR DIR [INSTRUCTIONS]").dependOn(&table.step);
@@ -260,7 +263,7 @@ fn harnessChecks(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.
     test_step.dependOn(&consumer.step);
     test_step.dependOn(exe_step);
     const harness_tests = b.addTest(.{ .root_module = b.createModule(.{
-        .root_source_file = b.path("tests/session/harness_test.zig"),
+        .root_source_file = b.path("tests/session/harness/harness_test.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
@@ -384,17 +387,5 @@ fn guiTest(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builti
     mod.addImport("ra8", emu);
     mod.addImport("gui_sdl", sdl);
     step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = mod })).step);
-    if (gui_exe) |exe| step.dependOn(guiSmoke(b, exe));
-}
-
-/// The real ra8_gui with no display: it opens its window on SDL's dummy
-/// video driver, serves a fixture image in-process, draws five frames with
-/// the image loaded and exits 0.
-fn guiSmoke(b: *std.Build, exe: *std.Build.Step.Compile) *std.Build.Step {
-    const smoke = b.addRunArtifact(exe);
-    smoke.setEnvironmentVariable("SDL_VIDEODRIVER", "dummy");
-    smoke.addArgs(&.{ "--frames", "5" });
-    smoke.addFileArg(b.path("tests/fixtures/gpio/blink.elf"));
-    smoke.expectExitCode(0);
-    return &smoke.step;
+    if (gui_exe) |exe| step.dependOn(gui_smoke.smoke(b, exe));
 }

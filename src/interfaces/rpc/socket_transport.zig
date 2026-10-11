@@ -1,7 +1,7 @@
 //! RPC byte transports over connected TCP and Unix domain sockets (RA8EMU-194).
 const std = @import("std");
 const rpc = @import("ra8_rpc_wire");
-const sock_ready = @import("ra8_host").sock_ready;
+const sock_ready = @import("ra8_host").sock.ready;
 
 pub const Connection = struct {
     stream: std.Io.net.Stream,

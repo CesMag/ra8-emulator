@@ -11,7 +11,7 @@ const cli_app = @import("cli_app");
 const store_board = @import("store_board.zig");
 const idler = @import("idler.zig");
 
-const zig_run = cli_app.zig_run;
+const zig_run = cli_app.zig.run;
 const cpu_boot = ra8.chip.core.cpu.boot;
 const memmap = ra8.chip.core.memmap;
 const soak = ra8.session.run.soak;
@@ -49,7 +49,7 @@ test "a soak ends at the virtual minute the firmware overwrites its canary" {
     defer board.deinit();
     try store_board.attach(&board, core);
     board.time.base.setRate(hz);
-    var asked: ra8.session.run_policy.RunPolicy = .{};
+    var asked: ra8.session.run.policy.RunPolicy = .{};
     asked.soak.armed = true;
     asked.attach(&board);
     try asked.soak.watch.add(.{ .address = canary_at, .expected = fill, .kind = .stack_canary });

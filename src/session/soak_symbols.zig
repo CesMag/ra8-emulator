@@ -3,7 +3,7 @@
 //! without ThreadX names neither, and its soak watches no canaries.
 const elf = @import("ra8_board").image.elf;
 const symbols = @import("symbols.zig");
-const soak = @import("run.zig").soak;
+const soak = @import("run/run.zig").soak;
 
 pub fn resolve(image: elf.Image, threads: *soak.threads.Threads) void {
     threads.head = symbols.addressOf(image, soak.threads.created_ptr_symbol);

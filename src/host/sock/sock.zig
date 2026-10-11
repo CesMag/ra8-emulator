@@ -11,6 +11,7 @@ const darwin = builtin.os.tag.isDarwin();
 const on_windows = builtin.os.tag == .windows;
 pub const windows = @import("windows.zig");
 const socket_flags = @import("../socket_flags.zig");
+pub const ready = @import("ready.zig");
 
 pub const Fd = posix.socket_t;
 pub const invalid: Fd = if (on_windows) @import("../win32.zig").invalid_handle else -1;

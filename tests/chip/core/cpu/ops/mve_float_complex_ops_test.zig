@@ -76,18 +76,18 @@ test "F16 forms: vcadd.f16 #90, vcmla.f16 #90 and vcmul.f16 #180" {
 }
 
 test "vcmul rotation reads rot_hi from bit 12 and rot_lo from bit 0" {
-    try std.testing.expectEqual(@as(u2, 0), ops.mve_float_vcmul.rotation(wide(0xFE32, 0x0E04)));
-    try std.testing.expectEqual(@as(u2, 1), ops.mve_float_vcmul.rotation(wide(0xFE32, 0x0E05)));
-    try std.testing.expectEqual(@as(u2, 2), ops.mve_float_vcmul.rotation(wide(0xFE32, 0x1E04)));
-    try std.testing.expectEqual(@as(u2, 3), ops.mve_float_vcmul.rotation(wide(0xFE32, 0x1E05)));
+    try std.testing.expectEqual(@as(u2, 0), ops.mve.float.vcmul.rotation(wide(0xFE32, 0x0E04)));
+    try std.testing.expectEqual(@as(u2, 1), ops.mve.float.vcmul.rotation(wide(0xFE32, 0x0E05)));
+    try std.testing.expectEqual(@as(u2, 2), ops.mve.float.vcmul.rotation(wide(0xFE32, 0x1E04)));
+    try std.testing.expectEqual(@as(u2, 3), ops.mve.float.vcmul.rotation(wide(0xFE32, 0x1E05)));
 }
 
 test "unclaimed: D, N or M set" {
-    try std.testing.expect(!ops.mve_float_vcadd.claims(wide(0xFCD2, 0x0844)));
-    try std.testing.expect(!ops.mve_float_vcadd.claims(wide(0xFC92, 0x08C4)));
-    try std.testing.expect(!ops.mve_float_vcmla.claims(wide(0xFC72, 0x0844)));
-    try std.testing.expect(!ops.mve_float_vcmla.claims(wide(0xFC32, 0x0864)));
-    try std.testing.expect(!ops.mve_float_vcmul.claims(wide(0xFE72, 0x0E04)));
-    try std.testing.expect(!ops.mve_float_vcmul.claims(wide(0xFE32, 0x0E84)));
-    try std.testing.expect(!ops.mve_float_vcmul.claims(wide(0xFE32, 0x0E24)));
+    try std.testing.expect(!ops.mve.float.vcadd.claims(wide(0xFCD2, 0x0844)));
+    try std.testing.expect(!ops.mve.float.vcadd.claims(wide(0xFC92, 0x08C4)));
+    try std.testing.expect(!ops.mve.float.vcmla.claims(wide(0xFC72, 0x0844)));
+    try std.testing.expect(!ops.mve.float.vcmla.claims(wide(0xFC32, 0x0864)));
+    try std.testing.expect(!ops.mve.float.vcmul.claims(wide(0xFE72, 0x0E04)));
+    try std.testing.expect(!ops.mve.float.vcmul.claims(wide(0xFE32, 0x0E84)));
+    try std.testing.expect(!ops.mve.float.vcmul.claims(wide(0xFE32, 0x0E24)));
 }

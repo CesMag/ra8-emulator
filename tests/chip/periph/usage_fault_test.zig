@@ -4,7 +4,7 @@ const std = @import("std");
 const ra8 = @import("ra8");
 const FakeCore = @import("fake_core.zig").FakeCore;
 const memmap = ra8.chip.core.memmap;
-const fault_status = ra8.chip.periph.fault_status;
+const fault_status = ra8.chip.periph.fault.status;
 const usage = fault_status.usage;
 const Nvic = ra8.chip.periph.nvic.Nvic;
 

@@ -66,8 +66,7 @@ const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 pub const fifo = @import("fifo.zig");
 pub const sleep = @import("sleep.zig");
-pub const rx_config = @import("rx_config.zig");
-pub const rx_status = @import("rx_status.zig");
+pub const rx = @import("rx/rx.zig");
 pub const tx_status = @import("tx_status.zig");
 pub const regs = @import("regs.zig");
 const errors = @import("error_flags.zig");
@@ -101,7 +100,7 @@ pub const Mode = regs.Mode;
 pub const error_flags = errors;
 
 /// The CFDRFSTS rule, reached the same way.
-pub const rx_flags = rx_status;
+pub const rx_flags = rx.status;
 
 const part = lanes.part;
 const merge = lanes.merge;
@@ -138,13 +137,13 @@ pub const Unit = struct {
     /// Accepted frames with no stage free.
     lost: u32 = 0,
     /// CFDRFSTS[0]'s latched half: RFMLT, and the stores aimed at it. See
-    /// src/chip/periph/canfd/rx_status.zig.
-    rx_sts: rx_status.Status = .{},
+    /// src/chip/periph/canfd/rx.status.zig.
+    rx_sts: rx.status.Status = .{},
     /// Accepted frames dropped because CFDRFCC.RFE was never set, so there
-    /// was no FIFO to queue them in. See src/chip/periph/canfd/rx_config.zig.
+    /// was no FIFO to queue them in. See src/chip/periph/canfd/rx.config.zig.
     unarmed: u32 = 0,
     /// CFDRFCC[0], the RX FIFO's own configuration.
-    rx: rx_config.Config = .{},
+    rx: rx.config.Config = .{},
     /// Pops of an empty FIFO.
     starved: u32 = 0,
     /// Stores into a status register the controller owns.
@@ -255,7 +254,7 @@ pub const Unit = struct {
             off_gsts => self.globalStatus() | self.dozing.global.statusBit(),
             off_cnsts => self.channelStatus() | self.dozing.channel.statusBit(),
             off_rfsts0 => self.fifoStatus(),
-            rx_config.off_rfcc0 => self.rx.word,
+            rx.config.off_rfcc0 => self.rx.word,
             off_tmc0 => self.tmc,
             off_tmsts0 => self.tx.word,
             errors.off => self.faults.read(),
@@ -296,7 +295,7 @@ pub const Unit = struct {
             },
             errors.off => self.faults.store(byte, width, value),
             off_rfpctr0 => self.popFrame(),
-            rx_config.off_rfcc0 => self.rx.store(
+            rx.config.off_rfcc0 => self.rx.store(
                 merge(self.rx.word, byte, width, value),
                 self.global == .reset,
             ),

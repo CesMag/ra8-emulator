@@ -15,7 +15,7 @@ const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
 const Bus = @import("ra8_chip").periph.registry.Bus;
-const place = @import("place.zig");
+const place = @import("place/place.zig");
 const symbols = @import("symbols.zig");
 
 /// One `--dump-mem` ask: the place as spelled and how many words to read.

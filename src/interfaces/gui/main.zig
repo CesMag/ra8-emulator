@@ -7,7 +7,7 @@
 const std = @import("std");
 const app = @import("gui_app");
 const host = @import("ra8_host");
-const gui_window = @import("window.zig");
+const gui_window = @import("window/window.zig");
 
 // A macOS build carries the Info.plist the camera permission needs.
 comptime {
@@ -17,5 +17,5 @@ comptime {
 pub fn main(init: std.process.Init) !u8 {
     const allocator = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(allocator);
-    return app.shell_main.run(allocator, init.io, init.environ_map, argv, gui_window.opener);
+    return app.shell.main.run(allocator, init.io, init.environ_map, argv, gui_window.opener);
 }

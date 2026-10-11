@@ -3,7 +3,7 @@
 const std = @import("std");
 const ra8 = @import("ra8");
 const model = ra8.components.model;
-const schedule = model.fault_schedule;
+const schedule = model.fault.schedule;
 const Error = schedule.Error;
 
 const s: u64 = 1_000_000_000;
