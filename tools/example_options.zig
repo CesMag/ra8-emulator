@@ -72,6 +72,11 @@ pub const CardDir = struct {
     dir: []const u8,
 };
 
+pub const AppFiles = struct {
+    image: []const u8,
+    apps: []const []const u8,
+};
+
 pub const CardImage = struct {
     image: []const u8,
     environment: []const u8,
@@ -90,6 +95,13 @@ const usb_stick = [_][]const u8{ "--usb-disk", "blank", "--ms", "2000" };
 
 pub const card_images = [_]CardImage{
     .{ .image = "import_reader.elf", .environment = "RA8_EMU_IMPORT_READER_IMG" },
+};
+
+/// Images whose ThreadX module apps are staged beside them with --app
+/// (RA8EMU-1140): each file sits in the run directory beside the image,
+/// the way `zig build txm-hello-m33` leaves them in zig-out/arm.
+pub const app_files = [_]AppFiles{
+    .{ .image = "txm_sd_hello_m85.elf", .apps = &.{ "txm_hello_m33.ra8app", "txm_fault_m33.ra8app" } },
 };
 
 /// Images whose SDHI card is built from a directory next to the image.
@@ -144,4 +156,12 @@ pub fn cardDir(image: []const u8) ?[]const u8 {
         if (std.mem.eql(u8, entry.image, image)) return entry.dir;
     }
     return null;
+}
+
+/// The app files staged beside image with --app; empty when none are listed.
+pub fn appsFor(image: []const u8) []const []const u8 {
+    for (app_files) |entry| {
+        if (std.mem.eql(u8, entry.image, image)) return entry.apps;
+    }
+    return &.{};
 }

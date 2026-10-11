@@ -363,6 +363,11 @@ fn runImage(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.En
     try argv.appendSlice(allocator, options.flags(image));
     if (options.cardImage(image, env)) |card| try argv.appendSlice(allocator, &.{ "--sd", card });
     if (try cardDirPath(allocator, io, path)) |dir| try argv.appendSlice(allocator, &.{ "--sd-dir", dir });
+    for (options.appsFor(image)) |app| {
+        const app_path = try std.fs.path.join(allocator, &.{ std.fs.path.dirname(path) orelse ".", app });
+        std.Io.Dir.cwd().access(io, app_path, .{}) catch continue;
+        try argv.appendSlice(allocator, &.{ "--app", app_path });
+    }
     if (halves.cpu1) |cpu1| try argv.appendSlice(allocator, &.{ "--cpu1", cpu1 });
     if (halves.ns) |ns| try argv.appendSlice(allocator, &.{ "--ns", ns });
     if (run.probe) |wanted| try argv.appendSlice(allocator, &.{ probes.flag(wanted.symbol), wanted.symbol });

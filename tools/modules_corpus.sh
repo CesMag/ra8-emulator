@@ -7,9 +7,10 @@
 # against tools/modules_expected.md (RA8EMU-152). An image is a
 # txm_*_m85.elf as ra8-firmware's `zig build arm` leaves it in zig-out/arm;
 # the module manager images on CPU1 are pairs and live in
-# dualcore_corpus.sh. txm_sd_hello_m85 reads txm_hello_m33.ra8app off the
-# SDHI card, so the script puts DIR's copy in txm_sd_hello_m85.sd, the card
-# directory the example table hands it (RA8EMU-158).
+# dualcore_corpus.sh. txm_sd_hello_m85 takes its ThreadX module apps
+# through --app, so the script stages DIR's txm_hello_m33.ra8app and
+# txm_fault_m33.ra8app beside the images for the example table to stage
+# (RA8EMU-1140).
 #
 #   tools/modules_corpus.sh EMULATOR DIR
 #
@@ -36,10 +37,11 @@ for image in "$dir"/txm_*_m85.elf; do
     [ -e "$image" ] || continue
     cp "$image" "$images/"
 done
-if [ -e "$dir/txm_hello_m33.ra8app" ]; then
-    mkdir "$images/txm_sd_hello_m85.sd"
-    cp "$dir/txm_hello_m33.ra8app" "$images/txm_sd_hello_m85.sd/"
-fi
+for app in txm_hello_m33.ra8app txm_fault_m33.ra8app; do
+    if [ -e "$dir/$app" ]; then
+        cp "$dir/$app" "$images/"
+    fi
+done
 
 # shellcheck disable=SC2086
 actual=$(cd "$here/.." && zig build examples ${ZIG_BUILD_ARGS:-} -- "$emulator" "$images")
