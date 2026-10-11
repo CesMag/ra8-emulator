@@ -7,6 +7,8 @@
 //! the sdl files stay outside this module because they need SDL.
 pub const platform = @import("platform.zig");
 pub const headless = @import("headless.zig");
+pub const window_size = @import("window_size.zig");
+pub const window_keys = @import("window_keys.zig");
 pub const camera_panel = @import("camera_panel.zig");
 pub const camera_open = @import("camera_open.zig");
 pub const camera_always = @import("camera_always.zig");

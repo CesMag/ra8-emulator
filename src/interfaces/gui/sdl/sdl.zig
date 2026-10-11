@@ -8,6 +8,7 @@
 //! It reaches the rest of the GUI through "gui_app", never by relative import,
 //! and `zig build test` never compiles it, so the tests need no SDL.
 const std = @import("std");
+const builtin = @import("builtin");
 const gui = @import("gui_app");
 const render = @import("ra8_render");
 pub const c = @import("c.zig").c;
@@ -15,6 +16,8 @@ pub const geometry = @import("geometry.zig");
 
 const Event = gui.platform.Event;
 const Size = gui.platform.Size;
+const window_size = gui.window_size;
+const window_keys = gui.window_keys;
 
 pub const Error = error{ SdlInit, SdlWindow, SdlRenderer, SdlTexture, SdlPresent };
 
@@ -28,14 +31,21 @@ pub const Sdl = struct {
     presenter: ?geometry.Presenter = null,
     /// Whether the renderer paces presents to the display itself.
     vsync: bool = false,
+    /// Pixels per layout point (RA8EMU-966), set on the renderer so the
+    /// shell draws in points and SDL scales every frame up to the pixels.
+    ui_scale: u32 = 1,
 
-    pub fn init(title: [:0]const u8, width: u32, height: u32) Error!Sdl {
+    /// Opens at most of the screen it lands on (window_size.initial) and
+    /// never shrinks under window_size.min (RA8EMU-966).
+    pub fn init(title: [:0]const u8) Error!Sdl {
         if (!c.SDL_Init(c.SDL_INIT_VIDEO)) return fail(Error.SdlInit);
         errdefer c.SDL_Quit();
+        const opening = window_size.initial(usableScreen());
         const flags = c.SDL_WINDOW_RESIZABLE | c.SDL_WINDOW_HIGH_PIXEL_DENSITY;
-        const window = c.SDL_CreateWindow(title, @intCast(width), @intCast(height), flags) orelse
+        const window = c.SDL_CreateWindow(title, @intCast(opening.width), @intCast(opening.height), flags) orelse
             return fail(Error.SdlWindow);
         errdefer c.SDL_DestroyWindow(window);
+        _ = c.SDL_SetWindowMinimumSize(window, @intCast(window_size.min.width), @intCast(window_size.min.height));
         const renderer = c.SDL_CreateRenderer(window, null) orelse return fail(Error.SdlRenderer);
         const vsync = c.SDL_SetRenderVSync(renderer, 1);
         // Shifted characters reach the console pane as text events.
@@ -73,20 +83,46 @@ pub const Sdl = struct {
         return @ptrCast(@alignCast(ctx));
     }
 
+    /// The next event, pointer positions in layout points. The full-screen
+    /// key is the window's own and never reaches the shell; a size or
+    /// display-scale change reads as a resize to the new point size.
     fn poll(ctx: *anyopaque) ?Event {
-        _ = ctx;
+        const self = from(ctx);
         var ev: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&ev)) {
+            if (ev.type == c.SDL_EVENT_KEY_DOWN and !ev.key.repeat and window_keys.togglesFullscreen(ev.key.key, mods(ev.key.mod), mac)) {
+                self.toggleFullscreen();
+                continue;
+            }
+            switch (ev.type) {
+                c.SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED, c.SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED => return .{ .resize = size(ctx) },
+                else => {},
+            }
+            _ = c.SDL_ConvertEventToRenderCoordinates(self.renderer, &ev);
             if (translate(&ev)) |event| return event;
         }
         return null;
     }
 
+    fn toggleFullscreen(self: *Sdl) void {
+        const now = (c.SDL_GetWindowFlags(self.window) & c.SDL_WINDOW_FULLSCREEN) != 0;
+        _ = c.SDL_SetWindowFullscreen(self.window, !now);
+    }
+
+    /// The layout size in points, setting the renderer's scale to match
+    /// the display the window is on now.
     fn size(ctx: *anyopaque) Size {
+        const self = from(ctx);
         var w: c_int = 0;
         var h: c_int = 0;
-        _ = c.SDL_GetWindowSizeInPixels(from(ctx).window, &w, &h);
-        return .{ .width = @intCast(@max(w, 0)), .height = @intCast(@max(h, 0)) };
+        _ = c.SDL_GetWindowSizeInPixels(self.window, &w, &h);
+        const k = window_size.uiScale(scale(ctx));
+        if (k != self.ui_scale) {
+            const f: f32 = @floatFromInt(k);
+            if (c.SDL_SetRenderScale(self.renderer, f, f)) self.ui_scale = k;
+        }
+        const pixels: Size = .{ .width = @intCast(@max(w, 0)), .height = @intCast(@max(h, 0)) };
+        return window_size.points(pixels, self.ui_scale);
     }
 
     fn scale(ctx: *anyopaque) f32 {
@@ -155,6 +191,24 @@ pub const Sdl = struct {
     }
 };
 
+const mac = builtin.os.tag == .macos;
+
+fn mods(held: c.SDL_Keymod) window_keys.Mods {
+    return .{
+        .ctrl = held & c.SDL_KMOD_CTRL != 0,
+        .gui = held & c.SDL_KMOD_GUI != 0,
+        .alt = held & c.SDL_KMOD_ALT != 0,
+        .shift = held & c.SDL_KMOD_SHIFT != 0,
+    };
+}
+
+/// The primary screen's usable area in points, or zero when SDL has none.
+fn usableScreen() Size {
+    var bounds: c.SDL_Rect = undefined;
+    if (!c.SDL_GetDisplayUsableBounds(c.SDL_GetPrimaryDisplay(), &bounds)) return .{ .width = 0, .height = 0 };
+    return .{ .width = @intCast(@max(bounds.w, 0)), .height = @intCast(@max(bounds.h, 0)) };
+}
+
 /// RA8_GUI_CPU set to anything but empty or "0" forces the CPU path.
 fn cpuForced() bool {
     const raw = c.SDL_getenv("RA8_GUI_CPU") orelse return false;
@@ -166,10 +220,6 @@ fn cpuForced() bool {
 fn translate(ev: *const c.SDL_Event) ?Event {
     return switch (ev.type) {
         c.SDL_EVENT_QUIT, c.SDL_EVENT_WINDOW_CLOSE_REQUESTED => .quit,
-        c.SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED => .{ .resize = .{
-            .width = @intCast(@max(ev.window.data1, 0)),
-            .height = @intCast(@max(ev.window.data2, 0)),
-        } },
         c.SDL_EVENT_WINDOW_EXPOSED => .expose,
         c.SDL_EVENT_SYSTEM_THEME_CHANGED => .appearance,
         c.SDL_EVENT_KEY_DOWN, c.SDL_EVENT_KEY_UP => .{ .key = .{ .code = ev.key.key, .down = ev.key.down } },

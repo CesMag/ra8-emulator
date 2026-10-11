@@ -66,6 +66,9 @@ test {
     _ = @import("interfaces/render/gif/lzw_test.zig");
     _ = @import("interfaces/render/wav_test.zig");
     _ = @import("interfaces/gui/headless_test.zig");
+    _ = @import("interfaces/gui/window_size_test.zig");
+    _ = @import("interfaces/gui/window_keys_test.zig");
+    _ = @import("interfaces/gui/window_layout_test.zig");
     _ = @import("interfaces/gui/camera_panel_test.zig");
     _ = @import("interfaces/gui/ui/registers_pane_test.zig");
     _ = @import("interfaces/gui/registers_capture_test.zig");
