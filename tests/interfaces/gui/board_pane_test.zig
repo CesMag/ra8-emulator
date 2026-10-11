@@ -96,11 +96,11 @@ fn boardDigest(theme: *const gui_app.colors.Theme) !u64 {
 }
 
 test "the board pane frame with LED1 on is pinned" {
-    try std.testing.expectEqual(@as(u64, 16709361613165744171), try boardDigest(dark));
+    try std.testing.expectEqual(@as(u64, 2948886196153579443), try boardDigest(dark));
 }
 
 test "in the light palette the board pane frame is pinned to its own golden" {
-    try std.testing.expectEqual(@as(u64, 6985845836536888179), try boardDigest(light));
+    try std.testing.expectEqual(@as(u64, 8628860126947917603), try boardDigest(light));
 }
 
 test "the pane's LED count and lamp colours are the chip's" {

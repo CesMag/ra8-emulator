@@ -138,7 +138,7 @@ pub fn draw(renderer: *c.SDL_Renderer, textures: *Textures, batch: *const geomet
         const texture: ?*c.SDL_Texture = switch (run.texture) {
             .none => null,
             .atlas => textures.atlas orelse continue,
-            .image => |source| try textures.image(source),
+            .image, .smooth => |source| sampled(try textures.image(source), run.texture == .smooth),
         };
         const clip = c.SDL_Rect{ .x = run.clip.x, .y = run.clip.y, .w = run.clip.w, .h = run.clip.h };
         if (!c.SDL_SetRenderClipRect(renderer, &clip)) return fail(Error.SdlDraw);
@@ -147,6 +147,12 @@ pub fn draw(renderer: *c.SDL_Renderer, textures: *Textures, batch: *const geomet
             return fail(Error.SdlDraw);
         }
     }
+}
+
+/// `texture` set to sample filtered when `smooth`, else nearest (RA8EMU-965).
+fn sampled(texture: *c.SDL_Texture, smooth: bool) *c.SDL_Texture {
+    _ = c.SDL_SetTextureScaleMode(texture, if (smooth) c.SDL_SCALEMODE_LINEAR else c.SDL_SCALEMODE_NEAREST);
+    return texture;
 }
 
 /// A static RGBA32 texture sampled nearest and blended source-over.

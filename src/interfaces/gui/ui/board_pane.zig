@@ -98,8 +98,25 @@ pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, view: Vi
     defer list.popClip();
     try list.fill(layout.board, theme.border);
     try list.fill(inset(layout.board), theme.well);
-    try list.fill(layout.panel, unseen);
-    if (view.panel) |image| try list.image(fit.fitIn(layout.panel, image.width, image.height), image);
+    const image = view.panel orelse return drawParts(list, theme, layout, view, unseen);
+    try list.fill(layout.panel, theme.background);
+    const shown = fit.fitIn(layout.panel, image.width, image.height);
+    try list.scaledImage(shown, image, !wholeScale(shown, image.width, image.height));
+    try drawParts(list, theme, layout, view, null);
+}
+
+/// Whether `shown` is the panel at a whole-number scale, drawn nearest so
+/// its pixels stay crisp (RA8EMU-965); any other scale is filtered.
+pub fn wholeScale(shown: Rect, width: u32, height: u32) bool {
+    if (shown.w <= 0 or shown.h <= 0 or width == 0 or height == 0) return true;
+    const w: u32 = @intCast(shown.w);
+    const h: u32 = @intCast(shown.h);
+    return w % width == 0 and h % height == 0 and w / width == h / height;
+}
+
+/// The empty panel slot (when `blank` is set), the LEDs and the switches.
+fn drawParts(list: *draw_list.DrawList, theme: *const Theme, layout: Layout, view: View, blank: ?Color) !void {
+    if (blank) |color| try list.fill(layout.panel, color);
     for (layout.leds, 0..) |led, index| {
         try list.fill(led, theme.led_bezel);
         const inner = inset(led);

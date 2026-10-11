@@ -102,6 +102,7 @@ test {
     _ = @import("interfaces/gui/board_pane_test.zig");
     _ = @import("interfaces/gui/board_input_test.zig");
     _ = @import("interfaces/gui/board_touch_test.zig");
+    _ = @import("interfaces/gui/board_fit_test.zig");
     _ = @import("interfaces/gui/session_button_wire_test.zig");
     _ = @import("interfaces/gui/session_touch_wire_test.zig");
     _ = @import("interfaces/gui/shell_frame_test.zig");

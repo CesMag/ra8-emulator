@@ -186,3 +186,16 @@ test "build starts each frame over" {
     try std.testing.expectEqual(@as(usize, 4), batch.vertices.items.len);
     try std.testing.expectEqual(@as(usize, 1), batch.runs.items.len);
 }
+
+test "a smooth image gets its own run apart from the same pixels drawn nearest" {
+    var list = draw_list.DrawList.init(std.testing.allocator, 20, 20);
+    defer list.deinit();
+    try list.image(.{ .x = 0, .y = 0, .w = 8, .h = 8 }, picture);
+    try list.scaledImage(.{ .x = 8, .y = 0, .w = 6, .h = 6 }, picture, true);
+    var batch = try build(&list, null);
+    defer batch.deinit();
+    try std.testing.expectEqual(@as(usize, 2), batch.runs.items.len);
+    try std.testing.expect(batch.runs.items[0].texture.eql(.{ .image = picture }));
+    try std.testing.expect(batch.runs.items[1].texture.eql(.{ .smooth = picture }));
+    try std.testing.expect(!batch.runs.items[1].texture.eql(.{ .image = picture }));
+}

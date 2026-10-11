@@ -128,3 +128,38 @@ test "glyphs draw nothing without an atlas" {
     scene.draw(null);
     try std.testing.expectEqual(@as(usize, 4), scene.count(clear));
 }
+
+test "a smooth image blends between source pixels and a nearest one does not" {
+    const black = Color.rgb(0, 0, 0);
+    const white = Color.rgb(255, 255, 255);
+    const source: draw_list.Image = .{ .width = 2, .height = 1, .pixels = &.{ black, white } };
+    var nearest = try Scene.init(8, 1);
+    defer nearest.deinit();
+    try nearest.list.image(.{ .x = 0, .y = 0, .w = 8, .h = 1 }, source);
+    nearest.draw(null);
+    try std.testing.expectEqual(@as(usize, 4), nearest.count(black));
+    try std.testing.expectEqual(@as(usize, 4), nearest.count(white));
+    var smooth = try Scene.init(8, 1);
+    defer smooth.deinit();
+    try smooth.list.scaledImage(.{ .x = 0, .y = 0, .w = 8, .h = 1 }, source, true);
+    smooth.draw(null);
+    try std.testing.expectEqual(black, smooth.frame.at(0, 0));
+    try std.testing.expectEqual(white, smooth.frame.at(7, 0));
+    var last: u8 = 0;
+    for (0..8) |x| {
+        const shade = smooth.frame.at(@intCast(x), 0).r;
+        try std.testing.expect(shade >= last);
+        last = shade;
+    }
+    try std.testing.expect(smooth.count(black) + smooth.count(white) < 8);
+}
+
+test "a smooth image at its own size copies its pixels" {
+    const source: draw_list.Image = .{ .width = 2, .height = 1, .pixels = &.{ red, blue } };
+    var scene = try Scene.init(2, 1);
+    defer scene.deinit();
+    try scene.list.scaledImage(.{ .x = 0, .y = 0, .w = 2, .h = 1 }, source, true);
+    scene.draw(null);
+    try std.testing.expectEqual(red, scene.frame.at(0, 0));
+    try std.testing.expectEqual(blue, scene.frame.at(1, 0));
+}

@@ -26,19 +26,22 @@ pub const Texture = union(enum) {
     none,
     atlas,
     image: draw_list.Image,
+    /// The same pixels sampled filtered (RA8EMU-965).
+    smooth: draw_list.Image,
 
     pub fn eql(self: Texture, other: Texture) bool {
         return switch (self) {
             .none => other == .none,
             .atlas => other == .atlas,
-            .image => |mine| switch (other) {
-                .image => |theirs| mine.pixels.ptr == theirs.pixels.ptr and
-                    mine.width == theirs.width and mine.height == theirs.height,
-                else => false,
-            },
+            .image => |mine| other == .image and same(mine, other.image),
+            .smooth => |mine| other == .smooth and same(mine, other.smooth),
         };
     }
 };
+
+fn same(a: draw_list.Image, b: draw_list.Image) bool {
+    return a.pixels.ptr == b.pixels.ptr and a.width == b.width and a.height == b.height;
+}
 
 /// Indices `first .. first + count` share one texture and one clip rect.
 pub const Run = struct {
@@ -171,7 +174,8 @@ pub const Batch = struct {
             .u1 = float(area.x + area.w - shape.area.x) / span_w,
             .v1 = float(area.y + area.h - shape.area.y) / span_h,
         };
-        try self.quad(.{ .image = shape.image }, clip, area, Color.rgb(255, 255, 255), uv);
+        const texture: Texture = if (shape.smooth) .{ .smooth = shape.image } else .{ .image = shape.image };
+        try self.quad(texture, clip, area, Color.rgb(255, 255, 255), uv);
     }
 
     /// Two triangles over `area`, in the run for `texture` and `clip`.

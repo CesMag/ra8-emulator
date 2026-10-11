@@ -54,7 +54,9 @@ pub const Line = struct { x0: i32, y0: i32, x1: i32, y1: i32, color: Color };
 /// A glyph from the font atlas: the atlas cell at (`cell_x`, `cell_y`)
 /// covers `area` one to one, and its coverage scales `color`'s alpha.
 pub const Glyph = struct { area: Rect, cell_x: u32, cell_y: u32, color: Color };
-pub const Quad = struct { area: Rect, image: Image };
+/// `smooth` samples filtered instead of nearest (RA8EMU-965): for an image
+/// shown at a fractional scale, where nearest would make text shimmer.
+pub const Quad = struct { area: Rect, image: Image, smooth: bool = false };
 
 pub const Shape = union(enum) {
     fill: Fill,
@@ -116,8 +118,13 @@ pub const DrawList = struct {
     }
 
     pub fn image(self: *DrawList, area: Rect, source: Image) !void {
+        return self.scaledImage(area, source, false);
+    }
+
+    /// `source` stretched over `area`, filtered when `smooth`.
+    pub fn scaledImage(self: *DrawList, area: Rect, source: Image, smooth: bool) !void {
         if (area.intersect(self.clip()).empty()) return;
-        try self.add(.{ .image = .{ .area = area, .image = source } });
+        try self.add(.{ .image = .{ .area = area, .image = source, .smooth = smooth } });
     }
 
     fn add(self: *DrawList, shape: Shape) !void {
