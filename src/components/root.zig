@@ -31,12 +31,12 @@ pub const modem_at = @import("modem_at/modem.zig");
 pub const eink = @import("eink_it8951/panel.zig");
 /// The plug layer: endpoints, the catalog, parts, requests and faults.
 pub const model = @import("model.zig");
-pub const sd_card = @import("sd_card/card.zig");
+pub const sd_card = @import("sd_card/card/card.zig");
 /// The ESP32-C6 on the EK-RA8D2, speaking esp-hosted over SPI or UART.
 pub const esp_hosted = @import("esp32c6_hosted/hosted.zig");
 pub const catalog = @import("catalog.zig");
 pub const endpoint = @import("endpoint.zig");
-pub const esp_tape = @import("esp32c6_hosted/tape.zig");
+pub const esp_tape = @import("esp32c6_hosted/tape/tape.zig");
 pub const fault = @import("fault.zig");
 pub const fault_lines = @import("fault_lines.zig");
 pub const fault_schedule = @import("fault_schedule.zig");

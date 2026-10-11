@@ -1,4 +1,4 @@
-//! Covers src/host/sock.zig (RA8EMU-850, RA8EMU-1105): bytes sent on
+//! Covers src/host/sock/sock.zig (RA8EMU-850, RA8EMU-1105): bytes sent on
 //! one end of a socket arrive on the other, an idle socket reads as
 //! WouldBlock, and a send to a closed peer is BrokenPipe, an error the
 //! caller handles, not a signal.

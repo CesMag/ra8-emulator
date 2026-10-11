@@ -88,7 +88,7 @@ test {
     _ = @import("eth_test.zig");
     _ = @import("dns_test.zig");
     _ = @import("net_test.zig");
-    _ = @import("tape_test.zig");
+    _ = @import("tape/tape_test.zig");
     _ = @import("host_net_test.zig");
     _ = @import("replay_test.zig");
     _ = @import("dhcp_test.zig");

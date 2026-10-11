@@ -59,7 +59,7 @@ fn host(answer: webcam.av_permission.Status) av_webcam.Host {
     };
 }
 
-fn openAnswering(answer: webcam.av_permission.Status, arg: []const u8, grant: webcam.consent.Grant, typed: []const u8, said: *std.Io.Writer.Allocating) !*webcam.source.Webcam {
+fn openAnswering(answer: webcam.av_permission.Status, arg: []const u8, grant: webcam.consent.Grant, typed: []const u8, said: *std.Io.Writer.Allocating) !*webcam.input.Webcam {
     var in = std.Io.Reader.fixed(typed);
     return av_webcam.openWith(allocator, host(answer), arg, grant, &in, &said.writer);
 }

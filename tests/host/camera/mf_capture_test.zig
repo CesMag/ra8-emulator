@@ -132,7 +132,7 @@ test "RGB32 frames become RGB24 after waiting through gaps" {
     gaps = mf_capture.gap_tries - 1;
     const self = try open(.rgb32);
     try std.testing.expectEqual(webcam.v4l2.pix_rgb24, self.agreed().pixelformat);
-    try std.testing.expectEqual(ra8.host.camera.webcam.source.rawFormat(webcam.v4l2.pix_rgb24).?, .rgb24);
+    try std.testing.expectEqual(ra8.host.camera.webcam.input.rawFormat(webcam.v4l2.pix_rgb24).?, .rgb24);
     var out: [6]u8 = undefined;
     const cap = self.capture();
     try std.testing.expect(cap.readFn(cap.ctx, &out));

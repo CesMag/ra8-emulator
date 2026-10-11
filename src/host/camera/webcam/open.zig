@@ -8,15 +8,15 @@
 //! what most UVC webcams offer.
 const std = @import("std");
 const builtin = @import("builtin");
-const consent = @import("webcam_consent.zig");
-const privacy = @import("webcam_privacy.zig");
-const v4l2 = @import("v4l2_device.zig");
-const negotiate = @import("v4l2_negotiate.zig");
-const v4l2_stream = @import("v4l2_stream.zig");
-const source = @import("webcam_input.zig");
-const mf_open = @import("mf_open.zig");
-const mf_webcam = @import("mf_webcam.zig");
-const av_webcam = @import("av_webcam.zig");
+const consent = @import("consent.zig");
+const privacy = @import("privacy.zig");
+const v4l2 = @import("../v4l2_device.zig");
+const negotiate = @import("../v4l2_negotiate.zig");
+const v4l2_stream = @import("../v4l2_stream.zig");
+const source = @import("input.zig");
+const mf_open = @import("../mf_open.zig");
+const mf_webcam = @import("../mf_webcam.zig");
+const av_webcam = @import("../av_webcam.zig");
 
 pub const request_width: u32 = 640;
 pub const request_height: u32 = 480;

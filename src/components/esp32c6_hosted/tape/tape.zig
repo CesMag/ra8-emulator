@@ -2,7 +2,7 @@
 //! One file per host connection or DNS question. Each file is a run of
 //! records: a direction byte, a u32 little-endian length, then the bytes.
 const std = @import("std");
-const store_file = @import("tape_store.zig");
+const store_file = @import("store.zig");
 
 pub const Store = store_file.Store;
 pub const Handle = store_file.Handle;

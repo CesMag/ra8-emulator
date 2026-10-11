@@ -3,8 +3,8 @@
 //! A device is handed each byte the channel actually sends and answers with
 //! the bytes it drives back, which the channel queues for the firmware to
 //! read out of RDR. One device per channel: the AT modem sits on SCI7 this
-//! way (src/components/modem_at/modem.zig), the microSD card on SCI0 (src/chip/periph/
-//! sd_card_line.zig), and the SPI_B channels use the same shape for the
+//! way (src/components/modem_at/modem.zig), the microSD card on SCI0
+//! (src/components/sd_card/card/line.zig), and the SPI_B channels use the same shape for the
 //! e-ink panel.
 //!
 //! `spi_only` IS A PIN FACT, NOT A PROTOCOL ONE. A channel's pins are muxed:

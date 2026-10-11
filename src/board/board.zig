@@ -83,7 +83,6 @@ const esp_hosted = @import("ra8_components").esp_hosted;
 const sci_input = @import("ra8_chip").periph.sci.input;
 const gt911 = @import("ra8_components").gt911;
 const sd_card = @import("ra8_components").sd_card;
-const sd_card_line = @import("ra8_components").sd_card.card_line;
 const sd_format = @import("ra8_components").sd_card.format;
 const bus_card = @import("ra8_components").sd_card.bus_card;
 const sdhi = @import("ra8_chip").periph.sdhi;
@@ -249,7 +248,7 @@ pub const Board = struct {
     /// The card as something on SCI0's line. Built in attach(), which is
     /// also where it is handed the card it speaks for: it holds a pointer,
     /// so it cannot be built before the board it points into.
-    sd_line: sd_card_line.Line = undefined,
+    sd_line: sd_card.line.Line = undefined,
     /// The volume a `--sd-new` format put on that card, for the report. Null
     /// when the card came up blank, which is every run that did not ask.
     sd_volume: ?sd_format.Volume = null,

@@ -7,7 +7,7 @@
 //! `Runtime` so the mapping runs against fakes on any host.
 const std = @import("std");
 const builtin = @import("builtin");
-const privacy = @import("webcam_privacy.zig");
+const privacy = @import("webcam/privacy.zig");
 
 /// AVAuthorizationStatus.
 pub const Status = enum(isize) { not_determined = 0, restricted = 1, denied = 2, authorized = 3, _ };

@@ -6,7 +6,7 @@ const dns = @import("dns.zig");
 const eth = @import("eth.zig");
 const frame = @import("frame.zig");
 const Queue = @import("queue.zig").Queue;
-const tape = @import("tape.zig");
+const tape = @import("tape/tape.zig");
 const worker = @import("worker.zig");
 
 const State = enum(u8) { running, ready };

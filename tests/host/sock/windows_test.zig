@@ -1,5 +1,5 @@
 const std = @import("std");
-const win = @import("ra8").host.sock_windows;
+const win = @import("ra8").host.sock.windows;
 
 test "winsock codes map onto the bridge's socket errors" {
     try std.testing.expectEqual(error.WouldBlock, win.mapCode(10035));

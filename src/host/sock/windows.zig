@@ -2,7 +2,7 @@
 //! nonblocking IPv4 calls as sock.zig, through ws2_32. Winsock has no
 //! SIGPIPE, so no per-socket opt-out is needed.
 const std = @import("std");
-const win32 = @import("win32.zig");
+const win32 = @import("../win32.zig");
 
 const Socket = win32.HANDLE;
 const Error = @import("sock.zig").Error;

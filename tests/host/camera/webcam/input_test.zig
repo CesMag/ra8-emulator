@@ -1,10 +1,10 @@
-//! Covers src/host/camera/webcam_input.zig with a fake capture, and the
+//! Covers src/host/camera/webcam/input.zig with a fake capture, and the
 //! label and detail the camera's hosted source gives it.
 const std = @import("std");
 const ra8 = @import("ra8");
 const webcam = ra8.host.camera.webcam;
 const abi = webcam.v4l2;
-const ws = webcam.source;
+const ws = webcam.input;
 
 /// Hands out `frame` on every read until `fail` is set.
 const Fake = struct {
@@ -88,5 +88,5 @@ test "formats it cannot decode and rows narrower than the width are refused" {
     var fake: Fake = .{ .frame = &.{} };
     try std.testing.expectError(error.UnsupportedFormat, ws.Webcam.open(std.testing.allocator, fake.capture(), agreed(abi.fourcc("MJPG"), 4), "/dev/video0"));
     try std.testing.expectError(error.BadGeometry, ws.Webcam.open(std.testing.allocator, fake.capture(), agreed(abi.pix_yuyv, 2), "/dev/video0"));
-    try std.testing.expectEqual(ra8.host.camera.webcam.source.rawFormat(abi.pix_yuyv).?, .yuyv);
+    try std.testing.expectEqual(ra8.host.camera.webcam.input.rawFormat(abi.pix_yuyv).?, .yuyv);
 }

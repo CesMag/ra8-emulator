@@ -10,7 +10,7 @@
 //! it to the camera (RA8EMU-1011).
 const std = @import("std");
 const raw = @import("pipe_frame.zig");
-const webcam = @import("webcam_open.zig");
+const webcam = @import("webcam/open.zig");
 
 pub const Kind = enum {
     gradient,

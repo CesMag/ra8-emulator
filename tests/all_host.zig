@@ -3,8 +3,8 @@
 //! the memory of the whole suite. The rest are listed in all.zig.
 test {
     _ = @import("host/socket_flags_test.zig");
-    _ = @import("host/sock_test.zig");
-    _ = @import("host/sock_windows_test.zig");
+    _ = @import("host/sock/sock_test.zig");
+    _ = @import("host/sock/windows_test.zig");
     _ = @import("host/sock_ready_test.zig");
     _ = @import("host/win32_test.zig");
     _ = @import("interfaces/cli/eink_log_test.zig");

@@ -1,4 +1,4 @@
-//! Covers src/host/camera/webcam_consent.zig: the webcam opens only on
+//! Covers src/host/camera/webcam/consent.zig: the webcam opens only on
 //! an explicit yes or --allow-webcam.
 const std = @import("std");
 const ra8 = @import("ra8");

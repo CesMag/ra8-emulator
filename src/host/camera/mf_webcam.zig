@@ -3,11 +3,11 @@
 //! through the source reader into the shared Webcam. Windows has no
 //! device paths, so `webcam:PATH` is refused; a bare `webcam` is device 0.
 const std = @import("std");
-const consent = @import("webcam_consent.zig");
-const privacy = @import("webcam_privacy.zig");
+const consent = @import("webcam/consent.zig");
+const privacy = @import("webcam/privacy.zig");
 const mf_open = @import("mf_open.zig");
 const mf_capture = @import("mf_capture.zig");
-const source = @import("webcam_input.zig");
+const source = @import("webcam/input.zig");
 
 pub const request_width: u32 = 640;
 pub const request_height: u32 = 480;

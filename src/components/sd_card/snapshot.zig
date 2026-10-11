@@ -9,7 +9,7 @@
 //! `install` puts it in place once its block map is built.
 const fields = @import("ra8_snapshot").fields;
 const blocks = @import("ra8_snapshot").blocks;
-const SpiCard = @import("card.zig").Card;
+const SpiCard = @import("card/card.zig").Card;
 const BusCard = @import("bus_card.zig").Card;
 
 const image_wiring = .{ "allocator", "blocks" };

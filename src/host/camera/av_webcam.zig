@@ -6,14 +6,14 @@
 //! the last one is a failed read, so the source holds the last picture.
 const std = @import("std");
 const builtin = @import("builtin");
-const consent = @import("webcam_consent.zig");
+const consent = @import("webcam/consent.zig");
 const permission = @import("av_permission.zig");
 const objc = @import("av_objc.zig");
 const delegate = @import("av_delegate.zig");
 const frame = @import("av_frame.zig");
 const session = @import("av_session.zig");
 const negotiate = @import("v4l2_negotiate.zig");
-const source = @import("webcam_input.zig");
+const source = @import("webcam/input.zig");
 
 /// Everything the open needs from the Mac, gathered up front.
 pub const Host = struct {

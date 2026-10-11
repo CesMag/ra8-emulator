@@ -39,7 +39,7 @@ fn free(_: ?*anyopaque) void {}
 
 const calls = mf_open.Calls{ .startup = startup, .shutdown = stop, .create_attributes = none, .create_media_type = none, .enum_devices = noDevices, .create_reader = noReader, .free = free };
 
-fn openAnswering(arg: []const u8, grant: webcam.consent.Grant, answer: []const u8, said: *std.Io.Writer.Allocating) !*webcam.source.Webcam {
+fn openAnswering(arg: []const u8, grant: webcam.consent.Grant, answer: []const u8, said: *std.Io.Writer.Allocating) !*webcam.input.Webcam {
     var in = std.Io.Reader.fixed(answer);
     return mf_webcam.openWith(allocator, calls, arg, grant, &in, &said.writer);
 }

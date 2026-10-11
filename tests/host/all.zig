@@ -10,8 +10,8 @@ test {
     _ = @import("camera/image_file_test.zig");
     _ = @import("camera/video_file_test.zig");
     _ = @import("camera/pipe_input_test.zig");
-    _ = @import("camera/webcam_input_test.zig");
-    _ = @import("camera/webcam_open_test.zig");
+    _ = @import("camera/webcam/input_test.zig");
+    _ = @import("camera/webcam/open_test.zig");
     _ = @import("camera/av_webcam_test.zig");
     _ = @import("camera/mf_capture_test.zig");
     _ = @import("camera/mf_webcam_test.zig");
@@ -29,7 +29,7 @@ test {
     _ = @import("camera/v4l2_device_test.zig");
     _ = @import("camera/v4l2_negotiate_test.zig");
     _ = @import("camera/v4l2_stream_test.zig");
-    _ = @import("camera/webcam_consent_test.zig");
-    _ = @import("camera/webcam_privacy_test.zig");
+    _ = @import("camera/webcam/consent_test.zig");
+    _ = @import("camera/webcam/privacy_test.zig");
     _ = @import("camera/y4m_header_test.zig");
 }

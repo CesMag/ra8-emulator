@@ -20,8 +20,8 @@ test {
     _ = @import("usb_stick/stick_test.zig");
     _ = @import("usb_stick/disk_test.zig");
     _ = @import("nor_flash/flash_test.zig");
-    _ = @import("sd_card/card_test.zig");
-    _ = @import("sd_card/card_line_test.zig");
+    _ = @import("sd_card/card/card_test.zig");
+    _ = @import("sd_card/card/line_test.zig");
     _ = @import("sd_card/crc_test.zig");
     _ = @import("sd_card/dirent_test.zig");
     _ = @import("sd_card/dump_test.zig");

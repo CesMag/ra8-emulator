@@ -10,8 +10,8 @@ const com = @import("mf_com.zig");
 const mf_open = @import("mf_open.zig");
 const v4l2 = @import("v4l2_abi.zig");
 const negotiate = @import("v4l2_negotiate.zig");
-const source = @import("webcam_input.zig");
-const consent = @import("webcam_consent.zig");
+const source = @import("webcam/input.zig");
+const consent = @import("webcam/consent.zig");
 
 /// How many empty samples (stream ticks) one read waits through.
 pub const gap_tries = 4;

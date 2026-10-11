@@ -8,7 +8,7 @@ const frame = @import("frame.zig");
 const dhcp = @import("dhcp.zig");
 const Queue = @import("queue.zig").Queue;
 const udp_net = @import("udp.zig");
-const tape = @import("tape.zig");
+const tape = @import("tape/tape.zig");
 const Sock = @import("sock.zig").Sock;
 const host_net = @import("host_net.zig");
 

@@ -1,7 +1,7 @@
 //! One host socket behind the C6 bridge: live, live and recorded, or
 //! replayed from a tape with no host socket at all (RA8EMU-560).
 const std = @import("std");
-const tape = @import("tape.zig");
+const tape = @import("tape/tape.zig");
 const host_net = @import("host_net.zig");
 
 pub const Address = host_net.Address;

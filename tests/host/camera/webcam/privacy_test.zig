@@ -1,4 +1,4 @@
-//! Covers src/host/camera/webcam_privacy.zig: the Windows camera
+//! Covers src/host/camera/webcam/privacy.zig: the Windows camera
 //! privacy setting blocks the webcam with the fix, other hosts pass.
 const std = @import("std");
 const ra8 = @import("ra8");

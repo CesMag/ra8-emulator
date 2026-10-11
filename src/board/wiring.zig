@@ -45,7 +45,6 @@ const dtc = @import("ra8_chip").periph.dtc;
 const vscr = @import("ra8_chip").periph.vscr;
 const pdctr = @import("ra8_chip").periph.pdctr;
 const sd_card = @import("ra8_components").sd_card;
-const sd_card_line = @import("ra8_components").sd_card.card_line;
 const bus_line = @import("ra8_components").sd_card.bus_line;
 
 /// The module-stop shadow, the attribution words that decide which of its
@@ -111,9 +110,9 @@ pub fn attachBlocks(self: *Board, memory: Guest) !void {
     try self.bus.add(self.serial.block());
     try self.bus.add(self.spi.block());
     // The card is on Pmod2, which is SCI0 in Simple-SPI mode, not on a
-    // SPI_B channel (src/components/sd_card/card_line.zig).
-    self.sd_line = sd_card_line.Line.init(&self.sd);
-    self.serial.attachDevice(sd_card_line.line_channel, self.sd_line.device());
+    // SPI_B channel (src/components/sd_card/card/line.zig).
+    self.sd_line = sd_card.line.Line.init(&self.sd);
+    self.serial.attachDevice(sd_card.line.line_channel, self.sd_line.device());
     self.spi.attachDevice(eink.line_channel, self.panel.device());
     self.pins.setInput(eink.hrdy.port, eink.hrdy.pin, true);
     self.serial.attachDevice(modem.line_channel, self.modem.device());

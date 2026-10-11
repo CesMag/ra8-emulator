@@ -1,14 +1,14 @@
-//! Covers src/host/camera/webcam_open.zig without a camera: the gate,
+//! Covers src/host/camera/webcam/open.zig without a camera: the gate,
 //! the device name and the refusals from ordinary device nodes.
 const std = @import("std");
 const builtin = @import("builtin");
 const ra8 = @import("ra8");
 const webcam = ra8.host.camera.webcam;
-const opener = webcam.opener;
+const opener = webcam.open;
 
 const allocator = std.testing.allocator;
 
-fn openAnswering(arg: []const u8, grant: webcam.consent.Grant, answer: []const u8, said: *std.Io.Writer.Allocating) !*webcam.source.Webcam {
+fn openAnswering(arg: []const u8, grant: webcam.consent.Grant, answer: []const u8, said: *std.Io.Writer.Allocating) !*webcam.input.Webcam {
     var in = std.Io.Reader.fixed(answer);
     return opener.openWith(allocator, arg, grant, &in, &said.writer);
 }
