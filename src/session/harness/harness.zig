@@ -15,6 +15,7 @@ const Reboot = @import("ra8_chip").core.reboot.Reboot;
 const session_plug = @import("../board_plug.zig");
 const session_faults = @import("../board_faults/board_faults.zig");
 const board_boundary = @import("../board_boundary.zig");
+const chunk_clock = @import("../chunk_clock.zig");
 const session_events = @import("../board_events.zig");
 const second_core = @import("ra8_chip").core.second_core;
 const session_display = @import("../board_display.zig");
@@ -95,6 +96,7 @@ const State = struct {
     plugs: session_plug.Plugs,
     faults: session_faults.Faults,
     edge: board_boundary.BoardBoundary,
+    chunk: chunk_clock.ChunkClock,
     files: session_state.Files,
     state_file: files.StateFile,
     reboot: Reboot,
@@ -262,7 +264,9 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     state.session.attachFaults(&state.faults);
     state.reboot = .{ .vector_base = vector };
     state.board.reboot = &state.reboot;
-    state.edge = .{ .board = &state.board, .core = state.cpu0.own(), .cpu = &state.cpu, .reboot = &state.reboot, .selected = &state.session.live.index };
+    state.chunk = .{ .cpu = &state.cpu, .mark = state.cpu.retired };
+    state.session.event_sources.chunk = &state.chunk;
+    state.edge = .{ .board = &state.board, .core = state.cpu0.own(), .cpu = &state.cpu, .reboot = &state.reboot, .selected = &state.session.live.index, .chunk = &state.chunk };
     state.session.live.boundary = state.edge.hook();
     state.files = .{ .store = &state.cpu0.store.?, .cpu = &state.cpu, .board = &state.board, .edge = &state.edge };
     state.state_file = .{ .allocator = allocator, .io = io, .files = &state.files };

@@ -1,6 +1,7 @@
 //! Engine-thread source adapters for session events (RA8EMU-192).
 const std = @import("std");
 const stream_mod = @import("event_stream.zig");
+const chunk_clock = @import("chunk_clock.zig");
 const sci = @import("ra8_chip").periph.sci;
 const gpio = @import("ra8_chip").periph.gpio;
 const registry = @import("ra8_chip").periph.registry;
@@ -20,6 +21,8 @@ const Context = struct { sources: *Sources, core: ?Core };
 pub const Sources = struct {
     stream: ?*Stream = null,
     time_base: ?*const TimeBase = null,
+    /// CPU0's lead on the board inside the chunk running now (RA8EMU-1120).
+    chunk: ?*const chunk_clock.ChunkClock = null,
     issuer: ?*const registry.Issuer = null,
     uart_context: Context = undefined,
     gpio_context: Context = undefined,
@@ -91,7 +94,9 @@ pub const Sources = struct {
     }
 
     fn publish(self: *Sources, event: Event) void {
-        self.publishAt(event, if (self.time_base) |clock| clock.now() else 0);
+        const clock = self.time_base orelse return self.publishAt(event, 0);
+        const lead = if (self.chunk) |chunk| chunk.ahead() else 0;
+        self.publishAt(event, clock.nowAfter(lead));
     }
 
     fn publishAt(self: *Sources, event: Event, at_ns: u64) void {

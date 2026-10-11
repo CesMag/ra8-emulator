@@ -35,6 +35,11 @@ pub const TimeBase = struct {
         return self.base_ns + toNs(self.cycles, self.hz);
     }
 
+    /// The time `cycles` from now, at the current rate.
+    pub fn nowAfter(self: *const TimeBase, cycles: u64) u64 {
+        return self.base_ns + toNs(self.cycles + cycles, self.hz);
+    }
+
     /// Switch the rate from here on. A zero rate is ignored rather than
     /// stopping time.
     pub fn setRate(self: *TimeBase, hz: u64) void {

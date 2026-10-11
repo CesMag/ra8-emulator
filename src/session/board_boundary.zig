@@ -11,6 +11,7 @@ const Reboot = @import("ra8_chip").core.reboot.Reboot;
 const systick_bank = @import("ra8_chip").core.systick_bank;
 const clocks = @import("ra8_chip").periph.clocks;
 const zig_boundary = @import("zig_boundary.zig");
+const chunk_clock = @import("chunk_clock.zig");
 const second_core = @import("ra8_chip").core.second_core;
 const registry = @import("ra8_chip").periph.registry;
 const quiet_due = @import("ra8_board").quiet_due;
@@ -27,9 +28,47 @@ pub const BoardBoundary = struct {
     selected: ?*const u8 = null,
     second: ?*second_core.Second = null,
     second_memory: ?Guest = null,
+    /// Told when the board takes a chunk, so events inside the next one are
+    /// stamped with the board time they happened at (RA8EMU-1120).
+    chunk: ?*chunk_clock.ChunkClock = null,
 
     pub fn hook(self: *BoardBoundary) zig_boundary.Boundary {
-        return .{ .context = self, .tickFn = tick, .sleepFn = asleep };
+        return .{ .context = self, .tickFn = tick, .sleepFn = asleep, .awakeFn = awake };
+    }
+
+    /// An awake CPU0's width: up to a plain run's stretch, cut to the
+    /// nearest edge `asleep` would wait for or the input script's next
+    /// event, so each lands on its own boundary (RA8EMU-1120). A found RTT
+    /// block drains per boundary, so it keeps `normal`, as do the cases
+    /// `asleep` keeps it for.
+    fn awake(context: *anyopaque, normal: u32) u32 {
+        const self: *BoardBoundary = @ptrCast(@alignCast(context));
+        if (!self.wide() or self.board.trace.found != null) return normal;
+        var width = @max(normal, self.timebase.per_chunk);
+        for (self.edges()) |edge| {
+            if (edge != 0 and edge < width) width = @intCast(edge);
+        }
+        return @max(normal, width);
+    }
+
+    /// CPU0 alone and selected, and no block moving per boundary.
+    fn wide(self: *const BoardBoundary) bool {
+        if (self.second != null) return false;
+        if (self.selected) |selected| if (selected.* != @backingInt(registry.Issuer.cpu0)) return false;
+        return quiet_due.quietUntilDue(self.board);
+    }
+
+    /// Cycles to each edge a chunk must not cross; zero for none.
+    fn edges(self: *const BoardBoundary) [6]u64 {
+        const script = if (self.board.input_script.nextDue()) |at| self.board.time.base.cyclesUntil(at) else 0;
+        return .{
+            self.timebase.untilWrap(self.core),
+            self.ns_timebase.untilWrap(self.core),
+            board_edge.cyclesToDue(self.board),
+            quiet_due.vsyncDue(self.board),
+            quiet_due.gptDue(self.board),
+            script,
+        };
     }
 
     /// A sleeping CPU0's width: whole chunks to the nearest SysTick wrap of
@@ -38,21 +77,14 @@ pub const BoardBoundary = struct {
     /// bound or selected, or a block that moves per boundary, keeps `normal`.
     fn asleep(context: *anyopaque, normal: u32) u32 {
         const self: *BoardBoundary = @ptrCast(@alignCast(context));
-        if (self.second != null) return normal;
-        if (self.selected) |selected| if (selected.* != @backingInt(registry.Issuer.cpu0)) return normal;
-        if (!quiet_due.quietUntilDue(self.board)) return normal;
-        const edges = [_]u64{
-            self.timebase.untilWrap(self.core),
-            self.ns_timebase.untilWrap(self.core),
-            board_edge.cyclesToDue(self.board),
-            quiet_due.vsyncDue(self.board),
-            quiet_due.gptDue(self.board),
-        };
-        return sleep_pace.width(normal, true, &edges);
+        if (!self.wide()) return normal;
+        const all = self.edges();
+        return sleep_pace.width(normal, true, all[0..5]);
     }
 
     fn tick(context: *anyopaque, instructions: u32) anyerror!void {
         const self: *BoardBoundary = @ptrCast(@alignCast(context));
+        if (self.chunk) |chunk| chunk.handOver();
         try self.timebase.advance(self.core, instructions);
         try self.ns_timebase.advanceSysTick(self.core, instructions);
         const issuer: registry.Issuer = if (self.selected) |selected| @fromBackingInt(@intCast(selected.*)) else .cpu0;

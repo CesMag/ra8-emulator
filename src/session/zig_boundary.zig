@@ -25,6 +25,10 @@ pub const Boundary = struct {
     /// How far past `normal` the next chunk may reach while the core sleeps
     /// with nothing to wake it (RA8EMU-767). Null keeps every chunk at `chunk`.
     sleepFn: ?*const fn (context: *anyopaque, normal: u32) u32 = null,
+    /// How far past `normal` an awake chunk may reach with nothing armed:
+    /// to the board's next edge, as wide as a plain run's stretch
+    /// (RA8EMU-1120). Null keeps every awake chunk at `chunk`.
+    awakeFn: ?*const fn (context: *anyopaque, normal: u32) u32 = null,
 
     fn tick(self: Boundary, instructions: u64) Error!void {
         if (instructions == 0) return;
@@ -51,10 +55,12 @@ pub fn run(core: zig_core.ZigCore, machine: *stop_machine.Machine, count: u64, w
 
 /// The next chunk's width: `normal`, reached to the board's next edge by its
 /// `sleepFn` while the core sleeps with nothing to wake it, as a plain run's
-/// stretch is (src/chip/core/cpu/boot.zig widthOf). Anything armed in the stop
-/// machine keeps the normal width, so a stop lands where it always did.
+/// stretch is (src/chip/core/cpu/boot.zig widthOf), or by its `awakeFn` while
+/// the core runs. Anything armed in the stop machine keeps the normal width,
+/// so a stop lands where it always did.
 fn widthOf(core: zig_core.ZigCore, machine: *stop_machine.Machine, edge: Boundary, normal: u32) u64 {
-    const reach = edge.sleepFn orelse return normal;
-    if (!machine.quiet() or !sleep_pace.still(core.cpu)) return normal;
-    return @max(normal, reach(edge.context, normal));
+    if (!machine.quiet()) return normal;
+    const reach = if (sleep_pace.still(core.cpu)) edge.sleepFn else edge.awakeFn;
+    const far = reach orelse return normal;
+    return @max(normal, far(edge.context, normal));
 }

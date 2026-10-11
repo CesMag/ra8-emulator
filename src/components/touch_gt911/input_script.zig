@@ -51,6 +51,21 @@ pub const Script = struct {
         self.previous_at = @max(self.previous_at, timed.at_ns);
     }
 
+    /// The virtual time of the next thing `dispatch` would do: a queued
+    /// event, a held button's release, or a gesture's next frame. Null when
+    /// nothing is left, so a run may go as wide as its other edges allow
+    /// (RA8EMU-1120).
+    pub fn nextDue(self: *const Script) ?u64 {
+        var due: ?u64 = null;
+        if (self.cursor < self.len) due = self.events[self.cursor].at_ns;
+        if (self.button_release) |release| due = earlier(due, release.at_ns);
+        if (self.active) |active| due = earlier(due, switch (active) {
+            .swipe => |swipe| swipe.next,
+            .longpress => |press| press.next,
+        });
+        return due;
+    }
+
     pub fn dispatch(self: *Script, now_ns: u64, panel: *gt911.Panel, pins: *gpio.Gpio, input: *host.Input) void {
         // Script times are absolute virtual board time, as the doc says:
         // "at 2s" is 2 s after reset, wherever the first boundary lands.
@@ -107,6 +122,9 @@ pub const Script = struct {
     }
 };
 const frame_ns: u64 = 50_000_000;
+fn earlier(due: ?u64, at: u64) u64 {
+    return if (due) |known| @min(known, at) else at;
+}
 fn switchLine(which: Button, down: bool) []const u8 {
     return switch (which) {
         .sw1 => if (down) "sw1 down" else "sw1 up",
