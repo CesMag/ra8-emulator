@@ -2,6 +2,7 @@
 //! released over the same switch is a click, anything else is not, and the
 //! held switch draws pressed.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
@@ -51,7 +52,7 @@ fn faceAt(view: pane.View, button: Rect) !Color {
     defer list.deinit();
     var frame = try raster.Framebuffer.init(std.testing.allocator, area.w, area.h);
     defer frame.deinit(std.testing.allocator);
-    try pane.draw(&list, area, view);
+    try pane.draw(&list, dark, area, view);
     raster.draw(&frame, &list, font.atlas);
     const at = middle(button);
     return frame.pixels[@intCast(at[1] * area.w + at[0])];
@@ -60,7 +61,7 @@ fn faceAt(view: pane.View, button: Rect) !Color {
 test "only the held switch draws pressed" {
     const layout = pane.Layout.of(area);
     const leds: pane.Leds = .{};
-    try std.testing.expectEqual(pane.face, try faceAt(.{ .leds = &leds }, layout.switches[0]));
-    try std.testing.expectEqual(pane.pressed_face, try faceAt(.{ .leds = &leds, .pressed = 0 }, layout.switches[0]));
-    try std.testing.expectEqual(pane.face, try faceAt(.{ .leds = &leds, .pressed = 0 }, layout.switches[1]));
+    try std.testing.expectEqual(dark.face, try faceAt(.{ .leds = &leds }, layout.switches[0]));
+    try std.testing.expectEqual(dark.pressed_face, try faceAt(.{ .leds = &leds, .pressed = 0 }, layout.switches[0]));
+    try std.testing.expectEqual(dark.face, try faceAt(.{ .leds = &leds, .pressed = 0 }, layout.switches[1]));
 }

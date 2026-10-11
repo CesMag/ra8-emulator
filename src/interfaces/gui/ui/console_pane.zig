@@ -9,14 +9,11 @@ const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const console_log = @import("../console_log.zig");
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const panel = colors.background;
-pub const ink = colors.ink;
-pub const muted = colors.muted;
 /// Space round the text inside the pane, and between it and the board.
 pub const pad: i32 = 4;
 /// Characters a time stamp takes: "[   1.000000000] ".
@@ -36,10 +33,10 @@ pub fn rows(area: Rect) usize {
     return @intCast(@divTrunc(inner, @as(i32, @intCast(font.cell_h))));
 }
 
-pub fn draw(list: *draw_list.DrawList, area: Rect, log: *const console_log.Log, back: usize) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, log: *const console_log.Log, back: usize) !void {
     const count = rows(area);
     if (count == 0) return;
-    try list.fill(area, panel);
+    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
     const partial = if (back == 0) log.partial() else "";
@@ -51,18 +48,18 @@ pub fn draw(list: *draw_list.DrawList, area: Rect, log: *const console_log.Log, 
     const x = area.x + pad;
     var y = area.y + pad;
     for (lines[first..end]) |entry| {
-        try drawEntry(list, x, y, width, entry);
+        try drawEntry(list, theme, x, y, width, entry);
         y += @intCast(font.cell_h);
     }
-    if (partial.len > 0) try font.draw(list, x + @as(i32, @intCast(font.textWidth(stamp_len))), y, font.fit(partial, width -| font.textWidth(stamp_len)), ink);
+    if (partial.len > 0) try font.draw(list, x + @as(i32, @intCast(font.textWidth(stamp_len))), y, font.fit(partial, width -| font.textWidth(stamp_len)), theme.ink);
 }
 
-fn drawEntry(list: *draw_list.DrawList, x: i32, y: i32, width: u32, entry: console_log.Entry) !void {
+fn drawEntry(list: *draw_list.DrawList, theme: *const Theme, x: i32, y: i32, width: u32, entry: console_log.Entry) !void {
     var buffer: [stamp_len + 8]u8 = undefined;
     var stream: std.Io.Writer = .fixed(&buffer);
     console_log.stamp(&stream, entry.at_ns) catch {};
     const stamp = stream.buffered();
-    try font.draw(list, x, y, font.fit(stamp, width), muted);
+    try font.draw(list, x, y, font.fit(stamp, width), theme.muted);
     const left = font.textWidth(stamp.len);
-    try font.draw(list, x + @as(i32, @intCast(left)), y, font.fit(entry.text, width -| left), ink);
+    try font.draw(list, x + @as(i32, @intCast(left)), y, font.fit(entry.text, width -| left), theme.ink);
 }

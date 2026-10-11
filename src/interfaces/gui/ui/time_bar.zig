@@ -7,19 +7,11 @@
 //! answers clicks.
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const background = colors.background;
-pub const border = colors.border;
-pub const ink = colors.ink;
-pub const muted = colors.muted;
-pub const face = colors.face;
-pub const lit = colors.accent;
-pub const well = colors.well;
-pub const refused = colors.bad;
 pub const pad: i32 = 4;
 pub const gap: i32 = 4;
 /// A control is a glyph with three pixels of air above and below.
@@ -105,18 +97,18 @@ pub const View = struct {
     clock: []const u8 = "",
 };
 
-pub fn draw(list: *draw_list.DrawList, bar: Rect, view: View) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, bar: Rect, view: View) !void {
     if (bar.empty()) return;
     try list.pushClip(bar);
     defer list.popClip();
-    try list.fill(bar, colors.ribbon_bg);
-    try list.fill(.{ .x = bar.x, .y = bar.y, .w = bar.w, .h = 1 }, border);
+    try list.fill(bar, theme.ribbon_bg);
+    try list.fill(.{ .x = bar.x, .y = bar.y, .w = bar.w, .h = 1 }, theme.border);
     const layout = Layout.of(bar);
     for ([_]Control{ .run, .pause, .step }) |control| {
-        try button(list, layout.rect(control), control, view);
+        try button(list, theme, layout.rect(control), control, view);
     }
-    try fieldBox(list, layout.field, view);
-    try text(list, layout.clock, view.clock, muted);
+    try fieldBox(list, theme, layout.field, view);
+    try text(list, layout.clock, view.clock, theme.muted);
 }
 
 fn lights(control: Control, view: View) bool {
@@ -127,35 +119,35 @@ fn lights(control: Control, view: View) bool {
     };
 }
 
-fn button(list: *draw_list.DrawList, area: Rect, control: Control, view: View) !void {
+fn button(list: *draw_list.DrawList, theme: *const Theme, area: Rect, control: Control, view: View) !void {
     if (area.empty()) return;
     const on = lights(control, view);
     const bg = if (on) switch (control) {
-        .run => colors.run_lit,
-        .pause => colors.pause_lit,
-        .step => colors.step_active,
-        .field => lit,
-    } else face;
+        .run => theme.runLit(),
+        .pause => theme.pauseLit(),
+        .step => theme.step_active,
+        .field => theme.accent,
+    } else theme.face;
     const btn_border = if (on) switch (control) {
-        .run => colors.good,
-        .pause => colors.highlight,
-        .step => colors.step_active,
-        .field => lit,
-    } else colors.control_border;
+        .run => theme.good,
+        .pause => theme.highlight,
+        .step => theme.step_active,
+        .field => theme.accent,
+    } else theme.control_border;
     try list.fill(area, bg);
     try outline(list, area, btn_border);
-    try font.centred(list, area, control.label(), if (on) background else ink);
+    try font.centred(list, area, control.label(), if (on) theme.background else theme.ink);
 }
 
-fn fieldBox(list: *draw_list.DrawList, area: Rect, view: View) !void {
+fn fieldBox(list: *draw_list.DrawList, theme: *const Theme, area: Rect, view: View) !void {
     if (area.empty()) return;
-    try list.fill(area, well);
-    try outline(list, area, if (view.field_refused) refused else if (view.editing) lit else colors.control_border);
+    try list.fill(area, theme.well);
+    try outline(list, area, if (view.field_refused) theme.bad else if (view.editing) theme.accent else theme.control_border);
     const shown = view.field;
-    try text(list, area, shown, ink);
+    try text(list, area, shown, theme.ink);
     if (!view.editing) return;
     const caret_x = area.x + pad + @as(i32, @intCast(font.textWidth(shown.len)));
-    try list.fill(.{ .x = caret_x, .y = area.y + 2, .w = 1, .h = area.h - 4 }, ink);
+    try list.fill(.{ .x = caret_x, .y = area.y + 2, .w = 1, .h = area.h - 4 }, theme.ink);
 }
 
 fn outline(list: *draw_list.DrawList, area: Rect, color: Color) !void {

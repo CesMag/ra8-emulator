@@ -4,6 +4,9 @@
 //! a spawned `serve --stdio` child, and run and pause light and unlight the
 //! shell's sliced run (shell_run_test.zig runs the slices).
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
+const Theme = @import("gui_app").colors.Theme;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const test_paths = @import("test_paths");
@@ -48,6 +51,8 @@ const Models = struct {
 const Scene = struct {
     list: draw_list.DrawList,
     frame: raster.Framebuffer,
+    /// The palette the scene paints with (RA8EMU-961).
+    theme: *const Theme = dark,
 
     fn init(width: u32, height: u32) !Scene {
         return .{ .list = draw_list.DrawList.init(std.testing.allocator, width, height), .frame = try raster.Framebuffer.init(std.testing.allocator, width, height) };
@@ -59,7 +64,7 @@ const Scene = struct {
     }
 
     fn render(self: *Scene, area: Rect, view: bar.View) !void {
-        try bar.draw(&self.list, area, view);
+        try bar.draw(&self.list, self.theme, area, view);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -103,6 +108,15 @@ test "the bar rasterises to the pinned golden frame" {
     var models = Models.sample();
     try scene.render(.{ .x = 0, .y = 0, .w = 480, .h = bar.height }, models.view(false));
     try std.testing.expectEqual(@as(u64, 10286064404821049616), scene.digest());
+}
+
+test "the bar rasterises to the pinned golden frame in the light theme" {
+    var scene = try Scene.init(480, bar.height);
+    defer scene.deinit();
+    scene.theme = light;
+    var models = Models.sample();
+    try scene.render(.{ .x = 0, .y = 0, .w = 480, .h = bar.height }, models.view(false));
+    try std.testing.expectEqual(@as(u64, 3195855079249092448), scene.digest());
 }
 
 test "the editing field rasterises to its pinned golden frame" {
@@ -149,7 +163,7 @@ test "an empty bar draws nothing" {
     var list = draw_list.DrawList.init(std.testing.allocator, 8, 8);
     defer list.deinit();
     var models = Models.sample();
-    try bar.draw(&list, .{ .x = 0, .y = 0, .w = 0, .h = bar.height }, models.view(false));
+    try bar.draw(&list, dark, .{ .x = 0, .y = 0, .w = 0, .h = bar.height }, models.view(false));
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }
 

@@ -6,6 +6,7 @@
 //! on the Helium DSP corpus the MVE group draws, with the q lane a step
 //! wrote marked (RA8EMU-947).
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -125,7 +126,7 @@ fn expectFrame(gpa: std.mem.Allocator, leaves: *const Leaves, state: session_lin
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .registers = &leaves.registers, .memory = &leaves.memory, .code = &leaves.code };
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, state), .width = width, .height = height, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, state), .width = width, .height = height, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
     var drawn: usize = 0;
     var waiting: usize = 0;
@@ -138,7 +139,7 @@ fn expectFrame(gpa: std.mem.Allocator, leaves: *const Leaves, state: session_lin
         } else {
             waiting += 1;
             try std.testing.expect(!holds(&pixels, body, color));
-            try std.testing.expect(holds(&pixels, body, frame.muted));
+            try std.testing.expect(holds(&pixels, body, dark.muted));
         }
     }
     try std.testing.expect(drawn > 0 and waiting > 0);
@@ -171,9 +172,9 @@ test "a spawned serve --stdio feeds live registers, memory and disassembly leave
     try std.testing.expect(leaves.registers.cores[1].now == null);
 
     // fp_basic's second step moves only the pc, which keeps its own mark.
-    try expectFrame(gpa, &leaves, link.state, .registers, registers_pane.pc_mark);
-    try expectFrame(gpa, &leaves, link.state, .memory, memory_pane.ink);
-    try expectFrame(gpa, &leaves, link.state, .disasm, disasm_pane.pc_band);
+    try expectFrame(gpa, &leaves, link.state, .registers, dark.pc_cyan);
+    try expectFrame(gpa, &leaves, link.state, .memory, dark.ink);
+    try expectFrame(gpa, &leaves, link.state, .disasm, dark.pc_band_bg);
 
     local.end();
     while (link.state == .connected) {
@@ -254,7 +255,7 @@ test "the MVE group draws on cpu0 and marks the q lane a Helium step wrote" {
     const registers = &leaves.registers.cores[0];
     try std.testing.expect(registers.now.?.mve);
     try std.testing.expect(cell >= registers_capture.shown.len and cell < registers_pane.cells);
-    try expectFrame(gpa, &leaves, link.state, .registers, registers_pane.changed);
+    try expectFrame(gpa, &leaves, link.state, .registers, dark.highlight);
 
     local.end();
     while (link.state == .connected) {

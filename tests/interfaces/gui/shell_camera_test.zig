@@ -4,6 +4,7 @@
 //! leaf painting the panel, and Always kept in the project between starts
 //! (RA8EMU-1124).
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -230,15 +231,15 @@ test "the camera leaf paints the panel and its note in place of the wait note" {
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .camera = &camera };
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
     var pixels = try raster.Framebuffer.init(gpa, 480, 320);
     defer pixels.deinit(gpa);
     raster.draw(&pixels, &list, font.atlas);
     const body = try cameraBody(&layout, &solved);
     const at = shell_camera.layoutIn(body);
-    try std.testing.expect(holds(&pixels, at.source(.webcam), camera_view.colorOf(.webcam)));
-    try std.testing.expect(holds(&pixels, at.indicator(), camera_view.camera_off));
+    try std.testing.expect(holds(&pixels, at.source(.webcam), camera_view.colorOf(dark, .webcam)));
+    try std.testing.expect(holds(&pixels, at.indicator(), dark.border));
     const area = at.area();
     const below: draw_list.Rect = .{ .x = body.x, .y = area.y + area.h + frame.pad, .w = body.w, .h = font.glyph_h };
-    try std.testing.expect(holds(&pixels, below, frame.muted));
+    try std.testing.expect(holds(&pixels, below, dark.muted));
 }

@@ -4,6 +4,7 @@
 //! its own path, nothing happens with no file kind in play, and the leaf
 //! draws the field at its foot.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const proto = ra8.rpc.session_rpc;
@@ -48,7 +49,7 @@ const body: draw_list.Rect = .{ .x = 0, .y = 0, .w = 300, .h = 200 };
 fn submit(file: *CameraFile, camera: *const Camera, path: []const u8) !void {
     var list = draw_list.DrawList.init(std.testing.allocator, 300, 200);
     defer list.deinit();
-    try file_field.draw(&list, body, camera, file);
+    try file_field.draw(&list, dark, body, camera, file);
     const rect = file_field.fieldRect(body);
     try std.testing.expect(file.press(rect.x + 2, rect.y + 2));
     if (path.len > 0) try std.testing.expect(file.handle(.{ .text = platform.Text.of(path) }));
@@ -144,6 +145,6 @@ test "the field sits at the leaf's foot only when it fits under the panel" {
     try file.init();
     var list = draw_list.DrawList.init(std.testing.allocator, 300, 40);
     defer list.deinit();
-    try file_field.draw(&list, short, &camera, &file);
+    try file_field.draw(&list, dark, short, &camera, &file);
     try std.testing.expect(!file.press(rect.x + 2, rect.y + 2));
 }

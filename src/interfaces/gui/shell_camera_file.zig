@@ -5,6 +5,7 @@
 //! set_camera_source with `KIND:PATH` (RA8EMU-796). The kind is the one last
 //! picked without a file, else the running file kind, whose source is then
 //! opened again with the new path. With neither, Enter does nothing.
+const Theme = @import("ui/colors.zig").Theme;
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const platform = @import("platform.zig");
@@ -96,7 +97,7 @@ pub fn fits(body: Rect) bool {
 
 /// Draw the camera leaf with its file field: the panel and note, then the
 /// field at the foot when it fits.
-pub fn draw(list: *draw_list.DrawList, body: Rect, camera: *const shell_camera.Camera, file: *CameraFile) !void {
-    try shell_camera.draw(list, body, camera);
-    if (fits(body)) try file.field.draw(list, fieldRect(body));
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, body: Rect, camera: *const shell_camera.Camera, file: *CameraFile) !void {
+    try shell_camera.draw(list, theme, body, camera);
+    if (fits(body)) try file.field.draw(list, theme, fieldRect(body));
 }

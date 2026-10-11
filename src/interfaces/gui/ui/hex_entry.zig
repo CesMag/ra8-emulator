@@ -3,14 +3,11 @@
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const band = colors.band;
-pub const ink = colors.highlight;
-pub const caret = colors.ink;
 pub const max_digits: usize = 8;
 
 pub const codes = struct {
@@ -77,8 +74,8 @@ pub fn caretRect(x: i32, y: i32, field: *const Field) Rect {
 }
 
 /// Draws the field over a value whose text starts at (x, y).
-pub fn draw(list: *draw_list.DrawList, x: i32, y: i32, field: *const Field) !void {
-    try list.fill(bandRect(x, y, field), band);
-    try font.draw(list, x, y, field.text(), ink);
-    try list.fill(caretRect(x, y, field), caret);
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, x: i32, y: i32, field: *const Field) !void {
+    try list.fill(bandRect(x, y, field), theme.band);
+    try font.draw(list, x, y, field.text(), theme.highlight);
+    try list.fill(caretRect(x, y, field), theme.ink);
 }

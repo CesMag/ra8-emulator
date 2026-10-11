@@ -14,7 +14,7 @@ const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const camera_panel = @import("../camera_panel.zig");
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 const Panel = camera_panel.Panel;
@@ -25,19 +25,14 @@ pub const button: i32 = 24;
 pub const gap: i32 = 4;
 pub const dot: i32 = 8;
 
-pub const background = colors.preview;
-pub const ring = colors.ink;
-pub const camera_on = colors.recording;
-pub const camera_off = colors.border;
-
 /// Each source's button colour.
-pub fn colorOf(kind: Kind) Color {
+pub fn colorOf(theme: *const Theme, kind: Kind) Color {
     return switch (kind) {
-        .gradient => colors.muted,
-        .image => colors.hue.blue,
-        .video => colors.hue.purple,
-        .pipe => colors.hue.green,
-        .webcam => colors.hue.yellow,
+        .gradient => theme.muted,
+        .image => theme.hue.blue,
+        .video => theme.hue.purple,
+        .pipe => theme.hue.green,
+        .webcam => theme.hue.yellow,
     };
 }
 
@@ -63,21 +58,20 @@ pub fn answerLabel(reply: Answer) []const u8 {
 
 /// The label and colour of the button that takes Always back.
 pub const withdraw_label = "FORGET ALWAYS";
-pub const withdraw_color = colors.hue.blue;
 
 /// Label ink that reads on `fill`: the dark background on light fills,
 /// the light ring colour on dark ones.
-pub fn inkOn(fill: Color) Color {
+pub fn inkOn(theme: *const Theme, fill: Color) Color {
     const luma = @as(u32, fill.r) * 299 + @as(u32, fill.g) * 587 + @as(u32, fill.b) * 114;
-    return if (luma > 128 * 1000) background else ring;
+    return if (luma > 128 * 1000) theme.preview else theme.ink;
 }
 
 /// Each answer's button colour.
-pub fn answerColor(reply: Answer) Color {
+pub fn answerColor(theme: *const Theme, reply: Answer) Color {
     return switch (reply) {
-        .allow_once => colors.hue.green,
-        .always => colors.hue.blue,
-        .cancel => colors.hue.red,
+        .allow_once => theme.hue.green,
+        .always => theme.hue.blue,
+        .cancel => theme.hue.red,
     };
 }
 
@@ -121,25 +115,25 @@ pub const Layout = struct {
 };
 
 /// Appends the panel as it stands to `list`.
-pub fn draw(list: *draw_list.DrawList, layout: Layout, panel: Panel) !void {
-    try list.fill(layout.area(), background);
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, layout: Layout, panel: Panel) !void {
+    try list.fill(layout.area(), theme.preview);
     for (Layout.kinds) |kind| {
         const at = layout.source(kind);
         if (kind == panel.active) {
-            try list.fill(.{ .x = at.x - 2, .y = at.y - 2, .w = at.w + 4, .h = at.h + 4 }, ring);
+            try list.fill(.{ .x = at.x - 2, .y = at.y - 2, .w = at.w + 4, .h = at.h + 4 }, theme.ink);
         }
-        try list.fill(at, colorOf(kind));
-        try font.centred(list, at, labelOf(kind), inkOn(colorOf(kind)));
+        try list.fill(at, colorOf(theme, kind));
+        try font.centred(list, at, labelOf(kind), inkOn(theme, colorOf(theme, kind)));
     }
-    try list.fill(layout.indicator(), if (panel.cameraOn()) camera_on else camera_off);
+    try list.fill(layout.indicator(), if (panel.cameraOn()) theme.recording else theme.border);
     if (panel.always) {
-        try list.fill(layout.withdraw(), withdraw_color);
-        try font.centred(list, layout.withdraw(), withdraw_label, inkOn(withdraw_color));
+        try list.fill(layout.withdraw(), theme.hue.blue);
+        try font.centred(list, layout.withdraw(), withdraw_label, inkOn(theme, theme.hue.blue));
     }
     if (!panel.asking) return;
     for (std.enums.values(Answer)) |reply| {
-        try list.fill(layout.dialog(reply), answerColor(reply));
-        try font.centred(list, layout.dialog(reply), answerLabel(reply), inkOn(answerColor(reply)));
+        try list.fill(layout.dialog(reply), answerColor(theme, reply));
+        try font.centred(list, layout.dialog(reply), answerLabel(reply), inkOn(theme, answerColor(theme, reply)));
     }
 }
 

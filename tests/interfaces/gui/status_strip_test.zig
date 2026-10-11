@@ -3,6 +3,9 @@
 //! where the strip sits, a pinned CPU-backend golden frame, and a narrow
 //! window that cuts the text to whole cells inside the strip.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
+const Theme = @import("gui_app").colors.Theme;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
@@ -25,6 +28,8 @@ fn sample() status_bar.Status {
 const Scene = struct {
     list: draw_list.DrawList,
     frame: raster.Framebuffer,
+    /// The palette the scene paints with (RA8EMU-961).
+    theme: *const Theme = dark,
     width: u32,
 
     fn init(width: u32) !Scene {
@@ -39,7 +44,7 @@ const Scene = struct {
 
     fn render(self: *Scene, status: *const status_bar.Status, state: State) !void {
         const view = capture.strip(status, state);
-        try strip.draw(&self.list, strip.area(@intCast(self.width), strip.height), &view);
+        try strip.draw(&self.list, self.theme, strip.area(@intCast(self.width), strip.height), &view);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -73,6 +78,15 @@ test "the strip rasterises to the pinned golden frame" {
     try std.testing.expectEqual(@as(u64, 9739888199703139288), scene.digest());
 }
 
+test "the strip rasterises to the pinned golden frame in the light theme" {
+    var scene = try Scene.init(480);
+    defer scene.deinit();
+    scene.theme = light;
+    const status = sample();
+    try scene.render(&status, up);
+    try std.testing.expectEqual(@as(u64, 6715906877119296256), scene.digest());
+}
+
 test "a narrow window cuts the line to whole cells inside the strip" {
     var scene = try Scene.init(120);
     defer scene.deinit();
@@ -82,7 +96,7 @@ test "a narrow window cuts the line to whole cells inside the strip" {
     var y: u32 = 1;
     while (y < scene.frame.height) : (y += 1) {
         var x: u32 = scene.width - @as(u32, @intCast(strip.pad));
-        while (x < scene.width) : (x += 1) try std.testing.expectEqual(strip.background, scene.frame.at(x, y));
+        while (x < scene.width) : (x += 1) try std.testing.expectEqual(dark.well, scene.frame.at(x, y));
     }
 }
 
@@ -91,6 +105,6 @@ test "an empty strip draws nothing" {
     defer list.deinit();
     const status = sample();
     const view = capture.strip(&status, up);
-    try strip.draw(&list, .{ .x = 0, .y = 0, .w = 0, .h = strip.height }, &view);
+    try strip.draw(&list, dark, .{ .x = 0, .y = 0, .w = 0, .h = strip.height }, &view);
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }

@@ -3,6 +3,7 @@
 //! unreadable bytes draw only muted "??" and '?', and a pane too narrow
 //! draws nothing and rows stop at what was captured.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -42,7 +43,7 @@ const Scene = struct {
     }
 
     fn render(self: *Scene, snapshot: *const pane.Snapshot) !void {
-        try pane.draw(&self.list, area, snapshot);
+        try pane.draw(&self.list, dark, area, snapshot);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -84,8 +85,8 @@ test "unreadable bytes draw only muted question marks" {
     @memset(snapshot.bytes[0..pane.per_row], 'A');
     @memset(snapshot.readable[0..12], true);
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(usize, 12 * 3), scene.glyphs(pane.ink));
-    try std.testing.expectEqual(@as(usize, 8 + 4 * 3), scene.glyphs(pane.muted));
+    try std.testing.expectEqual(@as(usize, 12 * 3), scene.glyphs(dark.ink));
+    try std.testing.expectEqual(@as(usize, 8 + 4 * 3), scene.glyphs(dark.muted));
 }
 
 test "a pane too narrow draws nothing, and rows stop at what was captured" {
@@ -94,8 +95,8 @@ test "a pane too narrow draws nothing, and rows stop at what was captured" {
     var snapshot: pane.Snapshot = .{ .base = 0, .count = 2 };
     @memset(snapshot.bytes[0 .. 2 * pane.per_row], 'A');
     @memset(snapshot.readable[0 .. 2 * pane.per_row], true);
-    try pane.draw(&scene.list, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = area.h }, &snapshot);
+    try pane.draw(&scene.list, dark, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = area.h }, &snapshot);
     try std.testing.expectEqual(@as(usize, 0), scene.list.commands.items.len);
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(usize, 2 * (8 + 32 + 16)), scene.glyphs(pane.ink) + scene.glyphs(pane.muted));
+    try std.testing.expectEqual(@as(usize, 2 * (8 + 32 + 16)), scene.glyphs(dark.ink) + scene.glyphs(dark.muted));
 }

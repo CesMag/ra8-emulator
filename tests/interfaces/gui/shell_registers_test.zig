@@ -5,6 +5,7 @@
 //! values with a note, a batch sent before a load is dropped, and the
 //! registers leaf draws in place of its note.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -196,7 +197,7 @@ test "a registers leaf draws its core's values, changes in amber, in place of it
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .registers = &pair };
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
     var drawn: usize = 0;
     var waiting: usize = 0;
@@ -205,11 +206,11 @@ test "a registers leaf draws its core's values, changes in amber, in place of it
         const body = frame.bodyOf(leaf.area);
         if (placed.core == .cpu0) {
             drawn += 1;
-            try std.testing.expect(holds(&pixels, body, registers_pane.changed));
+            try std.testing.expect(holds(&pixels, body, dark.highlight));
         } else {
             waiting += 1;
-            try std.testing.expect(!holds(&pixels, body, registers_pane.changed));
-            try std.testing.expect(holds(&pixels, body, frame.muted));
+            try std.testing.expect(!holds(&pixels, body, dark.highlight));
+            try std.testing.expect(holds(&pixels, body, dark.muted));
         }
     }
     try std.testing.expect(drawn > 0 and waiting > 0);

@@ -10,17 +10,11 @@
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const background = colors.background;
-pub const muted = colors.muted;
-pub const ink = colors.ink;
-pub const pc_band = colors.pc_band;
-pub const pc_ink = colors.pc_cyan;
-pub const break_mark = colors.breakpoint;
 pub const pad: i32 = 4;
 /// A row is one text line with a pixel of air above and below.
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
@@ -77,9 +71,9 @@ pub fn markRect(area: Rect, row: usize) Rect {
     return .{ .x = area.x + pad + 2, .y = band.y + 3, .w = font.glyph_w, .h = row_h - 6 };
 }
 
-pub fn draw(list: *draw_list.DrawList, area: Rect, snapshot: *const Snapshot, breaks: []const u32) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, snapshot: *const Snapshot, breaks: []const u32) !void {
     if (area.w < min_w or rows(area) == 0) return;
-    try list.fill(area, background);
+    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
     for (0..@min(rows(area), snapshot.count)) |row| {
@@ -87,26 +81,26 @@ pub fn draw(list: *draw_list.DrawList, area: Rect, snapshot: *const Snapshot, br
         const at_pc = line.address == snapshot.pc;
         if (at_pc) {
             const band = rowRect(area, row);
-            try list.fill(band, pc_band);
-            try list.fill(.{ .x = band.x, .y = band.y, .w = 2, .h = band.h }, pc_ink);
+            try list.fill(band, theme.pc_band_bg);
+            try list.fill(.{ .x = band.x, .y = band.y, .w = 2, .h = band.h }, theme.pc_cyan);
         }
-        if (std.mem.indexOfScalar(u32, breaks, line.address) != null) try list.fill(markRect(area, row), break_mark);
-        try drawLine(list, area, row, line, at_pc);
+        if (std.mem.indexOfScalar(u32, breaks, line.address) != null) try list.fill(markRect(area, row), theme.breakpoint);
+        try drawLine(list, theme, area, row, line, at_pc);
     }
 }
 
-fn drawLine(list: *draw_list.DrawList, area: Rect, row: usize, line: *const Line, at_pc: bool) !void {
+fn drawLine(list: *draw_list.DrawList, theme: *const Theme, area: Rect, row: usize, line: *const Line, at_pc: bool) !void {
     const x = area.x + pad + 2;
     const y = rowRect(area, row).y + 2;
-    if (at_pc) try font.draw(list, x + column(1), y, ">", pc_ink);
+    if (at_pc) try font.draw(list, x + column(1), y, ">", theme.pc_cyan);
     var address: [8]u8 = undefined;
-    try font.draw(list, x + column(address_at), y, try std.fmt.bufPrint(&address, "{X:0>8}", .{line.address}), if (at_pc) pc_ink else muted);
+    try font.draw(list, x + column(address_at), y, try std.fmt.bufPrint(&address, "{X:0>8}", .{line.address}), if (at_pc) theme.pc_cyan else theme.muted);
     var halves: [9]u8 = undefined;
-    try font.draw(list, x + column(bytes_at), y, try halfwords(&halves, line), muted);
+    try font.draw(list, x + column(bytes_at), y, try halfwords(&halves, line), theme.muted);
     const shown = if (line.decoded) line.text() else if (line.size == 0) "<unreadable>" else "<undecoded>";
     const text_x = x + column(text_at);
     const room: u32 = @intCast(@max(area.x + area.w - pad - text_x, 0));
-    try font.draw(list, text_x, y, font.fit(shown, room), if (line.decoded) ink else muted);
+    try font.draw(list, text_x, y, font.fit(shown, room), if (line.decoded) theme.ink else theme.muted);
 }
 
 fn halfwords(buffer: *[9]u8, line: *const Line) ![]const u8 {

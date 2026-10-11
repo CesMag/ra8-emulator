@@ -2,6 +2,7 @@
 //! feed it waits for, an empty leaf stays blank, and the note lands in muted
 //! ink inside every non-empty leaf's body of the two-core layout.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -52,12 +53,12 @@ test "the two-core shell shows each leaf's note in muted ink in its body" {
     defer pixels.deinit(gpa);
     const status: gui_app.status_bar.Status = .{};
     var painter: panes.Panes = .{};
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = width, .height = height, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = width, .height = height, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
     try std.testing.expectEqual(@as(usize, 6), solved.panes.items.len);
     for (solved.panes.items) |leaf| {
         const at = panes.noteAt(frame.bodyOf(leaf.area)).?;
         const row: draw_list.Rect = .{ .x = at.x, .y = at.y, .w = @intCast(at.room), .h = font.glyph_h };
-        try std.testing.expect(holds(&pixels, row, frame.muted));
+        try std.testing.expect(holds(&pixels, row, dark.muted));
     }
 }

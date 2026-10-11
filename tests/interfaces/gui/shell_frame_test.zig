@@ -2,6 +2,7 @@
 //! status strip, each leaf gets a title bar over a body, the painter fills
 //! every body once, and the chrome lands in the right colours.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -23,7 +24,7 @@ const Count = struct {
     calls: usize = 0,
     bodies: [8]draw_list.Rect = undefined,
 
-    fn paint(context: *anyopaque, list: *draw_list.DrawList, pane: pane_layout.Pane, body: draw_list.Rect) anyerror!void {
+    fn paint(context: *anyopaque, list: *draw_list.DrawList, _: *const gui_app.colors.Theme, pane: pane_layout.Pane, body: draw_list.Rect) anyerror!void {
         _ = list;
         _ = pane;
         const self: *Count = @ptrCast(@alignCast(context));
@@ -55,7 +56,7 @@ const Scene = struct {
     }
 
     fn render(self: *Scene, status: *const status_bar.Status, painter: ?frame.Painter) !void {
-        try frame.draw(&self.list, .{ .layout = &self.layout, .solved = &self.solved, .strip = status_capture.strip(status, up), .width = width, .height = height, .painter = painter });
+        try frame.draw(&self.list, dark, .{ .layout = &self.layout, .solved = &self.solved, .strip = status_capture.strip(status, up), .width = width, .height = height, .painter = painter });
         raster.draw(&self.pixels, &self.list, font.atlas);
     }
 
@@ -110,13 +111,13 @@ test "the chrome paints titles, gutters, bodies and the strip" {
     const status: status_bar.Status = .{};
     try scene.render(&status, null);
     const first = scene.solved.panes.items[0].area;
-    try std.testing.expectEqual(frame.border, scene.at(first.x + first.w - 1, first.y));
-    try std.testing.expectEqual(frame.title_fill, scene.at(first.x + first.w - 2, first.y + 1));
-    try std.testing.expectEqual(frame.border, scene.at(first.x + 1, first.y + first.h - 1));
-    try std.testing.expectEqual(frame.background, scene.at(first.x + 1, first.y + first.h - 2));
+    try std.testing.expectEqual(dark.border, scene.at(first.x + first.w - 1, first.y));
+    try std.testing.expectEqual(dark.face, scene.at(first.x + first.w - 2, first.y + 1));
+    try std.testing.expectEqual(dark.border, scene.at(first.x + 1, first.y + first.h - 1));
+    try std.testing.expectEqual(dark.background, scene.at(first.x + 1, first.y + first.h - 2));
     const gap = scene.solved.gutters.items[0].area;
-    try std.testing.expectEqual(frame.gutter_fill, scene.at(gap.x, gap.y + 1));
-    try std.testing.expectEqual(strip.border, scene.at(width - 1, height - strip.height));
+    try std.testing.expectEqual(dark.gutter, scene.at(gap.x, gap.y + 1));
+    try std.testing.expectEqual(dark.border, scene.at(width - 1, height - strip.height));
 }
 
 test "the perimeter border is retained when a painter fills the body" {
@@ -124,17 +125,17 @@ test "the perimeter border is retained when a painter fills the body" {
     defer scene.deinit();
     const status: status_bar.Status = .{};
     const Filler = struct {
-        fn paint(_: *anyopaque, list: *draw_list.DrawList, _: pane_layout.Pane, body: draw_list.Rect) anyerror!void {
-            try list.fill(body, frame.title_fill);
+        fn paint(_: *anyopaque, list: *draw_list.DrawList, _: *const gui_app.colors.Theme, _: pane_layout.Pane, body: draw_list.Rect) anyerror!void {
+            try list.fill(body, dark.face);
         }
     };
     try scene.render(&status, .{ .context = undefined, .paint = Filler.paint });
     const first = scene.solved.panes.items[0].area;
-    try std.testing.expectEqual(frame.border, scene.at(first.x + first.w - 1, first.y));
-    try std.testing.expectEqual(frame.border, scene.at(first.x + 1, first.y + first.h - 1));
-    try std.testing.expectEqual(frame.border, scene.at(first.x, first.y + first.h - 2));
-    try std.testing.expectEqual(frame.border, scene.at(first.x + first.w - 1, first.y + first.h - 2));
-    try std.testing.expectEqual(frame.title_fill, scene.at(first.x + 1, first.y + first.h - 2));
+    try std.testing.expectEqual(dark.border, scene.at(first.x + first.w - 1, first.y));
+    try std.testing.expectEqual(dark.border, scene.at(first.x + 1, first.y + first.h - 1));
+    try std.testing.expectEqual(dark.border, scene.at(first.x, first.y + first.h - 2));
+    try std.testing.expectEqual(dark.border, scene.at(first.x + first.w - 1, first.y + first.h - 2));
+    try std.testing.expectEqual(dark.face, scene.at(first.x + 1, first.y + first.h - 2));
 }
 
 test "shell frame edge: panesArea and barArea under constrained heights" {
@@ -214,7 +215,7 @@ test "shell frame edge: draw renders across extreme window dimensions without pa
         var count: Count = .{};
         const status: status_bar.Status = .{};
 
-        try frame.draw(&list, .{
+        try frame.draw(&list, dark, .{
             .layout = &layout,
             .solved = &solved,
             .strip = status_capture.strip(&status, up),
@@ -258,7 +259,7 @@ test "shell frame edge: leaf title clipping and border drawing with narrow width
 
         const status: status_bar.Status = .{};
 
-        try frame.draw(&list, .{
+        try frame.draw(&list, dark, .{
             .layout = &layout,
             .solved = &solved,
             .strip = status_capture.strip(&status, up),

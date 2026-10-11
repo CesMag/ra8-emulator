@@ -10,6 +10,7 @@ const platform = @import("../platform.zig");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const widget_paint = @import("ra8_render").widget_paint;
+const Theme = @import("colors.zig").Theme;
 
 const text_field = widget.text_field;
 
@@ -17,10 +18,6 @@ const text_field = widget.text_field;
 pub const capacity: u16 = 256;
 /// The field is a glyph tall plus a little air.
 pub const height: i32 = @as(i32, @intCast(font.cell_h)) + 6;
-
-pub const ink: u32 = 0xD8DEE9;
-pub const fill: u32 = 0x181A1F;
-pub const caret: u32 = 0xEBCB8B;
 
 pub const Field = struct {
     buffer: [capacity]u8 = undefined,
@@ -30,7 +27,7 @@ pub const Field = struct {
     /// Set the field up in place; it must not move afterwards, since the
     /// widget points at its descriptor and the descriptor at its buffer.
     pub fn init(self: *Field, placeholder: [*:0]const u8) !void {
-        self.descriptor = .{ .paint = null, .buffer = &self.buffer, .capacity = capacity, .len = 0, .placeholder = placeholder, .fg = ink, .bg = fill, .caret = caret, .pad = 3, .face = .sans };
+        self.descriptor = .{ .paint = null, .buffer = &self.buffer, .capacity = capacity, .len = 0, .placeholder = placeholder, .fg = 0, .bg = 0, .caret = 0, .pad = 3, .face = .sans };
         self.widget = .{ .vt = null, .ctx = null, .rect = .{ .x = 0, .y = 0, .w = 0, .h = 0 }, .fixed = 0, .flex = 0, .action_id = 0, .refresh = 0, .visible = false, .dirty = false };
         if (text_field.ra8_widget_text_field_init(&self.widget, &self.descriptor) != text_field.err.ok) return error.FieldRefused;
     }
@@ -100,8 +97,12 @@ pub const Field = struct {
         return submitted;
     }
 
-    /// Paint the field into `rect` of `list`, and remember `rect` for presses.
-    pub fn draw(self: *Field, list: *draw_list.DrawList, rect: draw_list.Rect) !void {
+    /// Paint the field into `rect` of `list` in `theme`'s ink on its well
+    /// with a highlight caret, and remember `rect` for presses.
+    pub fn draw(self: *Field, list: *draw_list.DrawList, theme: *const Theme, rect: draw_list.Rect) !void {
+        self.descriptor.fg = word(theme.ink);
+        self.descriptor.bg = word(theme.well);
+        self.descriptor.caret = word(theme.highlight);
         self.widget.rect = .{ .x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h };
         var target = widget_paint.Target{ .list = list };
         const paint = target.paint();
@@ -111,3 +112,8 @@ pub const Field = struct {
         if (target.failed) return error.OutOfMemory;
     }
 };
+
+/// `color` as the widget's 0x00RRGGBB colour word.
+fn word(color: draw_list.Color) u32 {
+    return @as(u32, color.r) << 16 | @as(u32, color.g) << 8 | color.b;
+}

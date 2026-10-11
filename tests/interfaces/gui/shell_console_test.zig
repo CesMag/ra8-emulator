@@ -2,6 +2,7 @@
 //! the log at their board time, nothing else does, a local session's banner
 //! arrives stamped, and the console leaf draws the log in place of its note.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -133,7 +134,7 @@ test "the console leaf draws the log in place of its note" {
     defer pixels.deinit(gpa);
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .console = &console };
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
     var consoles: usize = 0;
     for (solved.panes.items) |leaf| {
@@ -141,8 +142,8 @@ test "the console leaf draws the log in place of its note" {
         const placed = layout.pane(leaf.index) orelse continue;
         if (placed.kind != .console) continue;
         consoles += 1;
-        try std.testing.expect(holds(&pixels, body, console_pane.ink));
-        try std.testing.expect(holds(&pixels, body, console_pane.panel));
+        try std.testing.expect(holds(&pixels, body, dark.ink));
+        try std.testing.expect(holds(&pixels, body, dark.background));
     }
     try std.testing.expect(consoles > 0);
 }

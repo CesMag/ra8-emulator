@@ -3,6 +3,7 @@
 //! chain once the image has loaded, follows a Step and a Pause, and draws
 //! in a leaf of the stack kind exactly as the pane draws it.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const Live = @import("live_shell.zig").Live;
@@ -69,10 +70,10 @@ test "a leaf switched to the stack kind draws the chain, not its note" {
     var shown = draw_list.DrawList.init(gpa, Live_width, Live_height);
     defer shown.deinit();
     const painter = live.panes.painter();
-    try painter.paint(painter.context, &shown, pane, body);
+    try painter.paint(painter.context, &shown, dark, pane, body);
     var want = draw_list.DrawList.init(gpa, Live_width, Live_height);
     defer want.deinit();
-    try stack_pane.draw(&want, body, &live.stack.cores[0].now.?, 0);
+    try stack_pane.draw(&want, dark, body, &live.stack.cores[0].now.?, 0);
     try std.testing.expect(want.commands.items.len > 1);
     try std.testing.expectEqual(want.commands.items.len, shown.commands.items.len);
 }

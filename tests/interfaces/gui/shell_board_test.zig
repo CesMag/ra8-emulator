@@ -4,6 +4,8 @@
 //! topic lights its LED, nothing else is taken, and the board leaf draws the
 //! board pane, with the image in its panel slot and with or without one.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
+const colors_mod = @import("gui_app").colors;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -154,7 +156,7 @@ const Drawn = struct {
         errdefer pixels.deinit(gpa);
         const status: status_bar.Status = .{};
         var painter: panes.Panes = .{ .board = board };
-        try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = @intCast(width), .height = @intCast(height), .painter = painter.painter() });
+        try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = @intCast(width), .height = @intCast(height), .painter = painter.painter() });
         raster.draw(&pixels, &list, font.atlas);
         for (solved.panes.items) |leaf| {
             const placed = layout.pane(leaf.index) orelse continue;
@@ -179,8 +181,8 @@ test "the board leaf draws the board pane: the panel image in its slot and the L
     try std.testing.expect(!parts.board.empty());
     try std.testing.expectEqual(gray(200), drawn.middle(board_touch.shownIn(parts, 4, 6)));
     try std.testing.expectEqual(board_pane.lampOf(board_pane.led_rgb565[0]), drawn.middle(parts.leds[0]));
-    try std.testing.expectEqual(board_pane.off, drawn.middle(parts.leds[1]));
-    try std.testing.expectEqual(board_pane.face, drawn.middle(parts.switches[0]));
+    try std.testing.expectEqual(dark.led_off, drawn.middle(parts.leds[1]));
+    try std.testing.expectEqual(dark.face, drawn.middle(parts.switches[0]));
 }
 
 test "with no panel frame the board leaf still shows the board and its LEDs" {
@@ -190,8 +192,8 @@ test "with no panel frame the board leaf still shows the board and its LEDs" {
     var drawn = try Drawn.of(&board, 640, 480);
     defer drawn.pixels.deinit(std.testing.allocator);
     const parts = board_pane.Layout.of(drawn.body);
-    try std.testing.expectEqual(board_pane.dark, drawn.middle(parts.panel));
-    try std.testing.expectEqual(board_pane.off, drawn.middle(parts.leds[0]));
+    try std.testing.expectEqual(colors_mod.unseen, drawn.middle(parts.panel));
+    try std.testing.expectEqual(dark.led_off, drawn.middle(parts.leds[0]));
     try std.testing.expectEqual(board_pane.lampOf(board_pane.led_rgb565[1]), drawn.middle(parts.leds[1]));
 }
 
@@ -201,11 +203,11 @@ test "a leaf too small for the board shows the panel image alone, or its note" {
     var waiting = try Drawn.of(&board, 300, 200);
     defer waiting.pixels.deinit(std.testing.allocator);
     try std.testing.expect(board_pane.Layout.of(waiting.body).board.empty());
-    try std.testing.expect(holds(&waiting.pixels, waiting.body, frame.muted));
+    try std.testing.expect(holds(&waiting.pixels, waiting.body, dark.muted));
 
     try dirty(&board, .{ .core = .cpu0, .x = 0, .y = 0, .width = 4, .height = 6, .virtual_ns = 1, .pixels = &(@as([24]u8, @splat(200))) });
     var shown = try Drawn.of(&board, 300, 200);
     defer shown.pixels.deinit(std.testing.allocator);
     try std.testing.expectEqual(gray(200), shown.middle(fit.fitIn(shown.body, 4, 6)));
-    try std.testing.expect(!holds(&shown.pixels, shown.body, frame.muted));
+    try std.testing.expect(!holds(&shown.pixels, shown.body, dark.muted));
 }

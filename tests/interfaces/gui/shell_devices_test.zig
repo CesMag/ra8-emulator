@@ -4,6 +4,7 @@
 //! Unplug (RA8EMU-801): the cell hit, the ask carrying the row's endpoint, the
 //! re-list after the session answers, and the refusal note.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -103,7 +104,7 @@ fn drawShell(gpa: std.mem.Allocator, devices: *const Devices, pixels: *raster.Fr
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .devices = devices };
-    try frame.draw(&list, .{ .layout = layout, .solved = solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = layout, .solved = solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
     raster.draw(pixels, &list, font.atlas);
 }
 
@@ -128,10 +129,10 @@ test "the devices leaf draws a row per part in place of its note" {
         const column: i32 = @intCast(font.textWidth(shell_devices.name_cells));
         const name: draw_list.Rect = .{ .x = row.x, .y = row.y, .w = frame.pad + column, .h = row.h };
         const at: draw_list.Rect = .{ .x = row.x + frame.pad + column, .y = row.y, .w = body.w - frame.pad - column, .h = row.h };
-        try std.testing.expect(holds(&pixels, name, frame.ink));
-        try std.testing.expect(holds(&pixels, at, frame.muted));
+        try std.testing.expect(holds(&pixels, name, dark.ink));
+        try std.testing.expect(holds(&pixels, at, dark.muted));
         const below: draw_list.Rect = .{ .x = body.x, .y = row.y + shell_devices.row_h, .w = body.w, .h = body.h - frame.pad - shell_devices.row_h };
-        try std.testing.expect(!holds(&pixels, below, frame.muted));
+        try std.testing.expect(!holds(&pixels, below, dark.muted));
     }
     try std.testing.expect(leaves > 0);
 }
@@ -181,11 +182,11 @@ test "a refused unplug keeps the rows and leaves a note under them" {
     var list = draw_list.DrawList.init(gpa, 240, 120);
     defer list.deinit();
     const body: draw_list.Rect = .{ .x = 0, .y = 0, .w = 240, .h = 120 };
-    try shell_devices.draw(&list, body, &devices);
+    try shell_devices.draw(&list, dark, body, &devices);
     var pixels = try raster.Framebuffer.init(gpa, 240, 120);
     defer pixels.deinit(gpa);
     raster.draw(&pixels, &list, font.atlas);
-    try std.testing.expect(holds(&pixels, shell_devices.unplugCell(body, 0), frame.muted));
+    try std.testing.expect(holds(&pixels, shell_devices.unplugCell(body, 0), dark.muted));
     const under: draw_list.Rect = .{ .x = 0, .y = frame.pad + shell_devices.row_h, .w = 240, .h = font.glyph_h };
-    try std.testing.expect(holds(&pixels, under, frame.muted));
+    try std.testing.expect(holds(&pixels, under, dark.muted));
 }

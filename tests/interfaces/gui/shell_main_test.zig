@@ -59,6 +59,14 @@ test "--frames keeps a count above zero" {
     try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--frames", "many", "app.elf" }));
 }
 
+test "--theme picks dark or light and dark is the default" {
+    const colors = @import("gui_app").colors;
+    try std.testing.expectEqual(colors.Choice.dark, (try shell_main.parse(&.{ "ra8_gui", "app.elf" })).theme);
+    try std.testing.expectEqual(colors.Choice.light, (try shell_main.parse(&.{ "ra8_gui", "--theme", "light", "app.elf" })).theme);
+    try std.testing.expectEqual(colors.Choice.dark, (try shell_main.parse(&.{ "ra8_gui", "--theme", "dark", "app.elf" })).theme);
+    try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--theme", "sepia", "app.elf" }));
+}
+
 test "the host named local needs no hosts file" {
     const args = try shell_main.parse(&.{ "ra8_gui", "--host", "local", "--hosts", "/nonexistent/hosts", "app.elf" });
     try std.testing.expectEqual(Profile.local, try shell_main.pick(std.testing.allocator, std.testing.io, &empty_env, args));

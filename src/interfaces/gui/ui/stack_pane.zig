@@ -12,16 +12,11 @@
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const background = colors.background;
-pub const muted = colors.muted;
-pub const ink = colors.ink;
-pub const band = colors.band;
-pub const top_ink = colors.highlight;
 pub const pad: i32 = 4;
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
 /// The most frames a backtrace walks; gui/shell_stack.zig checks it
@@ -83,22 +78,22 @@ pub fn frameAt(area: Rect, snapshot: *const Snapshot, y: i32) ?usize {
     return row;
 }
 
-pub fn draw(list: *draw_list.DrawList, area: Rect, snapshot: *const Snapshot, selected: usize) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, snapshot: *const Snapshot, selected: usize) !void {
     if (area.w < min_w or rows(area) == 0) return;
-    try list.fill(area, background);
+    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
     for (0..@min(rows(area), snapshot.count)) |row| {
-        if (row == selected) try list.fill(rowRect(area, row), band);
-        try drawFrame(list, area, row, &snapshot.frames[row]);
+        if (row == selected) try list.fill(rowRect(area, row), theme.band);
+        try drawFrame(list, theme, area, row, &snapshot.frames[row]);
     }
 }
 
-fn drawFrame(list: *draw_list.DrawList, area: Rect, row: usize, frame: *const Frame) !void {
+fn drawFrame(list: *draw_list.DrawList, theme: *const Theme, area: Rect, row: usize, frame: *const Frame) !void {
     const x = area.x + pad + 2;
     const y = rowRect(area, row).y + 2;
-    const lead = if (row == 0) top_ink else muted;
-    if (frame.interrupted) try font.draw(list, x, y, "~", muted);
+    const lead = if (row == 0) theme.highlight else theme.muted;
+    if (frame.interrupted) try font.draw(list, x, y, "~", theme.muted);
     var number: [4]u8 = undefined;
     try font.draw(list, x + column(number_at), y, try std.fmt.bufPrint(&number, "#{d}", .{row}), lead);
     var pc: [8]u8 = undefined;
@@ -107,12 +102,12 @@ fn drawFrame(list: *draw_list.DrawList, area: Rect, row: usize, frame: *const Fr
     const name_x = x + column(name_at);
     const room: u32 = @intCast(@max(area.x + area.w - pad - name_x, 0));
     const called = try label(&text, frame);
-    try font.draw(list, name_x, y, font.fit(called, room), if (frame.name_len == 0) muted else if (row == 0) top_ink else ink);
+    try font.draw(list, name_x, y, font.fit(called, room), if (frame.name_len == 0) theme.muted else if (row == 0) theme.highlight else theme.ink);
     const used = font.textWidth(called.len + 1);
     if (frame.line == 0 or used >= room) return;
     var where: [file_cap + 12]u8 = undefined;
     const at = try std.fmt.bufPrint(&where, "{s}:{d}", .{ frame.file(), frame.line });
-    try font.draw(list, name_x + @as(i32, @intCast(used)), y, font.fit(at, room - used), muted);
+    try font.draw(list, name_x + @as(i32, @intCast(used)), y, font.fit(at, room - used), theme.muted);
 }
 
 fn label(buffer: []u8, frame: *const Frame) ![]const u8 {

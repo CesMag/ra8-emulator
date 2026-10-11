@@ -6,6 +6,7 @@
 //! memory leaf draws in place of its note. A code pair follows PC exactly,
 //! and a disassembly leaf decodes from it with the pc band.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -204,7 +205,7 @@ test "a memory leaf draws its core's rows in place of its note" {
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .memory = &pair };
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 2000, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 2000, .height = 320, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
     var drawn: usize = 0;
     var waiting: usize = 0;
@@ -213,11 +214,11 @@ test "a memory leaf draws its core's rows in place of its note" {
         const body = frame.bodyOf(leaf.area);
         if (placed.core == .cpu0) {
             drawn += 1;
-            try std.testing.expect(holds(&pixels, body, memory_pane.ink));
+            try std.testing.expect(holds(&pixels, body, dark.ink));
         } else {
             waiting += 1;
-            try std.testing.expect(!holds(&pixels, body, memory_pane.ink));
-            try std.testing.expect(holds(&pixels, body, frame.muted));
+            try std.testing.expect(!holds(&pixels, body, dark.ink));
+            try std.testing.expect(holds(&pixels, body, dark.muted));
         }
     }
     try std.testing.expect(drawn > 0 and waiting > 0);
@@ -244,7 +245,7 @@ test "a disassembly leaf decodes from its core's PC with the pc band" {
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .code = &code };
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 2000, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 2000, .height = 320, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
     var drawn: usize = 0;
     var waiting: usize = 0;
@@ -253,11 +254,11 @@ test "a disassembly leaf decodes from its core's PC with the pc band" {
         const body = frame.bodyOf(leaf.area);
         if (placed.core == .cpu0) {
             drawn += 1;
-            try std.testing.expect(holds(&pixels, body, disasm_pane.pc_band));
+            try std.testing.expect(holds(&pixels, body, dark.pc_band_bg));
         } else {
             waiting += 1;
-            try std.testing.expect(!holds(&pixels, body, disasm_pane.pc_band));
-            try std.testing.expect(holds(&pixels, body, frame.muted));
+            try std.testing.expect(!holds(&pixels, body, dark.pc_band_bg));
+            try std.testing.expect(holds(&pixels, body, dark.muted));
         }
     }
     try std.testing.expect(drawn > 0 and waiting > 0);

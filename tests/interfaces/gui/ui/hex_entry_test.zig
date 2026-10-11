@@ -3,6 +3,7 @@
 //! value or cancels when empty; Escape cancels; and the drawn field is a
 //! band with the caret after the digits.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -47,11 +48,11 @@ test "the field draws a band with the caret after the digits" {
     defer frame.deinit(std.testing.allocator);
     var field = hex_entry.Field.init(2);
     field.typed("a");
-    try hex_entry.draw(&list, 4, 4, &field);
+    try hex_entry.draw(&list, dark, 4, 4, &field);
     raster.draw(&frame, &list, font.atlas);
     const band = hex_entry.bandRect(4, 4, &field);
-    try std.testing.expectEqual(hex_entry.band, frame.at(@intCast(band.x + band.w - 1), @intCast(band.y)));
+    try std.testing.expectEqual(dark.band, frame.at(@intCast(band.x + band.w - 1), @intCast(band.y)));
     const caret = hex_entry.caretRect(4, 4, &field);
     try std.testing.expectEqual(@as(i32, 4) + @as(i32, @intCast(font.textWidth(1))), caret.x);
-    try std.testing.expectEqual(hex_entry.caret, frame.at(@intCast(caret.x), @intCast(caret.y + 2)));
+    try std.testing.expectEqual(dark.ink, frame.at(@intCast(caret.x), @intCast(caret.y + 2)));
 }

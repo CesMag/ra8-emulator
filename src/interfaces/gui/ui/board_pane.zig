@@ -9,20 +9,11 @@
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const fit = @import("fit.zig");
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
+const unseen = @import("colors.zig").unseen;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
-
-pub const background = colors.background;
-pub const pcb = colors.well;
-pub const border = colors.border;
-pub const ink = colors.ink;
-pub const muted = colors.muted;
-pub const face = colors.face;
-pub const pressed_face = colors.pressed_face;
-pub const dark = colors.black;
-pub const off = colors.led_off;
 
 /// Below this the board would be unreadable, so nothing is drawn.
 pub const min_w: i32 = 160;
@@ -99,32 +90,32 @@ pub const View = struct {
 };
 
 /// Paints the pane into `area`; an area under the minimum draws nothing.
-pub fn draw(list: *draw_list.DrawList, area: Rect, view: View) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, view: View) !void {
     const layout = Layout.of(area);
     if (layout.board.empty()) return;
-    try list.fill(area, background);
+    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
-    try list.fill(layout.board, border);
-    try list.fill(inset(layout.board), pcb);
-    try list.fill(layout.panel, dark);
+    try list.fill(layout.board, theme.border);
+    try list.fill(inset(layout.board), theme.well);
+    try list.fill(layout.panel, unseen);
     if (view.panel) |image| try list.image(fit.fitIn(layout.panel, image.width, image.height), image);
     for (layout.leds, 0..) |led, index| {
-        try list.fill(led, colors.led_bezel);
+        try list.fill(led, theme.led_bezel);
         const inner = inset(led);
         const on = view.leds.on[index];
-        try list.fill(inner, if (on) lampOf(led_rgb565[index]) else off);
+        try list.fill(inner, if (on) lampOf(led_rgb565[index]) else theme.led_off);
         if (on and inner.w > 4 and inner.h > 4) {
             // Optical specular highlight on active LED diffuser
-            try list.fill(.{ .x = inner.x + 2, .y = inner.y + 2, .w = 2, .h = 2 }, colors.led_specular);
+            try list.fill(.{ .x = inner.x + 2, .y = inner.y + 2, .w = 2, .h = 2 }, theme.led_specular);
         }
-        try label(list, led, led_names[index], muted);
+        try label(list, led, led_names[index], theme.muted);
     }
     for (layout.switches, 0..) |button, index| {
         const is_pressed = view.pressed == index;
-        try list.fill(button, if (is_pressed) colors.accent else colors.control_border);
-        try list.fill(inset(button), if (is_pressed) pressed_face else face);
-        try label(list, button, switch_names[index], if (is_pressed) colors.accent else ink);
+        try list.fill(button, if (is_pressed) theme.accent else theme.control_border);
+        try list.fill(inset(button), if (is_pressed) theme.pressed_face else theme.face);
+        try label(list, button, switch_names[index], if (is_pressed) theme.accent else theme.ink);
     }
 }
 

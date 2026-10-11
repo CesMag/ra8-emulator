@@ -10,7 +10,7 @@ const font = @import("ra8_render").font;
 const pane_layout = @import("pane_layout.zig");
 const status_strip = @import("status_strip.zig");
 const time_bar = @import("time_bar.zig");
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
@@ -18,19 +18,13 @@ const Pane = pane_layout.Pane;
 const Layout = pane_layout.Layout;
 const Solved = pane_layout.Solved;
 
-pub const background = colors.background;
-pub const title_fill = colors.face;
-pub const gutter_fill = colors.gutter;
-pub const border = colors.border;
-pub const ink = status_strip.ink;
-pub const muted = colors.muted;
 pub const pad: i32 = 4;
 pub const title_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
 
 /// Fills one leaf's body. The frame has already cleared it and clipped to it.
 pub const Painter = struct {
     context: *anyopaque,
-    paint: *const fn (context: *anyopaque, list: *draw_list.DrawList, pane: Pane, body: Rect) anyerror!void,
+    paint: *const fn (context: *anyopaque, list: *draw_list.DrawList, theme: *const Theme, pane: Pane, body: Rect) anyerror!void,
 };
 
 /// Everything one frame of the shell shows.
@@ -93,41 +87,41 @@ pub fn solve(layout: *const Layout, allocator: std.mem.Allocator, width: i32, he
     return layout.solve(allocator, panesArea(width, height));
 }
 
-pub fn draw(list: *draw_list.DrawList, shell: Shell) !void {
-    for (shell.solved.gutters.items) |found| try list.fill(found.area, gutter_fill);
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, shell: Shell) !void {
+    for (shell.solved.gutters.items) |found| try list.fill(found.area, theme.gutter);
     for (shell.solved.panes.items) |placed| {
         const pane = shell.layout.pane(placed.index) orelse continue;
-        try drawLeaf(list, pane, placed.area, shell.painter);
+        try drawLeaf(list, theme, pane, placed.area, shell.painter);
     }
-    try time_bar.draw(list, barArea(shell.width, shell.height), shell.bar);
+    try time_bar.draw(list, theme, barArea(shell.width, shell.height), shell.bar);
     const strip = status_strip.area(shell.width, shell.height);
-    try status_strip.draw(list, strip, &shell.strip);
+    try status_strip.draw(list, theme, strip, &shell.strip);
 }
 
-fn drawLeaf(list: *draw_list.DrawList, pane: Pane, area: Rect, painter: ?Painter) !void {
+fn drawLeaf(list: *draw_list.DrawList, theme: *const Theme, pane: Pane, area: Rect, painter: ?Painter) !void {
     if (area.empty()) return;
     try list.pushClip(area);
     defer list.popClip();
-    try list.fill(area, background);
+    try list.fill(area, theme.background);
     const title = titleOf(area);
-    try list.fill(title, title_fill);
-    try list.fill(.{ .x = title.x, .y = title.y + title.h - 1, .w = title.w, .h = 1 }, border);
+    try list.fill(title, theme.face);
+    try list.fill(.{ .x = title.x, .y = title.y + title.h - 1, .w = title.w, .h = 1 }, theme.border);
     const top = title.y + @divTrunc(title.h - @as(i32, font.glyph_h), 2);
     const core = coreName(pane.core);
     const core_w: i32 = @intCast(font.textWidth(core.len));
     const room = title.w - 2 * pad;
-    if (room > 0) try font.draw(list, title.x + pad, top, font.fit(kindName(pane.kind), @intCast(room)), ink);
+    if (room > 0) try font.draw(list, title.x + pad, top, font.fit(kindName(pane.kind), @intCast(room)), theme.ink);
     const name_w: i32 = @intCast(font.textWidth(kindName(pane.kind).len));
-    if (room >= name_w + pad + core_w) try font.draw(list, title.x + title.w - pad - core_w, top, core, muted);
+    if (room >= name_w + pad + core_w) try font.draw(list, title.x + title.w - pad - core_w, top, core, theme.muted);
     if (painter) |p| {
         const body = bodyOf(area);
         if (!body.empty()) {
             try list.pushClip(body);
             defer list.popClip();
-            try p.paint(p.context, list, pane, body);
+            try p.paint(p.context, list, theme, pane, body);
         }
     }
-    try drawBorder(list, area, border);
+    try drawBorder(list, area, theme.border);
 }
 
 fn drawBorder(list: *draw_list.DrawList, area: Rect, color: Color) !void {

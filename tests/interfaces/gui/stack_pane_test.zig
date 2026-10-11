@@ -6,6 +6,9 @@
 //! nothing, and the stop rasterises to a pinned golden frame. The walk
 //! itself is tested in tests/interfaces/rpc/session_backtrace_test.zig.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
+const Theme = @import("gui_app").colors.Theme;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -60,6 +63,8 @@ fn walk(opened: *ra8.session.harness.Harness) !pane.Snapshot {
 const Scene = struct {
     list: draw_list.DrawList,
     frame: raster.Framebuffer,
+    /// The palette the scene paints with (RA8EMU-961).
+    theme: *const Theme = dark,
 
     fn init() !Scene {
         const w: u32 = @intCast(area.w);
@@ -73,7 +78,7 @@ const Scene = struct {
     }
 
     fn render(self: *Scene, snapshot: *const pane.Snapshot, selected: usize) !void {
-        try pane.draw(&self.list, area, snapshot, selected);
+        try pane.draw(&self.list, self.theme, area, snapshot, selected);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -102,7 +107,7 @@ test "a pane too narrow draws nothing" {
     var list = draw_list.DrawList.init(std.testing.allocator, 64, 64);
     defer list.deinit();
     const snapshot: pane.Snapshot = .{ .count = 1 };
-    try pane.draw(&list, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = 64 }, &snapshot, 0);
+    try pane.draw(&list, dark, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = 64 }, &snapshot, 0);
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }
 
@@ -114,4 +119,15 @@ test "the stop rasterises to the pinned golden frame" {
     defer scene.deinit();
     try scene.render(&snapshot, 1);
     try std.testing.expectEqual(golden, scene.digest());
+}
+
+test "the stop rasterises to the pinned golden frame in the light theme" {
+    var opened = try stopped();
+    defer opened.deinit();
+    const snapshot = try walk(&opened);
+    var scene = try Scene.init();
+    defer scene.deinit();
+    scene.theme = light;
+    try scene.render(&snapshot, 1);
+    try std.testing.expectEqual(@as(u64, 15883366235072368498), scene.digest());
 }

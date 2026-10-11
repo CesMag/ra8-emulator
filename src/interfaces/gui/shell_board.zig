@@ -14,7 +14,7 @@ const board_pane = @import("ui/board_pane.zig");
 const board_capture = @import("board_capture.zig");
 
 const Color = draw_list.Color;
-const unseen = colors.black;
+const unseen = colors.unseen;
 
 pub const Board = struct {
     allocator: std.mem.Allocator,

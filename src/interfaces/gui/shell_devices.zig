@@ -6,6 +6,7 @@
 //! the row's endpoint, and once the session answers the list is asked for
 //! again, so the rows follow the board.
 const std = @import("std");
+const Theme = @import("ui/colors.zig").Theme;
 const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const draw_list = @import("ra8_render").draw_list;
@@ -139,7 +140,7 @@ pub fn unplugRowAt(body: draw_list.Rect, x: i32, y: i32) ?usize {
 
 /// Draw one row per fitted part inside `body`, as many as fit, then the
 /// unplug refusal when there was one.
-pub fn draw(list: *draw_list.DrawList, body: draw_list.Rect, devices: *const Devices) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, body: draw_list.Rect, devices: *const Devices) !void {
     const room = body.w - 2 * shell_frame.pad;
     if (room <= 0) return;
     const x = body.x + shell_frame.pad;
@@ -154,11 +155,11 @@ pub fn draw(list: *draw_list.DrawList, body: draw_list.Rect, devices: *const Dev
     }) {
         if (y + font.glyph_h > body.y + body.h) return;
         const part = split(text);
-        try font.draw(list, x, y, font.fit(part.name, @intCast(room)), shell_frame.ink);
-        if (room > column + mark) try font.draw(list, x + column, y, font.fit(part.at, @intCast(room - column - mark)), shell_frame.muted);
+        try font.draw(list, x, y, font.fit(part.name, @intCast(room)), theme.ink);
+        if (room > column + mark) try font.draw(list, x + column, y, font.fit(part.at, @intCast(room - column - mark)), theme.muted);
         const cell = unplugCell(body, row);
-        if (room > mark) try font.draw(list, cell.x, cell.y, unplug_mark, shell_frame.muted);
+        if (room > mark) try font.draw(list, cell.x, cell.y, unplug_mark, theme.muted);
     }
     if (!devices.unplug_refused or y + font.glyph_h > body.y + body.h) return;
-    try font.draw(list, x, y, font.fit("the session would not unplug that part", @intCast(room)), shell_frame.muted);
+    try font.draw(list, x, y, font.fit("the session would not unplug that part", @intCast(room)), theme.muted);
 }

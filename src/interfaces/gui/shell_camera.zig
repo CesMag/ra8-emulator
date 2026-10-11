@@ -8,6 +8,7 @@
 //! for the leaf's file field (RA8EMU-799). With a project to keep it in,
 //! the dialog's Always outlasts the run (RA8EMU-1124, camera_always.zig).
 const std = @import("std");
+const Theme = @import("ui/colors.zig").Theme;
 const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const draw_list = @import("ra8_render").draw_list;
@@ -141,13 +142,13 @@ pub fn layoutIn(body: draw_list.Rect) camera_view.Layout {
 }
 
 /// Draw the panel at the top of `body`, its note on the row below.
-pub fn draw(list: *draw_list.DrawList, body: draw_list.Rect, camera: *const Camera) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, body: draw_list.Rect, camera: *const Camera) !void {
     const layout = layoutIn(body);
-    try camera_view.draw(list, layout, camera.panel);
+    try camera_view.draw(list, theme, layout, camera.panel);
     const said = camera.note() orelse return;
     const area = layout.area();
     const y = area.y + area.h + shell_frame.pad;
     const room = body.w - 2 * shell_frame.pad;
     if (room <= 0 or y + font.glyph_h > body.y + body.h) return;
-    try font.draw(list, layout.x, y, font.fit(said, @intCast(room)), shell_frame.muted);
+    try font.draw(list, layout.x, y, font.fit(said, @intCast(room)), theme.muted);
 }

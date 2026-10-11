@@ -2,6 +2,7 @@
 //! with their stamps, the unfinished line shows last without one, a strip
 //! too short for a row draws nothing, and the strip sits under the board.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const console_log = gui_app.console_log;
@@ -28,7 +29,7 @@ test "only the newest lines that fit are drawn, each stamped" {
     try log.feedAll("ccc\n", 3_000_000_000);
     var list = draw_list.DrawList.init(std.testing.allocator, 400, 100);
     defer list.deinit();
-    try console_pane.draw(&list, two_rows, &log, 0);
+    try console_pane.draw(&list, dark, two_rows, &log, 0);
     try std.testing.expectEqual(@as(usize, 2), console_pane.rows(two_rows));
     // "[   2.000000000] " has 13 glyphs; then "bb" and "ccc".
     try std.testing.expectEqual(@as(usize, 13 + 2 + 13 + 3), glyphs(&list));
@@ -41,7 +42,7 @@ test "the unfinished line takes the last row without a stamp" {
     try log.feedAll("typing", 2_000_000_000);
     var list = draw_list.DrawList.init(std.testing.allocator, 400, 100);
     defer list.deinit();
-    try console_pane.draw(&list, two_rows, &log, 0);
+    try console_pane.draw(&list, dark, two_rows, &log, 0);
     try std.testing.expectEqual(@as(usize, 13 + 4 + 6), glyphs(&list));
 }
 
@@ -51,7 +52,7 @@ test "a strip with no room for a row draws nothing" {
     try log.feedAll("hidden\n", 1_000_000_000);
     var list = draw_list.DrawList.init(std.testing.allocator, 400, 100);
     defer list.deinit();
-    try console_pane.draw(&list, .{ .x = 0, .y = 0, .w = 400, .h = 10 }, &log, 0);
+    try console_pane.draw(&list, dark, .{ .x = 0, .y = 0, .w = 400, .h = 10 }, &log, 0);
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }
 
@@ -73,7 +74,7 @@ test "scrolled back, the lines ending there show and the unfinished one hides" {
     try log.feedAll("typing", 4_000_000_000);
     var list = draw_list.DrawList.init(std.testing.allocator, 400, 100);
     defer list.deinit();
-    try console_pane.draw(&list, two_rows, &log, 1);
+    try console_pane.draw(&list, dark, two_rows, &log, 1);
     try std.testing.expectEqual(@as(usize, 13 + 1 + 13 + 2), glyphs(&list));
 }
 
@@ -85,6 +86,6 @@ test "scrolled past the oldest line, the pane still fills from the top" {
     try log.feedAll("ccc\n", 3_000_000_000);
     var list = draw_list.DrawList.init(std.testing.allocator, 400, 100);
     defer list.deinit();
-    try console_pane.draw(&list, two_rows, &log, 3);
+    try console_pane.draw(&list, dark, two_rows, &log, 3);
     try std.testing.expectEqual(@as(usize, 13 + 1 + 13 + 2), glyphs(&list));
 }

@@ -32,11 +32,12 @@ const shell_run = @import("shell_run.zig");
 const shell_time = @import("shell_time.zig");
 const wall_clock = @import("wall_clock.zig");
 const proto = @import("ra8_rpc").session_rpc;
+const colors = @import("ui/colors.zig");
 
 const Env = proto.Client.Env;
 const usage = "usage: ra8_gui [--host NAME] [--hosts FILE] [--attach MODEL@ENDPOINT]... [--click]\n" ++
     "    [--camera-source KIND[:ARG]] [--window-stills DIR [--window-stills-every N]]\n" ++
-    "    [--frames N] IMAGE\n";
+    "    [--frames N] [--theme dark|light] IMAGE\n";
 
 /// The word `ra8_gui shell IMAGE` carried while ra8_gui also had a live
 /// window; still taken in front of the flags, and it changes nothing.
@@ -63,6 +64,8 @@ pub const Args = struct {
     /// `--frames N`: close the window after N frames drawn with the image
     /// loaded, for a smoke run with nobody to close it (RA8EMU-1089).
     frames: ?u32 = null,
+    /// `--theme dark|light`: the palette the window paints with (RA8EMU-961).
+    theme: colors.Choice = .dark,
 };
 
 /// Parse `ra8_gui [flags] IMAGE`; see `usage`.
@@ -87,7 +90,7 @@ pub fn parse(argv: []const []const u8) error{Usage}!Args {
     return args;
 }
 
-const valued_flags = [_][]const u8{ "--host", "--hosts", "--attach", "--camera-source", "--window-stills", "--window-stills-every", "--frames" };
+const valued_flags = [_][]const u8{ "--host", "--hosts", "--attach", "--camera-source", "--window-stills", "--window-stills-every", "--frames", "--theme" };
 
 fn valued(arg: []const u8) bool {
     for (valued_flags) |flag| if (std.mem.eql(u8, arg, flag)) return true;
@@ -108,6 +111,8 @@ fn take(args: *Args, flag: []const u8, value: []const u8) !void {
         args.stills = value;
     } else if (std.mem.eql(u8, flag, "--window-stills-every")) {
         args.stills_every = try count(value);
+    } else if (std.mem.eql(u8, flag, "--theme")) {
+        args.theme = std.meta.stringToEnum(colors.Choice, value) orelse return error.BadValue;
     } else {
         args.frames = try count(value);
     }
@@ -178,6 +183,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     var link: session_link.Link = undefined;
     link.open(session.transport(), rx, tx);
     var shell = shell_loop.Shell.init(allocator, try pane_layout.twoCore(allocator));
+    shell.theme = colors.of(args.theme);
     defer shell.deinit();
     shell.link = &link;
     shell.server = served(&session);

@@ -6,6 +6,7 @@
 //! leaves a note above the field and keeps the text for fixing. One plug is
 //! in flight at a time. There is one field; with two devices leaves it sits
 //! in the last one drawn.
+const Theme = @import("ui/colors.zig").Theme;
 const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const draw_list = @import("ra8_render").draw_list;
@@ -80,14 +81,14 @@ pub fn rowsRect(body: Rect) Rect {
 
 /// Draw a devices leaf with the picker: the rows (or the list's note) above,
 /// the refusal note, then the field at the foot.
-pub fn draw(list: *draw_list.DrawList, body: Rect, devices: *const shell_devices.Devices, plug: *Plug) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, body: Rect, devices: *const shell_devices.Devices, plug: *Plug) !void {
     if (body.h < shell_field.height + 2 * shell_frame.pad) return;
     const rows = rowsRect(body);
     const room = body.w - 2 * shell_frame.pad;
     if (devices.note()) |note| {
-        if (room > 0 and rows.h >= font.glyph_h + shell_frame.pad) try font.draw(list, rows.x + shell_frame.pad, rows.y + shell_frame.pad, font.fit(note, @intCast(room)), shell_frame.muted);
-    } else try shell_devices.draw(list, rows, devices);
+        if (room > 0 and rows.h >= font.glyph_h + shell_frame.pad) try font.draw(list, rows.x + shell_frame.pad, rows.y + shell_frame.pad, font.fit(note, @intCast(room)), theme.muted);
+    } else try shell_devices.draw(list, theme, rows, devices);
     const field = fieldRect(body);
-    if (plug.refused and room > 0) try font.draw(list, field.x, field.y - shell_devices.row_h, font.fit(refusal, @intCast(room)), shell_frame.muted);
-    try plug.field.draw(list, field);
+    if (plug.refused and room > 0) try font.draw(list, field.x, field.y - shell_devices.row_h, font.fit(refusal, @intCast(room)), theme.muted);
+    try plug.field.draw(list, theme, field);
 }

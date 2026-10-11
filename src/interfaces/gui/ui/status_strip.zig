@@ -5,15 +5,12 @@
 //! reads the session's status into a `Strip`; this file never imports it.
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
 /// The strip sits in the well colour, below the panes' background.
-pub const background = colors.well;
-pub const border = colors.border;
-pub const ink = colors.ink;
 pub const pad: i32 = 4;
 pub const dot: i32 = 6;
 /// One text line with two pixels of air above and below, plus the border.
@@ -26,13 +23,13 @@ pub const Tone = enum {
     running,
     halted,
 
-    pub fn color(self: Tone) Color {
+    pub fn color(self: Tone, theme: *const Theme) Color {
         return switch (self) {
-            .waiting => colors.tone.waiting,
-            .good => colors.tone.good,
-            .bad => colors.tone.bad,
-            .running => colors.tone.running,
-            .halted => colors.tone.halted,
+            .waiting => theme.tone().waiting,
+            .good => theme.tone().good,
+            .bad => theme.tone().bad,
+            .running => theme.tone().running,
+            .halted => theme.tone().halted,
         };
     }
 };
@@ -53,21 +50,21 @@ pub fn area(width: i32, window_h: i32) Rect {
     return .{ .x = 0, .y = window_h - height, .w = width, .h = height };
 }
 
-pub fn draw(list: *draw_list.DrawList, strip: Rect, view: *const Strip) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, strip: Rect, view: *const Strip) !void {
     if (strip.empty()) return;
-    try list.fill(strip, background);
-    try list.fill(.{ .x = strip.x, .y = strip.y, .w = strip.w, .h = 1 }, border);
+    try list.fill(strip, theme.well);
+    try list.fill(.{ .x = strip.x, .y = strip.y, .w = strip.w, .h = 1 }, theme.border);
     try list.pushClip(strip);
     defer list.popClip();
     const middle = strip.y + 1 + @divTrunc(strip.h - 1 - dot, 2);
     // The dot sits on a pill a pixel wider all round.
-    try list.fill(.{ .x = strip.x + pad - 1, .y = middle - 1, .w = dot + 2, .h = dot + 2 }, colors.status_pill);
-    try list.fill(.{ .x = strip.x + pad, .y = middle, .w = dot, .h = dot }, view.tone.color());
+    try list.fill(.{ .x = strip.x + pad - 1, .y = middle - 1, .w = dot + 2, .h = dot + 2 }, theme.status_pill);
+    try list.fill(.{ .x = strip.x + pad, .y = middle, .w = dot, .h = dot }, view.tone.color(theme));
     const line = view.line();
     const left = strip.x + pad + dot + pad + 2;
     const room = strip.x + strip.w - pad - left;
     if (room <= 0) return;
     const shown = font.fit(line, @intCast(room));
     const top = strip.y + 1 + @divTrunc(strip.h - 1 - @as(i32, font.glyph_h), 2);
-    try font.draw(list, left, top, shown, ink);
+    try font.draw(list, left, top, shown, theme.ink);
 }

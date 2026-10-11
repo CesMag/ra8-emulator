@@ -11,17 +11,11 @@
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const background = colors.background;
-pub const muted = colors.muted;
-pub const ink = colors.ink;
-pub const current_band = colors.band;
-pub const current_ink = colors.highlight;
-pub const break_mark = colors.bad;
 pub const pad: i32 = 4;
 /// A row is one text line with a pixel of air above and below.
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
@@ -117,26 +111,26 @@ pub fn markRect(area: Rect, row: usize) Rect {
     return .{ .x = area.x + pad + 2, .y = band.y + 3, .w = font.glyph_w, .h = row_h - 6 };
 }
 
-pub fn draw(list: *draw_list.DrawList, area: Rect, snapshot: *const Snapshot, marks: *const Marks) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, snapshot: *const Snapshot, marks: *const Marks) !void {
     if (area.w < min_w or rows(area) == 0) return;
-    try list.fill(area, background);
+    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
     var message: [path_cap + 32]u8 = undefined;
     switch (snapshot.state) {
-        .no_line => return drawText(list, area, 0, text_at, try std.fmt.bufPrint(&message, "No line information for 0x{X:0>8}", .{snapshot.pc}), muted),
-        .no_file => return drawText(list, area, 0, text_at, try std.fmt.bufPrint(&message, "{s}: No such file", .{snapshot.path()}), muted),
+        .no_line => return drawText(list, area, 0, text_at, try std.fmt.bufPrint(&message, "No line information for 0x{X:0>8}", .{snapshot.pc}), theme.muted),
+        .no_file => return drawText(list, area, 0, text_at, try std.fmt.bufPrint(&message, "{s}: No such file", .{snapshot.path()}), theme.muted),
         .shown => {},
     }
     for (0..@min(rows(area), snapshot.count)) |row| {
         const line = &snapshot.rows[row];
         const current = line.number == snapshot.current;
-        if (current) try list.fill(rowRect(area, row), current_band);
-        if (marks.find(snapshot.path(), line.number) != null) try list.fill(markRect(area, row), break_mark);
-        if (current) try drawText(list, area, row, 1, ">", current_ink);
+        if (current) try list.fill(rowRect(area, row), theme.band);
+        if (marks.find(snapshot.path(), line.number) != null) try list.fill(markRect(area, row), theme.bad);
+        if (current) try drawText(list, area, row, 1, ">", theme.highlight);
         var number: [number_len]u8 = undefined;
-        try drawText(list, area, row, number_at, try std.fmt.bufPrint(&number, "{d: >5}", .{line.number}), if (current) current_ink else muted);
-        try drawText(list, area, row, text_at, line.text(), ink);
+        try drawText(list, area, row, number_at, try std.fmt.bufPrint(&number, "{d: >5}", .{line.number}), if (current) theme.highlight else theme.muted);
+        try drawText(list, area, row, text_at, line.text(), theme.ink);
     }
 }
 

@@ -14,6 +14,7 @@
 //! its core's SP once they have been read, and a disassembly leaf the
 //! instructions from its core's PC.
 //! An empty leaf stays blank.
+const Theme = @import("ui/colors.zig").Theme;
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const pane_layout = @import("ui/pane_layout.zig");
@@ -87,63 +88,63 @@ pub fn noteAt(body: Rect) ?struct { x: i32, y: i32, room: u32 } {
     return .{ .x = body.x + shell_frame.pad, .y = body.y + @divTrunc(body.h - glyph, 2), .room = @intCast(room) };
 }
 
-fn paint(context: *anyopaque, list: *draw_list.DrawList, pane: pane_layout.Pane, body: Rect) anyerror!void {
+fn paint(context: *anyopaque, list: *draw_list.DrawList, theme: *const Theme, pane: pane_layout.Pane, body: Rect) anyerror!void {
     const self: *Panes = @ptrCast(@alignCast(context));
     if (pane.kind == .console) if (self.console) |console| {
-        if (console.hasOutput()) return console_pane.draw(list, body, &console.log, 0);
+        if (console.hasOutput()) return console_pane.draw(list, theme, body, &console.log, 0);
     };
     if (pane.kind == .devices) if (self.devices) |devices| {
         if (self.plug) |plug| if (devices.answered and !devices.refused) {
-            try shell_plug.draw(list, body, devices, plug);
-            return drawFaults(self, list, shell_plug.rowsRect(body), devices);
+            try shell_plug.draw(list, theme, body, devices, plug);
+            return drawFaults(self, list, theme, shell_plug.rowsRect(body), devices);
         };
         if (devices.answered and devices.note() == null) {
-            try shell_devices.draw(list, body, devices);
-            return drawFaults(self, list, body, devices);
+            try shell_devices.draw(list, theme, body, devices);
+            return drawFaults(self, list, theme, body, devices);
         }
     };
     if (pane.kind == .camera) if (self.camera) |camera| {
-        if (self.camera_file) |file| return shell_camera_file.draw(list, body, camera, file);
-        return shell_camera.draw(list, body, camera);
+        if (self.camera_file) |file| return shell_camera_file.draw(list, theme, body, camera, file);
+        return shell_camera.draw(list, theme, body, camera);
     };
     if (pane.kind == .registers) if (self.registers) |pair| {
         const model = pair.of(pane.core);
-        if (model.now) |now| return registers_pane.draw(list, body, now, model.before, model.fold);
+        if (model.now) |now| return registers_pane.draw(list, theme, body, now, model.before, model.fold);
     };
     if (pane.kind == .memory) if (self.memory) |pair| {
-        if (pair.of(pane.core).now) |*now| return memory_pane.draw(list, body, now);
+        if (pair.of(pane.core).now) |*now| return memory_pane.draw(list, theme, body, now);
     };
     if (pane.kind == .disasm) if (self.code) |pair| {
         const model = pair.of(pane.core);
-        if (model.now) |*read| return drawCode(list, body, model.from, read);
+        if (model.now) |*read| return drawCode(list, theme, body, model.from, read);
     };
     if (pane.kind == .stack) if (self.stack) |pair| {
-        if (pair.of(pane.core).now) |*now| return stack_pane.draw(list, body, now, 0);
+        if (pair.of(pane.core).now) |*now| return stack_pane.draw(list, theme, body, now, 0);
     };
     if (pane.kind == .board) if (self.board) |board| {
         const pressed = if (self.board_input) |pointer| pointer.press.held else null;
-        if (!board_pane.Layout.of(body).board.empty()) return board_pane.draw(list, body, board.view(pressed));
+        if (!board_pane.Layout.of(body).board.empty()) return board_pane.draw(list, theme, body, board.view(pressed));
         // A leaf too small for the board still shows the panel by itself.
         if (board.hasFrame()) return list.image(fit.fitIn(body, board.width, board.height), board.image());
     };
     const note = noteFor(self, pane) orelse return;
     const at = noteAt(body) orelse return;
-    try font.draw(list, at.x, at.y, font.fit(note, at.room), shell_frame.muted);
+    try font.draw(list, at.x, at.y, font.fit(note, at.room), theme.muted);
 }
 
 /// The fault cells over a listed devices leaf's rows, when the shell keeps faults.
-fn drawFaults(self: *const Panes, list: *draw_list.DrawList, rows: Rect, devices: *const shell_devices.Devices) !void {
+fn drawFaults(self: *const Panes, list: *draw_list.DrawList, theme: *const Theme, rows: Rect, devices: *const shell_devices.Devices) !void {
     const faults = self.faults orelse return;
     if (devices.note() != null) return;
-    try shell_fault.draw(list, rows, devices, faults);
+    try shell_fault.draw(list, theme, rows, devices, faults);
 }
 
 /// Instructions decoded forward from `pc` out of the rows read around it.
 /// The link carries no breakpoint list yet, so none are marked.
-fn drawCode(list: *draw_list.DrawList, body: Rect, pc: u32, read: *const shell_memory.Snapshot) !void {
+fn drawCode(list: *draw_list.DrawList, theme: *const Theme, body: Rect, pc: u32, read: *const shell_memory.Snapshot) !void {
     const length = read.count * memory_pane.per_row;
     const lines = disasm_capture.decodeRead(pc, read.base, read.bytes[0..length], read.readable[0..length], disasm_pane.rows(body));
-    return disasm_pane.draw(list, body, &lines, &.{});
+    return disasm_pane.draw(list, theme, body, &lines, &.{});
 }
 
 /// The note a leaf shows: the device list's, the registers', memory's or

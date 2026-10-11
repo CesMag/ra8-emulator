@@ -2,6 +2,7 @@
 //! CPU rasterizer, and how clicks on it pick sources and answer the webcam
 //! dialog.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
@@ -32,7 +33,7 @@ fn inked(frame: *const raster.Framebuffer, at: Rect, ink: draw_list.Color) usize
 fn render(panel: Panel) !raster.Framebuffer {
     var list = draw_list.DrawList.init(std.testing.allocator, 256, 128);
     defer list.deinit();
-    try view.draw(&list, layout, panel);
+    try view.draw(&list, dark, layout, panel);
     var frame = try raster.Framebuffer.init(std.testing.allocator, 256, 128);
     raster.draw(&frame, &list, ra8.render.font.atlas);
     return frame;
@@ -47,35 +48,35 @@ test "every source has its button and the active one is ringed" {
     var frame = try render(.{});
     defer frame.deinit(std.testing.allocator);
     for (std.enums.values(gui_app.camera_panel.Kind)) |kind| {
-        try std.testing.expectEqual(view.colorOf(kind), pixel(&frame, layout.source(kind)));
+        try std.testing.expectEqual(view.colorOf(dark, kind), pixel(&frame, layout.source(kind)));
     }
     const gradient = layout.source(.gradient);
-    try std.testing.expectEqual(view.ring, frame.at(@intCast(gradient.x - 1), @intCast(gradient.y)));
+    try std.testing.expectEqual(dark.ink, frame.at(@intCast(gradient.x - 1), @intCast(gradient.y)));
     const image = layout.source(.image);
-    try std.testing.expectEqual(view.background, frame.at(@intCast(image.x - 1), @intCast(image.y)));
+    try std.testing.expectEqual(dark.preview, frame.at(@intCast(image.x - 1), @intCast(image.y)));
 }
 
 test "the dot is red only while the webcam is the source" {
     var panel = Panel{};
     var off = try render(panel);
     defer off.deinit(std.testing.allocator);
-    try std.testing.expectEqual(view.camera_off, pixel(&off, layout.indicator()));
+    try std.testing.expectEqual(dark.border, pixel(&off, layout.indicator()));
     panel.pick(.webcam);
     panel.answer(.allow_once);
     var on = try render(panel);
     defer on.deinit(std.testing.allocator);
-    try std.testing.expectEqual(view.camera_on, pixel(&on, layout.indicator()));
+    try std.testing.expectEqual(dark.recording, pixel(&on, layout.indicator()));
 }
 
 test "the dialog shows only while the webcam is being asked" {
     var panel = Panel{};
     var closed = try render(panel);
     defer closed.deinit(std.testing.allocator);
-    try std.testing.expectEqual(view.background, pixel(&closed, layout.dialog(.always)));
+    try std.testing.expectEqual(dark.preview, pixel(&closed, layout.dialog(.always)));
     panel.pick(.webcam);
     var open = try render(panel);
     defer open.deinit(std.testing.allocator);
-    try std.testing.expectEqual(view.answerColor(.always), pixel(&open, layout.dialog(.always)));
+    try std.testing.expectEqual(view.answerColor(dark, .always), pixel(&open, layout.dialog(.always)));
 }
 
 test "clicking a source picks it" {
@@ -113,11 +114,11 @@ test "while Always stands its button shows, whole and clear of the dialog's thre
     var plain = try render(.{});
     defer plain.deinit(std.testing.allocator);
     const at = layout.withdraw();
-    try std.testing.expectEqual(view.background, pixel(&plain, at));
+    try std.testing.expectEqual(dark.preview, pixel(&plain, at));
     var standing = try render(.{ .always = true });
     defer standing.deinit(std.testing.allocator);
-    try std.testing.expectEqual(view.withdraw_color, pixel(&standing, at));
-    try std.testing.expect(inked(&standing, at, view.inkOn(view.withdraw_color)) > 40);
+    try std.testing.expectEqual(dark.hue.blue, pixel(&standing, at));
+    try std.testing.expect(inked(&standing, at, view.inkOn(dark, dark.hue.blue)) > 40);
     try std.testing.expect(ra8.render.font.textWidth(view.withdraw_label.len) <= at.w - 2);
     for (std.enums.values(gui_app.camera_panel.Answer)) |reply| {
         const answer = layout.dialog(reply);
@@ -157,17 +158,17 @@ test "every source and dialog button carries a label in ink that reads on it" {
     var frame = try render(.{ .asking = true });
     defer frame.deinit(std.testing.allocator);
     for (std.enums.values(gui_app.camera_panel.Kind)) |kind| {
-        const ink = view.inkOn(view.colorOf(kind));
-        try std.testing.expect(!std.meta.eql(ink, view.colorOf(kind)));
+        const ink = view.inkOn(dark, view.colorOf(dark, kind));
+        try std.testing.expect(!std.meta.eql(ink, view.colorOf(dark, kind)));
         try std.testing.expect(inked(&frame, layout.source(kind), ink) > 10);
         try std.testing.expect(view.labelOf(kind).len <= 3);
     }
     for (std.enums.values(gui_app.camera_panel.Answer)) |reply| {
-        try std.testing.expect(inked(&frame, layout.dialog(reply), view.inkOn(view.answerColor(reply))) > 5);
+        try std.testing.expect(inked(&frame, layout.dialog(reply), view.inkOn(dark, view.answerColor(dark, reply))) > 5);
     }
 }
 
 test "label ink is dark on light fills and light on dark ones" {
-    try std.testing.expectEqual(view.background, view.inkOn(draw_list.Color.rgb(0xEB, 0xCB, 0x8B)));
-    try std.testing.expectEqual(view.ring, view.inkOn(view.camera_off));
+    try std.testing.expectEqual(dark.preview, view.inkOn(dark, draw_list.Color.rgb(0xEB, 0xCB, 0x8B)));
+    try std.testing.expectEqual(dark.ink, view.inkOn(dark, dark.border));
 }

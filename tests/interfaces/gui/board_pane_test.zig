@@ -3,6 +3,7 @@
 //! state folded from session events, switch hits, and a pinned CPU-backend
 //! golden with LED1 on and the others off.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
@@ -53,7 +54,7 @@ test "an area under the minimum lays out nothing and draws nothing" {
     var list = draw_list.DrawList.init(std.testing.allocator, 200, 200);
     defer list.deinit();
     const leds: pane.Leds = .{};
-    try pane.draw(&list, area, .{ .leds = &leds });
+    try pane.draw(&list, dark, area, .{ .leds = &leds });
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }
 
@@ -87,7 +88,7 @@ test "the board pane frame with LED1 on is pinned" {
     }
     var leds: pane.Leds = .{};
     capture.observe(&leds, .{ .core = .cpu0, .kind = .led_changed, .address = 0x100 });
-    try pane.draw(&list, .{ .x = 0, .y = 0, .w = w, .h = h }, .{ .leds = &leds, .panel = .{ .width = 64, .height = 36, .pixels = &pixels } });
+    try pane.draw(&list, dark, .{ .x = 0, .y = 0, .w = w, .h = h }, .{ .leds = &leds, .panel = .{ .width = 64, .height = 36, .pixels = &pixels } });
     raster.draw(&frame, &list, font.atlas);
     const digest = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
     try std.testing.expectEqual(@as(u64, 16709361613165744171), digest);

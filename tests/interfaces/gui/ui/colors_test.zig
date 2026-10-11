@@ -41,20 +41,27 @@ fn literals(path: []const u8, text: []const u8) usize {
 }
 
 test "the status tones are the palette's roles" {
-    const colors = gui_app.colors;
-    try std.testing.expectEqual(colors.muted, colors.tone.waiting);
-    try std.testing.expectEqual(colors.accent, colors.tone.running);
-    try std.testing.expectEqual(colors.highlight, colors.tone.halted);
+    for ([_]*const gui_app.colors.Theme{ &gui_app.colors.palettes.dark, &gui_app.colors.palettes.light }) |theme| {
+        try std.testing.expectEqual(theme.muted, theme.tone().waiting);
+        try std.testing.expectEqual(theme.accent, theme.tone().running);
+        try std.testing.expectEqual(theme.highlight, theme.tone().halted);
+        try std.testing.expectEqual(theme.highlight, theme.dirtyRegister());
+        try std.testing.expectEqual(theme.good, theme.runLit());
+        try std.testing.expectEqual(theme.highlight, theme.pauseLit());
+    }
 }
 
-test "semantic state and control tokens are defined" {
-    const colors = gui_app.colors;
-    try std.testing.expectEqual(colors.highlight, colors.dirty_register);
-    try std.testing.expectEqual(colors.good, colors.run_lit);
-    try std.testing.expectEqual(colors.highlight, colors.pause_lit);
-    try std.testing.expectEqual(colors.pc_band_bg, colors.pc_band);
-    try std.testing.expect(colors.breakpoint.r == 0xF4 and colors.breakpoint.g == 0x3F and colors.breakpoint.b == 0x5E);
-    try std.testing.expect(colors.pc_cyan.r == 0x00 and colors.pc_cyan.g == 0xE5 and colors.pc_cyan.b == 0xFF);
-    try std.testing.expect(colors.background.r == 0x0F and colors.background.g == 0x11 and colors.background.b == 0x17);
-    try std.testing.expect(colors.border.r == 0x28 and colors.border.g == 0x2E and colors.border.b == 0x3C);
+test "dark is Cesar's Instrument Bench palette and the default choice" {
+    const dark = &gui_app.colors.palettes.dark;
+    try std.testing.expect(dark.breakpoint.r == 0xF4 and dark.breakpoint.g == 0x3F and dark.breakpoint.b == 0x5E);
+    try std.testing.expect(dark.pc_cyan.r == 0x00 and dark.pc_cyan.g == 0xE5 and dark.pc_cyan.b == 0xFF);
+    try std.testing.expect(dark.background.r == 0x0F and dark.background.g == 0x11 and dark.background.b == 0x17);
+    try std.testing.expect(dark.border.r == 0x28 and dark.border.g == 0x2E and dark.border.b == 0x3C);
+    try std.testing.expectEqual(dark, gui_app.colors.of(.dark));
+}
+
+test "light is a light surface with dark ink" {
+    const light = gui_app.colors.of(.light);
+    try std.testing.expect(light.background.r > 0xF0 and light.background.g > 0xF0 and light.background.b > 0xF0);
+    try std.testing.expect(light.ink.r < 0x20 and light.ink.g < 0x20 and light.ink.b < 0x40);
 }

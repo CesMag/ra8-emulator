@@ -4,6 +4,7 @@
 //! or fault_cleared session event; and a faulted row through raster.draw
 //! is pinned as a golden.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -187,7 +188,7 @@ test "a faulted row draws its mode in ink beside an unfaulted row's muted mark" 
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .devices = &devices, .faults = &faults };
-    try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = width, .height = height, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = width, .height = height, .painter = painter.painter() });
     var pixels = try raster.Framebuffer.init(gpa, width, height);
     defer pixels.deinit(gpa);
     raster.draw(&pixels, &list, font.atlas);
@@ -198,9 +199,9 @@ test "a faulted row draws its mode in ink beside an unfaulted row's muted mark" 
         if (placed.kind != .devices) continue;
         leaves += 1;
         const body = frame.bodyOf(leaf.area);
-        try std.testing.expect(holds(&pixels, fault.cell(body, 0), frame.ink));
-        try std.testing.expect(!holds(&pixels, fault.cell(body, 1), frame.ink));
-        try std.testing.expect(holds(&pixels, fault.cell(body, 1), frame.muted));
+        try std.testing.expect(holds(&pixels, fault.cell(body, 0), dark.ink));
+        try std.testing.expect(!holds(&pixels, fault.cell(body, 1), dark.ink));
+        try std.testing.expect(holds(&pixels, fault.cell(body, 1), dark.muted));
     }
     try std.testing.expect(leaves > 0);
     const digest = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(pixels.pixels));

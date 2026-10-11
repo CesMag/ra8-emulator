@@ -6,6 +6,7 @@
 //! ok. A refusal leaves the mode alone and becomes a note; the next click
 //! still moves on, so a mode the part cannot carry never stalls the cycle.
 const std = @import("std");
+const Theme = @import("ui/colors.zig").Theme;
 const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const draw_list = @import("ra8_render").draw_list;
@@ -141,14 +142,14 @@ pub fn rowAt(body: draw_list.Rect, x: i32, y: i32) ?usize {
 /// Draw each listed row's mode in its fault cell: a mode in ink, none muted.
 /// A refused ask leaves its note on the line under the rows (and under the
 /// unplug refusal when that is up too).
-pub fn draw(list: *draw_list.DrawList, body: draw_list.Rect, devices: *const shell_devices.Devices, faults: *const Faults) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, body: draw_list.Rect, devices: *const shell_devices.Devices, faults: *const Faults) !void {
     var rows = devices.lines();
     var row: usize = 0;
     while (rows.next()) |text| : (row += 1) {
         const at = cell(body, row);
         if (at.x < body.x + shell_frame.pad or at.y + font.glyph_h > body.y + body.h) return;
         const mode = faults.modeOf(shell_devices.split(text).at);
-        const color = if (mode == 0) shell_frame.muted else shell_frame.ink;
+        const color = if (mode == 0) theme.muted else theme.ink;
         try font.draw(list, at.x, at.y, label(mode), color);
     }
     if (!faults.refused) return;
@@ -156,5 +157,5 @@ pub fn draw(list: *draw_list.DrawList, body: draw_list.Rect, devices: *const she
     const y = body.y + shell_frame.pad + @as(i32, @intCast(row)) * shell_devices.row_h;
     const room = body.w - 2 * shell_frame.pad;
     if (room <= 0 or y + font.glyph_h > body.y + body.h) return;
-    try font.draw(list, body.x + shell_frame.pad, y, font.fit(refused_note, @intCast(room)), shell_frame.muted);
+    try font.draw(list, body.x + shell_frame.pad, y, font.fit(refused_note, @intCast(room)), theme.muted);
 }

@@ -7,6 +7,9 @@
 //! draws nothing, a session capture rasterises to a pinned golden frame, and
 //! decodeRead decodes the same run out of bytes read over the link.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
+const Theme = @import("gui_app").colors.Theme;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -93,6 +96,8 @@ const Rig = struct {
 const Scene = struct {
     list: draw_list.DrawList,
     frame: raster.Framebuffer,
+    /// The palette the scene paints with (RA8EMU-961).
+    theme: *const Theme = dark,
 
     fn init() !Scene {
         const w: u32 = @intCast(area.w);
@@ -106,7 +111,7 @@ const Scene = struct {
     }
 
     fn render(self: *Scene, snapshot: *const pane.Snapshot) !void {
-        try pane.draw(&self.list, area, snapshot, &.{break_at});
+        try pane.draw(&self.list, self.theme, area, snapshot, &.{break_at});
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -167,11 +172,11 @@ test "the pc band and the breakpoint square land only on their rows" {
     for (0..8) |row| {
         const band = pane.rowRect(area, row);
         const edge = scene.at(area.w - 1, band.y + 1);
-        const expected_edge = if (row == 3) pane.pc_band else pane.background;
+        const expected_edge = if (row == 3) dark.pc_band_bg else dark.background;
         try std.testing.expect(std.meta.eql(expected_edge, edge));
         const mark = pane.markRect(area, row);
         const centre = scene.at(mark.x + 1, mark.y + 1);
-        try std.testing.expectEqual(row == 5, std.meta.eql(pane.break_mark, centre));
+        try std.testing.expectEqual(row == 5, std.meta.eql(dark.breakpoint, centre));
     }
 }
 
@@ -181,7 +186,7 @@ test "a pane too narrow draws nothing" {
     const snapshot = try rig.snapshot();
     var list = draw_list.DrawList.init(std.testing.allocator, 400, 200);
     defer list.deinit();
-    try pane.draw(&list, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = 200 }, &snapshot, &.{});
+    try pane.draw(&list, dark, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = 200 }, &snapshot, &.{});
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }
 
@@ -193,6 +198,17 @@ test "a session capture rasterises to the pinned golden frame" {
     defer scene.deinit();
     try scene.render(&snapshot);
     try std.testing.expectEqual(@as(u64, 11601210873936714354), scene.digest());
+}
+
+test "a session capture rasterises to the pinned golden frame in the light theme" {
+    var rig: Rig = undefined;
+    try rig.init();
+    const snapshot = try rig.snapshot();
+    var scene = try Scene.init();
+    defer scene.deinit();
+    scene.theme = light;
+    try scene.render(&snapshot);
+    try std.testing.expectEqual(@as(u64, 17400870079980028689), scene.digest());
 }
 
 /// Bytes as the shell reads them over the link, with which came back.

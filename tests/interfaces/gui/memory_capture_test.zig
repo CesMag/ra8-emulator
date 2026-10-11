@@ -2,6 +2,7 @@
 //! from a real session rasterises to the memory pane's pinned golden frame,
 //! and capture reads each core across the end of mapped memory.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -27,7 +28,7 @@ fn digest(snapshot: *const pane.Snapshot) !u64 {
     defer list.deinit();
     var frame = try raster.Framebuffer.init(std.testing.allocator, w, h);
     defer frame.deinit(std.testing.allocator);
-    try pane.draw(&list, area, snapshot);
+    try pane.draw(&list, dark, area, snapshot);
     raster.draw(&frame, &list, font.atlas);
     return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
 }

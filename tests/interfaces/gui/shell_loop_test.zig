@@ -3,6 +3,7 @@
 //! and a local `serve --stdio` session connects and loads a corpus image
 //! with the status strip following.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -32,8 +33,8 @@ test "a frame presents the shell frame on the headless platform" {
     try std.testing.expect(try s.step(window.platform()));
     try std.testing.expectEqual(@as(u32, 1), window.presents);
     const frame = window.last.?;
-    try std.testing.expectEqual(strip.border, frame.at(width - 1, height - strip.height));
-    try std.testing.expectEqual(shell_frame.title_fill, frame.at(width / 4, 1));
+    try std.testing.expectEqual(dark.border, frame.at(width - 1, height - strip.height));
+    try std.testing.expectEqual(dark.face, frame.at(width / 4, 1));
 }
 
 test "quit closes the shell without presenting" {

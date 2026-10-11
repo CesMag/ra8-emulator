@@ -1,7 +1,7 @@
 //! The registers pane (RA8EMU-741): one core's registers, RAD Debugger
 //! style, a name column and an eight-digit hex value, run down a column and
 //! then across as many columns as the area holds. A value that differs from
-//! the snapshot taken before the last run or step draws in `changed`, so a
+//! the snapshot taken before the last run or step draws in `highlight`, so a
 //! step shows what it touched.
 //!
 //! The pane names its registers as text and never imports the session;
@@ -11,18 +11,12 @@
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const background = colors.background;
-pub const muted = colors.muted;
-pub const ink = colors.ink;
-pub const changed = colors.highlight;
-/// The pc cell is always marked: it moves on every step, so `changed` would say nothing.
-pub const pc_mark = colors.pc_cyan;
-pub const heading = colors.accent;
+/// The pc cell is always marked: it moves on every step, so `highlight` would say nothing.
 pub const pad: i32 = 4;
 /// A row is one text line with a pixel of air above and below.
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
@@ -204,41 +198,41 @@ pub fn valueOrigin(cell: Rect) struct { x: i32, y: i32 } {
     return .{ .x = cell.x + 2 + @as(i32, @intCast(font.textWidth(name_len))), .y = cell.y + 2 };
 }
 
-pub fn draw(list: *draw_list.DrawList, area: Rect, now: Snapshot, before: ?Snapshot, fold: Fold) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, now: Snapshot, before: ?Snapshot, fold: Fold) !void {
     if (slotRect(area, 0) == null) return;
-    try list.fill(area, background);
+    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
     const count = groupCount(now.mve);
     for (groups[0..count], fold[0..count], 0..) |group, folded, which| {
         const header = headerRect(area, fold, which) orelse break;
-        try drawHeader(list, header, group.name, folded);
+        try drawHeader(list, theme, header, group.name, folded);
         if (folded) continue;
         for (group.first..group.first + group.len) |index| {
             const cell = cellRect(area, fold, index) orelse break;
             const at = valueIndex(index);
-            try drawCell(list, cell, label(index), now.values[at], now.changedAt(before, at));
+            try drawCell(list, theme, cell, label(index), now.values[at], now.changedAt(before, at));
         }
     }
 }
 
-fn drawHeader(list: *draw_list.DrawList, cell: Rect, name: []const u8, folded: bool) !void {
-    try font.draw(list, cell.x + 2, cell.y + 2, if (folded) "+" else "-", heading);
-    try font.draw(list, cell.x + 2 + @as(i32, @intCast(font.textWidth(2))), cell.y + 2, name, heading);
+fn drawHeader(list: *draw_list.DrawList, theme: *const Theme, cell: Rect, name: []const u8, folded: bool) !void {
+    try font.draw(list, cell.x + 2, cell.y + 2, if (folded) "+" else "-", theme.accent);
+    try font.draw(list, cell.x + 2 + @as(i32, @intCast(font.textWidth(2))), cell.y + 2, name, theme.accent);
 }
 
-fn drawCell(list: *draw_list.DrawList, cell: Rect, name: []const u8, value: u32, moved: bool) !void {
+fn drawCell(list: *draw_list.DrawList, theme: *const Theme, cell: Rect, name: []const u8, value: u32, moved: bool) !void {
     const is_pc = std.mem.eql(u8, name, "pc");
     if (is_pc) {
-        try list.fill(cell, colors.pc_band_bg);
+        try list.fill(cell, theme.pc_band_bg);
     } else if (moved) {
-        try list.fill(cell, colors.dirty_cell_bg);
+        try list.fill(cell, theme.dirty_cell_bg);
     }
-    const name_color = if (is_pc) pc_mark else muted;
+    const name_color = if (is_pc) theme.pc_cyan else theme.muted;
     try font.draw(list, cell.x + 2, cell.y + 2, name, name_color);
     var buffer: [8]u8 = undefined;
     const text = try std.fmt.bufPrint(&buffer, "{X:0>8}", .{value});
     const at = valueOrigin(cell);
-    const val_color = if (is_pc) pc_mark else if (moved) changed else ink;
+    const val_color = if (is_pc) theme.pc_cyan else if (moved) theme.highlight else theme.ink;
     try font.draw(list, at.x, at.y, text, val_color);
 }

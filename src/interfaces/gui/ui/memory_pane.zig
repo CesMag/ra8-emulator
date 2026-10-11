@@ -9,14 +9,11 @@
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
-const colors = @import("colors.zig");
+const Theme = @import("colors.zig").Theme;
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
 
-pub const background = colors.background;
-pub const muted = colors.muted;
-pub const ink = colors.ink;
 pub const pad: i32 = 4;
 /// A row is one text line with a pixel of air above and below.
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
@@ -63,36 +60,36 @@ pub fn rowOrigin(area: Rect, row: usize) struct { x: i32, y: i32 } {
     return .{ .x = area.x + pad + 2, .y = area.y + pad + 2 + @as(i32, @intCast(row)) * row_h };
 }
 
-pub fn draw(list: *draw_list.DrawList, area: Rect, snapshot: *const Snapshot) !void {
+pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, snapshot: *const Snapshot) !void {
     if (area.w < min_w or rows(area) == 0) return;
-    try list.fill(area, background);
+    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
-    for (0..@min(rows(area), snapshot.count)) |row| try drawRow(list, area, snapshot, row);
+    for (0..@min(rows(area), snapshot.count)) |row| try drawRow(list, theme, area, snapshot, row);
 }
 
-fn drawRow(list: *draw_list.DrawList, area: Rect, snapshot: *const Snapshot, row: usize) !void {
+fn drawRow(list: *draw_list.DrawList, theme: *const Theme, area: Rect, snapshot: *const Snapshot, row: usize) !void {
     const at = rowOrigin(area, row);
     var buffer: [8]u8 = undefined;
-    try font.draw(list, at.x, at.y, try std.fmt.bufPrint(&buffer, "{X:0>8}", .{snapshot.rowAddress(row)}), muted);
+    try font.draw(list, at.x, at.y, try std.fmt.bufPrint(&buffer, "{X:0>8}", .{snapshot.rowAddress(row)}), theme.muted);
     for (0..per_row) |index| {
         const cell = row * per_row + index;
-        try drawByte(list, at.x, at.y, index, snapshot.bytes[cell], snapshot.readable[cell]);
+        try drawByte(list, theme, at.x, at.y, index, snapshot.bytes[cell], snapshot.readable[cell]);
     }
 }
 
-fn drawByte(list: *draw_list.DrawList, x: i32, y: i32, index: usize, byte: u8, readable: bool) !void {
+fn drawByte(list: *draw_list.DrawList, theme: *const Theme, x: i32, y: i32, index: usize, byte: u8, readable: bool) !void {
     const hex_x = x + column(hexColumn(index));
     const ascii_x = x + column(ascii_at + index);
     if (!readable) {
-        try font.draw(list, hex_x, y, "??", muted);
-        return font.draw(list, ascii_x, y, "?", muted);
+        try font.draw(list, hex_x, y, "??", theme.muted);
+        return font.draw(list, ascii_x, y, "?", theme.muted);
     }
     var buffer: [2]u8 = undefined;
-    try font.draw(list, hex_x, y, try std.fmt.bufPrint(&buffer, "{X:0>2}", .{byte}), ink);
+    try font.draw(list, hex_x, y, try std.fmt.bufPrint(&buffer, "{X:0>2}", .{byte}), theme.ink);
     const printable = byte >= 0x21 and byte < 0x7F;
     const shown = [1]u8{if (printable) byte else '.'};
-    try font.draw(list, ascii_x, y, &shown, if (printable) ink else muted);
+    try font.draw(list, ascii_x, y, &shown, if (printable) theme.ink else theme.muted);
 }
 
 fn column(chars: usize) i32 {

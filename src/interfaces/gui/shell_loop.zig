@@ -19,6 +19,7 @@ const raster = @import("ra8_render").raster;
 const font = @import("ra8_render").font;
 const platform = @import("platform.zig");
 const pane_layout = @import("ui/pane_layout.zig");
+const colors = @import("ui/colors.zig");
 const shell_frame = @import("ui/shell_frame.zig");
 const status_capture = @import("status_capture.zig");
 const status_bar = @import("status_bar.zig");
@@ -60,6 +61,8 @@ pub const Shell = struct {
     status: status_bar.Status = .{},
     link: ?*session_link.Link = null,
     painter: ?shell_frame.Painter = null,
+    /// The palette every leaf, bar and strip paints with.
+    theme: *const colors.Theme = colors.of(.dark),
     console: ?*shell_console.Console = null,
     board: ?*shell_board.Board = null,
     /// The pointer on the board leaf: switch clicks and panel touches.
@@ -126,7 +129,7 @@ pub const Shell = struct {
         solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         var list = draw_list.DrawList.init(self.allocator, size.width, size.height);
         defer list.deinit();
-        try shell_frame.draw(&list, .{
+        try shell_frame.draw(&list, self.theme, .{
             .layout = &self.layout,
             .solved = &solved,
             .strip = status_capture.strip(&self.status, self.state()),

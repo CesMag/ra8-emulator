@@ -8,6 +8,9 @@
 //! drawn in the changed colour, and a pane too small for one cell draws
 //! nothing.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
+const Theme = @import("gui_app").colors.Theme;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -44,6 +47,8 @@ fn sample() pane.Snapshot {
 const Scene = struct {
     list: draw_list.DrawList,
     frame: raster.Framebuffer,
+    /// The palette the scene paints with (RA8EMU-961).
+    theme: *const Theme = dark,
 
     fn init() !Scene {
         return initFor(area);
@@ -65,7 +70,7 @@ const Scene = struct {
     }
 
     fn renderIn(self: *Scene, rect: Rect, now: pane.Snapshot, before: ?pane.Snapshot, fold: pane.Fold) !void {
-        try pane.draw(&self.list, rect, now, before, fold);
+        try pane.draw(&self.list, self.theme, rect, now, before, fold);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -122,6 +127,14 @@ test "the pane rasterises to the pinned golden frame with every group open" {
     defer scene.deinit();
     try scene.render(sample(), sample(), pane.open);
     try std.testing.expectEqual(@as(u64, 4969007086328797543), scene.digest());
+}
+
+test "the pane rasterises to the pinned golden frame in the light theme with every group open" {
+    var scene = try Scene.init();
+    defer scene.deinit();
+    scene.theme = light;
+    try scene.render(sample(), sample(), pane.open);
+    try std.testing.expectEqual(@as(u64, 2976146432857204531), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame with the system group folded" {
@@ -191,7 +204,7 @@ test "a changed S register marks its q lane too" {
     for (0..@intCast(font.cell_h)) |dy| for (0..@intCast(font.textWidth(8))) |dx| {
         const x = at.x + @as(i32, @intCast(dx));
         const y = at.y + @as(i32, @intCast(dy));
-        if (std.meta.eql(scene.frame.at(@intCast(x), @intCast(y)), pane.changed)) hits += 1;
+        if (std.meta.eql(scene.frame.at(@intCast(x), @intCast(y)), dark.highlight)) hits += 1;
     };
     try std.testing.expect(hits > 0);
 }
@@ -205,12 +218,12 @@ test "a changed register is the only text in the changed colour" {
     try scene.render(now, sample(), pane.open);
     var moved: usize = 0;
     for (scene.list.commands.items) |command| {
-        if (command.shape == .glyph and std.meta.eql(command.shape.glyph.color, pane.changed)) moved += 1;
+        if (command.shape == .glyph and std.meta.eql(command.shape.glyph.color, dark.highlight)) moved += 1;
     }
     try std.testing.expectEqual(@as(usize, 16), moved);
     for (0..scene.frame.height) |y| {
         for (0..scene.frame.width) |x| {
-            if (!std.meta.eql(scene.frame.at(@intCast(x), @intCast(y)), pane.changed)) continue;
+            if (!std.meta.eql(scene.frame.at(@intCast(x), @intCast(y)), dark.highlight)) continue;
             try std.testing.expect(inValue(1, x, y) or inValue(19, x, y));
         }
     }
@@ -226,8 +239,8 @@ test "no earlier snapshot marks nothing, and a pane too small draws nothing" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(sample(), null, pane.open);
-    for (scene.frame.pixels) |pixel| try std.testing.expect(!std.meta.eql(pixel, pane.changed));
+    for (scene.frame.pixels) |pixel| try std.testing.expect(!std.meta.eql(pixel, dark.highlight));
     scene.list.clear();
-    try pane.draw(&scene.list, .{ .x = 0, .y = 0, .w = 60, .h = 200 }, sample(), null, pane.open);
+    try pane.draw(&scene.list, dark, .{ .x = 0, .y = 0, .w = 60, .h = 200 }, sample(), null, pane.open);
     try std.testing.expectEqual(@as(usize, 0), scene.list.commands.items.len);
 }

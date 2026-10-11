@@ -6,6 +6,7 @@
 //! sets and then clears a real breakpoint, a pane too narrow draws nothing,
 //! and the current line with a mark rasterises to a pinned golden frame.
 const std = @import("std");
+const dark = &@import("gui_app").colors.palettes.dark;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -120,7 +121,7 @@ const Scene = struct {
 
     fn render(self: *Scene, snapshot: *const pane.Snapshot, marks: *const pane.Marks) !void {
         self.list.clear();
-        try pane.draw(&self.list, area, snapshot, marks);
+        try pane.draw(&self.list, dark, area, snapshot, marks);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -187,9 +188,9 @@ test "a gutter click sets and then clears a breakpoint on a real session" {
     try scene.render(&snapshot, &marks);
     for (0..12) |row| {
         const mark = pane.markRect(area, row);
-        try std.testing.expectEqual(row == mark_row, std.meta.eql(pane.break_mark, scene.at(mark.x + 1, mark.y + 1)));
+        try std.testing.expectEqual(row == mark_row, std.meta.eql(dark.bad, scene.at(mark.x + 1, mark.y + 1)));
         const edge = scene.at(area.w - 1, pane.rowRect(area, row).y + 1);
-        try std.testing.expect(std.meta.eql(if (row == current_row) pane.current_band else pane.background, edge));
+        try std.testing.expect(std.meta.eql(if (row == current_row) dark.band else dark.background, edge));
     }
     try std.testing.expectEqual(@as(?bool, false), try gutterClick(&rig, &marks, &snapshot, mark_row));
     try std.testing.expectEqual(@as(usize, 0), marks.len);
@@ -203,7 +204,7 @@ test "a pane too narrow draws nothing" {
     const snapshot = try rig.snapshot();
     var list = draw_list.DrawList.init(std.testing.allocator, 400, 200);
     defer list.deinit();
-    try pane.draw(&list, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = 200 }, &snapshot, &.{});
+    try pane.draw(&list, dark, .{ .x = 0, .y = 0, .w = pane.min_w - 1, .h = 200 }, &snapshot, &.{});
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }
 
