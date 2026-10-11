@@ -7,6 +7,7 @@
 //! and the current line with a mark rasterises to a pinned golden frame.
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -107,6 +108,7 @@ const Rig = struct {
 const Scene = struct {
     list: draw_list.DrawList,
     frame: raster.Framebuffer,
+    theme: *const gui_app.colors.Theme = dark,
 
     fn init() !Scene {
         const w: u32 = @intCast(area.w);
@@ -121,7 +123,7 @@ const Scene = struct {
 
     fn render(self: *Scene, snapshot: *const pane.Snapshot, marks: *const pane.Marks) !void {
         self.list.clear();
-        try pane.draw(&self.list, dark, area, snapshot, marks);
+        try pane.draw(&self.list, self.theme, area, snapshot, marks);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -218,4 +220,17 @@ test "the current line and a mark rasterise to the pinned golden frame" {
     defer scene.deinit();
     try scene.render(&snapshot, &marks);
     try std.testing.expectEqual(@as(u64, 2623801638214692635), scene.digest());
+}
+
+test "in the light palette the current line and a mark rasterise to their own golden" {
+    var rig: Rig = undefined;
+    try rig.init();
+    const snapshot = try rig.snapshot();
+    var marks: pane.Marks = .{};
+    _ = try gutterClick(&rig, &marks, &snapshot, mark_row);
+    var scene = try Scene.init();
+    defer scene.deinit();
+    scene.theme = light;
+    try scene.render(&snapshot, &marks);
+    try std.testing.expectEqual(@as(u64, 3448111978475766388), scene.digest());
 }

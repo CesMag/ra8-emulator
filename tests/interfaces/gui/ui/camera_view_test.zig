@@ -3,6 +3,7 @@
 //! dialog.
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
@@ -31,9 +32,13 @@ fn inked(frame: *const raster.Framebuffer, at: Rect, ink: draw_list.Color) usize
 }
 
 fn render(panel: Panel) !raster.Framebuffer {
+    return renderIn(dark, panel);
+}
+
+fn renderIn(theme: *const gui_app.colors.Theme, panel: Panel) !raster.Framebuffer {
     var list = draw_list.DrawList.init(std.testing.allocator, 256, 128);
     defer list.deinit();
-    try view.draw(&list, dark, layout, panel);
+    try view.draw(&list, theme, layout, panel);
     var frame = try raster.Framebuffer.init(std.testing.allocator, 256, 128);
     raster.draw(&frame, &list, ra8.render.font.atlas);
     return frame;
@@ -171,4 +176,14 @@ test "every source and dialog button carries a label in ink that reads on it" {
 test "label ink is dark on light fills and light on dark ones" {
     try std.testing.expectEqual(dark.preview, view.inkOn(dark, draw_list.Color.rgb(0xEB, 0xCB, 0x8B)));
     try std.testing.expectEqual(dark.ink, view.inkOn(dark, dark.border));
+}
+
+test "the panel, asking about the webcam, rasterises to a pinned golden in each palette" {
+    const asking: Panel = .{ .active = .webcam, .asking = true };
+    var dark_frame = try renderIn(dark, asking);
+    defer dark_frame.deinit(std.testing.allocator);
+    var light_frame = try renderIn(light, asking);
+    defer light_frame.deinit(std.testing.allocator);
+    try std.testing.expectEqual(@as(u64, 9900698054178629902), std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(dark_frame.pixels)));
+    try std.testing.expectEqual(@as(u64, 3822595285221630092), std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(light_frame.pixels)));
 }

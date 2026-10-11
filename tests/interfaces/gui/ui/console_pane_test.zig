@@ -1,13 +1,16 @@
 //! Covers src/interfaces/gui/ui/console_pane.zig: the newest lines that fit are drawn
 //! with their stamps, the unfinished line shows last without one, a strip
-//! too short for a row draws nothing, and the strip sits under the board.
+//! too short for a row draws nothing, the strip sits under the board, and
+//! it rasterises to a pinned golden frame in both palettes.
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const console_log = gui_app.console_log;
 const console_pane = gui_app.console_pane;
 const draw_list = ra8.render.draw_list;
+const raster = ra8.render.raster;
 
 /// Glyph commands in `list`.
 fn glyphs(list: *const draw_list.DrawList) usize {
@@ -88,4 +91,27 @@ test "scrolled past the oldest line, the pane still fills from the top" {
     defer list.deinit();
     try console_pane.draw(&list, dark, two_rows, &log, 3);
     try std.testing.expectEqual(@as(usize, 13 + 1 + 13 + 2), glyphs(&list));
+}
+
+/// Three finished lines and an unfinished one, rasterised in `theme`.
+fn consoleDigest(theme: *const gui_app.colors.Theme) !u64 {
+    var log = console_log.Log.init(std.testing.allocator, 8);
+    defer log.deinit();
+    try log.feedAll("boot\n", 1_000_000_000);
+    try log.feedAll("uart echo ready\n", 2_000_000_000);
+    try log.feedAll("> hello\n", 3_000_000_000);
+    try log.feedAll("> wor", 4_000_000_000);
+    const area = draw_list.Rect{ .x = 0, .y = 0, .w = 240, .h = 2 * console_pane.pad + 4 * 8 + 1 };
+    var list = draw_list.DrawList.init(std.testing.allocator, 240, @intCast(area.h));
+    defer list.deinit();
+    var frame = try raster.Framebuffer.init(std.testing.allocator, 240, @intCast(area.h));
+    defer frame.deinit(std.testing.allocator);
+    try console_pane.draw(&list, theme, area, &log, 0);
+    raster.draw(&frame, &list, ra8.render.font.atlas);
+    return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+}
+
+test "the strip rasterises to a pinned golden frame in each palette" {
+    try std.testing.expectEqual(@as(u64, 3468250555529406939), try consoleDigest(dark));
+    try std.testing.expectEqual(@as(u64, 6000875149775368540), try consoleDigest(light));
 }

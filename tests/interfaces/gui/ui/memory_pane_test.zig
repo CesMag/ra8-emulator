@@ -4,6 +4,7 @@
 //! draws nothing and rows stop at what was captured.
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 
@@ -30,6 +31,7 @@ fn sample() pane.Snapshot {
 const Scene = struct {
     list: draw_list.DrawList,
     frame: raster.Framebuffer,
+    theme: *const gui_app.colors.Theme = dark,
 
     fn init() !Scene {
         const w: u32 = @intCast(area.w);
@@ -43,7 +45,7 @@ const Scene = struct {
     }
 
     fn render(self: *Scene, snapshot: *const pane.Snapshot) !void {
-        try pane.draw(&self.list, dark, area, snapshot);
+        try pane.draw(&self.list, self.theme, area, snapshot);
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
@@ -76,6 +78,15 @@ test "the pane rasterises to the pinned golden frame" {
     const snapshot = sample();
     try scene.render(&snapshot);
     try std.testing.expectEqual(@as(u64, 11025890780803989611), scene.digest());
+}
+
+test "in the light palette the pane rasterises to its own pinned golden frame" {
+    var scene = try Scene.init();
+    defer scene.deinit();
+    scene.theme = light;
+    const snapshot = sample();
+    try scene.render(&snapshot);
+    try std.testing.expectEqual(@as(u64, 5818871814715073456), scene.digest());
 }
 
 test "unreadable bytes draw only muted question marks" {

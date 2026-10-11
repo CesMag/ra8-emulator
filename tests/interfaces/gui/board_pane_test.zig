@@ -4,6 +4,7 @@
 //! golden with LED1 on and the others off.
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const draw_list = ra8.render.draw_list;
@@ -74,7 +75,8 @@ test "a lit LED takes the board's colour" {
     try std.testing.expectEqual(Color.rgb(0xFF, 0, 0), pane.lampOf(0xF800));
 }
 
-test "the board pane frame with LED1 on is pinned" {
+/// The board pane at 480x320 with LED1 on over a grey ramp panel, in `theme`.
+fn boardDigest(theme: *const gui_app.colors.Theme) !u64 {
     const w = 480;
     const h = 320;
     var list = draw_list.DrawList.init(std.testing.allocator, w, h);
@@ -88,10 +90,17 @@ test "the board pane frame with LED1 on is pinned" {
     }
     var leds: pane.Leds = .{};
     capture.observe(&leds, .{ .core = .cpu0, .kind = .led_changed, .address = 0x100 });
-    try pane.draw(&list, dark, .{ .x = 0, .y = 0, .w = w, .h = h }, .{ .leds = &leds, .panel = .{ .width = 64, .height = 36, .pixels = &pixels } });
+    try pane.draw(&list, theme, .{ .x = 0, .y = 0, .w = w, .h = h }, .{ .leds = &leds, .panel = .{ .width = 64, .height = 36, .pixels = &pixels } });
     raster.draw(&frame, &list, font.atlas);
-    const digest = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
-    try std.testing.expectEqual(@as(u64, 16709361613165744171), digest);
+    return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+}
+
+test "the board pane frame with LED1 on is pinned" {
+    try std.testing.expectEqual(@as(u64, 16709361613165744171), try boardDigest(dark));
+}
+
+test "in the light palette the board pane frame is pinned to its own golden" {
+    try std.testing.expectEqual(@as(u64, 6985845836536888179), try boardDigest(light));
 }
 
 test "the pane's LED count and lamp colours are the chip's" {
