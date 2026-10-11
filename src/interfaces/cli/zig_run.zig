@@ -121,7 +121,7 @@ pub fn run(out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timeba
 /// path printed these through report/after.zig until RA8EMU-606 removed it.
 fn profileOut(out: *std.Io.Writer, io: std.Io, image: elf.Image, table: profile.Table, options: cli.Options) !void {
     if (!options.report_json) try report_profile.print(out, image, table);
-    if (options.profile_folded) |path| try report_profile.writeFolded(io, image, table, path);
+    if (options.profile_folded) |path| try report_profile.writeFolded(io, image, table, path, options.profile_thread);
 }
 
 /// The loop's options, read off the CLI's.

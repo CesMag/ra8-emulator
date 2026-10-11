@@ -152,6 +152,10 @@ pub const Options = struct {
     profile: bool = false,
     /// Write folded function counts to this path as well as printing them.
     profile_folded: ?[]const u8 = null,
+    /// `--profile-thread`: fold only the samples taken while this RTOS
+    /// thread (its TCB address, as `--trace-rtos` prints it) was running;
+    /// 0 takes those taken while none was (RA8EMU-954).
+    profile_thread: ?u32 = null,
     /// `--cpu-load-from` / `--cpu-load-to`: the virtual instructions the
     /// load is charged over. Either one turns `--cpu-load` on.
     cpu_load_window: rtos_load.Window = .{},
@@ -344,6 +348,8 @@ fn parseDebug(options: *Options, argv: []const []const u8, index: *usize) !bool 
     } else if (std.mem.eql(u8, flag, "--profile-folded")) {
         options.profile = true;
         options.profile_folded = try world_flags.next(argv, index);
+    } else if (std.mem.eql(u8, flag, "--profile-thread")) {
+        options.profile_thread = try std.fmt.parseInt(u32, try world_flags.next(argv, index), 0);
     } else if (std.mem.eql(u8, flag, "--cpu-load-from")) {
         options.cpu_load = true;
         options.cpu_load_window.from = try std.fmt.parseInt(u64, try world_flags.next(argv, index), 0);

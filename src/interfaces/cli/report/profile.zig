@@ -7,19 +7,20 @@ const stack_samples = @import("ra8_session").stack_samples;
 const stack_profile = @import("ra8_session").stack_profile;
 const Writer = @import("../report.zig").Writer;
 
-pub fn write(out: Writer, io: std.Io, image: elf.Image, table: profile.Table, path: ?[]const u8) !void {
+pub fn write(out: Writer, io: std.Io, image: elf.Image, table: profile.Table, path: ?[]const u8, thread: ?u32) !void {
     try print(out, image, table);
-    if (path) |destination| try writeFolded(io, image, table, destination);
+    if (path) |destination| try writeFolded(io, image, table, destination, thread);
 }
 
 /// The folded rows into the file at `destination`, alone: a `--report
 /// json` run writes the file and prints nothing (RA8EMU-1143).
-pub fn writeFolded(io: std.Io, image: elf.Image, table: profile.Table, destination: []const u8) !void {
+/// `thread` keeps one RTOS thread's samples (RA8EMU-954); null keeps all.
+pub fn writeFolded(io: std.Io, image: elf.Image, table: profile.Table, destination: []const u8, thread: ?u32) !void {
     const file = try std.Io.Dir.cwd().createFile(io, destination, .{});
     defer file.close(io);
     var buffer: [4096]u8 = undefined;
     var writer = file.writer(io, &buffer);
-    try folded(&writer.interface, image, table);
+    try folded(&writer.interface, image, table, thread);
     try writer.interface.flush();
 }
 
@@ -38,8 +39,9 @@ pub fn print(out: Writer, image: elf.Image, table: profile.Table) !void {
 /// source; consumers can still compare where total execution accumulated.
 /// With sampled call stacks it writes those instead, each row rooted at its
 /// core (`cpu0;outer;...;inner n`, RA8EMU-971).
-pub fn folded(out: anytype, image: elf.Image, table: profile.Table) !void {
-    if (table.samples) |store| if (store.count != 0) return sampled(out, .{ &image, if (table.second) |*found| found else &image }, store);
+/// `thread` filters sampled rows only: the function counts carry no thread.
+pub fn folded(out: anytype, image: elf.Image, table: profile.Table, thread: ?u32) !void {
+    if (table.samples) |store| if (store.count != 0) return sampled(out, .{ &image, if (table.second) |*found| found else &image }, store, thread);
     var rows: [profile.limits.functions]profile.Site = undefined;
     for (table.ranked(&rows)) |site| {
         const found = symbols.inside(image, site.address) orelse continue;
@@ -48,14 +50,14 @@ pub fn folded(out: anytype, image: elf.Image, table: profile.Table) !void {
 }
 
 /// `images` name each core's rows: CPU0's, then CPU1's (RA8EMU-972).
-fn sampled(out: anytype, images: [2]*const elf.Image, store: *const stack_samples.Store) !void {
+fn sampled(out: anytype, images: [2]*const elf.Image, store: *const stack_samples.Store, thread: ?u32) !void {
     const allocator = std.heap.page_allocator;
     const scratch = try allocator.alloc(usize, store.count);
     defer allocator.free(scratch);
     for (0..2) |core| {
         var rows: std.Io.Writer.Allocating = .init(allocator);
         defer rows.deinit();
-        try stack_samples.fold(store, .{ .core = @intCast(core) }, stack_profile.names(images[core]), &rows.writer, scratch);
+        try stack_samples.fold(store, .{ .core = @intCast(core), .thread = thread }, stack_profile.names(images[core]), &rows.writer, scratch);
         try named(out, allocator, @intCast(core), rows.written());
     }
 }

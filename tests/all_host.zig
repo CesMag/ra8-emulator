@@ -130,6 +130,7 @@ test {
     _ = @import("interfaces/cli/report/dma_test.zig");
     _ = @import("interfaces/cli/report/profile_test.zig");
     _ = @import("interfaces/cli/folded_guest_test.zig");
+    _ = @import("interfaces/cli/folded_thread_test.zig");
     _ = @import("interfaces/cli/report/unmodelled_test.zig");
     _ = @import("interfaces/cli/report/watchdog_test.zig");
     _ = @import("interfaces/cli/report/dtc1_test.zig");

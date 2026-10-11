@@ -196,7 +196,7 @@ test "a Zig core run profiles retired function instructions and writes folded ou
     defer summary.close(std.testing.io);
     var buffer: [4096]u8 = undefined;
     var writer = summary.writer(std.testing.io, &buffer);
-    try profile_report.write(&writer.interface, std.testing.io, image, table, folded_path);
+    try profile_report.write(&writer.interface, std.testing.io, image, table, folded_path, null);
     try writer.interface.flush();
     const folded = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, folded_path, std.testing.allocator, .limited(128));
     defer std.testing.allocator.free(folded);

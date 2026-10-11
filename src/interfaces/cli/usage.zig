@@ -17,7 +17,7 @@ pub const text =
     \\                    [--break-sym PLACE [N]] [--dump-mem PLACE [N]]
     \\                    [--watch PLACE] [--stop-on-undefined]
     \\                    [--count-pc ADDR] [--trace-rtos] [--cpu-load]
-    \\                    [--profile] [--profile-folded FILE]
+    \\                    [--profile] [--profile-folded FILE] [--profile-thread TCB]
     \\                    [--cpu1 IMAGE.elf] [--cpu zig]
     \\                    [--ns IMAGE.elf] [--no-bus-errors]
     \\                    [--camera-source KIND[:ARG]]
@@ -104,6 +104,9 @@ pub const text =
     \\  --profile          count retired instructions and modelled cycles
     \\                     by ELF function, most cycles first
     \\  --profile-folded   also write one function count per folded row
+    \\  --profile-thread   fold only the stacks sampled while the ThreadX
+    \\                     thread at this TCB address ran (as --trace-rtos
+    \\                     prints it; 0 for none running). Needs --trace-rtos
     \\  --count-pc ADDR    count every execution of the instruction at that
     \\                     address, repeatable up to four times. For
     \\                     settling a disagreement between two counters

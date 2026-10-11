@@ -109,7 +109,7 @@ test "a --profile-folded run folds CPU0's sampled stacks into cpu0-rooted rows" 
 fn expectRows(elf: ra8.board.image.elf.Image, table: profile.Table, want: []const []const u8, count: usize) !void {
     var folded: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer folded.deinit();
-    try profile_report.folded(&folded.writer, elf, table);
+    try profile_report.folded(&folded.writer, elf, table, null);
     var total: u64 = 0;
     var index: usize = 0;
     var lines = std.mem.splitScalar(u8, folded.written(), '\n');

@@ -21,7 +21,7 @@ test "writeFolded writes one row per function, heaviest counts kept" {
     defer tmp.cleanup();
     const path = try std.fmt.allocPrint(gpa, ".zig-cache/tmp/{s}/run.folded", .{tmp.sub_path});
     defer gpa.free(path);
-    try report_profile.writeFolded(std.testing.io, image, table, path);
+    try report_profile.writeFolded(std.testing.io, image, table, path, null);
     const bytes = try tmp.dir.readFileAlloc(std.testing.io, "run.folded", gpa, .limited(4096));
     defer gpa.free(bytes);
     try std.testing.expect(std.mem.endsWith(u8, firstLine(bytes), "heavy 30"));
@@ -35,7 +35,7 @@ test "writeFolded with no counts still creates the file" {
     defer tmp.cleanup();
     const path = try std.fmt.allocPrint(gpa, ".zig-cache/tmp/{s}/empty.folded", .{tmp.sub_path});
     defer gpa.free(path);
-    try report_profile.writeFolded(std.testing.io, image, table, path);
+    try report_profile.writeFolded(std.testing.io, image, table, path, null);
     const bytes = try tmp.dir.readFileAlloc(std.testing.io, "empty.folded", gpa, .limited(4096));
     defer gpa.free(bytes);
     try std.testing.expectEqual(@as(usize, 0), bytes.len);
