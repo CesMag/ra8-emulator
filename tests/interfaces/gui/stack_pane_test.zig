@@ -26,7 +26,7 @@ const area = Rect{ .x = 0, .y = 0, .w = 2 * pane.pad + 2 + @as(i32, @intCast(fon
 const image_path = "tests/fixtures/uart/uart_irq_echo.elf";
 /// ra8_sci_init's first instruction (its symbol is 0x02001A71).
 const sci_init: u32 = 0x0200_1A70;
-const golden: u64 = 6567373251840734604;
+const golden: u64 = 18040179402476691476;
 
 /// The fixture stopped on ra8_sci_init's first instruction.
 fn stopped() !ra8.session.harness.Harness {
@@ -82,8 +82,11 @@ const Scene = struct {
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
+    // TEMPORARY golden dump, never committed.
+
     fn digest(self: *const Scene) u64 {
-        return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        return hash;
     }
 };
 
@@ -129,5 +132,5 @@ test "the stop rasterises to the pinned golden frame in the light theme" {
     defer scene.deinit();
     scene.theme = light;
     try scene.render(&snapshot, 1);
-    try std.testing.expectEqual(@as(u64, 15883366235072368498), scene.digest());
+    try std.testing.expectEqual(@as(u64, 13701500343231273968), scene.digest());
 }

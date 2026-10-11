@@ -115,8 +115,11 @@ const Scene = struct {
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
+    // TEMPORARY golden dump, never committed.
+
     fn digest(self: *const Scene) u64 {
-        return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        return hash;
     }
 
     fn at(self: *const Scene, x: i32, y: i32) draw_list.Color {
@@ -197,7 +200,7 @@ test "a session capture rasterises to the pinned golden frame" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(u64, 11601210873936714354), scene.digest());
+    try std.testing.expectEqual(@as(u64, 13985118079148897791), scene.digest());
 }
 
 test "a session capture rasterises to the pinned golden frame in the light theme" {
@@ -208,7 +211,7 @@ test "a session capture rasterises to the pinned golden frame in the light theme
     defer scene.deinit();
     scene.theme = light;
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(u64, 17400870079980028689), scene.digest());
+    try std.testing.expectEqual(@as(u64, 8018026266658397172), scene.digest());
 }
 
 /// Bytes as the shell reads them over the link, with which came back.

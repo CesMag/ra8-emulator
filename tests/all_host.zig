@@ -61,7 +61,7 @@ test {
     _ = @import("interfaces/render/geometry_test.zig");
     _ = @import("interfaces/render/raster_test.zig");
     _ = @import("interfaces/render/widget_paint_test.zig");
-    _ = @import("interfaces/render/font_test.zig");
+    _ = @import("interfaces/render/gfx_font_test.zig");
     _ = @import("interfaces/render/gif/gif_test.zig");
     _ = @import("interfaces/render/gif/lzw_test.zig");
     _ = @import("interfaces/render/wav_test.zig");

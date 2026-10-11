@@ -127,8 +127,11 @@ const Scene = struct {
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
+    // TEMPORARY golden dump, never committed.
+
     fn digest(self: *const Scene) u64 {
-        return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        return hash;
     }
 
     fn at(self: *const Scene, x: i32, y: i32) draw_list.Color {
@@ -219,7 +222,7 @@ test "the current line and a mark rasterise to the pinned golden frame" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(&snapshot, &marks);
-    try std.testing.expectEqual(@as(u64, 2623801638214692635), scene.digest());
+    try std.testing.expectEqual(@as(u64, 9083513172933800025), scene.digest());
 }
 
 test "in the light palette the current line and a mark rasterise to their own golden" {
@@ -232,5 +235,5 @@ test "in the light palette the current line and a mark rasterise to their own go
     defer scene.deinit();
     scene.theme = light;
     try scene.render(&snapshot, &marks);
-    try std.testing.expectEqual(@as(u64, 3448111978475766388), scene.digest());
+    try std.testing.expectEqual(@as(u64, 18171556404919912823), scene.digest());
 }

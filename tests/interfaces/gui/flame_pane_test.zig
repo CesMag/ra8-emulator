@@ -50,6 +50,8 @@ fn loaded() !flame.Model {
     return model;
 }
 
+// TEMPORARY golden dump, never committed.
+
 fn digest(theme: *const Theme, model: *const flame.Model, hover: ?u32) !u64 {
     var list = draw_list.DrawList.init(std.testing.allocator, @intCast(area.w), @intCast(area.h));
     defer list.deinit();
@@ -57,7 +59,8 @@ fn digest(theme: *const Theme, model: *const flame.Model, hover: ?u32) !u64 {
     defer frame.deinit(std.testing.allocator);
     try pane.draw(&list, theme, area, model, hover);
     raster.draw(&frame, &list, font.atlas);
-    return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    return hash;
 }
 
 test "four depths fit above the tip line" {
@@ -110,11 +113,11 @@ test "a pane too narrow draws nothing" {
 test "a hovered frame rasterises to the pinned golden frame" {
     var model = try loaded();
     defer model.deinit();
-    try std.testing.expectEqual(@as(u64, 12336144132756090443), try digest(dark, &model, try find(&model, "main;a")));
+    try std.testing.expectEqual(@as(u64, 7355067893934834499), try digest(dark, &model, try find(&model, "main;a")));
 }
 
 test "a hovered frame rasterises to the pinned golden frame in the light theme" {
     var model = try loaded();
     defer model.deinit();
-    try std.testing.expectEqual(@as(u64, 9014140295653354456), try digest(light, &model, try find(&model, "main;a")));
+    try std.testing.expectEqual(@as(u64, 6511578080357726408), try digest(light, &model, try find(&model, "main;a")));
 }

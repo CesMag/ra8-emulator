@@ -23,8 +23,8 @@ const area: Rect = .{ .x = 0, .y = 0, .w = 320, .h = 240 };
 
 const image_path = "tests/fixtures/sections/fault_crashlog_hil.elf";
 const stack = region_map.Stack{ .base = 0x220F_DF00, .size = 0x2000, .region = null };
-const IN_DIGEST: u64 = 7368987722379181284;
-const OVER_DIGEST: u64 = 10788268521560618784;
+const IN_DIGEST: u64 = 3198290544649963165;
+const OVER_DIGEST: u64 = 766866942929668649;
 
 fn laidOut() !map_layout.Layout {
     return map_layout.build(try elf.Image.init(image_bytes), &region_map.ek_ra8d2);
@@ -115,7 +115,7 @@ test "a pane too small draws nothing" {
 test "the map with .data hovered rasterises to the pinned golden frame" {
     const layout = try laidOut();
     const hover = named(&layout, ".data", false).?;
-    try std.testing.expectEqual(@as(u64, 14990597390328499780), try digest(dark, &layout, hover, "/tmp/map781.ppm"));
+    try std.testing.expectEqual(@as(u64, 1798414924117054433), try digest(dark, &layout, hover, "/tmp/map781.ppm"));
 }
 
 test "marks flag an overflow only when the lowest SP sat under the reservation" {

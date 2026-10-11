@@ -4,7 +4,8 @@
 //! expose forced a redraw, and never closer together than the platform's
 //! interval: zero under vsync, which paces presents itself.
 const std = @import("std");
-const draw_list = @import("ra8_render").draw_list;
+const render = @import("ra8_render");
+const draw_list = render.draw_list;
 
 /// The cap when the display gives no vsync: one present per 60 Hz refresh.
 pub const default_interval_ns: u64 = std.time.ns_per_s / 60;
@@ -53,5 +54,6 @@ pub fn digest(list: *const draw_list.DrawList) u64 {
             inline else => |shape| std.hash.autoHash(&hasher, shape),
         }
     }
-    return hasher.final();
+    const hash = hasher.final();
+    return hash;
 }

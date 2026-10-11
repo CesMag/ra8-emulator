@@ -84,8 +84,11 @@ pub const Layout = struct {
 
     /// The whole panel: the source row over the dialog row.
     pub fn area(self: Layout) Rect {
-        const w = @as(i32, @intCast(kinds.len + 1)) * (button + gap) + gap;
-        return .{ .x = self.x, .y = self.y, .w = w, .h = 2 * (button + gap) + gap };
+        const sources = @as(i32, @intCast(kinds.len + 1)) * (button + gap) + gap;
+        const answers: i32 = @intCast(std.enums.values(Answer).len);
+        const label: i32 = @intCast(font.textWidth(withdraw_label.len) + 4);
+        const row = gap + answers * (button + gap) + label + gap;
+        return .{ .x = self.x, .y = self.y, .w = @max(sources, row), .h = 2 * (button + gap) + gap };
     }
 
     pub fn source(self: Layout, kind: Kind) Rect {

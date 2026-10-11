@@ -21,6 +21,8 @@ const capture = gui_app.memory_capture;
 const area = draw_list.Rect{ .x = 0, .y = 0, .w = pane.min_w, .h = 2 * pane.pad + 4 * pane.row_h };
 
 /// The pane's frame for `snapshot`, hashed.
+// TEMPORARY golden dump, never committed.
+
 fn digest(snapshot: *const pane.Snapshot) !u64 {
     const w: u32 = @intCast(area.w);
     const h: u32 = @intCast(area.h);
@@ -30,7 +32,8 @@ fn digest(snapshot: *const pane.Snapshot) !u64 {
     defer frame.deinit(std.testing.allocator);
     try pane.draw(&list, dark, area, snapshot);
     raster.draw(&frame, &list, font.atlas);
-    return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    return hash;
 }
 
 /// A RAM image holding a vector table (initial sp 0x40, reset at 0x08);
@@ -91,7 +94,7 @@ test "a capture from a session's core rasterises to the pinned golden frame" {
     try rig.init();
     try rig.session.write(.cpu1, 0xE0, "RA8 memory pane!");
     const snapshot = try capture.capture(&rig.session, .cpu1, 0xE8, 4);
-    try std.testing.expectEqual(@as(u64, 8642179144109265661), try digest(&snapshot));
+    try std.testing.expectEqual(@as(u64, 1111554600176397931), try digest(&snapshot));
 }
 
 test "capture reads each core through the session and marks unmapped bytes" {

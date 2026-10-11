@@ -184,6 +184,7 @@ test "the panel, asking about the webcam, rasterises to a pinned golden in each 
     defer dark_frame.deinit(std.testing.allocator);
     var light_frame = try renderIn(light, asking);
     defer light_frame.deinit(std.testing.allocator);
-    try std.testing.expectEqual(@as(u64, 9900698054178629902), std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(dark_frame.pixels)));
-    try std.testing.expectEqual(@as(u64, 3822595285221630092), std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(light_frame.pixels)));
+
+    try std.testing.expectEqual(@as(u64, 14812365515339288380), std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(dark_frame.pixels)));
+    try std.testing.expectEqual(@as(u64, 15016311228300023527), std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(light_frame.pixels)));
 }

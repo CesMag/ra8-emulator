@@ -29,8 +29,8 @@ pub const file_cap: usize = 32;
 pub const number_at: usize = 2;
 pub const pc_at: usize = number_at + 3 + 1;
 pub const name_at: usize = pc_at + 8 + 2;
-/// The narrowest pane: the columns before the name and room for 16 more.
-pub const min_w: i32 = 2 * pad + 2 + @as(i32, @intCast(font.textWidth(name_at + 16)));
+/// The narrowest pane: the columns before the name and room for 8 more.
+pub const min_w: i32 = 2 * pad + 2 + @as(i32, @intCast(font.textWidth(name_at + 8)));
 
 pub const Frame = struct {
     pc: u32 = 0,

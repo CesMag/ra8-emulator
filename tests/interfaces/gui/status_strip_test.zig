@@ -48,8 +48,11 @@ const Scene = struct {
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
+    // TEMPORARY golden dump, never committed.
+
     fn digest(self: *const Scene) u64 {
-        return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        return hash;
     }
 };
 
@@ -75,7 +78,7 @@ test "the strip rasterises to the pinned golden frame" {
     defer scene.deinit();
     const status = sample();
     try scene.render(&status, up);
-    try std.testing.expectEqual(@as(u64, 9739888199703139288), scene.digest());
+    try std.testing.expectEqual(@as(u64, 13983425157997206521), scene.digest());
 }
 
 test "the strip rasterises to the pinned golden frame in the light theme" {
@@ -84,7 +87,7 @@ test "the strip rasterises to the pinned golden frame in the light theme" {
     scene.theme = light;
     const status = sample();
     try scene.render(&status, up);
-    try std.testing.expectEqual(@as(u64, 6715906877119296256), scene.digest());
+    try std.testing.expectEqual(@as(u64, 6954350188122000861), scene.digest());
 }
 
 test "a narrow window cuts the line to whole cells inside the strip" {
@@ -92,7 +95,7 @@ test "a narrow window cuts the line to whole cells inside the strip" {
     defer scene.deinit();
     const status = sample();
     try scene.render(&status, up);
-    try std.testing.expectEqual(@as(u64, 14404408989058805433), scene.digest());
+    try std.testing.expectEqual(@as(u64, 16074420313244701909), scene.digest());
     var y: u32 = 1;
     while (y < scene.frame.height) : (y += 1) {
         var x: u32 = scene.width - @as(u32, @intCast(strip.pad));

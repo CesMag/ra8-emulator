@@ -5,8 +5,8 @@
     .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .ra8_firmware = .{
-            .url = "https://github.com/bsikar/ra8-firmware/archive/4a193e2f9240c9b47005ffbc09318b0a242aea5d.tar.gz",
-            .hash = "ra8_firmware-0.1.0-HagwjVefBQqK4YQ67tM-ehKT7r5-5Z3zE_AerE5lkUH8",
+            .url = "https://github.com/bsikar/ra8-firmware/archive/c258cd9326b2c3f4a64cf81c8211a3ff88dbfd6b.tar.gz",
+            .hash = "ra8_firmware-0.1.0-HagwjdUPCwr40zx3eP1hnxDxA5eV-6kdq36QOJKZ2yN1",
         },
         .sdl = .{
             .url = "git+https://github.com/castholm/SDL.git?ref=v0.5.4+3.4.16#b72b3671502a70e109350ecac90afdc480dcfcc6",

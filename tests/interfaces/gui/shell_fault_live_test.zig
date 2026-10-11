@@ -26,8 +26,8 @@ const Env = proto.Client.Env;
 const image_path = "tests/fixtures/fpu/fp_basic.elf";
 const part = "max17048@i2c:riic@0x36";
 const endpoint = "i2c:riic@0x36";
-const width = 480;
-const height = 320;
+const width = 960;
+const height = 640;
 
 /// The devices leaf and its faults, fed in the shell's own order
 /// (shell_loop pump), plus a count of the session's fault events.
@@ -192,7 +192,6 @@ test "a faulted row draws its mode in ink beside an unfaulted row's muted mark" 
     var pixels = try raster.Framebuffer.init(gpa, width, height);
     defer pixels.deinit(gpa);
     raster.draw(&pixels, &list, font.atlas);
-
     var leaves: usize = 0;
     for (solved.panes.items) |leaf| {
         const placed = layout.pane(leaf.index) orelse continue;
@@ -205,5 +204,5 @@ test "a faulted row draws its mode in ink beside an unfaulted row's muted mark" 
     }
     try std.testing.expect(leaves > 0);
     const digest = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(pixels.pixels));
-    try std.testing.expectEqual(@as(u64, 11480526738856646317), digest);
+    try std.testing.expectEqual(@as(u64, 1103932535315982060), digest);
 }

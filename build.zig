@@ -149,6 +149,7 @@ fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         .{ .name = "ra8_session", .module = session },
         .{ .name = "ra8_widget", .module = firmware.module("ra8_widget") },
         .{ .name = "ra8_widget_host", .module = firmware.module("ra8_widget_host") },
+        .{ .name = "ra8_gfx", .module = firmware.module("ra8_gfx") },
     });
     const rpc = library(b, target, optimize, "ra8_rpc", "src/interfaces/rpc/root.zig", &.{
         .{ .name = "ra8_session", .module = session },

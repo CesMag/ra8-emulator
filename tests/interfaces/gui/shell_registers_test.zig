@@ -189,15 +189,15 @@ test "a registers leaf draws its core's values, changes in amber, in place of it
     for (layout.nodes.items, 0..) |node, index| if (node.body == .leaf) {
         try layout.setKind(@intCast(index), .registers);
     };
-    var solved = try frame.solve(&layout, gpa, 480, 320);
+    var solved = try frame.solve(&layout, gpa, 960, 640);
     defer solved.deinit(gpa);
-    var pixels = try raster.Framebuffer.init(gpa, 480, 320);
+    var pixels = try raster.Framebuffer.init(gpa, 960, 640);
     defer pixels.deinit(gpa);
-    var list = draw_list.DrawList.init(gpa, 480, 320);
+    var list = draw_list.DrawList.init(gpa, 960, 640);
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .registers = &pair };
-    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, dark, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = 960, .height = 640, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
     var drawn: usize = 0;
     var waiting: usize = 0;

@@ -76,6 +76,8 @@ test "a lit LED takes the board's colour" {
 }
 
 /// The board pane at 480x320 with LED1 on over a grey ramp panel, in `theme`.
+// TEMPORARY golden dump, never committed.
+
 fn boardDigest(theme: *const gui_app.colors.Theme) !u64 {
     const w = 480;
     const h = 320;
@@ -92,15 +94,16 @@ fn boardDigest(theme: *const gui_app.colors.Theme) !u64 {
     capture.observe(&leds, .{ .core = .cpu0, .kind = .led_changed, .address = 0x100 });
     try pane.draw(&list, theme, .{ .x = 0, .y = 0, .w = w, .h = h }, .{ .leds = &leds, .panel = .{ .width = 64, .height = 36, .pixels = &pixels } });
     raster.draw(&frame, &list, font.atlas);
-    return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    return hash;
 }
 
 test "the board pane frame with LED1 on is pinned" {
-    try std.testing.expectEqual(@as(u64, 2948886196153579443), try boardDigest(dark));
+    try std.testing.expectEqual(@as(u64, 8850302462028293986), try boardDigest(dark));
 }
 
 test "in the light palette the board pane frame is pinned to its own golden" {
-    try std.testing.expectEqual(@as(u64, 8628860126947917603), try boardDigest(light));
+    try std.testing.expectEqual(@as(u64, 4585236062816599038), try boardDigest(light));
 }
 
 test "the pane's LED count and lamp colours are the chip's" {

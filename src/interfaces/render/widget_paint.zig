@@ -9,7 +9,7 @@
 const std = @import("std");
 const widget = @import("ra8_widget");
 const draw_list = @import("draw_list.zig");
-const font = @import("font.zig");
+const font = @import("gfx_font.zig");
 
 const log = std.log.scoped(.widget);
 

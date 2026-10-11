@@ -23,9 +23,10 @@ const pane = gui_app.registers_pane;
 const Rect = draw_list.Rect;
 /// Eight rows down, eight columns across: room for the core, system and
 /// fpu headers and their 58 registers.
-const area = Rect{ .x = 0, .y = 0, .w = 2 * pane.pad + 8 * 120, .h = 2 * pane.pad + 8 * pane.row_h };
+const col_w: i32 = @intCast(font.textWidth(pane.column_len));
+const area = Rect{ .x = 0, .y = 0, .w = 2 * pane.pad + 8 * col_w, .h = 2 * pane.pad + 8 * pane.row_h };
 /// Twelve columns across: room for all four headers and every cell.
-const wide = Rect{ .x = 0, .y = 0, .w = 2 * pane.pad + 12 * 120, .h = area.h };
+const wide = Rect{ .x = 0, .y = 0, .w = 2 * pane.pad + 12 * col_w, .h = area.h };
 const system_folded: pane.Fold = .{ false, true, false, false };
 const fpu_folded: pane.Fold = .{ false, false, true, false };
 const mve_folded: pane.Fold = .{ false, false, false, true };
@@ -74,8 +75,11 @@ const Scene = struct {
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
+    // TEMPORARY golden dump, never committed.
+
     fn digest(self: *const Scene) u64 {
-        return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        return hash;
     }
 };
 
@@ -89,16 +93,16 @@ test "headers and cells run down a column and then across" {
     try std.testing.expectEqual(pane.pad, first.x);
     try std.testing.expectEqual(pane.pad + pane.row_h, first.y);
     const eighth = pane.cellRect(area, pane.open, 7).?;
-    try std.testing.expectEqual(pane.pad + 120, eighth.x);
+    try std.testing.expectEqual(pane.pad + col_w, eighth.x);
     try std.testing.expectEqual(pane.pad, eighth.y);
     const system = pane.headerRect(area, pane.open, 1).?;
-    try std.testing.expectEqual(pane.pad + 2 * 120, system.x);
+    try std.testing.expectEqual(pane.pad + 2 * col_w, system.x);
     try std.testing.expectEqual(pane.pad + 2 * pane.row_h, system.y);
     const fpu = pane.headerRect(area, pane.open, 2).?;
-    try std.testing.expectEqual(pane.pad + 3 * 120, fpu.x);
+    try std.testing.expectEqual(pane.pad + 3 * col_w, fpu.x);
     try std.testing.expectEqual(pane.pad + 3 * pane.row_h, fpu.y);
     const last = pane.cellRect(area, pane.open, 57).?;
-    try std.testing.expectEqual(pane.pad + 7 * 120, last.x);
+    try std.testing.expectEqual(pane.pad + 7 * col_w, last.x);
     try std.testing.expectEqual(pane.pad + 4 * pane.row_h, last.y);
     try std.testing.expectEqual(@as(?Rect, null), pane.cellRect(area, pane.open, pane.cells));
 }
@@ -126,7 +130,7 @@ test "the pane rasterises to the pinned golden frame with every group open" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(sample(), sample(), pane.open);
-    try std.testing.expectEqual(@as(u64, 4969007086328797543), scene.digest());
+    try std.testing.expectEqual(@as(u64, 266255627510226143), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame in the light theme with every group open" {
@@ -134,21 +138,21 @@ test "the pane rasterises to the pinned golden frame in the light theme with eve
     defer scene.deinit();
     scene.theme = light;
     try scene.render(sample(), sample(), pane.open);
-    try std.testing.expectEqual(@as(u64, 2976146432857204531), scene.digest());
+    try std.testing.expectEqual(@as(u64, 15583954540618697624), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame with the system group folded" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(sample(), sample(), system_folded);
-    try std.testing.expectEqual(@as(u64, 15679738979028817615), scene.digest());
+    try std.testing.expectEqual(@as(u64, 11360805089492912635), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame with the fpu group folded to its header" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(sample(), sample(), fpu_folded);
-    try std.testing.expectEqual(@as(u64, 10667715961952123429), scene.digest());
+    try std.testing.expectEqual(@as(u64, 7658634371120875859), scene.digest());
 }
 
 test "the MVE group is VPR, then q0-q7 as four lanes each, read from the S bank" {
@@ -177,7 +181,7 @@ test "the pane rasterises to the pinned golden frame with the MVE group open" {
     var now = sample();
     now.mve = true;
     try scene.renderIn(wide, now, now, pane.open);
-    try std.testing.expectEqual(@as(u64, 9925232080576388107), scene.digest());
+    try std.testing.expectEqual(@as(u64, 4165671908553031315), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame with the MVE group folded to its header" {
@@ -186,7 +190,7 @@ test "the pane rasterises to the pinned golden frame with the MVE group folded t
     var now = sample();
     now.mve = true;
     try scene.renderIn(wide, now, now, mve_folded);
-    try std.testing.expectEqual(@as(u64, 8090772449662505419), scene.digest());
+    try std.testing.expectEqual(@as(u64, 16568708285900499979), scene.digest());
 }
 
 test "a changed S register marks its q lane too" {

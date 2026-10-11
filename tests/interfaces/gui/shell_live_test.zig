@@ -32,7 +32,7 @@ const Env = proto.Client.Env;
 const image_path = "tests/fixtures/fpu/fp_basic.elf";
 const dsp_path = "tests/fixtures/fpu/dsp.elf";
 const width = 2000;
-const height = 480;
+const height = 960;
 
 /// The three core leaves, fed in the shell's own order (shell_loop
 /// observeCore): registers take the arrival, then memory and code follow.

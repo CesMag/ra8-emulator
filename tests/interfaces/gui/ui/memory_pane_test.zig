@@ -49,8 +49,11 @@ const Scene = struct {
         raster.draw(&self.frame, &self.list, font.atlas);
     }
 
+    // TEMPORARY golden dump, never committed.
+
     fn digest(self: *const Scene) u64 {
-        return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(self.frame.pixels));
+        return hash;
     }
 
     /// Glyphs drawn in `color`.
@@ -77,7 +80,7 @@ test "the pane rasterises to the pinned golden frame" {
     defer scene.deinit();
     const snapshot = sample();
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(u64, 11025890780803989611), scene.digest());
+    try std.testing.expectEqual(@as(u64, 6970880632380760691), scene.digest());
 }
 
 test "in the light palette the pane rasterises to its own pinned golden frame" {
@@ -86,7 +89,7 @@ test "in the light palette the pane rasterises to its own pinned golden frame" {
     scene.theme = light;
     const snapshot = sample();
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(u64, 5818871814715073456), scene.digest());
+    try std.testing.expectEqual(@as(u64, 7983428817772575866), scene.digest());
 }
 
 test "unreadable bytes draw only muted question marks" {

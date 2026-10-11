@@ -54,17 +54,23 @@ pub const Layout = struct {
         const column = @divTrunc(board.w, 4);
         layout.board = board;
         layout.panel = .{ .x = board.x + margin, .y = board.y + margin, .w = board.w - column - 2 * margin, .h = board.h - 2 * margin };
-        const side = @min(@divTrunc(column, 4), @divTrunc(board.h, 10));
+        // Three LEDs and two switches share the column, each with its label under it.
+        const label_h = @as(i32, font.cell_h) + pad;
+        const room = @divTrunc(board.h - 2 * margin, @as(i32, led_count + switch_count)) - label_h;
+        const side = @max(4, @min(@min(@divTrunc(column, 4), @divTrunc(board.h, 10)), room));
         const left = board.x + board.w - column + @divTrunc(column - side, 2) - margin / 2;
-        const step = side + @as(i32, font.cell_h) + pad;
+        const step = side + label_h;
         for (&layout.leds, 0..) |*led, index| {
             led.* = .{ .x = left, .y = board.y + margin + @as(i32, @intCast(index)) * step, .w = side, .h = side };
         }
         const button_w = @min(column - 2 * margin, 2 * side);
         const button_x = board.x + board.w - column + @divTrunc(column - button_w, 2) - margin / 2;
         for (&layout.switches, 0..) |*button, index| {
+            // Switches sit at the bottom, but never above the slot under the last LED.
             const from_bottom: i32 = @intCast(switch_count - index);
-            button.* = .{ .x = button_x, .y = board.y + board.h - margin - from_bottom * step, .w = button_w, .h = side };
+            const below_leds = board.y + margin + @as(i32, @intCast(led_count + index)) * step;
+            const y = @max(below_leds, board.y + board.h - margin - from_bottom * step);
+            button.* = .{ .x = button_x, .y = y, .w = button_w, .h = side };
         }
         return layout;
     }
@@ -122,8 +128,9 @@ fn drawParts(list: *draw_list.DrawList, theme: *const Theme, layout: Layout, vie
         const inner = inset(led);
         const on = view.leds.on[index];
         try list.fill(inner, if (on) lampOf(led_rgb565[index]) else theme.led_off);
-        if (on and inner.w > 4 and inner.h > 4) {
-            // Optical specular highlight on active LED diffuser
+        if (on and inner.w >= 8 and inner.h >= 8) {
+            // Optical specular highlight on active LED diffuser, only where it
+            // stays clear of the lamp's centre.
             try list.fill(.{ .x = inner.x + 2, .y = inner.y + 2, .w = 2, .h = 2 }, theme.led_specular);
         }
         try label(list, led, led_names[index], theme.muted);

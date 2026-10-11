@@ -7,7 +7,7 @@
 //! widget library. Every encoder writes to a writer it is given.
 pub const draw_list = @import("draw_list.zig");
 pub const raster = @import("raster.zig");
-pub const font = @import("font.zig");
+pub const font = @import("gfx_font.zig");
 pub const geometry = @import("geometry.zig");
 pub const widget_paint = @import("widget_paint.zig");
 pub const board_view = @import("board_view.zig");

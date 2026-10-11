@@ -11,6 +11,7 @@ const console_log = gui_app.console_log;
 const console_pane = gui_app.console_pane;
 const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
+const font = ra8.render.font;
 
 /// Glyph commands in `list`.
 fn glyphs(list: *const draw_list.DrawList) usize {
@@ -22,7 +23,7 @@ fn glyphs(list: *const draw_list.DrawList) usize {
 }
 
 /// Two rows: 2 * pad + 2 * cell_h, plus a spare pixel.
-const two_rows = draw_list.Rect{ .x = 0, .y = 0, .w = 400, .h = 2 * console_pane.pad + 2 * 8 + 1 };
+const two_rows = draw_list.Rect{ .x = 0, .y = 0, .w = 400, .h = 2 * console_pane.pad + 2 * @as(i32, font.cell_h) + 1 };
 
 test "only the newest lines that fit are drawn, each stamped" {
     var log = console_log.Log.init(std.testing.allocator, 8);
@@ -64,7 +65,7 @@ test "the strip starts under the board view and runs to the window's foot" {
     try std.testing.expectEqual(@as(i32, 700), area.y);
     try std.testing.expectEqual(@as(i32, 160), area.h);
     try std.testing.expectEqual(@as(i32, 1056), area.w);
-    try std.testing.expect(console_pane.rows(area) >= 18);
+    try std.testing.expect(console_pane.rows(area) >= 9);
     try std.testing.expectEqual(@as(i32, 0), console_pane.under(1056, 696, 690).h);
 }
 
@@ -94,6 +95,8 @@ test "scrolled past the oldest line, the pane still fills from the top" {
 }
 
 /// Three finished lines and an unfinished one, rasterised in `theme`.
+// TEMPORARY golden dump, never committed.
+
 fn consoleDigest(theme: *const gui_app.colors.Theme) !u64 {
     var log = console_log.Log.init(std.testing.allocator, 8);
     defer log.deinit();
@@ -108,10 +111,11 @@ fn consoleDigest(theme: *const gui_app.colors.Theme) !u64 {
     defer frame.deinit(std.testing.allocator);
     try console_pane.draw(&list, theme, area, &log, 0);
     raster.draw(&frame, &list, ra8.render.font.atlas);
-    return std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    const hash = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
+    return hash;
 }
 
 test "the strip rasterises to a pinned golden frame in each palette" {
-    try std.testing.expectEqual(@as(u64, 3468250555529406939), try consoleDigest(dark));
-    try std.testing.expectEqual(@as(u64, 6000875149775368540), try consoleDigest(light));
+    try std.testing.expectEqual(@as(u64, 12170830691590801637), try consoleDigest(dark));
+    try std.testing.expectEqual(@as(u64, 3120567364806286157), try consoleDigest(light));
 }

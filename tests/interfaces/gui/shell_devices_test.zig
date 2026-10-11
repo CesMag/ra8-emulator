@@ -220,6 +220,6 @@ fn devicesDigest(theme: *const gui_app.colors.Theme) !u64 {
 }
 
 test "the devices leaf rasterises to a pinned golden in each palette" {
-    try std.testing.expectEqual(@as(u64, 4050192518716919535), try devicesDigest(dark));
-    try std.testing.expectEqual(@as(u64, 1810762630783763910), try devicesDigest(light));
+    try std.testing.expectEqual(@as(u64, 17715894450503826399), try devicesDigest(dark));
+    try std.testing.expectEqual(@as(u64, 11849803909774316952), try devicesDigest(light));
 }
