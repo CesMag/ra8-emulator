@@ -12,6 +12,8 @@ const client = @import("usbip_client");
 const attach = client.attach;
 
 const max_len = 64;
+/// Each direction's stream buffer, the size the emulator's listener uses.
+const buffer_len = 256;
 
 /// What the command line asks for.
 const Want = struct {
@@ -21,27 +23,32 @@ const Want = struct {
     tty: bool = false,
 };
 
-pub fn main() !void {
-    var args = std.process.args();
-    _ = args.skip();
-    const text = args.next() orelse return fail("usage: usbip_attach PORT [VID:PID] [LEN] [--tty]", .{});
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+    const argv = try init.minimal.args.toSlice(init.arena.allocator());
+    if (argv.len < 2) return fail("usage: usbip_attach PORT [VID:PID] [LEN] [--tty]", .{});
+    const text = argv[1];
     const port = std.fmt.parseInt(u16, text, 10) catch return fail("bad port {s}", .{text});
     var want = Want{};
-    while (args.next()) |arg| try parse(&want, arg);
-    const address = try std.net.Address.parseIp4("127.0.0.1", port);
+    for (argv[2..]) |arg| try parse(&want, arg);
+    const address: std.Io.net.IpAddress = .{ .ip4 = .loopback(port) };
 
     var record: [312]u8 = undefined;
-    const listed = try list(address, &record);
+    const listed = try list(io, address, &record);
     std.debug.print("usbip_attach: listed {s} {x:0>4}:{x:0>4}\n", .{ listed.busid, listed.vendor, listed.product });
     if (listed.vendor != want.vendor or listed.product != want.product) return fail("not {x:0>4}:{x:0>4}", .{ want.vendor, want.product });
 
     var busid: [32]u8 = undefined;
     const name = busid[0..listed.busid.len];
     @memcpy(name, listed.busid);
-    const stream = try std.net.tcpConnectToAddress(address);
-    defer stream.close();
-    const reader = stream.reader();
-    const writer = stream.writer();
+    const stream = try address.connect(io, .{ .mode = .stream });
+    defer stream.close(io);
+    var in: [buffer_len]u8 = undefined;
+    var out: [buffer_len]u8 = undefined;
+    var stream_reader = stream.reader(io, &in);
+    var stream_writer = stream.writer(io, &out);
+    const reader = &stream_reader.interface;
+    const writer = &stream_writer.interface;
     const devid = (try attach.import(reader, writer, name, &record)).devid();
     std.debug.print("usbip_attach: imported {s}\n", .{name});
     try descriptor(reader, writer, devid, want);
@@ -62,10 +69,14 @@ fn parse(want: *Want, arg: []const u8) !void {
     }
 }
 
-fn list(address: std.net.Address, record: *[312]u8) !client.Listed {
-    const stream = try std.net.tcpConnectToAddress(address);
-    defer stream.close();
-    return (try attach.first(stream.reader(), stream.writer(), record)) orelse fail("no exports", .{});
+fn list(io: std.Io, address: std.Io.net.IpAddress, record: *[312]u8) !client.Listed {
+    const stream = try address.connect(io, .{ .mode = .stream });
+    defer stream.close(io);
+    var in: [buffer_len]u8 = undefined;
+    var out: [buffer_len]u8 = undefined;
+    var reader = stream.reader(io, &in);
+    var writer = stream.writer(io, &out);
+    return (try attach.first(&reader.interface, &writer.interface, record)) orelse fail("no exports", .{});
 }
 
 /// GET_DESCRIPTOR(device) on ep0: idVendor and idProduct must match the list.

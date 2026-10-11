@@ -149,21 +149,24 @@ pub fn writeRow(writer: anytype, image: []const u8, row: Row) !void {
     if (row.unmodelled) |count| try writer.print(" | {d} |\n", .{count}) else try writer.writeAll(" | - |\n");
 }
 
-pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
+pub fn main(init: std.process.Init) !void {
+    const allocator = init.arena.allocator();
+    const io = init.io;
+    const env = init.environ_map;
 
-    const args = try std.process.argsAlloc(allocator);
+    const args = try init.minimal.args.toSlice(allocator);
     if (args.len < 3) {
         std.debug.print("usage: example_table EMULATOR DIR [INSTRUCTIONS]\n", .{});
         std.process.exit(2);
     }
     const budget: ?[]const u8 = if (args.len > 3) args[3] else null;
-    const images = try listImages(allocator, args[2]);
+    const images = try listImages(allocator, io, args[2]);
 
-    const out = std.io.getStdOut().writer();
+    var buffer: [4096]u8 = undefined;
+    var stdout = std.Io.File.stdout().writerStreaming(io, &buffer);
+    const out = &stdout.interface;
     try writeHeader(out);
+    try out.flush();
     for (images) |image| {
         if (try isSecondHalf(allocator, image, images)) continue;
         const path = try std.fs.path.join(allocator, &.{ args[2], image });
@@ -171,31 +174,32 @@ pub fn main() !void {
             .cpu1 = try halfPath(allocator, args[2], try pairedWith(allocator, image, images)),
             .ns = try halfPath(allocator, args[2], try nsPairedWith(allocator, image, images)),
         };
-        const conf = try readConf(allocator, path);
+        const conf = try readConf(allocator, io, path);
         const probe = probes.find(image) orelse confProbe(image, conf);
         var job = Job{ .emulator = args[1], .path = path, .image = image, .halves = halves, .conf = conf, .budget = budget };
         job.run = .{ .probe = probe, .console = conf != null, .extra = if (conf) |found| found.emu_args else null };
         job.run.until = untilFor(conf, probe);
         job.run.reply = if (conf) |found| found.consoleReply() else null;
-        var row = try measure(allocator, job);
+        var row = try measure(allocator, io, env, job);
         // Undecided at the default budget: give a conf row the bench's own
         // modelled time once. Rows already decided keep their fast run.
         if (row.verdict() == .unknown) if (confMs(image, conf, budget)) |ms| {
             job.run.ms = ms;
-            row = try measure(allocator, job);
+            row = try measure(allocator, io, env, job);
         };
         try writeRow(out, image, row);
+        try out.flush();
     }
 }
 
-fn listImages(allocator: std.mem.Allocator, dir_path: []const u8) ![]const []const u8 {
-    var dir = try std.fs.cwd().openDir(dir_path, .{ .iterate = true });
-    defer dir.close();
-    var names = std.ArrayList([]const u8).init(allocator);
+fn listImages(allocator: std.mem.Allocator, io: std.Io, dir_path: []const u8) ![]const []const u8 {
+    var dir = try std.Io.Dir.cwd().openDir(io, dir_path, .{ .iterate = true });
+    defer dir.close(io);
+    var names: std.ArrayList([]const u8) = .empty;
     var it = dir.iterate();
-    while (try it.next()) |entry| {
+    while (try it.next(io)) |entry| {
         if (entry.kind != .file or !std.mem.endsWith(u8, entry.name, ".elf")) continue;
-        try names.append(try allocator.dupe(u8, entry.name));
+        try names.append(allocator, try allocator.dupe(u8, entry.name));
     }
     std.mem.sort([]const u8, names.items, {}, lessThan);
     return names.items;
@@ -291,8 +295,8 @@ fn confProbe(image: []const u8, conf: ?hil_conf.Conf) ?probes.Probe {
     return probes.fromConf(image, found.probe_symbol, found.probe_min_advance, found.probe_failure_symbol, found.probe_max_failure);
 }
 
-fn readConf(allocator: std.mem.Allocator, path: []const u8) !?hil_conf.Conf {
-    const text = std.fs.cwd().readFileAlloc(allocator, try confName(allocator, path), 64 * 1024) catch |err| switch (err) {
+fn readConf(allocator: std.mem.Allocator, io: std.Io, path: []const u8) !?hil_conf.Conf {
+    const text = std.Io.Dir.cwd().readFileAlloc(io, try confName(allocator, path), allocator, .limited(64 * 1024)) catch |err| switch (err) {
         error.FileNotFound => return null,
         else => return err,
     };
@@ -311,9 +315,9 @@ const Job = struct {
 };
 
 /// Runs a job and judges the report into a row.
-fn measure(allocator: std.mem.Allocator, job: Job) !Row {
+fn measure(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Environ.Map, job: Job) !Row {
     const budget = budgets.pick(job.image, job.budget);
-    const report = try runImage(allocator, job.emulator, job.path, job.halves, job.run, budget);
+    const report = try runImage(allocator, io, env, job.emulator, job.path, job.halves, job.run, budget);
     var row = parse(report);
     if (job.run.probe) |wanted| row.probe = probes.judge(wanted, report);
     // An undecided conf probe leaves the row to the console and LEDs.
@@ -352,40 +356,35 @@ fn confMs(image: []const u8, conf: ?hil_conf.Conf, budget: ?[]const u8) ?u32 {
     return (conf orelse return null).floorMs();
 }
 
-fn runImage(allocator: std.mem.Allocator, emulator: []const u8, path: []const u8, halves: Halves, run: Run, budget: ?[]const u8) ![]const u8 {
-    var argv = std.ArrayList([]const u8).init(allocator);
-    try argv.appendSlice(&.{ emulator, path });
+fn runImage(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Environ.Map, emulator: []const u8, path: []const u8, halves: Halves, run: Run, budget: ?[]const u8) ![]const u8 {
+    var argv: std.ArrayList([]const u8) = .empty;
+    try argv.appendSlice(allocator, &.{ emulator, path });
     const image = std.fs.path.basename(path);
-    try argv.appendSlice(options.flags(image));
-    var env = try std.process.getEnvMap(allocator);
-    defer env.deinit();
-    if (options.cardImage(image, &env)) |card| try argv.appendSlice(&.{ "--sd", card });
-    if (try cardDirPath(allocator, path)) |dir| try argv.appendSlice(&.{ "--sd-dir", dir });
-    if (halves.cpu1) |cpu1| try argv.appendSlice(&.{ "--cpu1", cpu1 });
-    if (halves.ns) |ns| try argv.appendSlice(&.{ "--ns", ns });
-    if (run.probe) |wanted| try argv.appendSlice(&.{ probes.flag(wanted.symbol), wanted.symbol });
-    if (run.probe) |wanted| if (wanted.failure) |name| try argv.appendSlice(&.{ probes.flag(name), name });
-    if (run.console) try argv.append("--console");
-    if (run.until) |text| try argv.appendSlice(&.{ "--until", text });
-    if (run.reply) |spec| try argv.appendSlice(&.{ "--console-reply", spec });
+    try argv.appendSlice(allocator, options.flags(image));
+    if (options.cardImage(image, env)) |card| try argv.appendSlice(allocator, &.{ "--sd", card });
+    if (try cardDirPath(allocator, io, path)) |dir| try argv.appendSlice(allocator, &.{ "--sd-dir", dir });
+    if (halves.cpu1) |cpu1| try argv.appendSlice(allocator, &.{ "--cpu1", cpu1 });
+    if (halves.ns) |ns| try argv.appendSlice(allocator, &.{ "--ns", ns });
+    if (run.probe) |wanted| try argv.appendSlice(allocator, &.{ probes.flag(wanted.symbol), wanted.symbol });
+    if (run.probe) |wanted| if (wanted.failure) |name| try argv.appendSlice(allocator, &.{ probes.flag(name), name });
+    if (run.console) try argv.append(allocator, "--console");
+    if (run.until) |text| try argv.appendSlice(allocator, &.{ "--until", text });
+    if (run.reply) |spec| try argv.appendSlice(allocator, &.{ "--console-reply", spec });
     if (run.extra) |extra| {
         var words = std.mem.tokenizeScalar(u8, extra, ' ');
-        while (words.next()) |word| try argv.append(word);
+        while (words.next()) |word| try argv.append(allocator, word);
     }
-    if (run.ms) |ms| try argv.appendSlice(&.{ "--ms", try std.fmt.allocPrint(allocator, "{d}", .{ms}) });
-    if (budget) |count| try argv.appendSlice(&.{ "--instructions", count });
-    const result = try std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = argv.items,
-        .max_output_bytes = 16 * 1024 * 1024,
-    });
+    if (run.ms) |ms| try argv.appendSlice(allocator, &.{ "--ms", try std.fmt.allocPrint(allocator, "{d}", .{ms}) });
+    if (budget) |count| try argv.appendSlice(allocator, &.{ "--instructions", count });
+    const limit: std.Io.Limit = .limited(16 * 1024 * 1024);
+    const result = try std.process.run(allocator, io, .{ .argv = argv.items, .stdout_limit = limit, .stderr_limit = limit });
     return std.mem.concat(allocator, u8, &.{ result.stdout, "\n", result.stderr });
 }
 
 /// The existing card directory beside path that options.cardDir names.
-fn cardDirPath(allocator: std.mem.Allocator, path: []const u8) !?[]const u8 {
+fn cardDirPath(allocator: std.mem.Allocator, io: std.Io, path: []const u8) !?[]const u8 {
     const name = options.cardDir(std.fs.path.basename(path)) orelse return null;
     const dir = try std.fs.path.join(allocator, &.{ std.fs.path.dirname(path) orelse ".", name });
-    std.fs.cwd().access(dir, .{}) catch return null;
+    std.Io.Dir.cwd().access(io, dir, .{}) catch return null;
     return dir;
 }
