@@ -4,7 +4,9 @@
 //! socket under $HOME/.config/ra8_emulator; on Windows, 127.0.0.1 with an
 //! OS-picked port. The discovery file in the same directory lists the RPC
 //! address and one gdb port per session; the app removes the file (and the
-//! socket path) on exit. Nothing here spawns the app: a client that finds
+//! socket paths) on exit. A second ra8_gui launch connects to the focus
+//! address in the same file and exits; the running app raises its window
+//! (RA8EMU-1156). Nothing here spawns the app: a client that finds
 //! no listener starts ra8_gui first.
 const std = @import("std");
 const builtin = @import("builtin");
@@ -44,6 +46,10 @@ pub const Listener = struct {
     discovery_path: []const u8,
     client: ?Client,
     gdb: std.ArrayList(*host_gdb.Session),
+    focus_server: ?std.Io.net.Server,
+    focus_address: ?Address,
+    focus_path: ?[]const u8,
+    focus_requested: bool = false,
 
     pub const Client = struct {
         conn: socket_transport.Connection,
@@ -64,6 +70,10 @@ pub const Listener = struct {
             _ = &address;
             var server = try address.listen(io, .{ .reuse_address = true });
             errdefer server.deinit(io);
+            var focus_address = std.Io.net.IpAddress.parse("127.0.0.1", 0) catch unreachable;
+            _ = &focus_address;
+            var focus_server = try focus_address.listen(io, .{ .reuse_address = true });
+            errdefer focus_server.deinit(io);
             const discovery_path = try std.fs.path.join(gpa, &.{ dir, "discovery" });
             errdefer gpa.free(discovery_path);
             return .{
@@ -76,6 +86,9 @@ pub const Listener = struct {
                 .discovery_path = discovery_path,
                 .client = null,
                 .gdb = .empty,
+                .focus_server = focus_server,
+                .focus_address = .{ .tcp = focus_server.socket.address },
+                .focus_path = null,
             };
         }
 
@@ -83,6 +96,10 @@ pub const Listener = struct {
         errdefer gpa.free(socket_path);
         var server = try (try std.Io.net.UnixAddress.init(socket_path)).listen(io, .{});
         errdefer server.deinit(io);
+        const focus_path = try std.fs.path.join(gpa, &.{ dir, "focus.sock" });
+        errdefer gpa.free(focus_path);
+        var focus_server = try (try std.Io.net.UnixAddress.init(focus_path)).listen(io, .{});
+        errdefer focus_server.deinit(io);
         const discovery_path = try std.fs.path.join(gpa, &.{ dir, "discovery" });
         errdefer gpa.free(discovery_path);
         return .{
@@ -95,6 +112,9 @@ pub const Listener = struct {
             .discovery_path = discovery_path,
             .client = null,
             .gdb = .empty,
+            .focus_server = focus_server,
+            .focus_address = .{ .unix = focus_path },
+            .focus_path = focus_path,
         };
     }
 
@@ -112,6 +132,11 @@ pub const Listener = struct {
         try w.writeByte('\n');
         for (self.gdb.items) |session| {
             try w.print("session {d} {s}\n", .{ session.port, session.elf });
+        }
+        if (self.focus_address) |fa| {
+            try w.writeAll("focus ");
+            try fa.write(w);
+            try w.writeByte('\n');
         }
         try w.flush();
     }
@@ -160,6 +185,21 @@ pub const Listener = struct {
         for (self.gdb.items) |session| session.pump();
     }
 
+    /// Report a waiting focus request once (RA8EMU-1156): a second launch
+    /// connected to the focus address, so the app raises its window.
+    pub fn takeFocus(self: *Listener) bool {
+        if (self.focus_server) |*server| {
+            if (ready(server.socket.handle) catch false) {
+                const stream = server.accept(self.io) catch return false;
+                stream.close(self.io);
+                self.focus_requested = true;
+            }
+        }
+        const asked = self.focus_requested;
+        self.focus_requested = false;
+        return asked;
+    }
+
     /// Accept a waiting client, then answer what a connected client has
     /// sent, once per frame. `context` is the Served context the panes
     /// already draw through, `tx` the shell's reply buffer. A second
@@ -179,6 +219,7 @@ pub const Listener = struct {
     pub fn deinit(self: *Listener) void {
         std.Io.Dir.cwd().deleteFile(self.io, self.discovery_path) catch {};
         if (self.socket_path) |path| std.Io.Dir.cwd().deleteFile(self.io, path) catch {};
+        if (self.focus_path) |path| std.Io.Dir.cwd().deleteFile(self.io, path) catch {};
         self.dropClient();
         for (self.gdb.items) |session| {
             session.deinit();
@@ -186,9 +227,11 @@ pub const Listener = struct {
             self.gpa.destroy(session);
         }
         self.gdb.deinit(self.gpa);
+        if (self.focus_server) |*server| server.deinit(self.io);
         self.server.deinit(self.io);
         self.gpa.free(self.discovery_path);
         if (self.socket_path) |path| self.gpa.free(path);
+        if (self.focus_path) |path| self.gpa.free(path);
         self.gpa.free(self.dir);
     }
 
@@ -214,6 +257,45 @@ pub const Listener = struct {
         self.client = null;
     }
 };
+
+/// The second launch's whole job (RA8EMU-1156): read the discovery file
+/// and connect to the running app's focus address; the app raises its
+/// window and this launch exits. An error means no running app answered,
+/// and the caller runs normally.
+pub fn focusRunning(gpa: std.mem.Allocator, io: std.Io, env: *const std.process.Environ.Map) !void {
+    const home = homeOf(env) orelse return error.NoHome;
+    const path = try std.fs.path.join(gpa, &.{ home, ".config", "ra8_emulator", "discovery" });
+    defer gpa.free(path);
+    const text = std.Io.Dir.cwd().readFileAlloc(io, path, gpa, .limited(4096)) catch return error.NotRunning;
+    defer gpa.free(text);
+    const address = try focusAddressOf(text);
+    var conn = try connectAddress(io, address);
+    conn.close();
+}
+
+/// The focus line's address in the discovery file's text.
+fn focusAddressOf(text: []const u8) !Address {
+    var lines = std.mem.splitScalar(u8, text, '\n');
+    while (lines.next()) |line| {
+        const rest = std.mem.trim(u8, line, " \r");
+        if (!std.mem.startsWith(u8, rest, "focus ")) continue;
+        const spec = std.mem.trim(u8, rest["focus ".len..], " ");
+        if (std.mem.startsWith(u8, spec, "unix:")) return .{ .unix = spec["unix:".len..] };
+        if (std.mem.startsWith(u8, spec, "tcp:")) {
+            const ip = std.Io.net.IpAddress.parse(spec["tcp:".len..], 0) catch return error.BadAddress;
+            return .{ .tcp = ip };
+        }
+        return error.BadAddress;
+    }
+    return error.NotRunning;
+}
+
+fn connectAddress(io: std.Io, address: Address) !socket_transport.Connection {
+    return switch (address) {
+        .unix => |path| socket_transport.Connection.unix(io, path),
+        .tcp => |ip| socket_transport.Connection.tcp(io, ip),
+    };
+}
 
 /// The directory the socket and files live under: $HOME/.config/
 /// ra8_emulator (or %USERPROFILE%\.config\ra8_emulator on Windows).

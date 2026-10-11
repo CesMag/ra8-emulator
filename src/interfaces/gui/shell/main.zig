@@ -171,6 +171,12 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
         std.debug.print("the shell connects to the local host only so far; ctl --host reaches ssh hosts\n", .{});
         return 2;
     }
+    // A second launch hands off to the running app (RA8EMU-1156): focus
+    // its window and exit. It never spawns the app itself.
+    if (host_listener.focusRunning(allocator, io, env)) |_| {
+        std.debug.print("ra8_gui: focused the running emulator\n", .{});
+        return 0;
+    } else |_| {}
     const bytes = std.Io.Dir.cwd().readFileAlloc(io, args.image, allocator, .limited(max_image)) catch |err| {
         std.debug.print("cannot read {s}: {s}\n", .{ args.image, @errorName(err) });
         return 1;
@@ -224,7 +230,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     shell.link = &link;
     shell.server = served(&session);
     if (host_listener.Listener.bind(allocator, io, env)) |bound| {
-        hosted = .{ .listener = bound, .context = &session.setup.context, .tx = try allocator.alloc(u8, Env.max_frame), .gpa = allocator };
+        hosted = .{ .listener = bound, .context = &session.setup.context, .window = window, .tx = try allocator.alloc(u8, Env.max_frame), .gpa = allocator };
         const h = &hosted.?;
         h.announce(path, session.setup.owner.session());
         shell.listener = .{ .context = h, .answerFn = answerHosted };
@@ -278,6 +284,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
 const Hosted = struct {
     listener: host_listener.Listener,
     context: *served_server.Context,
+    window: platform.Platform,
     tx: []u8,
     gpa: std.mem.Allocator,
 
@@ -288,6 +295,7 @@ const Hosted = struct {
     }
 
     fn answer(self: *Hosted) !void {
+        if (self.listener.takeFocus()) self.window.focus();
         self.listener.pumpGdb();
         return self.listener.answer(self.context, self.tx);
     }

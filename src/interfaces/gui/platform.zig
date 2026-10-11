@@ -68,6 +68,9 @@ pub const Platform = struct {
         interval: ?*const fn (ctx: *anyopaque) u64 = null,
         /// The OS light or dark setting (RA8EMU-962); null is unknown.
         appearance: ?*const fn (ctx: *anyopaque) Appearance = null,
+        /// Raises the window to the front (RA8EMU-1156); null on backends
+        /// that have no window to raise.
+        focus: ?*const fn (ctx: *anyopaque) void = null,
     };
 
     /// The next input event, or null once this frame's events are drained.
@@ -108,5 +111,11 @@ pub const Platform = struct {
     pub fn appearance(self: Platform) Appearance {
         const get = self.vtable.appearance orelse return .unknown;
         return get(self.ctx);
+    }
+
+    /// Raise the window to the front; a no-op on backends without one.
+    pub fn focus(self: Platform) void {
+        const raise = self.vtable.focus orelse return;
+        raise(self.ctx);
     }
 };

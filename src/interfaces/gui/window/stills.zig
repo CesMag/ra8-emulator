@@ -31,12 +31,17 @@ pub const Recorder = struct {
     saved: u32 = 0,
 
     pub fn platform(self: *Recorder) platform_mod.Platform {
-        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present } };
+        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present, .focus = focus } };
     }
 
     /// Whether frame `index` is one this recorder keeps.
     pub fn keeps(self: Recorder, index: u32) bool {
         return index % @max(self.every, 1) == 0;
+    }
+
+    fn focus(ctx: *anyopaque) void {
+        const self: *Recorder = @ptrCast(@alignCast(ctx));
+        self.inner.focus();
     }
 
     fn poll(ctx: *anyopaque) ?platform_mod.Event {

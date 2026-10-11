@@ -56,6 +56,7 @@ test "the discovery file lists the rpc address and the sessions" {
     var port_buf: [32]u8 = undefined;
     const port_line = try std.fmt.bufPrint(&port_buf, "session {d} /some/image.elf", .{port});
     try std.testing.expectEqualStrings(port_line, lines.next().?);
+    try std.testing.expect(std.mem.startsWith(u8, lines.next().?, "focus "));
     try std.testing.expectEqual(@as(?[]const u8, null), lines.next());
 
     bound.deinit();
@@ -152,4 +153,29 @@ fn loadAndRead(peer: *serve_peer.Peer, bound: *listener_mod.Listener, context: *
     _ = try call(peer, bound, context, tx, proto.Ack, proto.CoreOnly, .pause, .{ .core = .cpu0 });
     const pc = try call(peer, bound, context, tx, proto.U32, proto.ReadRegister, .read_register, .{ .core = .cpu0, .register = .pc });
     try std.testing.expect(pc.value != 0);
+}
+
+test "a focus connection is taken once and the second launch hands off" {
+    const gpa = std.testing.allocator;
+    const home = try tempHome(gpa);
+    defer {
+        std.Io.Dir.cwd().deleteTree(std.testing.io, home) catch {};
+        gpa.free(home);
+    }
+    var env = try envWithHome(gpa, home);
+    defer env.deinit();
+    var bound = try listener_mod.Listener.bind(gpa, std.testing.io, &env);
+    defer bound.deinit();
+
+    try bound.announce();
+    try std.testing.expect(!bound.takeFocus());
+    // The second launch: read the discovery file, connect to the focus
+    // address, exit. focusRunning does all three.
+    try listener_mod.focusRunning(gpa, std.testing.io, &env);
+    try std.testing.expect(bound.takeFocus());
+    try std.testing.expect(!bound.takeFocus());
+
+    // With no running app, focusRunning fails and the caller runs on.
+    std.Io.Dir.cwd().deleteFile(std.testing.io, bound.discovery_path) catch {};
+    try std.testing.expectError(error.NotRunning, listener_mod.focusRunning(gpa, std.testing.io, &env));
 }

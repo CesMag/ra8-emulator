@@ -93,10 +93,17 @@ pub const Sdl = struct {
         .show = show,
         .interval = interval,
         .appearance = appearance,
+        .focus = focus,
     };
 
     fn from(ctx: *anyopaque) *Sdl {
         return @ptrCast(@alignCast(ctx));
+    }
+
+    /// Raise the window to the front: a second ra8_gui asked (RA8EMU-1156).
+    fn focus(ctx: *anyopaque) void {
+        const self = from(ctx);
+        _ = c.SDL_RaiseWindow(self.window);
     }
 
     /// The next event, pointer positions in layout points. The full-screen

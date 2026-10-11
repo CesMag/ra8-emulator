@@ -17,6 +17,8 @@ pub const Headless = struct {
     presents: u32 = 0,
     /// The OS appearance this window reports; tests set it.
     os: platform_mod.Appearance = .unknown,
+    /// How many times the shell focused this window (RA8EMU-1156).
+    focuses: u32 = 0,
 
     pub fn init(allocator: std.mem.Allocator, width: u32, height: u32) Headless {
         return .{ .allocator = allocator, .drawable = .{ .width = width, .height = height } };
@@ -33,7 +35,7 @@ pub const Headless = struct {
     }
 
     pub fn platform(self: *Headless) platform_mod.Platform {
-        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present, .appearance = appearance } };
+        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present, .appearance = appearance, .focus = focus } };
     }
 
     fn poll(ctx: *anyopaque) ?Event {
@@ -62,6 +64,11 @@ pub const Headless = struct {
     fn appearance(ctx: *anyopaque) platform_mod.Appearance {
         const self: *Headless = @ptrCast(@alignCast(ctx));
         return self.os;
+    }
+
+    fn focus(ctx: *anyopaque) void {
+        const self: *Headless = @ptrCast(@alignCast(ctx));
+        self.focuses += 1;
     }
 
     fn present(ctx: *anyopaque, frame: *const raster.Framebuffer) anyerror!void {
