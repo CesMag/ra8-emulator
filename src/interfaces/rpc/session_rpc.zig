@@ -61,7 +61,7 @@ pub const Register = enum(u8) { pc, sp, lr, r0, r1, r2, r3, r12, xpsr, primask, 
 pub const RunMode = enum(u8) { run, cont, step, next, finish };
 pub const StopReason = enum(u8) { stepped, breakpoint, watchpoint, halt_requested, unit_break, unit_watch, count, core_fault };
 pub const Access = enum(u8) { read, write, access };
-pub const EventKind = enum(u8) { loaded, paused, stopped, register_written, memory_written, breakpoint_set, breakpoint_cleared, watchpoint_set, watchpoint_cleared, speed_changed, input_scheduled, fault_set, fault_cleared, plugged, unplugged, led_changed };
+pub const EventKind = enum(u8) { loaded, paused, stopped, register_written, memory_written, breakpoint_set, breakpoint_cleared, watchpoint_set, watchpoint_cleared, speed_changed, input_scheduled, fault_set, fault_cleared, plugged, unplugged, led_changed, module_loaded, module_unloaded, module_faulted };
 
 pub const Load = struct {
     core: Core,

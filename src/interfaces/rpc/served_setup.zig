@@ -43,6 +43,7 @@ pub const Served = struct {
     pub fn open(self: *Served, allocator: std.mem.Allocator, io: std.Io, elf_path: []const u8) !void {
         var owner = try harness.open(allocator, io, .{ .elf_path = elf_path });
         errdefer owner.deinit();
+        _ = owner.watchModules();
         const Env = served.Server.Env;
         const rx = try allocator.alloc(u8, 2 * Env.max_frame);
         errdefer allocator.free(rx);

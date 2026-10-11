@@ -26,3 +26,9 @@ test "an LED change carries its index and level in the address" {
     const point: ra8.session.api.Event = .{ .core = .cpu0, .kind = .breakpoint_set, .address = 0x0200_0040 };
     try std.testing.expectEqual(@as(u32, 0x0200_0040), feed.addressOf(point));
 }
+
+test "module loads, unloads and faults go out under their own wire kinds" {
+    try std.testing.expectEqual(proto.EventKind.module_loaded, feed.wireKind(.module_loaded).?);
+    try std.testing.expectEqual(proto.EventKind.module_unloaded, feed.wireKind(.module_unloaded).?);
+    try std.testing.expectEqual(proto.EventKind.module_faulted, feed.wireKind(.module_faulted).?);
+}

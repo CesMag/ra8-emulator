@@ -25,6 +25,9 @@ const debug_session = @import("../session.zig");
 const session_api = @import("../api.zig");
 const stop_machine = @import("../stop_machine.zig");
 const step_hook = @import("../step_hook.zig");
+const symbols = @import("../symbols.zig");
+const txm_modules = @import("../txm_modules.zig");
+const txm_publish = @import("../txm_publish.zig");
 const watch_bus = @import("../watch_bus.zig");
 const rtos_hook = step_hook.rtos_hook;
 const rtos_publish = step_hook.rtos_publish;
@@ -105,6 +108,7 @@ const State = struct {
     tracer: ?rtos_hook.Tracer,
     listener: rtos_hook.zig.Listener,
     publisher: rtos_publish.Publisher,
+    module_watch: txm_publish.Watcher,
 
     fn advance(context: *anyopaque, max_ns: u64) anyerror!void {
         const self: *State = @ptrCast(@alignCast(context));
@@ -193,6 +197,18 @@ pub const Harness = struct {
 
     pub fn unsampleStacks(self: *Harness, into: *stacks.Stacks) void {
         into.unwatch(0, &self.state.cpu);
+    }
+
+    /// Publish ThreadX module loads and unloads on the session's event
+    /// stream (RA8EMU-1139), read from the Module Manager's list at each
+    /// chunk boundary. False when the image has no Module Manager; call
+    /// once, after open.
+    pub fn watchModules(self: *Harness) bool {
+        const state = self.state;
+        const head = symbols.addressOf(state.image, txm_modules.list_symbol) orelse return false;
+        state.module_watch = .{ .head_at = head, .memory = .{ .guest = self.guest() }, .stream = &state.session.event_stream, .inner = state.session.live.boundary, .time = &state.board.time.base };
+        state.session.live.boundary = state.module_watch.hook();
+        return true;
     }
 
     /// Snapshot and restore of this run's file (RA8EMU-768).
