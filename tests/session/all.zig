@@ -70,6 +70,7 @@ test {
     _ = @import("txm_modules_test.zig");
     _ = @import("txm_report_test.zig");
     _ = @import("txm_publish_test.zig");
+    _ = @import("txm_symbols_test.zig");
     _ = @import("rtos_isr_test.zig");
     _ = @import("rtos_zig_test.zig");
     _ = @import("rtos_second_test.zig");
