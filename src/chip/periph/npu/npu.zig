@@ -61,9 +61,7 @@ const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 pub const cmd = @import("cmd.zig");
-pub const vela_hook = @import("vela_hook.zig");
-pub const vela = @import("vela.zig");
-pub const vela_regs = @import("vela_regs.zig");
+pub const vela = @import("vela/vela.zig");
 pub const snapshot = @import("snapshot.zig");
 
 /// The window, from ra8_npu_regs.h on dev.
@@ -156,7 +154,7 @@ pub const Npu = struct {
     /// Stores to NPU_ID or NPU_STATUS: firmware cannot write its own result.
     faked: u32 = 0,
     /// Kicks whose stream had no stand-in marker, run as Vela programs.
-    vela: vela_hook.Counters = .{},
+    vela: vela.hook.Counters = .{},
     reads: u32 = 0,
     writes: u32 = 0,
     due_irq: bool = false,
@@ -245,7 +243,7 @@ pub const Npu = struct {
             field.status_bus_error,
             &self.unreachable_memory,
         );
-        if (stream[0] & cmd.header.magic_mask != cmd.header.magic) return vela_hook.kick(self, memory);
+        if (stream[0] & cmd.header.magic_mask != cmd.header.magic) return vela.hook.kick(self, memory);
         const program = cmd.decode(self.reg[off.qsize / 4], stream) catch |why| {
             const counter = switch (why) {
                 cmd.Reject.UnknownOpcode => &self.unknown_ops,

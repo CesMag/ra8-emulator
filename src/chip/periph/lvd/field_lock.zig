@@ -2,7 +2,7 @@
 //! divides is switched off.
 //!
 //! Its own file rather than a prong inside lvd.zig, the way
-//! spi/enable_lock.zig and mipi/phy_pll_lock.zig sit beside their blocks.
+//! spi/enable_lock.zig and mipi/phy/pll_lock.zig sit beside their blocks.
 //!
 //! THE RULE. HUM Ch 8.2.4 "PVDmCR0" p 305 and Ch 8.2.5 "PVDnCR0" p 306,
 //! quoted in ra8_lvd_runtime.c at ra8_lvd_set_filter: "FSAMP can only be

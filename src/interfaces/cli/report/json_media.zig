@@ -5,7 +5,7 @@
 //! only the channels the firmware touched.
 const Board = @import("ra8_board").board.Board;
 const ssie = @import("ra8_chip").periph.ssie;
-const phy_status = @import("ra8_chip").periph.mipi.phy_status;
+const status = @import("ra8_chip").periph.mipi.phy.status;
 
 /// The three objects, keyed inside the document after `graphics`.
 pub fn section(j: anytype, board: *Board) !void {
@@ -56,7 +56,7 @@ fn mipi(j: anytype, phy: anytype) !void {
     try j.open("mipi_phy", '{');
     try j.field("touched", !phy.quiet());
     try j.field("mode", phy.mode().name());
-    try j.field("status", phy_status.describe(phy.sfr()));
+    try j.field("status", status.describe(phy.sfr()));
     try j.field("refclk_mhz", phy.referenceMhz());
     try j.field("power_ups", phy.powerups);
     try j.field("pll_locks", phy.locks);

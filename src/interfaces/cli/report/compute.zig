@@ -2,7 +2,7 @@
 //! what it actually moved, and the kicks it refused to pretend about.
 const Board = @import("ra8_board").board.Board;
 const Writer = @import("../report.zig").Writer;
-const vela_hook = @import("ra8_chip").periph.npu.vela_hook;
+const hook = @import("ra8_chip").periph.npu.vela.hook;
 
 /// One line per run that touched the NPU window, plus a line for each kind
 /// of kick that produced no job. A stream dev would have run down the copy
@@ -72,7 +72,7 @@ pub fn sections(board: *Board, out: Writer) !void {
 
 /// The Vela path's own lines: programs that reached their STOP, then one
 /// line for each way a kick on that path ended in a fault.
-fn vela(counters: vela_hook.Counters, out: Writer) !void {
+fn vela(counters: hook.Counters, out: Writer) !void {
     if (counters.jobs != 0) {
         try out.print(
             "NPU(Ethos-U55): {d} Vela program(s) ran to STOP, {d} byte(s) moved by DMA\n",

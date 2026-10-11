@@ -238,5 +238,5 @@ test "the PLL locks for a driver that never writes SCKE, as the HS driver does" 
 }
 
 test {
-    _ = @import("xfer_loop_test.zig");
+    _ = @import("xfer/loop_test.zig");
 }

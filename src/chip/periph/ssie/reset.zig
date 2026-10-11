@@ -26,7 +26,7 @@
 //! THE BIT IS HELD, NOT SELF-CLEARING, and that is deliberate. The prose in
 //! ra8_ssie.h says "waits for it to self-clear", but both drive sites write
 //! the bit high and then low themselves before they poll, exactly like
-//! mipi/dsi.zig's RSTCR.SWRST and unlike rtc/reset.zig's RCR2.RESET, which
+//! mipi/dsi/dsi.zig's RSTCR.SWRST and unlike rtc/reset.zig's RCR2.RESET, which
 //! the driver writes once and then polls down. Nothing in either tree says
 //! the hardware would clear this one, so it stays in the shadow and reads
 //! back what firmware wrote: the reset happens on the edge that asserts it,
