@@ -7,6 +7,7 @@
 //! session to install, so neither application carries a copy of that.
 const std = @import("std");
 const harness = @import("ra8_session").harness;
+const cpu1_bringup = @import("ra8_session").cpu1_bringup;
 const board_camera = @import("ra8_session").board_camera;
 const board_rtc = @import("ra8_session").board_rtc;
 const session_plug = @import("ra8_session").board_plug;
@@ -34,6 +35,8 @@ pub const Served = struct {
     io: std.Io,
     /// CPU0's sampled call stacks, once sampleStacks asked (RA8EMU-833).
     stacks: ?*harness.stacks.Stacks = null,
+    /// CPU1, once openSecond brought it up (RA8EMU-1147).
+    second: ?*cpu1_bringup.Cpu1 = null,
 
     /// Open `elf_path` and fill the context. The context points into
     /// `self`, so `self` stays put until `deinit`.
@@ -62,13 +65,29 @@ pub const Served = struct {
         stacks.* = .{ .every = @max(every, 1) };
         self.stacks = stacks;
         self.owner.sampleStacks(stacks);
+        if (self.second) |cpu1| stacks.watch(1, cpu1.cpu(), &cpu1.image.?, &self.owner.board().time.base, null);
         self.context.folding = .{ .context = self, .foldFn = foldStacks };
+    }
+
+    /// Bring CPU1 up from the ELF at `path`, parked until a request runs
+    /// it (RA8EMU-1147). Call once, after open and before sampleStacks.
+    pub fn openSecond(self: *Served, path: []const u8) !void {
+        const cpu1 = try self.gpa.create(cpu1_bringup.Cpu1);
+        errdefer self.gpa.destroy(cpu1);
+        cpu1.* = .{};
+        try cpu1.open(self.gpa, self.io, &self.owner, path);
+        self.second = cpu1;
     }
 
     pub fn deinit(self: *Served) void {
         if (self.stacks) |stacks| {
             self.owner.unsampleStacks(stacks);
+            if (self.second) |cpu1| stacks.unwatch(1, cpu1.cpu());
             self.gpa.destroy(stacks);
+        }
+        if (self.second) |cpu1| {
+            cpu1.close(self.gpa);
+            self.gpa.destroy(cpu1);
         }
         self.gpa.free(self.context.scratch);
         self.gpa.free(self.tx);
@@ -111,12 +130,12 @@ fn listPeriph(context: *anyopaque, core: usize, block: []const u8, json: bool, o
     return periph_list.list(&owner.board().bus, core, block, json, out);
 }
 
-/// CPU0's sampled stacks over [from_ns, to_ns), named by the opened image
-/// they were walked with; a window and thread that take none are refused.
+/// A core's sampled stacks over [from_ns, to_ns), named by the image they
+/// were walked with; a window, thread or core that took none is refused.
 fn foldStacks(context: *anyopaque, core: usize, thread: ?u32, from_ns: u64, to_ns: u64, out: []u8) anyerror![]const u8 {
     const self: *Served = @ptrCast(@alignCast(context));
     const stacks = self.stacks orelse return error.NothingSampled;
-    const image = self.owner.image();
+    const image = if (core == 0) self.owner.image() else (self.second orelse return error.NothingSampled).image.?;
     var w: std.Io.Writer = .fixed(out);
     var scratch: [stack_samples.limits.samples]usize = undefined;
     const filter: stack_samples.Filter = .{ .core = @intCast(core), .from_ns = from_ns, .to_ns = to_ns, .thread = thread };

@@ -20,6 +20,7 @@ test {
     _ = @import("interfaces/gui/shell_startup_test.zig");
     _ = @import("interfaces/cli/ctl_host_test.zig");
     _ = @import("interfaces/cli/serve_stdio_test.zig");
+    _ = @import("interfaces/cli/serve_parse_test.zig");
     _ = @import("interfaces/cli/map_main_test.zig");
     _ = @import("snapshot/file_test.zig");
     _ = @import("board/snapshot/memory_test.zig");
@@ -172,6 +173,7 @@ test {
     _ = @import("interfaces/rpc/session_rtc_test.zig");
     _ = @import("interfaces/rpc/session_periph_test.zig");
     _ = @import("interfaces/rpc/session_folded_test.zig");
+    _ = @import("interfaces/rpc/served_cpu1_test.zig");
     _ = @import("interfaces/rpc/session_input_test.zig");
     _ = @import("interfaces/rpc/session_event_feed_test.zig");
 }

@@ -150,7 +150,7 @@ fn finishEinkLog(out: *std.Io.Writer, io: std.Io, options: cli.Options, recorder
 /// Bring CPU1 up from `named`, with its block cache when asked; false once
 /// the reason it could not is printed.
 fn openSecond(pair: *second_core.zig_run.Driver, io: std.Io, board: *Board, named: []const u8, memory: Guest, blocks: bool) bool {
-    @import("cpu1_image.zig").open(pair, std.heap.page_allocator, io, board_wiring.cpu1(board), named, memory) catch |err| {
+    @import("ra8_session").cpu1_image.open(pair, std.heap.page_allocator, io, board_wiring.cpu1(board), named, memory) catch |err| {
         std.debug.print("cannot bring up the second core from {s}: {s}\n", .{ named, @errorName(err) });
         return false;
     };
