@@ -28,6 +28,7 @@ const watch_bus = @import("../watch_bus.zig");
 const rtos_hook = step_hook.rtos_hook;
 const rtos_publish = step_hook.rtos_publish;
 const Cpu0 = @import("ra8_board").cpu0_store.Cpu0;
+const decode = @import("ra8_chip").core.cpu.decode;
 
 pub const limits = struct {
     pub const max_elf_bytes = 64 * 1024 * 1024;
@@ -81,6 +82,11 @@ const State = struct {
     driver: step_hook.Driver,
     watching: watch_bus.WatchBus,
     cpu: cpu_mod.Cpu,
+    /// CPU0's decoded instructions and formed blocks, as a plain run keeps
+    /// them (boot.zig runOn), so a session runs at a plain run's pace
+    /// (RA8EMU-1120).
+    decoded: decode.cache.DecodeCache,
+    formed: *decode.block_cache.BlockCache,
     pending: NvicSource,
     quiet: QuietSource,
     loading: LoaderState,
@@ -195,6 +201,7 @@ pub const Harness = struct {
         state.plugs.deinit();
         state.plugs_arena.deinit();
         state.cpu0.close();
+        dropBlocks(state.formed);
         state.board.deinit();
         state.loading.deinit();
         state.allocator.free(state.bytes);
@@ -231,6 +238,11 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     state.quiet = .{ .inner = state.pending.source(), .memory = state.watching.view() };
     state.cpu = .{ .bus = state.quiet.bus(), .source = state.quiet.source(), .quiet = &state.quiet };
     state.pending.banked = &state.cpu.banked;
+    state.decoded = .{};
+    state.cpu.decoded = &state.decoded;
+    state.formed = try formBlocks();
+    errdefer dropBlocks(state.formed);
+    state.cpu.blocks = state.formed;
     // CPACR and the FP context words reach the core's FP state, as in a
     // plain run (boot.zig); otherwise every FP instruction is NOCP (RA8EMU-950).
     state.memory.scs.fp = &state.cpu.fp;
@@ -270,4 +282,19 @@ fn loadInput(allocator: std.mem.Allocator, io: std.Io, board: *Board, path: ?[]c
     const text = try std.Io.Dir.cwd().readFileAlloc(io, named, allocator, .limited(limits.max_input_bytes));
     defer allocator.free(text);
     try board.input_script.parse(text);
+}
+
+/// A block cache watching every store, so a write over code drops its
+/// blocks (code_lines.zig).
+fn formBlocks() !*decode.block_cache.BlockCache {
+    const cache = try std.heap.page_allocator.create(decode.block_cache.BlockCache);
+    errdefer std.heap.page_allocator.destroy(cache);
+    cache.init();
+    try decode.code_lines.watch(&cache.lines);
+    return cache;
+}
+
+fn dropBlocks(cache: *decode.block_cache.BlockCache) void {
+    decode.code_lines.unwatch(&cache.lines);
+    std.heap.page_allocator.destroy(cache);
 }

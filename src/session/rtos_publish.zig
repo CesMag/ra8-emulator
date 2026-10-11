@@ -48,7 +48,15 @@ pub const Publisher = struct {
     /// The inner boundary with a drain after every chunk.
     pub fn hook(self: *Publisher) zig_boundary.Boundary {
         const chunk = if (self.inner) |inner| inner.chunk else zig_boundary.default_chunk;
-        return .{ .context = self, .tickFn = tick, .chunk = chunk };
+        return .{ .context = self, .tickFn = tick, .chunk = chunk, .sleepFn = asleep };
+    }
+
+    /// The inner boundary's sleep reach, so a traced run still skips sleep.
+    fn asleep(context: *anyopaque, normal: u32) u32 {
+        const self: *Publisher = @ptrCast(@alignCast(context));
+        const inner = self.inner orelse return normal;
+        const reach = inner.sleepFn orelse return normal;
+        return reach(inner.context, normal);
     }
 
     fn tick(context: *anyopaque, instructions: u32) anyerror!void {
