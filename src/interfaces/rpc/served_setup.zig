@@ -15,6 +15,7 @@ const region_map = @import("ra8_session").region_map;
 const symbols = @import("ra8_session").symbols;
 const region_map_json = @import("ra8_session").region_map_json;
 const region_map_text = @import("ra8_session").region_map_text;
+const periph_list = @import("ra8_session").periph_list;
 const source_spec = @import("ra8_host").camera.source_spec;
 const source_open = @import("ra8_host").camera.source_open;
 const proto = @import("session_rpc.zig");
@@ -46,6 +47,7 @@ pub const Served = struct {
         self.context.listing = .{ .context = self.owner.plugs(), .listFn = listParts };
         self.context.mapping = .{ .context = &self.owner, .mapFn = mapImage, .stackFn = stackOf, .imageFn = imageOf };
         self.context.clock = board_rtc.clock(self.owner.board());
+        self.context.peripherals = .{ .context = &self.owner, .listFn = listPeriph };
         self.context.camera = .{ .context = self, .setFn = setCamera };
     }
 
@@ -82,6 +84,13 @@ fn mapImage(context: *anyopaque, core: usize, json: bool, out: []u8) anyerror![]
         try region_map_text.render(&w, image, &region_map.ek_ra8d2);
     }
     return w.buffered();
+}
+
+/// The blocks on the board's bus, or one block's registers (RA8EMU-818).
+/// Both cores share the one peripheral bus.
+fn listPeriph(context: *anyopaque, core: usize, block: []const u8, json: bool, out: []u8) anyerror![]const u8 {
+    const owner: *harness.Harness = @ptrCast(@alignCast(context));
+    return periph_list.list(&owner.board().bus, core, block, json, out);
 }
 
 /// The main stack reservation of a core's last loaded image, if it names one.

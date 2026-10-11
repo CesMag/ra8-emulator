@@ -316,3 +316,15 @@ test "ctl parse: snapshot and restore take one path" {
     try std.testing.expectEqual(ra8.rpc.session_rpc.Method.restore, back.command.files.method);
     try std.testing.expectError(error.BadArguments, ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "restore" }));
 }
+
+test "ctl parse: periph lists blocks, or one block's registers when named" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const blocks = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "periph" });
+    try std.testing.expectEqualStrings("", blocks.command.periph);
+    const rtc = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "periph", "RTC", "--json" });
+    try std.testing.expectEqualStrings("RTC", rtc.command.periph);
+    try std.testing.expect(rtc.json);
+    try std.testing.expectError(error.BadArguments, ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "periph", "RTC", "AGT" }));
+}

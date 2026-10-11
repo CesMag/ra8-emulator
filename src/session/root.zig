@@ -47,6 +47,7 @@ pub const pc_hits = @import("pc_hits.zig");
 pub const place = @import("place.zig");
 pub const profile = @import("profile.zig");
 pub const region_map = @import("region_map.zig");
+pub const periph_list = @import("periph_list.zig");
 pub const region_map_json = @import("region_map_json.zig");
 pub const region_map_text = @import("region_map_text.zig");
 pub const registers = @import("registers.zig");

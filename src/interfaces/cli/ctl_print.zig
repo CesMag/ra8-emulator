@@ -103,6 +103,12 @@ pub fn map(w: anytype, json: bool, text: []const u8) !void {
     try w.writeAll(text);
 }
 
+/// The peripheral blocks, or one block's registers (RA8EMU-818).
+pub fn periph(w: anytype, json: bool, text: []const u8) !void {
+    if (json) return w.print("{{\"periph\":{s}}}\n", .{text});
+    try w.writeAll(text);
+}
+
 /// The stack pointers, their low marks and the reservation (RA8EMU-816).
 pub fn stack(w: anytype, json: bool, r: proto.StackReport) !void {
     if (json) {

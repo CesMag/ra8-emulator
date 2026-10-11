@@ -29,6 +29,7 @@ pub const usage =
     \\            map (the memory map of the image last loaded)
     \\            stack (MSP and PSP, the lowest each reached, any overflow)
     \\            rtc (the board's RTC date and time)
+    \\            periph [BLOCK] (the peripheral blocks, or one block's registers)
     \\            fault MODEL@ENDPOINT=MODE | fault --clear ENDPOINT
     \\
 ;
@@ -63,6 +64,8 @@ pub const Command = union(enum) {
     stack,
     /// The board's RTC calendar (RA8EMU-809).
     rtc,
+    /// The peripheral blocks, or one block's registers when named (RA8EMU-818).
+    periph: []const u8,
 };
 
 pub const Part = struct { method: proto.Method, text: []const u8 };
@@ -128,6 +131,7 @@ fn parseCommand(allocator: std.mem.Allocator, name: []const u8, args: []const []
     if (eql(u8, name, "map")) return if (args.len == 0) .map else error.BadArguments;
     if (eql(u8, name, "stack")) return if (args.len == 0) .stack else error.BadArguments;
     if (eql(u8, name, "rtc")) return if (args.len == 0) .rtc else error.BadArguments;
+    if (eql(u8, name, "periph")) return if (args.len <= 1) .{ .periph = if (args.len == 1) args[0] else "" } else error.BadArguments;
     if (eql(u8, name, "regs")) return .{ .regs = try parseRegs(allocator, args) };
     if (eql(u8, name, "speed")) return if (args.len == 1) .{ .speed = try parseSpeed(args[0]) } else error.BadArguments;
     if (eql(u8, name, "break")) return parseBreak(args);
@@ -269,6 +273,10 @@ fn perform(allocator: std.mem.Allocator, io: std.Io, client: *Client, request: R
         .map => {
             const map = try client.call(proto.MapText, proto.MapAsk, .map, .{ .core = .cpu0, .json = @intFromBool(json) });
             try out.map(w, json, map.text);
+        },
+        .periph => |block| {
+            const listed = try client.call(proto.PeriphText, proto.PeriphAsk, .periph, .{ .core = .cpu0, .json = @intFromBool(json), .block = block });
+            try out.periph(w, json, listed.text);
         },
         .stack => {
             const report = try client.call(proto.StackReport, proto.CoreOnly, .stack, .{ .core = .cpu0 });

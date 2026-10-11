@@ -31,6 +31,14 @@ pub const Mapping = struct {
     imageFn: ?*const fn (*anyopaque, usize) ?@import("ra8_session").symbols.Image = null,
 };
 
+/// Writes the peripheral blocks, or one block's registers (RA8EMU-818):
+/// the core index, the block name ("" for the list), JSON or text, and
+/// the buffer to write into.
+pub const Peripherals = struct {
+    context: *anyopaque,
+    listFn: *const fn (*anyopaque, usize, []const u8, bool, []u8) anyerror![]const u8,
+};
+
 pub const Listing = struct {
     context: *anyopaque,
     listFn: *const fn (*anyopaque, []u8) anyerror![]const u8,
@@ -66,6 +74,8 @@ pub const Context = struct {
     camera: ?Camera = null,
     /// Writes the memory map for `map`; a server without one refuses it.
     mapping: ?Mapping = null,
+    /// Lists peripheral blocks and registers for `periph`; a server without one refuses it.
+    peripherals: ?Peripherals = null,
     /// Snapshots the RTC counters for `rtc`; a server without one refuses it.
     clock: ?session_rtc.Clock = null,
 
