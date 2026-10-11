@@ -60,11 +60,14 @@ pub const Served = struct {
     }
 
     /// Sample CPU0's call stacks every `every` instructions and answer
-    /// `folded` from them (RA8EMU-833). Call once, after open.
+    /// `folded` from them (RA8EMU-833), tagged with the ThreadX thread when
+    /// the image has one. Call once, after open.
     pub fn sampleStacks(self: *Served, every: u32) !void {
         const stacks = try self.gpa.create(harness.stacks.Stacks);
         stacks.* = .{ .every = @max(every, 1) };
         self.stacks = stacks;
+        // A ThreadX image tags each sample with its thread (RA8EMU-1149).
+        if (symbols.addressOf(self.owner.image(), "_tx_thread_current_ptr") != null) _ = self.owner.traceRtos();
         self.owner.sampleStacks(stacks);
         if (self.second) |cpu1| stacks.watch(1, cpu1.cpu(), &cpu1.image.?, &self.owner.board().time.base, null);
         self.context.folding = .{ .context = self, .foldFn = foldStacks };
