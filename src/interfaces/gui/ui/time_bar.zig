@@ -109,11 +109,11 @@ pub fn draw(list: *draw_list.DrawList, bar: Rect, view: View) !void {
     if (bar.empty()) return;
     try list.pushClip(bar);
     defer list.popClip();
-    try list.fill(bar, background);
+    try list.fill(bar, colors.ribbon_bg);
     try list.fill(.{ .x = bar.x, .y = bar.y, .w = bar.w, .h = 1 }, border);
     const layout = Layout.of(bar);
     for ([_]Control{ .run, .pause, .step }) |control| {
-        try button(list, layout.rect(control), control.label(), lights(control, view));
+        try button(list, layout.rect(control), control, view);
     }
     try fieldBox(list, layout.field, view);
     try text(list, layout.clock, view.clock, muted);
@@ -127,16 +127,30 @@ fn lights(control: Control, view: View) bool {
     };
 }
 
-fn button(list: *draw_list.DrawList, area: Rect, label: []const u8, on: bool) !void {
+fn button(list: *draw_list.DrawList, area: Rect, control: Control, view: View) !void {
     if (area.empty()) return;
-    try list.fill(area, if (on) lit else face);
-    try font.centred(list, area, label, if (on) background else ink);
+    const on = lights(control, view);
+    const bg = if (on) switch (control) {
+        .run => colors.run_lit,
+        .pause => colors.pause_lit,
+        .step => colors.step_active,
+        .field => lit,
+    } else face;
+    const btn_border = if (on) switch (control) {
+        .run => colors.good,
+        .pause => colors.highlight,
+        .step => colors.step_active,
+        .field => lit,
+    } else colors.control_border;
+    try list.fill(area, bg);
+    try outline(list, area, btn_border);
+    try font.centred(list, area, control.label(), if (on) background else ink);
 }
 
 fn fieldBox(list: *draw_list.DrawList, area: Rect, view: View) !void {
     if (area.empty()) return;
     try list.fill(area, well);
-    try outline(list, area, if (view.field_refused) refused else if (view.editing) lit else border);
+    try outline(list, area, if (view.field_refused) refused else if (view.editing) lit else colors.control_border);
     const shown = view.field;
     try text(list, area, shown, ink);
     if (!view.editing) return;

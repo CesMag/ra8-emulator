@@ -226,9 +226,17 @@ fn drawHeader(list: *draw_list.DrawList, cell: Rect, name: []const u8, folded: b
 }
 
 fn drawCell(list: *draw_list.DrawList, cell: Rect, name: []const u8, value: u32, moved: bool) !void {
-    try font.draw(list, cell.x + 2, cell.y + 2, name, muted);
+    const is_pc = std.mem.eql(u8, name, "pc");
+    if (is_pc) {
+        try list.fill(cell, colors.pc_band_bg);
+    } else if (moved) {
+        try list.fill(cell, colors.dirty_cell_bg);
+    }
+    const name_color = if (is_pc) colors.pc_cyan else muted;
+    try font.draw(list, cell.x + 2, cell.y + 2, name, name_color);
     var buffer: [8]u8 = undefined;
     const text = try std.fmt.bufPrint(&buffer, "{X:0>8}", .{value});
     const at = valueOrigin(cell);
-    try font.draw(list, at.x, at.y, text, if (moved) changed else ink);
+    const val_color = if (is_pc) colors.pc_cyan else if (moved) changed else ink;
+    try font.draw(list, at.x, at.y, text, val_color);
 }

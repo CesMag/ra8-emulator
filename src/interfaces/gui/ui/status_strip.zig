@@ -54,14 +54,16 @@ pub fn area(width: i32, window_h: i32) Rect {
 
 pub fn draw(list: *draw_list.DrawList, strip: Rect, view: *const Strip) !void {
     if (strip.empty()) return;
-    try list.fill(strip, background);
+    try list.fill(strip, colors.well);
     try list.fill(.{ .x = strip.x, .y = strip.y, .w = strip.w, .h = 1 }, border);
     try list.pushClip(strip);
     defer list.popClip();
     const middle = strip.y + 1 + @divTrunc(strip.h - 1 - dot, 2);
+    // Draw status indicator pill / badge
+    try list.fill(.{ .x = strip.x + pad - 1, .y = middle - 1, .w = dot + 2, .h = dot + 2 }, colors.status_pill);
     try list.fill(.{ .x = strip.x + pad, .y = middle, .w = dot, .h = dot }, view.tone.color());
     const line = view.line();
-    const left = strip.x + pad + dot + pad;
+    const left = strip.x + pad + dot + pad + 2;
     const room = strip.x + strip.w - pad - left;
     if (room <= 0) return;
     const shown = font.fit(line, @intCast(room));

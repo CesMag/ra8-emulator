@@ -47,9 +47,9 @@ test "the two-core layout binds panes to both cores" {
     defer solved.deinit(allocator);
     const want = [_]layout_mod.Pane{
         .{ .kind = .board, .core = .cpu0 },
+        .{ .kind = .disasm, .core = .cpu0 },
+        .{ .kind = .registers, .core = .cpu0 },
         .{ .kind = .console, .core = .cpu0 },
-        .{ .kind = .devices, .core = .cpu1 },
-        .{ .kind = .console, .core = .cpu1 },
     };
     for (solved.panes.items, want) |placed, pane| try std.testing.expectEqual(pane, layout.pane(placed.index).?);
 }

@@ -17,6 +17,7 @@ const Rect = draw_list.Rect;
 pub const background = colors.background;
 pub const muted = colors.muted;
 pub const ink = colors.ink;
+pub const unmapped = colors.unmapped_memory;
 pub const pad: i32 = 4;
 /// A row is one text line with a pixel of air above and below.
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
@@ -85,8 +86,8 @@ fn drawByte(list: *draw_list.DrawList, x: i32, y: i32, index: usize, byte: u8, r
     const hex_x = x + column(hexColumn(index));
     const ascii_x = x + column(ascii_at + index);
     if (!readable) {
-        try font.draw(list, hex_x, y, "??", muted);
-        return font.draw(list, ascii_x, y, "?", muted);
+        try font.draw(list, hex_x, y, "??", unmapped);
+        return font.draw(list, ascii_x, y, "?", unmapped);
     }
     var buffer: [2]u8 = undefined;
     try font.draw(list, hex_x, y, try std.fmt.bufPrint(&buffer, "{X:0>2}", .{byte}), ink);

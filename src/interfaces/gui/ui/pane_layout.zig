@@ -194,11 +194,14 @@ fn span(area: Rect, axis: Axis) i32 {
 pub fn twoCore(allocator: std.mem.Allocator) !Layout {
     var layout = try Layout.init(allocator, .{ .kind = .board, .core = .cpu0 });
     errdefer layout.deinit();
-    const right = try layout.split(layout.root, .across, .{ .kind = .devices, .core = .cpu1 });
+    // Split screen across: Left deck (Hardware & Disassembly) vs Right deck (Registers & Console)
+    const right = try layout.split(layout.root, .across, .{ .kind = .registers, .core = .cpu0 });
     const left = layout.node(layout.root).body.split.first;
-    _ = try layout.split(left, .down, .{ .kind = .console, .core = .cpu0 });
-    _ = try layout.split(right, .down, .{ .kind = .console, .core = .cpu1 });
-    layout.nodes.items[left].body.split.ratio = 0.65;
-    layout.nodes.items[right].body.split.ratio = 0.65;
+    // Left deck: Board on top, Disassembly on bottom
+    _ = try layout.split(left, .down, .{ .kind = .disasm, .core = .cpu0 });
+    // Right deck: Registers on top, Console on bottom
+    _ = try layout.split(right, .down, .{ .kind = .console, .core = .cpu0 });
+    layout.nodes.items[left].body.split.ratio = 0.55;
+    layout.nodes.items[right].body.split.ratio = 0.60;
     return layout;
 }
