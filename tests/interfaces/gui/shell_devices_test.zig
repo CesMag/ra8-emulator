@@ -5,6 +5,7 @@
 //! re-list after the session answers, and the refusal note.
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
+const light = &@import("gui_app").colors.palettes.light;
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
 const status_capture = gui_app.status_capture;
@@ -99,12 +100,12 @@ fn holds(pixels: *const raster.Framebuffer, area: draw_list.Rect, color: draw_li
     return false;
 }
 
-fn drawShell(gpa: std.mem.Allocator, devices: *const Devices, pixels: *raster.Framebuffer, layout: *pane_layout.Layout, solved: anytype) !void {
+fn drawShell(gpa: std.mem.Allocator, theme: *const gui_app.colors.Theme, devices: *const Devices, pixels: *raster.Framebuffer, layout: *pane_layout.Layout, solved: anytype) !void {
     var list = draw_list.DrawList.init(gpa, 480, 320);
     defer list.deinit();
     const status: status_bar.Status = .{};
     var painter: panes.Panes = .{ .devices = devices };
-    try frame.draw(&list, dark, .{ .layout = layout, .solved = solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
+    try frame.draw(&list, theme, .{ .layout = layout, .solved = solved, .strip = status_capture.strip(&status, .closed), .width = 480, .height = 320, .painter = painter.painter() });
     raster.draw(pixels, &list, font.atlas);
 }
 
@@ -118,7 +119,7 @@ test "the devices leaf draws a row per part in place of its note" {
     defer solved.deinit(gpa);
     var pixels = try raster.Framebuffer.init(gpa, 480, 320);
     defer pixels.deinit(gpa);
-    try drawShell(gpa, &devices, &pixels, &layout, &solved);
+    try drawShell(gpa, dark, &devices, &pixels, &layout, &solved);
     var leaves: usize = 0;
     for (solved.panes.items) |leaf| {
         const placed = layout.pane(leaf.index) orelse continue;
@@ -189,4 +190,36 @@ test "a refused unplug keeps the rows and leaves a note under them" {
     try std.testing.expect(holds(&pixels, shell_devices.unplugCell(body, 0), dark.muted));
     const under: draw_list.Rect = .{ .x = 0, .y = frame.pad + shell_devices.row_h, .w = 240, .h = font.glyph_h };
     try std.testing.expect(holds(&pixels, under, dark.muted));
+}
+
+/// The devices leaf, listing one part, in `theme`: FNV-1a over the leaf's
+/// own pixels, so only the devices pane moves this golden.
+fn devicesDigest(theme: *const gui_app.colors.Theme) !u64 {
+    const gpa = std.testing.allocator;
+    var devices: Devices = .{ .asked = 1 };
+    try answer(&devices, 1, "lsm6dso@i2c:touch@0x6b\n");
+    var layout = try pane_layout.twoCore(gpa);
+    defer layout.deinit();
+    var solved = try frame.solve(&layout, gpa, 480, 320);
+    defer solved.deinit(gpa);
+    var pixels = try raster.Framebuffer.init(gpa, 480, 320);
+    defer pixels.deinit(gpa);
+    try drawShell(gpa, theme, &devices, &pixels, &layout, &solved);
+    var hash = std.hash.Fnv1a_64.init();
+    for (solved.panes.items) |leaf| {
+        const placed = layout.pane(leaf.index) orelse continue;
+        if (placed.kind != .devices) continue;
+        var y = leaf.area.y;
+        while (y < leaf.area.y + leaf.area.h) : (y += 1) {
+            const start: usize = @intCast(y * 480 + leaf.area.x);
+            hash.update(std.mem.sliceAsBytes(pixels.pixels[start..][0..@intCast(leaf.area.w)]));
+        }
+        return hash.final();
+    }
+    return error.NoDevicesLeaf;
+}
+
+test "the devices leaf rasterises to a pinned golden in each palette" {
+    try std.testing.expectEqual(@as(u64, 4050192518716919535), try devicesDigest(dark));
+    try std.testing.expectEqual(@as(u64, 1810762630783763910), try devicesDigest(light));
 }
