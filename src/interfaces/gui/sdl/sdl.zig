@@ -19,6 +19,7 @@ const Event = gui.platform.Event;
 const Size = gui.platform.Size;
 const window_size = gui.window.size;
 const window_keys = gui.window.keys;
+const render_driver = gui.render_driver;
 
 pub const Error = error{ SdlInit, SdlWindow, SdlRenderer, SdlTexture, SdlPresent };
 
@@ -47,8 +48,20 @@ pub const Sdl = struct {
             return fail(Error.SdlWindow);
         errdefer c.SDL_DestroyWindow(window);
         _ = c.SDL_SetWindowMinimumSize(window, @intCast(window_size.min.width), @intCast(window_size.min.height));
-        const renderer = c.SDL_CreateRenderer(window, null) orelse return fail(Error.SdlRenderer);
+        var chain: DriverChain = .{ .window = window };
+        const picked = render_driver.select(render_driver.hint(builtin.os.tag), &chain) orelse
+            return fail(Error.SdlRenderer);
+        const renderer = chain.renderer.?;
         const vsync = c.SDL_SetRenderVSync(renderer, 1);
+        render_driver.active = std.mem.span(c.SDL_GetRendererName(renderer));
+        var note_buf: [128]u8 = undefined;
+        if (render_driver.note(picked, &note_buf)) |message| {
+            std.debug.print("ra8_gui: {s}\n", .{message});
+        }
+        const props = c.SDL_GetRendererProperties(renderer);
+        const device = c.SDL_GetPointerProperty(props, c.SDL_PROP_RENDERER_GPU_DEVICE_POINTER, null);
+        if (device) |d| render_driver.gpu = std.mem.span(c.SDL_GetGPUDeviceDriver(@ptrCast(@alignCast(d))));
+
         // Shifted characters reach the console pane as text events.
         _ = c.SDL_StartTextInput(window);
         var self = Sdl{ .window = window, .renderer = renderer, .vsync = vsync };
@@ -59,6 +72,8 @@ pub const Sdl = struct {
     }
 
     pub fn deinit(self: *Sdl) void {
+        render_driver.active = "";
+        render_driver.gpu = null;
         if (self.presenter) |*p| p.deinit();
         if (self.texture) |t| c.SDL_DestroyTexture(t);
         c.SDL_DestroyRenderer(self.renderer);
@@ -240,4 +255,26 @@ fn translate(ev: *const c.SDL_Event) ?Event {
 fn fail(err: Error) Error {
     std.log.err("{s}: {s}", .{ @errorName(err), c.SDL_GetError() });
     return err;
+}
+
+/// The render-driver chain (RA8EMU-226): `select` calls tryDriver per
+/// candidate; the winner's handle stays here.
+const DriverChain = struct {
+    window: *c.SDL_Window,
+    renderer: ?*c.SDL_Renderer = null,
+
+    pub fn tryDriver(self: *DriverChain, name: []const u8) ?*c.SDL_Renderer {
+        self.renderer = createNamedRenderer(self.window, name);
+        return self.renderer;
+    }
+};
+
+/// SDL_CreateRenderer for one driver name, copied to a sentinel for SDL.
+fn createNamedRenderer(window: *c.SDL_Window, name: []const u8) ?*c.SDL_Renderer {
+    var buf: [64]u8 = undefined;
+    if (name.len >= buf.len) return null;
+    @memcpy(buf[0..name.len], name);
+    buf[name.len] = 0;
+    const sentinel: [*:0]const u8 = buf[0..name.len :0].ptr;
+    return c.SDL_CreateRenderer(window, sentinel);
 }

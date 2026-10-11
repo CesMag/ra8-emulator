@@ -10,6 +10,7 @@ const std = @import("std");
 const host_profiles = @import("ra8_host").profiles;
 const platform = @import("../platform.zig");
 const pane_layout = @import("../ui/pane_layout.zig");
+const render_driver = @import("../render_driver.zig");
 const shell_loop = @import("loop.zig");
 const shell_panes = @import("panes.zig");
 const shell_console = @import("console.zig");
@@ -40,7 +41,7 @@ const colors = @import("../ui/colors.zig");
 const Env = proto.Client.Env;
 const usage = "usage: ra8_gui [--host NAME] [--hosts FILE] [--attach MODEL@ENDPOINT]... [--click]\n" ++
     "    [--app FILE.ra8app[=MODULE.elf]]... [--camera-source KIND[:ARG]] [--window-stills DIR [--window-stills-every N]]\n" ++
-    "    [--frames N] [--theme dark|light|system] IMAGE\n";
+    "    [--frames N] [--theme dark|light|system] [--render-driver NAME] IMAGE\n";
 
 /// The word `ra8_gui shell IMAGE` carried while ra8_gui also had a live
 /// window; still taken in front of the flags, and it changes nothing.
@@ -74,6 +75,8 @@ pub const Args = struct {
     /// `--theme dark|light|system`: the palette the window paints with
     /// (RA8EMU-961); system follows the OS setting live (RA8EMU-962).
     theme: colors.Choice = .dark,
+    /// `--render-driver NAME`: the only render driver tried (RA8EMU-226).
+    render_driver: ?[]const u8 = null,
 };
 
 /// Parse `ra8_gui [flags] IMAGE`; see `usage`.
@@ -105,7 +108,7 @@ pub fn parse(argv: []const []const u8) error{Usage}!Args {
     return args;
 }
 
-const valued_flags = [_][]const u8{ "--host", "--hosts", "--attach", "--app", "--camera-source", "--window-stills", "--window-stills-every", "--frames", "--theme" };
+const valued_flags = [_][]const u8{ "--host", "--hosts", "--attach", "--app", "--camera-source", "--window-stills", "--window-stills-every", "--frames", "--theme", "--render-driver" };
 
 fn valued(arg: []const u8) bool {
     for (valued_flags) |flag| if (std.mem.eql(u8, arg, flag)) return true;
@@ -130,6 +133,8 @@ fn take(args: *Args, flag: []const u8, value: []const u8) !void {
         args.stills_every = try count(value);
     } else if (std.mem.eql(u8, flag, "--theme")) {
         args.theme = std.meta.stringToEnum(colors.Choice, value) orelse return error.BadValue;
+    } else if (std.mem.eql(u8, flag, "--render-driver")) {
+        args.render_driver = value;
     } else {
         args.frames = try count(value);
     }
@@ -169,6 +174,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
         std.debug.print("cannot read {s}: {s}\n", .{ args.image, @errorName(err) });
         return 1;
     };
+    render_driver.override = args.render_driver;
     const window = opener.open() orelse {
         std.debug.print("ra8_gui could not open a window\n", .{});
         return 2;
@@ -209,6 +215,8 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     var link: session_link.Link = undefined;
     link.open(session.transport(), rx, tx);
     var shell = shell_loop.Shell.init(allocator, try pane_layout.twoCore(allocator));
+    var render_buf: [64]u8 = undefined;
+    shell.status.render = render_driver.status(&render_buf, render_driver.active, render_driver.gpu);
     shell.theme = colors.of(args.theme);
     shell.follow_os = args.theme == .system;
     defer shell.deinit();

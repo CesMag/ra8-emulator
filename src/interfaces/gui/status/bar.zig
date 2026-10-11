@@ -60,6 +60,8 @@ pub const Status = struct {
     load_id: ?u32 = null,
     pc_id: ?u32 = null,
     run_id: ?u32 = null,
+    /// The window's render segment, set once the backend opened (RA8EMU-226).
+    render: ?[]const u8 = null,
 
     /// Load `bytes` (read from `path`) on this core, then read where it halted.
     pub fn load(self: *Status, link: *Link, path: []const u8, bytes: []const u8) !void {
@@ -149,6 +151,7 @@ pub const Status = struct {
             },
         }
         if (self.refused) |what| try out.print(" | {s}", .{what.message()});
+        if (self.render) |what| try out.print(" | {s}", .{what});
         return stream.buffered();
     }
 };

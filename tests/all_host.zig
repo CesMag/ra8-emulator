@@ -83,6 +83,7 @@ test {
     _ = @import("interfaces/gui/flame_pane_test.zig");
     _ = @import("interfaces/gui/map_pane_test.zig");
     _ = @import("interfaces/gui/flame/open_test.zig");
+    _ = @import("interfaces/gui/render_driver_test.zig");
     _ = @import("interfaces/gui/flame/folded_test.zig");
     _ = @import("interfaces/gui/flame/thread_test.zig");
     _ = @import("interfaces/gui/ui/hex_entry_test.zig");
