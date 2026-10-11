@@ -56,8 +56,8 @@ pub const Layout = struct {
         const pause_at = place(bar, &x, top, .pause);
         const step = place(bar, &x, top, .step);
         const field = place(bar, &x, top, .field);
-        const clock = bar.intersect(.{ .x = x, .y = top, .w = bar.x + bar.w - pad - x, .h = control_h });
-        return .{ .run = run, .pause = pause_at, .step = step, .field = field, .clock = clock };
+        const clock_rect = bar.intersect(.{ .x = x, .y = top, .w = bar.x + bar.w - pad - x, .h = control_h });
+        return .{ .run = run, .pause = pause_at, .step = step, .field = field, .clock = clock_rect };
     }
 
     /// The next control at `x.*`, cut to the bar; moves `x` past it and the gap.
@@ -164,6 +164,11 @@ fn button(paint: *const widget.types.Paint, theme: *const Theme, area: Rect, con
     _ = widget.button.ra8_widget_button_init(&w, &descriptor);
     w.rect = .{ .x = area.x, .y = area.y, .w = area.w, .h = area.h };
     w.vt.?.render.?(&w);
+}
+
+/// `color` as the widget's 0x00RRGGBB colour word.
+fn word(color: draw_list.Color) u32 {
+    return @as(u32, color.r) << 16 | @as(u32, color.g) << 8 | color.b;
 }
 
 /// The clock readout as the firmware's label widget, one line on the bar's
