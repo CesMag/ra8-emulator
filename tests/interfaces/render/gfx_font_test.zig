@@ -1,6 +1,8 @@
 //! Covers src/interfaces/render/gfx_font.zig: the atlas holds every printable
 //! ra8_gfx sans glyph in its own cell, lookups fall back to '?', text fits by
-//! whole cells, and drawn text lands in the frame.
+//! whole cells, and drawn text lands in the frame. A glyph drawn at a
+//! negative offset, or centred in an area too short for it, keeps its rows
+//! where they belong (RA8EMU-1168).
 const std = @import("std");
 const ra8 = @import("ra8");
 const font = ra8.render.font;
@@ -137,4 +139,74 @@ test "text drawn at negative offsets keeps its shapes; only the target clips" {
         if (px < 35 and py < 19) continue;
         try std.testing.expectEqual(@as(u8, 0), frame.at(@intCast(px), @intCast(py)).a);
     };
+}
+
+/// The top of the first glyph `centred` adds for an area `h` tall at y 20.
+fn centredTop(h: i32) !i32 {
+    var list = draw_list.DrawList.init(std.testing.allocator, 64, 64);
+    defer list.deinit();
+    try font.centred(&list, .{ .x = 10, .y = 20, .w = 40, .h = h }, "H", Color.rgb(1, 2, 3));
+    return list.commands.items[0].shape.glyph.area.y;
+}
+
+test "a label centred in an area shorter than a glyph overhangs it evenly" {
+    const glyph: i32 = font.glyph_h;
+    try std.testing.expectEqual(@as(i32, 21), try centredTop(glyph + 2));
+    try std.testing.expectEqual(@as(i32, 20), try centredTop(glyph + 1));
+    try std.testing.expectEqual(@as(i32, 20), try centredTop(glyph));
+    // One and two pixels short both lift it one; toward zero left the first where it was.
+    try std.testing.expectEqual(@as(i32, 19), try centredTop(glyph - 1));
+    try std.testing.expectEqual(@as(i32, 19), try centredTop(glyph - 2));
+    try std.testing.expectEqual(@as(i32, 18), try centredTop(glyph - 3));
+    try std.testing.expectEqual(@as(i32, 18), try centredTop(glyph - 4));
+}
+
+test "a glyph drawn at a negative offset shows the rows and columns that are left, unshifted" {
+    const red = Color.rgb(255, 0, 0);
+    const origin = font.cell('H');
+    for ([_][2]i32{ .{ 0, 0 }, .{ -1, -3 }, .{ -3, -5 }, .{ -7, -15 }, .{ 2, -4 } }) |pen| {
+        var list = draw_list.DrawList.init(std.testing.allocator, 12, 20);
+        defer list.deinit();
+        var frame = try raster.Framebuffer.init(std.testing.allocator, 12, 20);
+        defer frame.deinit(std.testing.allocator);
+        try font.draw(&list, pen[0], pen[1], "H", red);
+        raster.draw(&frame, &list, font.atlas);
+        var seen: u32 = 0;
+        for (0..20) |y| for (0..12) |x| {
+            const column = @as(i32, @intCast(x)) - pen[0];
+            const row = @as(i32, @intCast(y)) - pen[1];
+            const inside = column >= 0 and row >= 0 and column < font.cell_w and row < font.cell_h;
+            const inked = inside and at(origin.x + @as(u32, @intCast(column)), origin.y + @as(u32, @intCast(row))) != 0;
+            try std.testing.expectEqual(inked, frame.at(@intCast(x), @intCast(y)).a != 0);
+            seen += @intFromBool(inked);
+        };
+        if (pen[0] > -7) try std.testing.expect(seen > 0);
+    }
+}
+
+test "a label taller than its clipped area keeps its middle rows, the same above and below" {
+    const red = Color.rgb(255, 0, 0);
+    const origin = font.cell('H');
+    const glyph: i32 = font.glyph_h;
+    for ([_]i32{ glyph - 1, glyph - 2, glyph - 5, 4 }) |h| {
+        var list = draw_list.DrawList.init(std.testing.allocator, 24, 40);
+        defer list.deinit();
+        var frame = try raster.Framebuffer.init(std.testing.allocator, 24, 40);
+        defer frame.deinit(std.testing.allocator);
+        const area: draw_list.Rect = .{ .x = 4, .y = 12, .w = 16, .h = h };
+        try list.pushClip(area);
+        try font.centred(&list, area, "H", red);
+        list.popClip();
+        raster.draw(&frame, &list, font.atlas);
+        // The glyph row under the area's first row: half the overhang, the odd pixel above.
+        const first = @divFloor(glyph - h + 1, 2);
+        const left = area.x + @divFloor(area.w - @as(i32, font.glyph_w), 2);
+        for (0..40) |y| for (0..24) |x| {
+            const row = @as(i32, @intCast(y)) - area.y + first;
+            const column = @as(i32, @intCast(x)) - left;
+            const shown = area.contains(@intCast(x), @intCast(y)) and column >= 0 and column < font.cell_w;
+            const inked = shown and at(origin.x + @as(u32, @intCast(column)), origin.y + @as(u32, @intCast(row))) != 0;
+            try std.testing.expectEqual(inked, frame.at(@intCast(x), @intCast(y)).a != 0);
+        };
+    }
 }

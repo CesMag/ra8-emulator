@@ -56,7 +56,7 @@ pub fn draw(list: *draw_list.DrawList, theme: *const Theme, strip: Rect, view: *
     try list.fill(.{ .x = strip.x, .y = strip.y, .w = strip.w, .h = 1 }, theme.border);
     try list.pushClip(strip);
     defer list.popClip();
-    const middle = strip.y + 1 + @divTrunc(strip.h - 1 - dot, 2);
+    const middle = strip.y + 1 + draw_list.centre(strip.h - 1, dot);
     // The dot sits on a pill a pixel wider all round.
     try list.fill(.{ .x = strip.x + pad - 1, .y = middle - 1, .w = dot + 2, .h = dot + 2 }, theme.status_pill);
     try list.fill(.{ .x = strip.x + pad, .y = middle, .w = dot, .h = dot }, view.tone.color(theme));
@@ -65,6 +65,6 @@ pub fn draw(list: *draw_list.DrawList, theme: *const Theme, strip: Rect, view: *
     const room = strip.x + strip.w - pad - left;
     if (room <= 0) return;
     const shown = font.fit(line, @intCast(room));
-    const top = strip.y + 1 + @divTrunc(strip.h - 1 - @as(i32, font.glyph_h), 2);
+    const top = strip.y + 1 + draw_list.centre(strip.h - 1, font.glyph_h);
     try font.draw(list, left, top, shown, theme.ink);
 }

@@ -42,6 +42,16 @@ pub const Rect = struct {
     }
 };
 
+/// Where a span `size` long starts, from the start of a span `room` long it
+/// is centred in. The odd pixel is rounded toward negative infinity
+/// (RA8EMU-1168), so a glyph taller or a label wider than its room hangs
+/// over both edges and moves one pixel for every two the room shrinks.
+/// Rounding toward zero stalls it for three sizes around the fit instead,
+/// which sets it a pixel off whenever it overhangs by an odd amount.
+pub fn centre(room: i32, size: i32) i32 {
+    return @divFloor(room - size, 2);
+}
+
 /// Rows of RGBA pixels an image quad scales into its area.
 pub const Image = struct {
     width: u32,

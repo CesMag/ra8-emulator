@@ -119,7 +119,7 @@ fn drawLeaf(list: *draw_list.DrawList, theme: *const Theme, pane: Pane, area: Re
     const title = titleOf(area);
     try list.fill(title, theme.face);
     try list.fill(.{ .x = title.x, .y = title.y + title.h - 1, .w = title.w, .h = 1 }, theme.border);
-    const top = title.y + @divTrunc(title.h - @as(i32, font.glyph_h), 2);
+    const top = title.y + draw_list.centre(title.h, font.glyph_h);
     const core = coreName(pane.core);
     const core_w: i32 = @intCast(font.textWidth(core.len));
     const room = title.w - 2 * pad;

@@ -158,5 +158,5 @@ fn inset(area: Rect) Rect {
 /// A name centred under `area`.
 fn label(list: *draw_list.DrawList, area: Rect, text: []const u8, color: Color) !void {
     const w: i32 = @intCast(font.textWidth(text.len));
-    try font.draw(list, area.x + @divTrunc(area.w - w, 2), area.y + area.h + 2, text, color);
+    try font.draw(list, area.x + draw_list.centre(area.w, w), area.y + area.h + 2, text, color);
 }

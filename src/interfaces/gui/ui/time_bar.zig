@@ -50,7 +50,7 @@ pub const Layout = struct {
     clock: Rect,
 
     pub fn of(bar: Rect) Layout {
-        const top = bar.y + 1 + @divTrunc(bar.h - 1 - control_h, 2);
+        const top = bar.y + 1 + draw_list.centre(bar.h - 1, control_h);
         var x = bar.x + pad;
         const run = place(bar, &x, top, .run);
         const pause_at = place(bar, &x, top, .pause);
@@ -172,25 +172,33 @@ fn word(color: draw_list.Color) u32 {
 }
 
 /// The clock readout as the firmware's label widget, one line on the bar's
-/// own background.
+/// own background. A left-aligned label sets its text one pad in from its
+/// corner, so the label is given the centring offset as its pad and starts
+/// far enough right to keep the text a `pad` in: the readout then stands
+/// on the same row as the button labels and the speed field (RA8EMU-1168).
+/// The line is cut to whole cells first. The widget draws what it is given,
+/// and the bar's clip would otherwise cut the last glyph through.
 fn clock(paint: *const widget.types.Paint, theme: *const Theme, area: Rect, view: View) !void {
-    if (area.empty()) return;
+    const room = area.w - 2 * pad;
+    if (area.empty() or room <= 0) return;
+    const shown = font.fit(view.clock, @intCast(room));
     var buf: [160]u8 = undefined;
-    const n = @min(view.clock.len, buf.len - 1);
-    @memcpy(buf[0..n], view.clock);
+    const n = @min(shown.len, buf.len - 1);
+    @memcpy(buf[0..n], shown[0..n]);
     buf[n] = 0;
+    const down = draw_list.centre(area.h, font.glyph_h);
     var descriptor = widget.label.Label{
         .paint = paint,
         .text = buf[0..n :0].ptr,
         .fg = word(theme.muted),
         .bg = word(theme.ribbon_bg),
-        .pad = pad,
+        .pad = @intCast(down),
         .alignment = .left,
         .face = .sans,
     };
     var w: widget.types.Widget = undefined;
     _ = widget.label.ra8_widget_label_init(&w, &descriptor);
-    w.rect = .{ .x = area.x, .y = area.y, .w = area.w, .h = area.h };
+    w.rect = .{ .x = area.x + pad - down, .y = area.y, .w = area.w - (pad - down), .h = area.h };
     w.vt.?.render.?(&w);
 }
 
@@ -217,7 +225,7 @@ fn text(list: *draw_list.DrawList, area: Rect, line: []const u8, color: Color) !
     const room = area.w - 2 * pad;
     if (room <= 0) return;
     const shown = font.fit(line, @intCast(room));
-    const top = area.y + @divTrunc(area.h - @as(i32, font.glyph_h), 2);
+    const top = area.y + draw_list.centre(area.h, font.glyph_h);
     try font.draw(list, area.x + pad, top, shown, color);
 }
 

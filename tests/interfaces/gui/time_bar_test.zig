@@ -1,8 +1,10 @@
 //! Host tests for the time bar (RA8EMU-807): where each control sits, what a
 //! click lands on, a pinned CPU-backend golden frame, a narrow bar that never
-//! paints past its area, and clicks on step, run and pause: a step goes to
-//! a spawned `serve --stdio` child, and run and pause light and unlight the
-//! shell's sliced run (shell_run_test.zig runs the slices).
+//! paints past its area, the clock readout on the row its neighbours stand
+//! on and cut to whole cells (RA8EMU-1168), and clicks on step, run and
+//! pause: a step goes to a spawned `serve --stdio` child, and run and pause
+//! light and unlight the shell's sliced run (shell_run_test.zig runs the
+//! slices).
 const std = @import("std");
 const dark = &@import("gui_app").colors.palettes.dark;
 const light = &@import("gui_app").colors.palettes.light;
@@ -108,7 +110,7 @@ test "the bar rasterises to the pinned golden frame" {
     defer scene.deinit();
     var models = Models.sample();
     try scene.render(.{ .x = 0, .y = 0, .w = 480, .h = bar.height }, models.view(false));
-    try std.testing.expectEqual(@as(u64, 18386105179906758611), scene.digest());
+    try std.testing.expectEqual(@as(u64, 15007699599523115719), scene.digest());
 }
 
 test "the bar rasterises to the pinned golden frame in the light theme" {
@@ -117,7 +119,7 @@ test "the bar rasterises to the pinned golden frame in the light theme" {
     scene.theme = light;
     var models = Models.sample();
     try scene.render(.{ .x = 0, .y = 0, .w = 480, .h = bar.height }, models.view(false));
-    try std.testing.expectEqual(@as(u64, 14978640878135143022), scene.digest());
+    try std.testing.expectEqual(@as(u64, 16234191626027740266), scene.digest());
 }
 
 test "the editing field rasterises to its pinned golden frame" {
@@ -127,7 +129,7 @@ test "the editing field rasterises to its pinned golden frame" {
     models.status.run = .running;
     models.field.typed("5");
     try scene.render(.{ .x = 0, .y = 0, .w = 480, .h = bar.height }, models.view(true));
-    try std.testing.expectEqual(@as(u64, 7856159875751677862), scene.digest());
+    try std.testing.expectEqual(@as(u64, 17622458108587683926), scene.digest());
 }
 
 test "the bar with an RTC date rasterises to its pinned golden frame, wide enough for the whole line" {
@@ -136,7 +138,71 @@ test "the bar with an RTC date rasterises to its pinned golden frame, wide enoug
     var models = Models.sample();
     models.readout.date = .{ .year = 2026, .month = 10, .day = 8, .hour = 9, .minute = 47, .second = 5 };
     try scene.render(.{ .x = 0, .y = 0, .w = 800, .h = bar.height }, models.view(false));
-    try std.testing.expectEqual(@as(u64, 17005701407175938896), scene.digest());
+    try std.testing.expectEqual(@as(u64, 784415439429954224), scene.digest());
+}
+
+/// The first row inside `area` with a pixel of `color`, or null.
+fn firstRow(scene: *const Scene, area: Rect, color: draw_list.Color) ?i32 {
+    var y = area.y;
+    while (y < area.y + area.h) : (y += 1) {
+        var x = area.x;
+        while (x < area.x + area.w) : (x += 1) {
+            if (std.meta.eql(scene.frame.at(@intCast(x), @intCast(y)), color)) return y;
+        }
+    }
+    return null;
+}
+
+test "the clock readout stands on the row the button labels and the speed field stand on" {
+    for ([_]*const Theme{ dark, light }) |theme| {
+        var scene = try Scene.init(480, bar.height);
+        defer scene.deinit();
+        scene.theme = theme;
+        var models = Models.sample();
+        const area: Rect = .{ .x = 0, .y = 0, .w = 480, .h = bar.height };
+        try scene.render(area, models.view(false));
+        const layout = bar.Layout.of(area);
+        // "Step", the field's "0.25x" and the clock's "T+" all start with a full-height glyph.
+        const want = layout.step.y + @divFloor(layout.step.h - @as(i32, font.glyph_h), 2);
+        const label = firstRow(&scene, layout.step, theme.ink).?;
+        try std.testing.expect(label >= want and label < want + @as(i32, font.glyph_h));
+        try std.testing.expectEqual(label, firstRow(&scene, layout.field, theme.ink).?);
+        try std.testing.expectEqual(label, firstRow(&scene, layout.clock, theme.muted).?);
+    }
+}
+
+test "a clock line too long for its room is cut to whole cells and keeps the bar's pad clear" {
+    const cell: i32 = @intCast(font.cell_w);
+    for ([_]u32{ 300, 437, 455, 640 }) |width| {
+        var scene = try Scene.init(width, bar.height);
+        defer scene.deinit();
+        var models = Models.sample();
+        models.readout.date = .{ .year = 2026, .month = 10, .day = 8, .hour = 9, .minute = 47, .second = 5 };
+        const view = models.view(false);
+        const area: Rect = .{ .x = 0, .y = 0, .w = @intCast(width), .h = bar.height };
+        try scene.render(area, view);
+        const clock = bar.Layout.of(area).clock;
+        const cells = @divFloor(clock.w - 2 * bar.pad, cell);
+        try std.testing.expect(cells > 0 and cells < view.clock.len);
+        const left = clock.x + bar.pad;
+        const top = clock.y + @divFloor(clock.h - @as(i32, font.glyph_h), 2);
+        // Nothing of the line past its last whole cell, up to the bar's edge.
+        var x = left + cells * cell;
+        while (x < area.w) : (x += 1) {
+            var y: i32 = 0;
+            while (y < area.h) : (y += 1) try std.testing.expect(!std.meta.eql(scene.frame.at(@intCast(x), @intCast(y)), dark.muted));
+        }
+        // Every cell that is shown is the whole glyph.
+        var index: usize = 0;
+        while (index < cells) : (index += 1) {
+            const origin = font.cell(view.clock[index]);
+            for (0..font.cell_h) |row| for (0..font.cell_w) |column| {
+                const inked = view.clock[index] != ' ' and font.atlas.coverage[(origin.y + row) * font.atlas.width + origin.x + column] != 0;
+                const at = scene.frame.at(@intCast(left + @as(i32, @intCast(index)) * cell + @as(i32, @intCast(column))), @intCast(top + @as(i32, @intCast(row))));
+                try std.testing.expectEqual(inked, std.meta.eql(at, dark.muted));
+            };
+        }
+    }
 }
 
 test "a bar too narrow for its controls paints nothing past its area" {
