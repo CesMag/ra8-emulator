@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/shift_reg.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/shift/reg.zig against its parity digest.
 const parity = @import("../parity.zig");
 const samples = @import("../shift_reg_samples.zig");
 

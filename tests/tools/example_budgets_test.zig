@@ -1,4 +1,4 @@
-//! Covers tools/example_budgets.zig: which budget each image runs at.
+//! Covers tools/example/budgets.zig: which budget each image runs at.
 const std = @import("std");
 const table = @import("example_table");
 

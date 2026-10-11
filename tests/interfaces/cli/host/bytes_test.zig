@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/host_bytes.zig: a host handle as a model's
+//! Covers src/interfaces/cli/host/bytes.zig: a host handle as a model's
 //! byte source, read without waiting.
 const std = @import("std");
 const cli_app = @import("cli_app");

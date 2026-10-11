@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/branch_future_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/branch/future_vectors.zig: each
 //! vector runs through the `branch_future` group over the exception tests'
 //! RAM and checks the state it leaves.
 const std = @import("std");

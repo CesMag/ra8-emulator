@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_serial.zig, json_storage.zig and
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/serial.zig, json_storage.zig and
 //! json_riic.zig: the `serial`, `storage` and `riic` parts of
 //! `--report json`, parsed back with std.json.
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_clock.zig and json_modules.zig:
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/clock.zig and json_modules.zig:
 //! the `clocks` object of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");

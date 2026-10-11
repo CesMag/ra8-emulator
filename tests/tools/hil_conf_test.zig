@@ -1,4 +1,4 @@
-//! Covers tools/hil_conf.zig against the shapes the firmware's hil.conf
+//! Covers tools/hil/conf.zig against the shapes the firmware's hil.conf
 //! files use.
 const std = @import("std");
 const table = @import("example_table");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/second_state.zig: CPU1's run state with no engine.
+//! Covers src/chip/core/second/state.zig: CPU1's run state with no engine.
 const std = @import("std");
 const ra8 = @import("ra8");
 const State = ra8.chip.core.second.core.State;

@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/gdb/rsp_units.zig: a debugger store into the DWT and
+//! Tests for src/interfaces/gdb/rsp/units.zig: a debugger store into the DWT and
 //! DEMCR reaches the models the way a firmware store does.
 const std = @import("std");
 const ra8 = @import("ra8");

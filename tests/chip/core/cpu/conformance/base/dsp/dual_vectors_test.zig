@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/dsp_dual_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/dsp/dual_vectors.zig: each vector
 //! runs through the `dsp_dual` group on a bare core holding N, C and the
 //! vector's Q.
 const std = @import("std");

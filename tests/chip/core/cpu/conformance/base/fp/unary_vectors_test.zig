@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/fp_unary_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/fp/unary_vectors.zig: each vector
 //! runs through the `fp_unary` group with its operand in place and the
 //! destination preset to all ones.
 const std = @import("std");

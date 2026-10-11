@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_load.zig: who each stretch of virtual time is
+//! Tests for src/session/rtos/load.zig: who each stretch of virtual time is
 //! charged to, how the window cuts it, and that cores are kept apart.
 const std = @import("std");
 const ra8 = @import("ra8");

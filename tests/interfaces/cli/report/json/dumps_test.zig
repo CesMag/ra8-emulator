@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_dumps.zig: the `dumps` object of
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/dumps.zig: the `dumps` object of
 //! `--report json`, read off the Zig core's store and registers and parsed
 //! back with std.json.
 const std = @import("std");

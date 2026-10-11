@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/gui/window_still.zig: a window frame leaves as
+//! Tests for src/interfaces/gui/window/still.zig: a window frame leaves as
 //! an opaque PNG of its own size, and stills are numbered in order.
 const std = @import("std");
 const ra8 = @import("ra8");

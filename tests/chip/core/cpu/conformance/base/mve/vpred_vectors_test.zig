@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_vpred_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/vpred_vectors.zig: each vector
 //! runs through the `mve_vpred` group over a patterned FP bank with VPR,
 //! the IT byte, LR and FPSCR.LTPSIZE set first.
 const std = @import("std");

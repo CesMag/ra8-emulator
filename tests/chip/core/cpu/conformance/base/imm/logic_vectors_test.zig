@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/imm_logic_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/imm/logic_vectors.zig: each vector
 //! runs through the `imm_logic` group on a bare core holding N and C.
 const std = @import("std");
 const ra8 = @import("ra8");

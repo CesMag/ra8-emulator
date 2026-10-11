@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/cli/report/usb_cable.zig.
+//! Tests for src/interfaces/cli/report/usb/cable.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/counted_bound.zig: how many more trips of a bounded
+//! Covers src/chip/core/cpu/counted/bound.zig: how many more trips of a bounded
 //! poll take the traced path (RA8EMU-602).
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_lob_tp.zig across exceptions (RA8EMU-238):
+//! Covers src/chip/core/cpu/ops/mve/lob_tp.zig across exceptions (RA8EMU-238):
 //! PendSV taken in the middle of a tail-predicated loop, with the loop
 //! finishing afterwards on the right count and the right predicated
 //! result. LR goes out in the frame and LTPSIZE in the FPSCR word, so both

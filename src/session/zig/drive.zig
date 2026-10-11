@@ -9,7 +9,7 @@ const cpu_mod = @import("ra8_chip").core.cpu.cpu;
 const dispatch = @import("ra8_chip").core.cpu.exception.dispatch;
 const watch_bus = @import("../watch/bus.zig");
 const zig_cycles = @import("cycles.zig");
-/// Re-exported for tests/session/zig_monitor_test.zig.
+/// Re-exported for tests/session/zig/monitor_test.zig.
 pub const zig_monitor = @import("monitor.zig");
 
 /// How a driven run ended.

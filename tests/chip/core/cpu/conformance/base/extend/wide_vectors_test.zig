@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/extend_wide_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/extend/wide_vectors.zig: each vector
 //! runs through the `extend_wide` group on a bare core holding N and C.
 const std = @import("std");
 const ra8 = @import("ra8");

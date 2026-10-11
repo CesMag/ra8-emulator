@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_vmaxv_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/vmaxv_vectors.zig: each vector
 //! runs through the `mve_vmaxv` group with Q1, Rda, VPR, the IT byte, LR
 //! and FPSCR.LTPSIZE set first.
 const std = @import("std");

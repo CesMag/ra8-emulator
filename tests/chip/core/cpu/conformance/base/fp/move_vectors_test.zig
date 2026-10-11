@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/fp_move_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/fp/move_vectors.zig: each vector
 //! runs through the `fp_move` group from the patterned core and FP banks.
 const std = @import("std");
 const ra8 = @import("ra8");

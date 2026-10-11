@@ -1,4 +1,4 @@
-//! Covers src/host/camera/av_objc.zig against a fake runtime: typed
+//! Covers src/host/camera/av/objc.zig against a fake runtime: typed
 //! sends reach objc_msgSend with the right selector and arguments, `new`
 //! is alloc then init, and the delegate class is registered once with
 //! didOutput, reused later, and disposed when the method won't attach.

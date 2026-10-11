@@ -1,4 +1,4 @@
-//! Covers src/host/camera/av_info_plist.zig: the plist names the camera
+//! Covers src/host/camera/av/info_plist.zig: the plist names the camera
 //! use and the bundle, is one well-formed plist document, and goes in the
 //! section macOS reads for an unbundled binary.
 const std = @import("std");

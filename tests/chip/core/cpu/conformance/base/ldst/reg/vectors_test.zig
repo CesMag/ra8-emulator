@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/ldst_reg_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/ldst/reg/vectors.zig: each vector
 //! runs through the `ldst_reg` group over the exception tests' 1 KiB of
 //! RAM, whose System Control Space page leaves CCR.UNALIGN_TRP clear.
 const std = @import("std");

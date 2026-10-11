@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/gui/shell_board_input.zig (RA8EMU-1119): a click
+//! Tests for src/interfaces/gui/shell/board/input.zig (RA8EMU-1119): a click
 //! on a switch of the shell's board leaf reaches the firmware of an
 //! in-process session, a release elsewhere sends nothing, a press off the
 //! board is not taken, and a tap or a drag on the panel image sends one

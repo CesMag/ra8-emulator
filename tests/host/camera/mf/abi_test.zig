@@ -1,4 +1,4 @@
-//! Covers src/host/camera/mf_abi.zig: the Media Foundation GUIDs,
+//! Covers src/host/camera/mf/abi.zig: the Media Foundation GUIDs,
 //! frame-size packing and vtable slots the Windows webcam reader uses.
 const std = @import("std");
 const ra8 = @import("ra8");

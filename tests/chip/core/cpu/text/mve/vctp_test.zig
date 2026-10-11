@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/mve_vctp.zig against DDI0553 syntax.
+//! Covers src/chip/core/cpu/text/mve/vctp.zig against DDI0553 syntax.
 const v81m = @import("../v81m.zig");
 
 test "VCTP prints each lane width and its source register" {

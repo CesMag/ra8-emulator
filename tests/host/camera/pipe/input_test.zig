@@ -1,4 +1,4 @@
-//! Covers src/host/camera/pipe_input.zig: frames streamed through a real
+//! Covers src/host/camera/pipe/input.zig: frames streamed through a real
 //! pipe come back out of the camera's hosted source, the newest whole frame wins, half
 //! a frame is never shown, and an empty pipe or a closed writer returns at
 //! once with the last frame held. Unix only; the Windows server is covered in

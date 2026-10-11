@@ -1,4 +1,4 @@
-//! Tests for src/session/stack_walk.zig: a stack with CFI, and leaves and
+//! Tests for src/session/stack/walk.zig: a stack with CFI, and leaves and
 //! non-leaves without it walked along the r7 frame records.
 const std = @import("std");
 const ra8 = @import("ra8");

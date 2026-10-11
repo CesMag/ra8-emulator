@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/mve_vpred.zig against DDI0553 syntax.
+//! Covers src/chip/core/cpu/text/mve/vpred.zig against DDI0553 syntax.
 const std = @import("std");
 const ra8 = @import("ra8");
 const Instr = ra8.chip.core.cpu.instr.Instr;

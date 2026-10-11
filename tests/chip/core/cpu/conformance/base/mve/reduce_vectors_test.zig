@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_reduce_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/reduce_vectors.zig: each vector
 //! runs through the `mve_reduce` group with Q1, Q2, Rda, RdaHi, VPR, the IT
 //! byte, LR and FPSCR.LTPSIZE set first.
 const std = @import("std");

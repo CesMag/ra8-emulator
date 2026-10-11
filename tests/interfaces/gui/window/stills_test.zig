@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/gui/window_stills.zig: the recorder passes the
+//! Tests for src/interfaces/gui/window/stills.zig: the recorder passes the
 //! window through untouched and keeps every n-th frame as a numbered PNG.
 const std = @import("std");
 const ra8 = @import("ra8");

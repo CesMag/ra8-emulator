@@ -1,4 +1,4 @@
-//! Tests for CLI frame capture arguments in src/interfaces/cli/frames_args.zig.
+//! Tests for CLI frame capture arguments in src/interfaces/cli/frames/args.zig.
 const std = @import("std");
 const cli_app = @import("cli_app");
 const cli = cli_app.cli;

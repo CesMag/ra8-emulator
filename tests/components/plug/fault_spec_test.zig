@@ -1,4 +1,4 @@
-//! Covers src/components/fault_spec.zig: the `--fault` grammar, the fit
+//! Covers src/components/fault/spec.zig: the `--fault` grammar, the fit
 //! rules, and wrapping a made device in its fault.
 const std = @import("std");
 const ra8 = @import("ra8");

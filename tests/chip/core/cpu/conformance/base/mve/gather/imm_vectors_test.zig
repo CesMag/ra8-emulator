@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_gather_imm_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/gather/imm_vectors.zig: each vector
 //! runs through the `mve_gather_imm` group over the exception tests' 1 KiB of RAM
 //! at 0x2000_0000, with the window at 0x2000_0200 filled first, then Qd, Qm,
 //! VPR, the IT byte, LR and FPSCR set. It reads back the fault, Qd, Qm, the

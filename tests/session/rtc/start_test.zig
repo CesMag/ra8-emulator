@@ -1,4 +1,4 @@
-//! Tests for src/session/rtc_start.zig, through the flag that uses it,
+//! Tests for src/session/rtc/start.zig, through the flag that uses it,
 //! and for the RTC it seeds.
 const std = @import("std");
 const ra8 = @import("ra8");

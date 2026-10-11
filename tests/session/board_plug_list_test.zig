@@ -1,4 +1,4 @@
-//! Covers the fitted table in src/session/board_plug.zig (RA8EMU-791): the
+//! Covers the fitted table in src/session/board/plug.zig (RA8EMU-791): the
 //! run's asks start it, a plug adds or replaces its endpoint, an unplug
 //! drops it, and each listed line parses back with the `--attach` parser.
 const std = @import("std");

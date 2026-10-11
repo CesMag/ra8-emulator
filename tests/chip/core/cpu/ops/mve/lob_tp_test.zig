@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_lob_tp.zig. The encodings come from LLVM's
+//! Covers src/chip/core/cpu/ops/mve/lob_tp.zig. The encodings come from LLVM's
 //! assembler for -mcpu=cortex-m85 with MVE, laid out as one listing:
 //! dlstp at 0x00..0x0C, wlstp.8 at 0x10, wlstp.32 at 0x14, letp at 0x1A
 //! back to 0x00, lctp at 0x2E, and the wlstp target at 0x32.

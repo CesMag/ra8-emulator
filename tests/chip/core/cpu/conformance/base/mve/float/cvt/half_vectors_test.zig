@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_float_cvt_half_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/mve/float/cvt/half_vectors.zig: each
 //! vector runs through the `mve_float_cvt_half` group with Qd, Qm, VPR,
 //! the IT byte, LR and FPSCR set first, then reads Qd, FPSCR, VPR and the
 //! IT byte back.

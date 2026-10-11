@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/dsp_long_mul_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/dsp/long_mul_vectors.zig: each vector
 //! runs through the `dsp_long_mul` group on a bare core holding N and C.
 const std = @import("std");
 const ra8 = @import("ra8");

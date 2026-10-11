@@ -1,4 +1,4 @@
-//! Covers src/interfaces/gui/camera_open.zig: the panel's pick and its argument make
+//! Covers src/interfaces/gui/camera/open.zig: the panel's pick and its argument make
 //! the same spec `--camera-source` would.
 const std = @import("std");
 const gui_app = @import("gui_app");

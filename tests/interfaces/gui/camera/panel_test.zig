@@ -1,4 +1,4 @@
-//! Covers src/interfaces/gui/camera_panel.zig: the selection state and the consent
+//! Covers src/interfaces/gui/camera/panel.zig: the selection state and the consent
 //! gate the webcam passes before it becomes the source.
 const std = @import("std");
 const gui_app = @import("gui_app");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/branch_wide.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/branch/wide.zig against its parity digest.
 const parity = @import("../parity.zig");
 
 /// Each form (B<cond>.W, B.W, BL) with every J1/J2 pairing and the low and

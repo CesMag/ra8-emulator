@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_float_maxnmv_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/mve/float/maxnmv_vectors.zig: each
 //! vector runs through the `mve_float_maxnmv` group with Qm, LR, Rda (after
 //! LR, so Rda = LR holds), VPR and FPSCR set first, then reads Rda, FPSCR
 //! and VPR back.

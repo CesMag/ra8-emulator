@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_lane_move_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/mve/lane/move_vectors.zig: each
 //! vector runs through the `mve_lane_move` group over a patterned FP bank
 //! with Rt, VPR and the IT byte set first.
 const std = @import("std");

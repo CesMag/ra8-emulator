@@ -1,6 +1,6 @@
 //! The time bar's model side (RA8EMU-1086): fills the bar's plain view from
 //! the status, the speed field and the clock readout, and turns a click into
-//! a run or a pause of the shell's sliced run (gui/shell_run.zig, RA8EMU-1118)
+//! a run or a pause of the shell's sliced run (src/interfaces/gui/shell/run.zig, RA8EMU-1118)
 //! or a step on the session link. The bar itself (gui/ui/time_bar.zig) only
 //! lays out, paints and hit-tests.
 const proto = @import("ra8_rpc").session.rpc;

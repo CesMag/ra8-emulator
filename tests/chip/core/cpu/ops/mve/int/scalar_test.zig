@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_int_scalar.zig. The encodings come from
+//! Covers src/chip/core/cpu/ops/mve/int/scalar.zig. The encodings come from
 //! LLVM's assembler for -mcpu=cortex-m85 with MVE, as `op q0, q1, r2`.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Tests for src/chip/core/second_core.zig: a SYSRESETREQ from CPU1 (RA8EMU-59),
+//! Tests for src/chip/core/second/core.zig: a SYSRESETREQ from CPU1 (RA8EMU-59),
 //! and seeding CPU1 with no engine open (RA8EMU-571).
 const std = @import("std");
 const ra8 = @import("ra8");

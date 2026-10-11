@@ -32,9 +32,9 @@ pub const Painter = struct {
 pub const Shell = struct {
     layout: *const Layout,
     solved: *const Solved,
-    /// The status strip's view, from gui/status_capture.zig.
+    /// The status strip's view, from src/interfaces/gui/status/capture.zig.
     strip: status_strip.Strip,
-    /// The time bar's view, from gui/shell_time.zig; a bare frame draws it
+    /// The time bar's view, from src/interfaces/gui/shell/time.zig; a bare frame draws it
     /// with nothing lit.
     bar: time_bar.View = .{},
     width: i32,

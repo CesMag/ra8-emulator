@@ -1,5 +1,5 @@
 //! UMAAL (T1): RdHi:RdLo = Rn * Rm + RdHi + RdLo, all unsigned. The sum always
-//! fits in 64 bits. ops/long_mul.zig owns the hw2[7:4] = 0000 rows on 0xFBE0
+//! fits in 64 bits. src/chip/core/cpu/ops/long/mul.zig owns the hw2[7:4] = 0000 rows on 0xFBE0
 //! (UMLAL); this is the 0110 row.
 //!
 //! Left unclaimed: SP or PC anywhere, and RdLo == RdHi (UNPREDICTABLE).

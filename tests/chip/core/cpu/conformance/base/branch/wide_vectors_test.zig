@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/branch_wide_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/branch/wide_vectors.zig: each
 //! vector runs through the `branch_wide` group on a bare core whose PC and
 //! LR hold sentinels.
 const std = @import("std");

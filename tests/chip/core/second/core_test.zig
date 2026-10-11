@@ -1,4 +1,4 @@
-//! Tests for src/chip/core/second_core.zig.
+//! Tests for src/chip/core/second/core.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const mod = ra8.chip.core.second.core;

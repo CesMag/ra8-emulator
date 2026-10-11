@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/rpc/session_event_feed.zig (RA8EMU-942): which
+//! Tests for src/interfaces/rpc/session/event_feed.zig (RA8EMU-942): which
 //! stream events go out on the session topic, and as which wire kind.
 const std = @import("std");
 const ra8 = @import("ra8");

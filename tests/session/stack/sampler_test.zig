@@ -1,4 +1,4 @@
-//! Tests for src/session/stack_sampler.zig: a real core runs outer -> middle
+//! Tests for src/session/stack/sampler.zig: a real core runs outer -> middle
 //! -> leaf, once with a .debug_frame table and no frame pointer, once with
 //! r7 frame records and no table, and every sample must name the chain.
 const std = @import("std");

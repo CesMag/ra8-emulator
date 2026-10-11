@@ -1,4 +1,4 @@
-//! Tests for src/chip/core/second_wiring.zig: CPU1's hooks reach whatever board
+//! Tests for src/chip/core/second/wiring.zig: CPU1's hooks reach whatever board
 //! handed over the wiring, with no board type in the chip (RA8EMU-1012).
 const std = @import("std");
 const ra8 = @import("ra8");

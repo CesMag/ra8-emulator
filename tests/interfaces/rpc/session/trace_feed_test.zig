@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/rpc/session_trace_feed.zig (RA8EMU-832): a
+//! Tests for src/interfaces/rpc/session/trace_feed.zig (RA8EMU-832): a
 //! served session on a ThreadX image subscribes to the trace topic, runs,
 //! and its client receives RTOS events in order and in board time, with
 //! thread names matching --trace-rtos-out for the same run.

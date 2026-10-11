@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/fp_directed_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/fp/directed_vectors.zig: each
 //! vector presets the destination to all ones, loads Sn/Dn, Sm/Dm, the
 //! APSR flags and FPSCR, and runs the `fp_directed` group.
 const std = @import("std");

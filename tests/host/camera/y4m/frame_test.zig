@@ -1,4 +1,4 @@
-//! Covers src/host/camera/y4m_frame.zig: BT.601 studio-range planes
+//! Covers src/host/camera/y4m/frame.zig: BT.601 studio-range planes
 //! turned into RGB, with each chroma sample covering the luma under it.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_drw.zig and json_media.zig: the
+//! Covers src/interfaces/cli/report/json/drw.zig and json_media.zig: the
 //! `drw` and `eink` keys of `graphics`, and the `audio`, `mipi_phy` and
 //! `capture` objects of `--report json`, parsed back with std.json.
 const std = @import("std");

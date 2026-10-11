@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/memory/guest_bus.zig.
+//! Covers src/chip/core/cpu/memory/guest/bus.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const memmap = ra8.chip.core.memmap;

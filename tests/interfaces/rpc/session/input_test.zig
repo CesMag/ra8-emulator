@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/rpc/session_input.zig (RA8EMU-810) on a real
+//! Tests for src/interfaces/rpc/session/input.zig (RA8EMU-810) on a real
 //! harness: the input request queues taps, swipes, long presses and button
 //! presses on the board's input script, in virtual-time order.
 const std = @import("std");

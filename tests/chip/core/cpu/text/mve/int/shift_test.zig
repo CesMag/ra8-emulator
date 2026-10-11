@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/mve_int_shift.zig against DDI0553 B5 syntax.
+//! Covers src/chip/core/cpu/text/mve/int/shift.zig against DDI0553 B5 syntax.
 const std = @import("std");
 const ra8 = @import("ra8");
 const Instr = ra8.chip.core.cpu.instr.Instr;

@@ -1,5 +1,5 @@
-//! Tests for src/interfaces/rpc/session_rtc.zig and
-//! src/session/board_rtc.zig (RA8EMU-809) on a real harness: the rtc
+//! Tests for src/interfaces/rpc/session/rtc.zig and
+//! src/session/board/rtc.zig (RA8EMU-809) on a real harness: the rtc
 //! request returns the board's calendar in one snapshot.
 const std = @import("std");
 const ra8 = @import("ra8");

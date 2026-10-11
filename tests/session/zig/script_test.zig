@@ -1,4 +1,4 @@
-//! Tests for src/session/zig_script.zig: one script on the Zig core prints
+//! Tests for src/session/zig/script.zig: one script on the Zig core prints
 //! its recorded transcript.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/gui/shell_run.zig (RA8EMU-1118): a lit run pays
+//! Tests for src/interfaces/src/interfaces/gui/shell/run.zig (RA8EMU-1118): a lit run pays
 //! each frame's board time in slices against an in-process session, a
 //! slice's end is a boundary and not a stop, a pause hands back the halt,
 //! the unit follows what the host can do and stays under a ceiling after an

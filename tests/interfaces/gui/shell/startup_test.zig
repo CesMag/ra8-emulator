@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/gui/shell_startup.zig and the shell flags that
+//! Tests for src/interfaces/gui/shell/startup.zig and the shell flags that
 //! fill it (RA8EMU-1095): the window's `--attach`, `--click`,
 //! `--camera-source` and `--window-stills` reach the shell, and the queued
 //! plugs reach an in-process session once its image is loaded.

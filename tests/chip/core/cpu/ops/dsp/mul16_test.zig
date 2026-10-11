@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/dsp_mul16.zig.
+//! Covers src/chip/core/cpu/ops/dsp/mul16.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;

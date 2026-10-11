@@ -1,4 +1,4 @@
-//! Covers src/host/camera/av_permission.zig with a fake Objective-C
+//! Covers src/host/camera/av/permission.zig with a fake Objective-C
 //! runtime: the status read, the verdict mapping, and the gate's messages.
 const std = @import("std");
 const ra8 = @import("ra8");

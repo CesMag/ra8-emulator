@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_protect.zig: the `protection`
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/protect.zig: the `protection`
 //! object of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");

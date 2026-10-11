@@ -1,4 +1,4 @@
-//! Tests for src/session/watch_link.zig: `--watch` matched through the stop
+//! Tests for src/session/watch/link.zig: `--watch` matched through the stop
 //! machine's watch table, recorded, and never stopping the run.
 const std = @import("std");
 const ra8 = @import("ra8");

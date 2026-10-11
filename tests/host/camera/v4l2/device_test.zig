@@ -1,4 +1,4 @@
-//! Covers src/host/camera/v4l2_device.zig with ordinary device nodes:
+//! Covers src/host/camera/v4l2/device.zig with ordinary device nodes:
 //! nothing here needs or opens a camera.
 const std = @import("std");
 const ra8 = @import("ra8");

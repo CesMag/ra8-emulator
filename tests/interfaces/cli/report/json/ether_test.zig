@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_ether.zig, json_usb.zig and
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/ether.zig, json_usb.zig and
 //! json_usbfs.zig: the `ethernet` and `usb` objects of `--report json`,
 //! parsed back with std.json.
 const std = @import("std");

@@ -9,9 +9,9 @@ const breakpoint = @import("breakpoint.zig");
 const fpb = @import("fpb.zig");
 /// Re-exported for tests/session/cycle_count_test.zig; src/root.zig is full.
 pub const cycle_count = @import("cycle_count.zig");
-/// Re-exported for tests/session/zig_core_test.zig, for the same reason.
+/// Re-exported for tests/session/zig/core_test.zig, for the same reason.
 pub const zig = @import("zig/zig.zig");
-/// Re-exported for tests/session/zig_drive_test.zig, for the same reason.
+/// Re-exported for tests/session/zig/drive_test.zig, for the same reason.
 /// Re-exported for tests/session/core_view_test.zig, for the same reason.
 pub const core_view = @import("core_view.zig");
 /// A debugger read split over peripheral windows (RA8EMU-948).
@@ -20,14 +20,14 @@ pub const debug_read = @import("debug_read.zig");
 pub const stack = @import("stack/stack.zig");
 /// One call stack for a sample, CFI first, else the frame records (RA8EMU-956).
 /// Stacks sampled every Nth retired instruction (RA8EMU-953).
-/// Re-exported for tests/session/zig_session_test.zig, for the same reason.
+/// Re-exported for tests/session/zig/session_test.zig, for the same reason.
 /// Re-exported for tests/session/report_test.zig, for the same reason.
 pub const report = @import("report.zig");
-/// Re-exported for tests/session/zig_script_test.zig, for the same reason.
-/// Re-exported for tests/session/watch_bus_test.zig, for the same reason.
+/// Re-exported for tests/session/zig/script_test.zig, for the same reason.
+/// Re-exported for tests/session/watch/bus_test.zig, for the same reason.
 pub const watch = @import("watch/watch.zig");
 /// `--watch` matched through the stop machine's watch table (RA8EMU-58).
-/// Re-exported for tests/session/rtos_trace_test.zig (RA8EMU-222).
+/// Re-exported for tests/session/rtos/trace_test.zig (RA8EMU-222).
 pub const rtos = @import("rtos/rtos.zig");
 /// `--trace-rtos`: the tracer and its report (RA8EMU-221).
 const dwt = @import("ra8_chip").periph.dwt;

@@ -1,4 +1,4 @@
-//! Covers src/host/camera/pipe_frame.zig: the `PATH,WxH,FORMAT` argument
+//! Covers src/host/camera/pipe/frame.zig: the `PATH,WxH,FORMAT` argument
 //! and each raw frame layout widened to RGB.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/ldst_reg_wide.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/ldst/reg/wide.zig against its parity digest.
 const parity = @import("../../parity.zig");
 
 /// Each shift with a low Rm, SP and PC as Rt, SP and PC as Rm (unclaimed),

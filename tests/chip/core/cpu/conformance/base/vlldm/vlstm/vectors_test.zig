@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/vlldm_vlstm_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/vlldm/vlstm/vectors.zig: each
 //! vector runs through the `vlldm_vlstm` group over the 1 KiB RAM fixture
 //! with a patterned bank and frame. `runWith` is shared with the T2 test.
 const std = @import("std");

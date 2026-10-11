@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/gui/shell_time.zig (RA8EMU-1118): the time bar's
+//! Tests for src/interfaces/src/interfaces/gui/shell/time.zig (RA8EMU-1118): the time bar's
 //! clicks light, pause and step an in-process session's core, the speed
 //! field takes the keyboard and sets what a frame owes, and the clock is
 //! read once while the image is halted and again while it runs.

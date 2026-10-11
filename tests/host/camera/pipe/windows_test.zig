@@ -1,4 +1,4 @@
-//! Covers src/host/camera/pipe_windows.zig: Win32 error and name handling,
+//! Covers src/host/camera/pipe/windows.zig: Win32 error and name handling,
 //! plus a Windows-host stream through a real named pipe.
 const std = @import("std");
 const builtin = @import("builtin");

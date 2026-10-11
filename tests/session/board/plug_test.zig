@@ -1,4 +1,4 @@
-//! Covers src/session/board_plug.zig through the session API: a gauge on
+//! Covers src/session/board/plug.zig through the session API: a gauge on
 //! the RIIC line, a panel on SPI, a modem on SCI3 and buttons on GPIO pins
 //! unplugged and plugged back mid-run, with each line behaving as a missing
 //! part would while it is out (RA8EMU-212).

@@ -1,4 +1,4 @@
-//! Covers src/session/board_camera.zig (RA8EMU-1114): a host input the
+//! Covers src/session/board/camera.zig (RA8EMU-1114): a host input the
 //! caller opened becomes the board's camera source and the old source is
 //! closed, and no input is the camera model's own gradient.
 const std = @import("std");

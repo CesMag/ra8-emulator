@@ -1,4 +1,4 @@
-//! Tests for src/session/zig_session.zig.
+//! Tests for src/session/zig/session.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const bus = ra8.chip.core.cpu.bus;

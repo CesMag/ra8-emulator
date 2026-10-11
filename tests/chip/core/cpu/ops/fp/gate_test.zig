@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/fp_gate.zig: ExecuteFPCheck() opening a new FP
+//! Covers src/chip/core/cpu/ops/fp/gate.zig: ExecuteFPCheck() opening a new FP
 //! context in front of a gated group, per the Arm ARM (DDI0553).
 const std = @import("std");
 const ra8 = @import("ra8");

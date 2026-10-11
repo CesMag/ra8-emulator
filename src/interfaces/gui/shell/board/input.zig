@@ -1,12 +1,12 @@
 //! Pointer input on the shell's board leaf (RA8EMU-1119): a click on SW1 or
 //! SW2 and a touch on the panel, sent to the session as `input` requests
-//! (gui/board_input.zig, gui/board_touch.zig). A press grabs the board leaf
+//! (src/interfaces/gui/board/input.zig, src/interfaces/gui/board/touch.zig). A press grabs the board leaf
 //! it lands in, and the moves and the release that follow are read against
 //! that leaf until the button comes up, wherever the pointer has gone.
 //!
 //! The session refuses an input timed before its own clock, so each request
 //! carries the board time the shell last knew: the end of the last slice, or
-//! the last clock answer (gui/shell_time.zig).
+//! the last clock answer (src/interfaces/gui/shell/time.zig).
 const draw_list = @import("ra8_render").draw_list;
 const pane_layout = @import("../../ui/pane_layout.zig");
 const shell_frame = @import("../../ui/shell/frame.zig");

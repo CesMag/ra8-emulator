@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/dsp_dual.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/dsp/dual.zig against its parity digest.
 const parity = @import("../parity.zig");
 
 /// Every Ra (1111 is the multiply-only form, SP unclaimed) with and without X,

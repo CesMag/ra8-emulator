@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/add_sub_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/add/sub/vectors.zig: each vector
 //! runs through the `add_sub` group on a bare register file.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/lob.zig and src/chip/core/cpu/text/mve_lob_tp.zig
+//! Covers src/chip/core/cpu/text/lob.zig and src/chip/core/cpu/text/mve/lob_tp.zig
 //! against the Arm ARM syntax. Every case sits at 0x0200_0100, so the next
 //! instruction is 0x0200_0104.
 const v81m = @import("v81m.zig");

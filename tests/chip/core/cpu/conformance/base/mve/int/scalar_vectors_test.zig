@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_int_scalar_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/mve/int/scalar_vectors.zig: each
 //! vector runs through the `mve_int_scalar` group with Qd, Qn, Rm, VPR, the
 //! IT byte, LR, FPSCR.LTPSIZE and FPSCR.QC set first.
 const std = @import("std");

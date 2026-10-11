@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/ldr_literal_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/ldr/literal/vectors.zig: each vector
 //! runs through the `ldr_literal` group over the exception tests' 1 KiB of
 //! RAM at 0x2000_0000.
 const std = @import("std");

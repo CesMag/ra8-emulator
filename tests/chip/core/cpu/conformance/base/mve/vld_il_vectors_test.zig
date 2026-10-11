@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_vld_il_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/vld_il_vectors.zig: each vector
 //! runs through the `mve_vld_il` group over the exception tests' 1 KiB of RAM
 //! at 0x2000_0000, with the window at 0x2000_0200 filled first, then the
 //! register list from Qd, Rn, VPR and the IT byte set. It reads back the

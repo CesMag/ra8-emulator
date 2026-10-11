@@ -1,4 +1,4 @@
-//! Tests for src/chip/core/second_wait.zig.
+//! Tests for src/chip/core/second/wait.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const parking = ra8.chip.core.second.core.parking;

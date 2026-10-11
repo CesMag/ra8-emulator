@@ -1,4 +1,4 @@
-//! Tests for src/session/stack_samples.zig.
+//! Tests for src/session/stack/samples.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const stack_samples = ra8.session.step_hook.stack.samples;

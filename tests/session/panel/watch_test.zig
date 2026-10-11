@@ -1,4 +1,4 @@
-//! Tests for src/session/panel_watch.zig (RA8EMU-1126): a watched GLCDC
+//! Tests for src/session/panel/watch.zig (RA8EMU-1126): a watched GLCDC
 //! panel is scanned at its frame boundary and reports its first picture
 //! whole, a picture that holds still says nothing, a changed one reports
 //! what changed, the session's frame comes from the kept picture without

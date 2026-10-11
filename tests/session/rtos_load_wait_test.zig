@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_load.zig's scheduler-wait rule (RA8EMU-303):
+//! Tests for src/session/rtos/load.zig's scheduler-wait rule (RA8EMU-303):
 //! ThreadX idles inside PendSV_Handler, so time after an `idle` inside a
 //! PendSV is idle, not PendSV, until a thread is switched in or it returns.
 const std = @import("std");

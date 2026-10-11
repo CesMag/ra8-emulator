@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/fp_arith.zig.
+//! Covers src/chip/core/cpu/ops/fp/arith.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const Cpu = ra8.chip.core.cpu.cpu.Cpu;

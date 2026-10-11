@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/vlldm_vlstm_t2_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/vlldm/vlstm/t2_vectors.zig: each
 //! vector runs through the `vlldm_vlstm_t2` group with the T1 test's runner.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/fp_convert_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/fp/convert_vectors.zig: each vector
 //! presets the destination to all ones, writes its source, and runs the
 //! `fp_convert` group.
 const std = @import("std");

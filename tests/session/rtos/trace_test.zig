@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_trace.zig: stores to the ThreadX
+//! Tests for src/session/rtos/trace.zig: stores to the ThreadX
 //! current-thread pointer turned into switch and idle events.
 const std = @import("std");
 const ra8 = @import("ra8");

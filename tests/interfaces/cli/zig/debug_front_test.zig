@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/cli/zig_debug_front.zig: a `--cpu zig
+//! Tests for src/interfaces/cli/zig/debug_front.zig: a `--cpu zig
 //! --debug-script` command line reaches the Zig core's debugger and plays
 //! the script against a real image.
 const std = @import("std");
@@ -10,7 +10,7 @@ const zig_debug_front = cli_app.zig.debug_front;
 const elf = ra8.board.image.elf;
 const memmap = ra8.chip.core.memmap;
 
-/// The program tests/session/zig_script_test.zig uses: a vector table at
+/// The program tests/session/zig/script_test.zig uses: a vector table at
 /// sram_base, reset at +0x18, a loop calling a helper at +0x8.
 const program = struct {
     const base: u32 = memmap.sram_base;

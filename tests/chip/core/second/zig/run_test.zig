@@ -1,4 +1,4 @@
-//! Tests for src/chip/core/second_zig_run.zig: CPU1's turns under --cpu zig
+//! Tests for src/chip/core/second/zig/run.zig: CPU1's turns under --cpu zig
 //! (RA8EMU-234).
 const std = @import("std");
 const ra8 = @import("ra8");

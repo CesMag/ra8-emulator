@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_shift_imm.zig. The encodings come from
+//! Covers src/chip/core/cpu/ops/mve/shift_imm.zig. The encodings come from
 //! LLVM's assembler for cortex-m85; the values each form computes are the
 //! conformance vectors' job, so this file checks the decoded fields.
 const std = @import("std");

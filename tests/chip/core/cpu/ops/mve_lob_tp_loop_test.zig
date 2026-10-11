@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_lob_tp.zig end to end: tail-predicated loops
+//! Covers src/chip/core/cpu/ops/mve/lob_tp.zig end to end: tail-predicated loops
 //! stepped through Cpu.step from RAM, with a remainder on the last
 //! iteration. The listing comes from LLVM's assembler for -mcpu=cortex-m85
 //! with MVE:

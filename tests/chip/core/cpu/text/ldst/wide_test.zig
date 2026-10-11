@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/ldst_wide.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/ldst/wide.zig against its parity digest.
 const parity = @import("../parity.zig");
 
 /// For Rt = r1: imm12 edges, then the imm8 offset, pre-indexed,

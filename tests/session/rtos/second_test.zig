@@ -1,4 +1,4 @@
-//! Tests for CPU1's `--trace-rtos` (src/session/rtos_second.zig): a tracer
+//! Tests for CPU1's `--trace-rtos` (src/session/rtos/second.zig): a tracer
 //! made for core 1 in front of CPU1's Zig core takes its stores to the
 //! pointer, tagged cpu1 and stamped from that core's clock.
 const std = @import("std");

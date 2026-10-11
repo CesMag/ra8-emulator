@@ -1,7 +1,7 @@
 //! The status strip (RA8EMU-759): the status bar's line painted along the
 //! bottom of the shell window. A dot at the left carries the state's tone
 //! (connected, failed, running, halted); the text is cut to whole cells when
-//! the window is narrow, never drawn past the strip. gui/status_capture.zig
+//! the window is narrow, never drawn past the strip. src/interfaces/gui/status/capture.zig
 //! reads the session's status into a `Strip`; this file never imports it.
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;

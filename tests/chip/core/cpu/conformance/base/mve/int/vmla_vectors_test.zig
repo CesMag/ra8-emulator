@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_int_vmla_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/mve/int/vmla_vectors.zig: each
 //! vector runs through the `mve_int_vmla` group with Qda, Qn, Rm, VPR, the
 //! IT byte, LR and FPSCR.LTPSIZE set first.
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_isr.zig: the NVIC model's counters read as
+//! Tests for src/session/rtos/isr.zig: the NVIC model's counters read as
 //! exception entry and return events.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/counted_trip.zig: a bounded poll's trips, counted once
+//! Covers src/chip/core/cpu/counted/trip.zig: a bounded poll's trips, counted once
 //! its values move by the same amount every trip (RA8EMU-602).
 const std = @import("std");
 const ra8 = @import("ra8");

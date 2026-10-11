@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/long_shift_reg_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/long/shift/reg_vectors.zig: each
 //! vector runs through the `long_shift_reg` group on a bare core holding N
 //! and C.
 const std = @import("std");

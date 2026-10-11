@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/fp_mem_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/fp/mem_vectors.zig: each vector
 //! runs through the `fp_mem` group over the 1 KiB RAM fixture, patterned
 //! memory and FP bank, with R0 (and SP for VPUSH/VPOP) as the base.
 const std = @import("std");

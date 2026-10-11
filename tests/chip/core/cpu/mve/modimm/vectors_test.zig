@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/modimm_vectors.zig.
+//! Covers src/chip/core/cpu/mve/modimm/vectors.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const vector = ra8.chip.core.cpu.conformance.vector;

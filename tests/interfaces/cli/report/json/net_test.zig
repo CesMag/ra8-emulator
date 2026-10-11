@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_net.zig and json_i2c.zig: the
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/net.zig and json_i2c.zig: the
 //! `network` object of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");

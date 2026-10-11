@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/zig_run.zig: the board's side of a Zig-core
+//! Covers src/interfaces/cli/zig/run.zig: the board's side of a Zig-core
 //! boundary.
 const std = @import("std");
 const ra8 = @import("ra8");

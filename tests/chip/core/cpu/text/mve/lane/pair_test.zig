@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/mve_lane_pair.zig against DDI0553 syntax.
+//! Covers src/chip/core/cpu/text/mve/lane/pair.zig against DDI0553 syntax.
 const v81m = @import("../../v81m.zig");
 
 test "two-lane VMOV prints vector lane pairs and core registers" {

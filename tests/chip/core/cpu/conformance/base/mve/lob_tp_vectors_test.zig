@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_lob_tp_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/lob_tp_vectors.zig: each vector
 //! runs through the `mve_lob_tp` group at 0x100 with Rn, LR and
 //! FPSCR.LTPSIZE set first.
 const std = @import("std");

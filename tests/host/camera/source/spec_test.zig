@@ -1,4 +1,4 @@
-//! Covers src/host/camera/source_spec.zig: the `--camera-source` kinds and
+//! Covers src/host/camera/source/spec.zig: the `--camera-source` kinds and
 //! what each accepts.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_reduce.zig. The encodings come from GNU as
+//! Covers src/chip/core/cpu/ops/mve/reduce.zig. The encodings come from GNU as
 //! for armv8.1-m.main+mve.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/dsp_long_mul.zig. Encodings are the ones
+//! Covers src/chip/core/cpu/ops/dsp/long_mul.zig. Encodings are the ones
 //! arm-none-eabi-as 13.3 emits for RdLo = r0, RdHi = r1, Rn = r2, Rm = r3.
 const std = @import("std");
 const ra8 = @import("ra8");

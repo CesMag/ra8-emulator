@@ -1,4 +1,4 @@
-//! Host tests for the status strip (RA8EMU-759) and gui/status_capture.zig
+//! Host tests for the status strip (RA8EMU-759) and src/interfaces/gui/status/capture.zig
 //! (RA8EMU-1085): the tone each state takes,
 //! where the strip sits, a pinned CPU-backend golden frame, and a narrow
 //! window that cuts the text to whole cells inside the strip.

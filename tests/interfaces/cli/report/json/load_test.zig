@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_load.zig: the `cpu_load` object of
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/load.zig: the `cpu_load` object of
 //! `--report json`, built from a tracer fed a known run and parsed back
 //! with std.json.
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/long_shift_sat64.zig. Encodings are the ones
+//! Covers src/chip/core/cpu/ops/long/shift/sat64.zig. Encodings are the ones
 //! arm-none-eabi-as 13.3 emits for the r2:r3 pair (Rm r4); expected values
 //! follow the DDI0553 pseudocode, round half up and saturation setting Q.
 const std = @import("std");

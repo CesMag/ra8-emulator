@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_float_cvt_fixed_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/mve/float/cvt/fixed_vectors.zig: each
 //! vector runs through the `mve_float_cvt_fixed` group with Qd, Qm, VPR,
 //! the IT byte, LR and FPSCR set first, then reads Qd, FPSCR, VPR and the
 //! IT byte back.

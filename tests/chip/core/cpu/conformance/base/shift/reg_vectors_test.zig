@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/shift_reg_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/shift/reg_vectors.zig: each vector
 //! runs through the `shift_reg` group on a bare core.
 const std = @import("std");
 const ra8 = @import("ra8");

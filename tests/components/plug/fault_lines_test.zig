@@ -1,4 +1,4 @@
-//! Covers src/components/fault_lines.zig on the e-ink panel (SPI) and the
+//! Covers src/components/fault/lines.zig on the e-ink panel (SPI) and the
 //! AT modem (UART).
 const std = @import("std");
 const ra8 = @import("ra8");

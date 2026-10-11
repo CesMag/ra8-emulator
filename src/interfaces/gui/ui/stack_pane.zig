@@ -5,7 +5,7 @@
 //! it. The innermost frame is amber; the shell's selected frame sits on a
 //! band. A frame an exception interrupted carries a muted '~' in its gutter.
 //!
-//! The session walks the chain (rpc/session_backtrace.zig) and
+//! The session walks the chain (src/interfaces/rpc/session/backtrace.zig) and
 //! gui/shell/stack.zig copies names into the snapshot, so `draw` holds no
 //! slice into the link's buffer and the shell keeps a snapshot past a reload.
 //! The pane never imports the session.

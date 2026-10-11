@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_file.zig: a trace written to text reads back
+//! Tests for src/session/rtos/file.zig: a trace written to text reads back
 //! event for event, malformed files are refused, and each core gets its
 //! own file.
 const std = @import("std");

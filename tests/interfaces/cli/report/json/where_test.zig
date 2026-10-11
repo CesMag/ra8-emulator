@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_where.zig: the `steps`,
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/where.zig: the `steps`,
 //! `hotspots`, `functions` and `profile` objects of `--report json`,
 //! parsed back with std.json.
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Tests for numbered P6 output in src/interfaces/cli/frames_out.zig.
+//! Tests for numbered P6 output in src/interfaces/cli/frames/out.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/imm_logic.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/imm/logic.zig against its parity digest.
 const parity = @import("../parity.zig");
 const samples = @import("../imm_samples.zig");
 

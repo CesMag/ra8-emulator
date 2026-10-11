@@ -1,4 +1,4 @@
-//! Covers src/host/camera/mf_open.zig against fake Media Foundation
+//! Covers src/host/camera/mf/open.zig against fake Media Foundation
 //! calls and COM objects: device pick, YUY2 then RGB32, the size read
 //! back, and every object released and MF stopped on each path.
 const std = @import("std");

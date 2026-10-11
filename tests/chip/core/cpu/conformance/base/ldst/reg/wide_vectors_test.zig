@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/ldst_reg_wide_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/ldst/reg/wide_vectors.zig: each
 //! vector runs through the `ldst_reg_wide` group over the exception tests'
 //! 1 KiB of RAM at 0x2000_0000, with CCR.UNALIGN_TRP clear.
 const std = @import("std");

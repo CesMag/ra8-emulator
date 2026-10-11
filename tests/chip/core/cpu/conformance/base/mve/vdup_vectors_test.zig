@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_vdup_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/vdup_vectors.zig: each vector
 //! runs through the `mve_vdup` group over a patterned FP bank with Rt,
 //! VPR, the IT byte, LR and FPSCR.LTPSIZE set first.
 const std = @import("std");

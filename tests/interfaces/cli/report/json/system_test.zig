@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_system.zig, json_options.zig and
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/system.zig, json_options.zig and
 //! json_analog.zig: the `icu`, `pinfunc`, `options`, `part`, `backup` and
 //! `analog` objects of `--report json`, parsed back with std.json.
 const std = @import("std");

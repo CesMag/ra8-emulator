@@ -1,4 +1,4 @@
-//! Covers tools/example_options.zig: which images run with extra flags.
+//! Covers tools/example/options.zig: which images run with extra flags.
 const std = @import("std");
 const table = @import("example_table");
 

@@ -1,4 +1,4 @@
-//! Covers tools/example_expect.zig: README verdicts for conf-less examples.
+//! Covers tools/example/expect.zig: README verdicts for conf-less examples.
 const std = @import("std");
 const table = @import("example_table");
 

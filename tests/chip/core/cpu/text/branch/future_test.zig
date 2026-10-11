@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/branch_future.zig against the Arm ARM syntax.
+//! Covers src/chip/core/cpu/text/branch/future.zig against the Arm ARM syntax.
 //! Every case sits at 0x0200_0100, so the next instruction is 0x0200_0104.
 const v81m = @import("../v81m.zig");
 

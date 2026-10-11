@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_stream.zig: incremental, non-blocking readers.
+//! Tests for src/session/rtos/stream.zig: incremental, non-blocking readers.
 const std = @import("std");
 const ra8 = @import("ra8");
 const rtos = ra8.session.step_hook;

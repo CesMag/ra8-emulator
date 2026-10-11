@@ -1,19 +1,19 @@
 //! The `--report json` document: the run and cores sections (RA8EMU-347),
-//! then protection (report/json_protect.zig, RA8EMU-349) and memory
-//! (report/json_mem.zig, RA8EMU-350), then clocks (report/json_clock.zig,
-//! RA8EMU-355) and timers (report/json_timers.zig, RA8EMU-356), then serial,
-//! storage and riic (report/json_serial.zig, json_storage.zig and
-//! json_riic.zig, RA8EMU-360), then network (report/json_net.zig and
-//! json_i2c.zig, RA8EMU-362), ethernet and usb (report/json_ether.zig,
+//! then protection (src/interfaces/cli/report/json/protect.zig, RA8EMU-349) and memory
+//! (src/interfaces/cli/report/json/mem.zig, RA8EMU-350), then clocks (src/interfaces/cli/report/json/clock.zig,
+//! RA8EMU-355) and timers (src/interfaces/cli/report/json/timers.zig, RA8EMU-356), then serial,
+//! storage and riic (src/interfaces/cli/report/json/serial.zig, json_storage.zig and
+//! json_riic.zig, RA8EMU-360), then network (src/interfaces/cli/report/json/net.zig and
+//! json_i2c.zig, RA8EMU-362), ethernet and usb (src/interfaces/cli/report/json/ether.zig,
 //! json_usb.zig and json_usbfs.zig, RA8EMU-364), graphics
-//! (report/json_glcdc/json_glcdc.zig and json_glcdc/out.zig, RA8EMU-366; json_drw.zig, RA8EMU-371),
-//! audio, mipi_phy, capture (report/json_media.zig, RA8EMU-371), icu, pinfunc,
-//! options, part, backup (report/json_system.zig, json_options.zig) and
-//! analog (report/json_analog.zig, RA8EMU-373), compute
-//! (report/json_compute.zig, RA8EMU-377), steps, hotspots, functions,
-//! profile (report/json_where.zig, RA8EMU-378), timing (report/json_timing.zig,
-//! RA8EMU-383), sites (report/json_sites.zig, RA8EMU-382),
-//! dumps (report/json_dumps.zig, RA8EMU-381), cpu_load (report/json_load.zig,
+//! (report/json_glcdc/json_glcdc.zig and src/interfaces/cli/report/json/glcdc/out.zig, RA8EMU-366; json_drw.zig, RA8EMU-371),
+//! audio, mipi_phy, capture (src/interfaces/cli/report/json/media.zig, RA8EMU-371), icu, pinfunc,
+//! options, part, backup (src/interfaces/cli/report/json/system.zig, json_options.zig) and
+//! analog (src/interfaces/cli/report/json/analog.zig, RA8EMU-373), compute
+//! (src/interfaces/cli/report/json/compute.zig, RA8EMU-377), steps, hotspots, functions,
+//! profile (src/interfaces/cli/report/json/where.zig, RA8EMU-378), timing (src/interfaces/cli/report/json/timing.zig,
+//! RA8EMU-383), sites (src/interfaces/cli/report/json/sites.zig, RA8EMU-382),
+//! dumps (src/interfaces/cli/report/json/dumps.zig, RA8EMU-381), cpu_load (src/interfaces/cli/report/json/load.zig,
 //! RA8EMU-266).
 //!
 //! One line, one object, `"schema": "ra8-report/1"` first. Every key in a

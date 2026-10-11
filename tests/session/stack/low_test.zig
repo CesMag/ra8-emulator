@@ -1,4 +1,4 @@
-//! Tests for src/session/stack_low.zig.
+//! Tests for src/session/stack/low.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const stack_low = ra8.session.stack.low;

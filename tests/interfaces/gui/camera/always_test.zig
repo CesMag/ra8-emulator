@@ -1,4 +1,4 @@
-//! Covers src/interfaces/gui/camera_always.zig: the panel starts from the
+//! Covers src/interfaces/gui/camera/always.zig: the panel starts from the
 //! project's marker and asks unless it is the exact one, the marker follows
 //! the panel's Always, and a project that will not keep the marker or let it
 //! go says so.

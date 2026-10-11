@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/dp_reg_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/dp/reg_vectors.zig: each vector
 //! runs through the `dp_reg` group on a bare register file, Rdn r0, Rm r1.
 const std = @import("std");
 const ra8 = @import("ra8");

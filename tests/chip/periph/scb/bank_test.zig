@@ -1,4 +1,4 @@
-//! Tests for src/chip/periph/scb_bank.zig.
+//! Tests for src/chip/periph/scb/bank.zig.
 
 const std = @import("std");
 const ra8 = @import("ra8");

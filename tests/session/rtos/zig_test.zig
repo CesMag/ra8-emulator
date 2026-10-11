@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_zig.zig: the listener in front of a Zig-core
+//! Tests for src/session/rtos/zig.zig: the listener in front of a Zig-core
 //! run's bus and exception source.
 const std = @import("std");
 const ra8 = @import("ra8");

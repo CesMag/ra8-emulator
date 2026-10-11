@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/ldr_literal_wide.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/ldr/literal/wide.zig against its parity digest.
 const parity = @import("../../parity.zig");
 
 /// Zero, decimal and hex offsets around the ten boundary, the largest

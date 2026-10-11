@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/ldm_stm_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/ldm/stm/vectors.zig: each vector
 //! runs through the `ldm_stm` group over the exception tests' 1 KiB of RAM.
 const std = @import("std");
 const ra8 = @import("ra8");

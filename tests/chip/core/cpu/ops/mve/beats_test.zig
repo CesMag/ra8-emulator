@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_beats.zig through the ops that use it:
+//! Covers src/chip/core/cpu/ops/mve/beats.zig through the ops that use it:
 //! an instruction resumed with EPSR.ECI set runs only its later beats.
 const std = @import("std");
 const ra8 = @import("ra8");

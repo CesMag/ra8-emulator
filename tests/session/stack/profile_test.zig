@@ -1,4 +1,4 @@
-//! Covers src/session/stack_profile.zig (RA8EMU-971): a run wired as
+//! Covers src/session/stack/profile.zig (RA8EMU-971): a run wired as
 //! the CLI wires `--profile-folded` samples CPU0's call stacks, and the
 //! folded file writes them as cpu0-rooted rows; CPU1's go out as cpu1 rows
 //! named from its own image (RA8EMU-972).

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/dsp_mulhi_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/dsp/mulhi_vectors.zig: each vector
 //! runs through the `dsp_mulhi` group on a bare core holding N, C and the
 //! vector's Q.
 const std = @import("std");

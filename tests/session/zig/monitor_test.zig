@@ -1,4 +1,4 @@
-//! Tests for src/session/zig_monitor.zig: a unit event held with halting
+//! Tests for src/session/zig/monitor.zig: a unit event held with halting
 //! debug off pends DebugMonitor on the Zig core
 //! (RA8EMU-673).
 const std = @import("std");

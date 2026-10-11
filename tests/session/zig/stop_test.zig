@@ -1,4 +1,4 @@
-//! Covers src/session/zig_stop.zig: the `--stop-sym` counter a Zig
+//! Covers src/session/zig/stop.zig: the `--stop-sym` counter a Zig
 //! run watches (RA8EMU-603).
 const std = @import("std");
 const ra8 = @import("ra8");

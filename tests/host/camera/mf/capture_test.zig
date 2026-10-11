@@ -1,4 +1,4 @@
-//! Covers src/host/camera/mf_capture.zig against fake reader, sample and
+//! Covers src/host/camera/mf/capture.zig against fake reader, sample and
 //! buffer objects: YUY2 copied through, RGB32 turned into RGB24, gaps
 //! waited through, the end of the stream and short frames as failed reads,
 //! and every sample and buffer released.

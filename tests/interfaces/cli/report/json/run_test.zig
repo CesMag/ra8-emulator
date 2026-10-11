@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_run.zig: the schema of the run and
+//! Covers src/interfaces/cli/report/json/run.zig: the schema of the run and
 //! cores sections of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/ldm_stm_wide.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/ldm/stm/wide.zig against its parity digest.
 const parity = @import("../../parity.zig");
 
 /// Lists of one, two and many registers, with LR, PC and SP, the PUSH/POP

@@ -1,4 +1,4 @@
-//! Covers src/host/camera/v4l2_abi.zig and v4l2_negotiate.zig against a
+//! Covers src/host/camera/v4l2/abi.zig and v4l2_negotiate.zig against a
 //! mock V4L2 device.
 const std = @import("std");
 const builtin = @import("builtin");

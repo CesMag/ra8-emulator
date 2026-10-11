@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/zig_main.zig: a `--cpu zig` run from main with
+//! Covers src/interfaces/cli/zig/main.zig: a `--cpu zig` run from main with
 //! no engine opened (RA8EMU-592).
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_report.zig: which flag prints what, how shares
+//! Tests for src/session/rtos/report.zig: which flag prints what, how shares
 //! are split, and the load table a known run prints.
 const std = @import("std");
 const ra8 = @import("ra8");

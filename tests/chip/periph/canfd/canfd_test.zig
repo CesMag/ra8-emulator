@@ -17,7 +17,7 @@ const unit1 = canfd.unit1_base;
 fn start(model: *canfd.Canfd, base: u32) void {
     // ra8_canfd.c programs the FIFO depth while the global machine is still
     // in reset, brings both machines up, and only then sets RFE, which does
-    // not take in GL_RESET. See src/chip/periph/canfd/rx_config.zig.
+    // not take in GL_RESET. See src/chip/periph/canfd/rx/config.zig.
     model.write(base + rx_config.off_rfcc0, 4, depth_4);
     model.write(base + canfd.off_gctr, 4, 0);
     model.write(base + canfd.off_cnctr, 4, 0);

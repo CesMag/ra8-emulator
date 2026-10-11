@@ -23,5 +23,5 @@ zig build-obj -target thumb-freestanding-eabihf -mcpu=$M -O ReleaseSmall -fno-st
 zig cc -target thumb-freestanding-eabihf -mcpu=$M -nostdlib -Wl,--build-id=none -Wl,--gc-sections -Wl,--strip-debug -Wl,-e,Reset_Handler -Wl,-z,max-page-size=4 -Wl,-T,../fpu/fpu.ld startup.o ext_stream.o -o ext_stream.elf
 ```
 
-`tests/interfaces/cli/sweep_elf_test.zig` runs it on the slowest and fastest
+`tests/interfaces/cli/sweep/elf_test.zig` runs it on the slowest and fastest
 configurations of the sweep matrix.

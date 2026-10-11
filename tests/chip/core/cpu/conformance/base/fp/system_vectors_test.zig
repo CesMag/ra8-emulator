@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/fp_system_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/fp/system_vectors.zig: each vector
 //! runs through the `fp_system` group with its operands, FPSCR, VPR, R1,
 //! xPSR, security state and CONTROL.SFPA.
 const std = @import("std");

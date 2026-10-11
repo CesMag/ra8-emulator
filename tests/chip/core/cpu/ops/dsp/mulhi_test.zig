@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/dsp_mulhi.zig. Encodings are the ones
+//! Covers src/chip/core/cpu/ops/dsp/mulhi.zig. Encodings are the ones
 //! arm-none-eabi-as 13.3 emits for r0 = Rd, r1 = Rn, r2 = Rm, r3 = Ra.
 const std = @import("std");
 const ra8 = @import("ra8");

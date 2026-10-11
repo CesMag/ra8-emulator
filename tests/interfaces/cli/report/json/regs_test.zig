@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_regs.zig: the `--dump-regs` rows
+//! Covers src/interfaces/cli/report/json/regs.zig: the `--dump-regs` rows
 //! of `--report json` read the Zig core's registers on a `--cpu zig` run.
 const std = @import("std");
 const ra8 = @import("ra8");

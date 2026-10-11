@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/exception/fp_frame.zig.
+//! Covers src/chip/core/cpu/exception/fp/frame.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const frame = ra8.chip.core.cpu.exception.frame;

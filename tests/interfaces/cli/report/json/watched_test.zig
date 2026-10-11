@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_watched.zig: the `watch` entry of
+//! Covers src/interfaces/cli/report/json/watched.zig: the `watch` entry of
 //! the `--report json` dumps object, written off a hand-fed watch log and
 //! parsed back with std.json.
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/float_cvt_vectors.zig.
+//! Covers src/chip/core/cpu/mve/float/cvt/vectors.zig.
 const ra8 = @import("ra8");
 const vector = ra8.chip.core.cpu.conformance.vector;
 const float_cvt = ra8.chip.core.cpu.mve.float.cvt;

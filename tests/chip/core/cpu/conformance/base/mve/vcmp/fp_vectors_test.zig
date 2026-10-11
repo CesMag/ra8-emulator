@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_vcmp_fp_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/vcmp/fp_vectors.zig: each vector
 //! runs through the `mve_vcmp_fp` group with Qn, Qm (vector forms only),
 //! Rm, VPR, the IT byte, LR and FPSCR set first, then reads VPR, FPSCR and
 //! the IT byte back.

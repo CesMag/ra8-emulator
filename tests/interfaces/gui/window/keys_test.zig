@@ -1,4 +1,4 @@
-//! Covers src/interfaces/gui/window_keys.zig: Ctrl+Cmd+F toggles full
+//! Covers src/interfaces/gui/window/keys.zig: Ctrl+Cmd+F toggles full
 //! screen on macOS and F11 does elsewhere, and nothing else does (RA8EMU-966).
 const std = @import("std");
 const gui_app = @import("gui_app");

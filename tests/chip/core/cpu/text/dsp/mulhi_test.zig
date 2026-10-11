@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/dsp_mulhi.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/dsp/mulhi.zig against its parity digest.
 const parity = @import("../parity.zig");
 const samples = @import("../dsp_mul_samples.zig");
 

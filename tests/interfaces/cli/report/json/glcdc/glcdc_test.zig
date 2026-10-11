@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_glcdc/json_glcdc.zig and json_glcdc/out.zig:
+//! Covers src/interfaces/cli/report/json_glcdc/json_glcdc.zig and src/interfaces/cli/report/json/glcdc/out.zig:
 //! the `graphics` object of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");

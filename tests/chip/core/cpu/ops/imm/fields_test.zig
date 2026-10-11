@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/imm_fields.zig.
+//! Covers src/chip/core/cpu/ops/imm/fields.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const Fields = ra8.chip.core.cpu.ops.imm.fields.Fields;

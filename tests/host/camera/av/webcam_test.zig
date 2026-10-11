@@ -1,4 +1,4 @@
-//! Covers src/host/camera/av_webcam.zig against a fake Objective-C
+//! Covers src/host/camera/av/webcam.zig against a fake Objective-C
 //! runtime: device indexes, a refusal that never touches AVFoundation, a
 //! denied permission reported plainly, and an open that runs the session,
 //! reads as YUYV 640x480, and stops and releases it on close.

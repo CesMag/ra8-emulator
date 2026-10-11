@@ -1,4 +1,4 @@
-//! Covers src/host/camera/av_session.zig against a fake Objective-C
+//! Covers src/host/camera/av/session.zig against a fake Objective-C
 //! runtime that logs every message: the open sequence, the preset and
 //! video settings, the sink attached for the delegate, a missing device
 //! index, and a refused output releasing everything it made.

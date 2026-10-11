@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/add_sub_wide_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/add/sub/wide_vectors.zig: each
 //! vector runs through the `add_sub_wide` group on a bare core holding N
 //! and C.
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Covers tools/hil_alive.zig and the alive mode in tools/hil_conf.zig.
+//! Covers tools/hil/alive.zig and the alive mode in tools/hil/conf.zig.
 const std = @import("std");
 const table = @import("example_table");
 const hil_conf = table.hil_conf;

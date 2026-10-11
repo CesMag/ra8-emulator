@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_timing.zig:
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/timing.zig:
 //! the `timing` object of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");

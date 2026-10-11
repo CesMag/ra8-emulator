@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_publish.zig: RTOS events on the session stream.
+//! Tests for src/session/rtos/publish.zig: RTOS events on the session stream.
 const std = @import("std");
 const ra8 = @import("ra8");
 const rtos = ra8.session.step_hook;

@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_sd.zig: the `sd` entry of the
+//! Covers src/interfaces/cli/report/json/sd.zig: the `sd` entry of the
 //! `--report json` dumps object, written off the fixture board's card and
 //! parsed back with std.json.
 const std = @import("std");

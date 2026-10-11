@@ -1,4 +1,4 @@
-//! Covers src/host/camera/mf_webcam.zig with fake Media Foundation calls:
+//! Covers src/host/camera/mf/webcam.zig with fake Media Foundation calls:
 //! device indexes, the consent question naming "webcam N", a refusal that
 //! never starts MF, and a failed start that leaves MF stopped.
 const std = @import("std");

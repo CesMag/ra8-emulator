@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/mve_lane_move.zig against DDI0553 syntax.
+//! Covers src/chip/core/cpu/text/mve/lane/move.zig against DDI0553 syntax.
 const v81m = @import("../../v81m.zig");
 
 test "single-lane VMOV prints vector and core register forms" {

@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_timers.zig and json_watch.zig:
+//! Covers src/interfaces/cli/src/interfaces/cli/report/json/timers.zig and json_watch.zig:
 //! the `timers` object of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");

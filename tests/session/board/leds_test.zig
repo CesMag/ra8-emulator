@@ -1,4 +1,4 @@
-//! Covers src/session/board_leds.zig: every user LED keeps its own colour,
+//! Covers src/session/board/leds.zig: every user LED keeps its own colour,
 //! and it is lit only while its pin drives it on.
 const std = @import("std");
 const ra8 = @import("ra8");

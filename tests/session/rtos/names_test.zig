@@ -1,4 +1,4 @@
-//! Tests for src/session/rtos_names.zig: where the name pointer is read from,
+//! Tests for src/session/rtos/names.zig: where the name pointer is read from,
 //! and what falls back to the bare pointer.
 const std = @import("std");
 const ra8 = @import("ra8");

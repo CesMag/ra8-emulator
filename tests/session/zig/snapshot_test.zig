@@ -1,4 +1,4 @@
-//! Covers src/session/zig_snapshot.zig: a run saved part way and
+//! Covers src/session/zig/snapshot.zig: a run saved part way and
 //! restored ends where the uninterrupted run ends (RA8EMU-696), wherever the
 //! split falls: a save holds the chunk it stopped in open instead of closing
 //! it short, and the load picks it up there (RA8EMU-700).

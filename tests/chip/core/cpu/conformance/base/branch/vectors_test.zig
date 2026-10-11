@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/branch_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/branch/vectors.zig: each vector
 //! runs through the `branch` group on a bare register file.
 const std = @import("std");
 const ra8 = @import("ra8");

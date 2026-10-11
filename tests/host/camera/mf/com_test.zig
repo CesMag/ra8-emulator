@@ -1,4 +1,4 @@
-//! Covers src/host/camera/mf_com.zig: each wrapper calls its own
+//! Covers src/host/camera/mf/com.zig: each wrapper calls its own
 //! vtable slot with the object first, checked against a fake COM object.
 const std = @import("std");
 const ra8 = @import("ra8");

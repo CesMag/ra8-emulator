@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/long_mul.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/long/mul.zig against its parity digest.
 const parity = @import("../parity.zig");
 const samples = @import("../multiply_samples.zig");
 

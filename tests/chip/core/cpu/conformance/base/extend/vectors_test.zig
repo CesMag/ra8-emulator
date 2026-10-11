@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/extend_vectors.zig: each vector runs
+//! Covers src/chip/core/cpu/conformance/base/extend/vectors.zig: each vector runs
 //! through the `extend` group on a bare register file.
 const std = @import("std");
 const ra8 = @import("ra8");

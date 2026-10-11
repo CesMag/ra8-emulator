@@ -1,4 +1,4 @@
-//! Tests for src/session/zig_cycles.zig, through the Zig session that runs it.
+//! Tests for src/session/zig/cycles.zig, through the Zig session that runs it.
 const std = @import("std");
 const ra8 = @import("ra8");
 const bus = ra8.chip.core.cpu.bus;

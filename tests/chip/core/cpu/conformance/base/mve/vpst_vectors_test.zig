@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/mve_vpst_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/mve/vpst_vectors.zig: each vector
 //! runs through the `mve_vpst` group with VPR and the IT byte set first.
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,4 +1,4 @@
-//! Covers src/session/zig_watch.zig: `--watch` on a `--cpu zig` run
+//! Covers src/session/zig/watch.zig: `--watch` on a `--cpu zig` run
 //! records each store that starts in the watched word, stamped with the
 //! instruction that made it (RA8EMU-639).
 const std = @import("std");

@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/sweep_elf.zig and the `sweep --elf` flags:
+//! Covers src/interfaces/cli/sweep/elf.zig and the `sweep --elf` flags:
 //! the profile each child gets, reading a child's report, and real child
 //! runs of tests/fixtures/sizing/ext_stream.elf on the slowest and fastest
 //! configurations.

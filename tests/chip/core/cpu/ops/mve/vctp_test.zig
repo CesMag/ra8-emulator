@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_vctp.zig. The encodings come from LLVM's
+//! Covers src/chip/core/cpu/ops/mve/vctp.zig. The encodings come from LLVM's
 //! assembler for -mcpu=cortex-m85 with MVE.
 const std = @import("std");
 const ra8 = @import("ra8");

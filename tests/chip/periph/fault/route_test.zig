@@ -1,4 +1,4 @@
-//! Tests for src/chip/periph/fault_route.zig.
+//! Tests for src/chip/periph/fault/route.zig.
 
 const std = @import("std");
 const ra8 = @import("ra8");

@@ -1,7 +1,7 @@
 //! Covers src/interfaces/gui/ui/stack_pane.zig (RA8EMU-744) on the
 //! uart_irq_echo fixture, the one image with .debug_frame, .debug_line and
 //! .symtab, its snapshot filled the way the shell fills it: the session's
-//! backtrace answer (RA8EMU-1125) unpacked by gui/shell_stack.zig. The
+//! backtrace answer (RA8EMU-1125) unpacked by src/interfaces/gui/shell/stack.zig. The
 //! columns line up, a click maps to its frame, a pane too narrow draws
 //! nothing, and the stop rasterises to a pinned golden frame. The walk
 //! itself is tested in tests/interfaces/rpc/session/backtrace_test.zig.

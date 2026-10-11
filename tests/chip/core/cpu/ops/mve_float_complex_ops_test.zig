@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/mve_float_vcadd.zig, mve_float_vcmla.zig and
+//! Covers src/chip/core/cpu/ops/mve/float/vcadd.zig, mve_float_vcmla.zig and
 //! mve_float_vcmul.zig. The encodings come from LLVM's assembler for
 //! -mcpu=cortex-m85 with MVE floating point.
 const std = @import("std");

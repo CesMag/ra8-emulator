@@ -1,4 +1,4 @@
-//! Tests for src/session/watch_bus.zig: watchpoints and DWT data matches on
+//! Tests for src/session/watch/bus.zig: watchpoints and DWT data matches on
 //! the Zig core stop on the recorded instruction.
 const std = @import("std");
 const ra8 = @import("ra8");
@@ -18,7 +18,7 @@ const dwt = ra8.chip.periph.dwt;
 const watch_table = ra8.session.watch.table;
 const Store = ra8.chip.core.cpu.memory.store.Store;
 
-/// The program tests/session/zig_script_test.zig uses: a loop at +0x18
+/// The program tests/session/zig/script_test.zig uses: a loop at +0x18
 /// calling a helper at +0x8 that adds r0 into the word at 0x22000054.
 const image = struct {
     const base: u32 = memmap.sram_base;

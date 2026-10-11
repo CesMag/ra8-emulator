@@ -1,4 +1,4 @@
-//! Tests for src/session/panel_diff.zig (RA8EMU-1126): the box of what
+//! Tests for src/session/panel/diff.zig (RA8EMU-1126): the box of what
 //! differs between two pictures, alpha left out, and null for the same one.
 const std = @import("std");
 const ra8 = @import("ra8");

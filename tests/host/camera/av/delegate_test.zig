@@ -1,4 +1,4 @@
-//! Covers src/host/camera/av_delegate.zig against fake CoreMedia and
+//! Covers src/host/camera/av/delegate.zig against fake CoreMedia and
 //! CoreVideo calls: a good sample lands in the mailbox and is unlocked,
 //! other formats, lock failures, missing buffers and base addresses are
 //! dropped, and the IMP only feeds an attached sink.

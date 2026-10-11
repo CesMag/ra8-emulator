@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/sweep_cli.zig, sweep_report.zig and
+//! Covers src/interfaces/cli/sweep/cli.zig, sweep_report.zig and
 //! sweep_table.zig: the `sweep` flags and both forms of its report.
 const std = @import("std");
 const ra8 = @import("ra8");

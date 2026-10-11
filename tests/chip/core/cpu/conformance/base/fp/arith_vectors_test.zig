@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/fp_arith_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/fp/arith_vectors.zig: each vector
 //! runs through the `fp_arith` group with its accumulator and operands in
 //! place and its FPSCR loaded.
 const std = @import("std");

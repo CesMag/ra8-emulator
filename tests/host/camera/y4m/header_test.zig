@@ -1,4 +1,4 @@
-//! Covers src/host/camera/y4m_header.zig: the stream header's tags, the
+//! Covers src/host/camera/y4m/header.zig: the stream header's tags, the
 //! Y4M defaults, what is refused, and the bytes one frame takes.
 const std = @import("std");
 const ra8 = @import("ra8");

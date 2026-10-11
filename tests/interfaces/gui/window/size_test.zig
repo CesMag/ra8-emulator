@@ -1,4 +1,4 @@
-//! Covers src/interfaces/gui/window_size.zig: the opening size follows
+//! Covers src/interfaces/gui/window/size.zig: the opening size follows
 //! the screen inside the minimum, the UI scale is a whole number, and the
 //! layout size is the drawable divided by it (RA8EMU-966).
 const std = @import("std");

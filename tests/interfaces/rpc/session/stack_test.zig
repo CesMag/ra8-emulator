@@ -1,4 +1,4 @@
-//! Tests for src/interfaces/rpc/session_stack.zig (RA8EMU-816) on a real
+//! Tests for src/interfaces/rpc/session/stack.zig (RA8EMU-816) on a real
 //! harness: the reservation comes from the image's linker symbols, a run
 //! leaves the low MSP inside it, and an MSP set under the base overflows.
 const std = @import("std");

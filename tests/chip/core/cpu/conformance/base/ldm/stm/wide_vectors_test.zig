@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/ldm_stm_wide_vectors.zig: each
+//! Covers src/chip/core/cpu/conformance/base/ldm/stm/wide_vectors.zig: each
 //! vector runs through the `ldm_stm_wide` group over the exception tests'
 //! 1 KiB of RAM at 0x2000_0000, every word of it holding its pattern.
 const std = @import("std");

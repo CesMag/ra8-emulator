@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/conformance/base/imm_arith_vectors.zig: each vector
+//! Covers src/chip/core/cpu/conformance/base/imm/arith_vectors.zig: each vector
 //! runs through the `imm_arith` group on a bare core holding N and C.
 const std = @import("std");
 const ra8 = @import("ra8");

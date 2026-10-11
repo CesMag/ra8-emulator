@@ -1,4 +1,4 @@
-//! Covers src/components/fault_schedule.zig: the `--faults FILE`
+//! Covers src/components/fault/schedule.zig: the `--faults FILE`
 //! grammar, its virtual times, and refusing a bad file at the right line.
 const std = @import("std");
 const ra8 = @import("ra8");

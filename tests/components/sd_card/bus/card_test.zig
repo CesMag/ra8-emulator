@@ -1,4 +1,4 @@
-//! Covers src/components/sd_card/bus_card.zig.
+//! Covers src/components/sd_card/bus/card.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const card = ra8.components.sd_card.bus_card;
