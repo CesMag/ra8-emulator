@@ -1,6 +1,6 @@
 //! What a run asked for on top of the machine, as `ra8_board.run`: real-time
-//! pacing, the speed factor and what ends a soak. `run_policy.RunPolicy`
-//! holds them on the board. The index file for src/board/run.
+//! pacing, the speed factor and what ends a soak. The session's
+//! `run_policy.RunPolicy` holds them (RA8EMU-1047). The index file for src/board/run.
 pub const pacer = @import("run/pacer.zig");
 pub const pacing = @import("run/pacing.zig");
 pub const soak = @import("run/soak/soak.zig");

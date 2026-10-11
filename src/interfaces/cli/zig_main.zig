@@ -21,6 +21,7 @@ const Cpu0 = @import("ra8_board").cpu0_store.Cpu0;
 
 /// Fitting the board is shared with main's engine path.
 pub const fit = @import("board_fit.zig").fit;
+const policyOf = @import("board_fit.zig").policy;
 const fit_verdict = @import("board_fit.zig").tapeVerdict;
 
 /// The whole run, in the order main's engine path takes it: fit the board,
@@ -29,6 +30,8 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, image: elf.Image, options: 
     var board = Board.init(allocator);
     defer board.deinit();
     fit(&board, allocator, io, options) catch return 2;
+    var asked = policyOf(&board, io, options);
+    asked.attach(&board);
     defer cli.card_setup.saveBack(&board, io, options.sd_path, options.sd_save);
     defer cli.card_setup.saveSdhi(&board, io, options.sdhi);
     var cpu0: Cpu0 = .{};
@@ -58,6 +61,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, image: elf.Image, options: 
         .timed = if (timed) |*due| due else null,
         .undefined_sites = if (swept) |*found| found else null,
         .schedule = if (options.faults != null) &schedule.applier else null,
+        .policy = &asked,
     };
     return fit_verdict(&board, try zig_run.run(out, io, memory, &board, &parts.timebase, image, options, vector_base, table, parts.tap.waiting(), ends));
 }

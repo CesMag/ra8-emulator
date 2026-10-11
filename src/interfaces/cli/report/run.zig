@@ -16,6 +16,7 @@ const Writer = @import("../report.zig").Writer;
 const report = @import("../report.zig");
 const report_timing = @import("timing.zig");
 const pacing = @import("ra8_board").run.pacing;
+const RunPolicy = @import("ra8_session").run_policy.RunPolicy;
 const idle = @import("ra8_chip").core.idle;
 const report_part = @import("part.zig");
 const clocks = @import("ra8_chip").periph.clocks;
@@ -33,12 +34,14 @@ pub fn busErrors(out: Writer, tally: bus_fault.Tally) !void {
 /// on the Zig core, so a line says they are not
 /// reported. The
 /// BusFaults a `--bus-errors` run raised close it.
-pub fn zigCore(out: Writer, board: *Board, timebase: clocks.Clocks, retired: u64, bus_errors: bus_fault.Tally) !void {
+pub fn zigCore(out: Writer, board: *Board, policy: ?*const RunPolicy, timebase: clocks.Clocks, retired: u64, bus_errors: bus_fault.Tally) !void {
     try report_part.print(out, board.part);
     try report.bus(board, out);
     try report_timing.clock(out, timebase);
-    try pacing.line(out, board.run.pacing, board.time.base.now());
-    try board.run.soak.line(out);
+    if (policy) |asked| {
+        try pacing.line(out, asked.pacing, board.time.base.now());
+        try asked.soak.line(out);
+    }
     try out.print("zig core: pend/idle seam counts and stepped-instruction counts are not reported\n", .{});
     try report.blocks(board, out, .{ .elapsed = retired });
     try busErrors(out, bus_errors);

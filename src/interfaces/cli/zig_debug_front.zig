@@ -9,6 +9,7 @@ const Board = @import("ra8_board").board.Board;
 const board_wiring = @import("ra8_board").wiring;
 const board_speed = @import("ra8_session").board_speed;
 const pacing = @import("ra8_board").run.pacing;
+const RunPolicy = @import("ra8_session").run_policy.RunPolicy;
 const script = @import("ra8_session").script;
 const stop_machine = @import("ra8_session").stop_machine;
 const zig_script = @import("ra8_session").zig_script;
@@ -41,7 +42,9 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, request: debug_front.Reques
     };
     defer opened.deinit();
     var target: zig_script.ZigScript = .{ .image = opened.image(), .session = opened.session() };
-    var speed: board_speed.BoardSpeed = .{ .time = &opened.board().time, .paced = &opened.board().run.pacing, .clock = pacing.hostClock(io) };
+    var asked: RunPolicy = .{};
+    asked.attach(opened.board());
+    var speed: board_speed.BoardSpeed = .{ .time = &opened.board().time, .paced = &asked.pacing, .clock = pacing.hostClock(io) };
     target.session.speed = speed.hook();
     var pair: second_core.zig_run.Driver = undefined;
     var other: Other = .{};

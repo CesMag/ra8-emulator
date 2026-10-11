@@ -15,6 +15,7 @@ const Deadline = @import("ra8_chip").core.deadline.Deadline;
 const clocks = @import("ra8_chip").periph.clocks;
 const elf = @import("ra8_board").image.elf;
 const Board = @import("ra8_board").board.Board;
+const RunPolicy = @import("run_policy.zig").RunPolicy;
 const fault_file = @import("fault_file.zig");
 const rtos_hook = @import("rtos_hook.zig");
 const rtos_load = @import("rtos_load.zig");
@@ -43,6 +44,8 @@ pub const Ends = struct {
     undefined_sites: ?*undefined_sites.Found = null,
     /// The `--faults FILE` schedule, applied at its virtual times (RA8EMU-207).
     schedule: ?*fault_file.Applier = null,
+    /// `--speed` and `--run-for`, attached to the board (RA8EMU-1047).
+    policy: ?*RunPolicy = null,
 };
 
 /// What the loop reads from the application's options.
@@ -72,10 +75,10 @@ pub const Loop = struct {
     /// `said` takes the boot lines and `out` the ITM console. `cpu1` is the
     /// second core the application brought up, or null.
     pub fn run(self: *Loop, said: anytype, out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timebase: *clocks.Clocks, image: elf.Image, options: Options, vector_base: u32, profile_table: ?*profile.Table, until: ?*Until, cpu1: ?*second_core.zig_run.Driver, ends: Ends) !void {
-        self.clock = .{ .io = io, .memory = memory, .board = board, .timebase = timebase, .stop = ends.stop, .point = ends.point, .timed = ends.timed, .undefined_sites = ends.undefined_sites, .idle_skip = options.idle_skip, .state = options.state, .cpu1 = cpu1 };
+        self.clock = .{ .io = io, .memory = memory, .board = board, .timebase = timebase, .stop = ends.stop, .point = ends.point, .timed = ends.timed, .undefined_sites = ends.undefined_sites, .policy = ends.policy, .idle_skip = options.idle_skip, .state = options.state, .cpu1 = cpu1 };
         const clock = &self.clock;
         var cut: systick_cut.Cut = .{ .clocks = .{ timebase, &clock.ns_timebase } };
-        if (board.run.soak.armed) soak_symbols.resolve(image, &board.run.soak.threads);
+        if (ends.policy) |asked| if (asked.soak.armed) soak_symbols.resolve(image, &asked.soak.threads);
         // --trace-rtos listens in front of the core (src/session/rtos_zig.zig).
         self.tracer = if (options.cpu == .zig) rtos_hook.resolve(image, options.rtos) else null;
         var listener: rtos_hook.zig.Listener = undefined;

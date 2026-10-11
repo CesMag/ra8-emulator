@@ -27,7 +27,7 @@ fn zigReportWith(buf: []u8, timebase: ra8.chip.periph.clocks.Clocks) ![]const u8
     defer file.close(std.testing.io);
     var held: [512]u8 = undefined;
     var writer = file.writer(std.testing.io, &held);
-    try report_run.zigCore(&writer.interface, &board, timebase, 42, .{});
+    try report_run.zigCore(&writer.interface, &board, null, timebase, 42, .{});
     try writer.interface.flush();
     const len = try file.readPositionalAll(std.testing.io, buf, 0);
     return buf[0..len];

@@ -65,7 +65,9 @@ test "a soak run applies every scheduled event at its exact virtual time" {
     try store_board.attach(&board, core);
     const loaded = try ra8.board.image.load.read(image);
     _ = try loader.image(core, loaded.image());
-    board.run.soak.armed = true; // as `--run-for` arms it
+    var asked: ra8.session.run_policy.RunPolicy = .{};
+    asked.soak.armed = true; // as `--run-for` arms it
+    asked.attach(&board);
 
     var run: fault_file.Run = undefined;
     try run.open(&board, std.testing.io, path);
@@ -74,7 +76,7 @@ test "a soak run applies every scheduled event at its exact virtual time" {
     run.applier.applied_ns = &applied;
 
     var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
-    var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase };
+    var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .policy = &asked };
     var ran: u64 = 0;
     var output: [256]u8 = undefined;
     var stream: std.Io.Writer = .fixed(&output);
@@ -89,7 +91,7 @@ test "a soak run applies every scheduled event at its exact virtual time" {
     });
     try std.testing.expect(run.applier.finished());
     for (run.plan.events, applied) |event, at| try std.testing.expectEqual(event.at_ns, at);
-    try std.testing.expect(!board.run.soak.ended());
+    try std.testing.expect(!asked.soak.ended());
     try std.testing.expect(try core.readWord(counts_at + 4) > 0);
     try std.testing.expect(try core.readWord(counts_at + 8) > 0);
 }

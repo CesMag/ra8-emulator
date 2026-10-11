@@ -6,6 +6,7 @@
 const std = @import("std");
 const usbip_export = @import("ra8_usbip").exported;
 const rtc_start = @import("ra8_session").rtc_start;
+const RunPolicy = @import("ra8_session").run_policy.RunPolicy;
 const cli = @import("cli.zig");
 const host_sock = @import("ra8_host").sock;
 const host_worker = @import("ra8_host").worker;
@@ -26,6 +27,15 @@ pub fn tapeVerdict(board: *const Board, code: u8) u8 {
     return if (code == 0) 1 else code;
 }
 
+/// What the run asked for on top of the board: `--speed` paces it against
+/// the host clock and `--run-for` arms the soak (RA8EMU-1047).
+pub fn policy(board: *const Board, io: std.Io, options: cli.Options) RunPolicy {
+    var asked: RunPolicy = .{};
+    asked.soak.armed = options.run_for;
+    if (options.speed) |factor| pacing.attachHost(&asked.pacing, board.time.base.now(), io, factor);
+    return asked;
+}
+
 pub fn fit(board: *Board, allocator: std.mem.Allocator, io: std.Io, options: cli.Options) !void {
     board.part = options.part;
     board.memory_monitors = .{ .cms = options.cms, .sfs = options.sfs };
@@ -35,8 +45,6 @@ pub fn fit(board: *Board, allocator: std.mem.Allocator, io: std.Io, options: cli
     // corpus was first recorded on is only kept for the RTC's own tests.
     board.clock.pace.mode = .virtual;
     if (options.rtc_start) |start| board.clock.seed(try rtc_start.resolve(start, io));
-    if (options.speed) |factor| pacing.attachHost(&board.run.pacing, board.time.base.now(), io, factor);
-    board.run.soak.armed = options.run_for;
     const profile_fits = try loadProfile(allocator, io, options.board_profile);
     board.external_memory = profile_fits.memory;
     try board.nor.resize(profile_fits.memory.ospi.size);

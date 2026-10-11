@@ -99,7 +99,7 @@ pub fn run(out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timeba
         if (options.report_json) {
             const load = loadOf(clock.memory, if (tracer.*) |*found| found else null, clock.cpu1);
             try json_run.document(out, board, .{ .engine = "zig", .elapsed = ran.*, .elapsed_cycles = clock.wall_cycles, .external = clock.memory, .bus_errors = clock.bus_tally, .where = .{ .image = image, .profile = profile_table }, .dumps = &.{ .registers = .{ .zig = final }, .memory = clock.memory, .image = image, .options = &options, .io = io, .watched = watched }, .load = if (options.cpu_load) &load else null, .eink_log = if (options.frames.eink_log != null) &eink_recorder else null });
-        } else try report_run.zigCore(out, board, timebase.*, ran.*, clock.bus_tally);
+        } else try report_run.zigCore(out, board, clock.policy, timebase.*, ran.*, clock.bus_tally);
         if (profile_table) |table| try profileOut(out, io, image, table.*, options);
         try report_run.cpu1(out, if (clock.cpu1) |second| &second.second else null);
         // Globals a memory-probe verdict reads, out of the Zig core's memory.
@@ -131,7 +131,7 @@ fn loopOptions(options: cli.Options, budget: usize) run_loop.Options {
 fn postBootReport(out: *std.Io.Writer, clock: *Clock, watcher: *zig_watch.Recorder, final: *const boot.Regs, image: elf.Image, options: cli.Options, ends: Ends, retire_at: u32, budget: usize) !?watchpoint.Watched {
     clock.soakFaults();
     const watched = watcher.result(final.pc);
-    clock.board.run.soak.place(final.pc, if (clock.board.clock.running()) clock.board.clock.now else null);
+    if (clock.policy) |asked| asked.soak.place(final.pc, if (clock.board.clock.running()) clock.board.clock.now else null);
     const said = BootWriter{ .output = out, .quiet = options.ctl_cpu_load };
     if (ends.point) |point| {
         try break_sym.verdict(said, options.break_place.?, point.*, retire_at, final.pc, budget);

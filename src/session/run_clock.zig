@@ -15,6 +15,7 @@ const board_edge = @import("ra8_board").boundary;
 const core_clock = @import("ra8_board").core_clock;
 const quiet_due = @import("ra8_board").quiet_due;
 const Board = @import("ra8_board").board.Board;
+const RunPolicy = @import("run_policy.zig").RunPolicy;
 const second_core = @import("ra8_chip").core.second_core;
 const Stop = @import("ra8_chip").core.stop.Stop;
 const Deadline = @import("ra8_chip").core.deadline.Deadline;
@@ -31,6 +32,8 @@ pub const Clock = struct {
     memory: Guest,
     board: *Board,
     timebase: *clocks.Clocks,
+    /// The run's pacing and soak (RA8EMU-1047), or null for a bare run.
+    policy: ?*RunPolicy = null,
     /// CPU0's Non-secure SysTick (RA8EMU-449). Only its timer is charged:
     /// DWT_CYCCNT and the run's own count belong to `timebase`.
     ns_timebase: clocks.Clocks = .{ .words = systick_bank.non_secure_words },
@@ -95,7 +98,7 @@ pub const Clock = struct {
     /// (src/chip/core/stop.zig).
     pub fn done(self: *Clock) bool {
         self.soakFaults();
-        if (self.board.run.soak.ended()) return true;
+        if (self.policy) |asked| if (asked.soak.ended()) return true;
         if (self.point) |point| if (point.reached) return true;
         if (self.timed) |due| if (due.met(self.timebase.ticks)) return true;
         if (self.undefined_sites) |found| if (found.stoppedAt() != null) return true;
@@ -108,7 +111,8 @@ pub const Clock = struct {
     /// none yet. Also asked once after the run, for a core that stopped
     /// inside a stretch and never reached its boundary.
     pub fn soakFaults(self: *Clock) void {
-        const soak = &self.board.run.soak;
+        const asked = self.policy orelse return;
+        const soak = &asked.soak;
         if (!soak.armed or soak.ended()) return;
         const latched = soak_fault.words(self.memory, &landScs);
         if (soak_fault.kind(latched)) |fault| soak.note(fault, self.board.time.base.now());

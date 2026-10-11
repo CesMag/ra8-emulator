@@ -61,7 +61,9 @@ fn runAt(speed_milli: ?u64) !Run {
     defer board.deinit();
     try store_board.attach(&board, core);
     var wall: FakeWall = .{};
-    if (speed_milli) |factor| board.run.pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), factor);
+    var asked: ra8.session.run_policy.RunPolicy = .{};
+    asked.attach(&board);
+    if (speed_milli) |factor| asked.pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), factor);
     var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = idler.chunk };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase };
     var timeline: Timeline = .{ .timebase = &timebase };

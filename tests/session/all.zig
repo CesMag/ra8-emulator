@@ -4,6 +4,7 @@
 test {
     _ = @import("disasm_test.zig");
     _ = @import("symbols_test.zig");
+    _ = @import("run_policy_test.zig");
     _ = @import("breakpoint_test.zig");
     _ = @import("break_table_test.zig");
     _ = @import("stop_machine_test.zig");

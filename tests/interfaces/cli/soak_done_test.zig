@@ -37,16 +37,18 @@ fn runSoak(overflow: bool) !Ended {
     defer board.deinit();
     try store_board.attach(&board, core);
     board.time.base.setRate(hz);
-    board.run.soak.armed = true;
+    var asked: ra8.session.run_policy.RunPolicy = .{};
+    asked.soak.armed = true;
+    asked.attach(&board);
     var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
-    var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .idle_skip = true };
+    var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .policy = &asked, .idle_skip = true };
     var ran: u64 = 0;
     var final: cpu_boot.Regs = .{};
     var output: [1024]u8 = undefined;
     var stream: std.Io.Writer = .fixed(&output);
     _ = try cpu_boot.start(&stream, .zig, core, &board.bus, soaker.base, week_cycles, &ran, .{ .boundary = clock.boundary(), .final = &final });
     clock.soakFaults();
-    return .{ .event = board.run.soak.event, .now_ns = board.time.base.now(), .count = try core.readWord(soaker.counter_at), .ticks = timebase.ticks, .collapsed = timebase.collapsed };
+    return .{ .event = asked.soak.event, .now_ns = board.time.base.now(), .count = try core.readWord(soaker.counter_at), .ticks = timebase.ticks, .collapsed = timebase.collapsed };
 }
 
 test "a soak catches a stack overflow in the virtual hour it happens" {

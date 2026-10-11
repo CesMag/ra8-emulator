@@ -28,11 +28,6 @@ const Fake = struct {
     }
 };
 
-test "the board's run policy holds no pacing unless a run attaches it" {
-    const run: ra8.board.run_policy.RunPolicy = .{};
-    try std.testing.expect(run.pacing == null);
-}
-
 test "boundaries closer than a step leave the wall clock alone" {
     var fake = Fake{};
     var paced = Pacing.start(fake.clock(), 0, 1000);

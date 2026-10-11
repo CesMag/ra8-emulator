@@ -73,7 +73,8 @@ test "a debugger run moves board time by what retired and paces it, across a spe
     // One instruction is a microsecond, so a chunk of 1000 is a millisecond.
     unit.time.base.setRate(1_000_000);
     var wall = FakeWall{};
-    unit.run.pacing = pacing.Pacing.start(wall.clock(), unit.time.base.now(), 250);
+    var asked: ra8.session.run_policy.RunPolicy = .{ .pacing = pacing.Pacing.start(wall.clock(), unit.time.base.now(), 250) };
+    asked.attach(&unit);
 
     var code = ram();
     var cpu: Cpu = .{ .bus = code.view() };
@@ -91,7 +92,7 @@ test "a debugger run moves board time by what retired and paces it, across a spe
     try std.testing.expectEqual(@as(u64, 32 * std.time.ns_per_ms), wall.at);
 
     const before = unit.time.base.now();
-    unit.run.pacing.?.setSpeed(before, 5000);
+    asked.pacing.?.setSpeed(before, 5000);
     try std.testing.expectEqual(before, unit.time.base.now());
     try std.testing.expect(try zig_boundary.run(.{ .cpu = &cpu }, &machine, 10_000, null, null, hook) == .count);
     try std.testing.expectEqual(cpu.retired, unit.time.base.retired);

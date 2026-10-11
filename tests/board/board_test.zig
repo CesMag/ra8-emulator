@@ -292,11 +292,13 @@ test "a soak run notes a watchdog reset as its event at the virtual time it came
     var unit = board();
     defer unit.deinit();
     var ppb = Ppb{};
-    unit.run.soak.armed = true;
+    var asked: ra8.session.run_policy.RunPolicy = .{};
+    asked.soak.armed = true;
+    asked.attach(&unit);
     unit.time.base.advance(2_500_000_000);
     unit.watchdog.reset_requested = true;
     try unit.takeResetRequests(&ppb);
-    const event = unit.run.soak.event.?;
+    const event = asked.soak.event.?;
     try std.testing.expectEqual(@TypeOf(event.kind).watchdog_reset, event.kind);
     try std.testing.expectEqual(unit.time.base.now(), event.at_ns);
     try std.testing.expect(unit.causes.latched(reset.cause.wdtrf));
@@ -306,7 +308,9 @@ test "a run without --run-for keeps no soak event for a watchdog reset" {
     var unit = board();
     defer unit.deinit();
     var ppb = Ppb{};
+    var asked: ra8.session.run_policy.RunPolicy = .{};
+    asked.attach(&unit);
     unit.heartbeat.reset_requested = true;
     try unit.takeResetRequests(&ppb);
-    try std.testing.expect(!unit.run.soak.ended());
+    try std.testing.expect(!asked.soak.ended());
 }

@@ -58,6 +58,7 @@ pub const txm_modules = @import("txm_modules.zig");
 pub const txm_report = @import("txm_report.zig");
 pub const rtos_report = @import("rtos_report.zig");
 pub const run_loop = @import("run_loop.zig");
+pub const run_policy = @import("run_policy.zig");
 pub const script = @import("script.zig");
 pub const sections = @import("sections.zig");
 pub const session = @import("session.zig");

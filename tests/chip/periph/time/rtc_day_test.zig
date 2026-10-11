@@ -51,7 +51,8 @@ fn runDay(start: Calendar) !Day {
     board.time.base.setRate(hz);
     board.clock.seed(start);
     var wall: FakeWall = .{};
-    board.run.pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), hundred_x);
+    var asked: ra8.session.run_policy.RunPolicy = .{ .pacing = pacing.Pacing.start(wall.clock(), board.time.base.now(), hundred_x) };
+    asked.attach(&board);
     var timebase: ra8.chip.periph.clocks.Clocks = .{ .per_chunk = 5_000 };
     var clock: zig_run.Clock = .{ .io = std.testing.io, .memory = core, .board = &board, .timebase = &timebase, .idle_skip = true };
     var ran: u64 = 0;

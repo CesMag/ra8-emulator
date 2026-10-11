@@ -103,7 +103,7 @@ pub fn tickFrom(self: *Board, core: Guest, instructions: u32, issuer: @import("r
     try drain(self, core, self.links.takeEvents());
     try self.events.repend(core);
     if (self.cpu1) |second| try self.events.rependOn(.cpu1, second);
-    if (self.run.pacing) |*paced| paced.after(self.time.base.now());
+    if (self.run_hook) |hook| hook.boundaryFn(hook.context, self.time.base.now());
 }
 
 /// Host switch edges reach the event path only through a pin whose PFS ISEL
@@ -162,12 +162,12 @@ pub fn takeResetRequests(self: *Board, core: anytype) !void {
 pub fn takeResetRequestsFrom(self: *Board, core: anytype, issuer: @import("ra8_chip").periph.registry.Issuer) !void {
     if (self.watchdog.reset_requested) {
         self.watchdog.reset_requested = false;
-        self.run.soak.note(.watchdog_reset, self.time.base.now());
+        if (self.run_hook) |hook| hook.resetFn(hook.context, .watchdog, self.time.base.now());
         resetForFrom(self, .watchdog, issuer);
     }
     if (self.heartbeat.reset_requested) {
         self.heartbeat.reset_requested = false;
-        self.run.soak.note(.iwdt_reset, self.time.base.now());
+        if (self.run_hook) |hook| hook.resetFn(hook.context, .iwdt, self.time.base.now());
         resetForFrom(self, .iwdt, issuer);
     }
     if (issuer == .cpu1) return;
