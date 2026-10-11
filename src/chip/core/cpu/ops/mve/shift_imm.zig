@@ -3,7 +3,7 @@
 //! the top set bit of imm6 gives the lane size, and the rest the amount
 //! (2*esize - imm6 rightwards, imm6 - esize leftwards). imm6 000xxx is the
 //! modified-immediate space and stays with mve_modimm. The arithmetic is
-//! mve/int_shift.zig and mve/int_insert.zig; this file only decodes.
+//! src/chip/core/cpu/mve/int/shift/shift.zig and src/chip/core/cpu/mve/int/insert/insert.zig; this file only decodes.
 const op = @import("../../op.zig");
 const Cpu = @import("../../cpu.zig").Cpu;
 const Instr = @import("../../instr.zig").Instr;

@@ -52,7 +52,7 @@ pub const Device = struct {
     readFn: *const fn (*anyopaque, []u8) usize,
     stopFn: *const fn (*anyopaque) void,
     /// Whether this address phase is acknowledged. Null is always: a part
-    /// that is on the bus answers. A fault wrapper (model/fault.zig) uses it
+    /// that is on the bus answers. A fault wrapper (src/components/fault/fault.zig) uses it
     /// to drop off the bus or NACK some phases (RA8EMU-522).
     ackFn: ?*const fn (*anyopaque) bool = null,
     /// Virtual ns the part holds SCL low before each byte it sends: clock

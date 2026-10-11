@@ -1,4 +1,4 @@
-//! Tests for src/board/usb.zig: the scripted host on the device jack and the
+//! Tests for src/board/usb/usb.zig: the scripted host on the device jack and the
 //! USBFS interrupt the board raises for it.
 const std = @import("std");
 const ra8 = @import("ra8");

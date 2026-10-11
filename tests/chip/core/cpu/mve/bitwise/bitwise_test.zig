@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/bitwise.zig.
+//! Covers src/chip/core/cpu/mve/bitwise/bitwise.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const bitwise = ra8.chip.core.cpu.mve.bitwise;

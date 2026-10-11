@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/bit_reverse.zig.
+//! Covers src/chip/core/cpu/mve/bit/reverse/reverse.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const br = ra8.chip.core.cpu.mve.bit.reverse;

@@ -2,7 +2,7 @@
 //! SXTH/SXTAH, UXTH/UXTAH, SXTB/SXTAB and UXTB/UXTAB. Rm is rotated right by
 //! 0, 8, 16 or 24, the low halfword or byte is sign- or zero-extended, and the
 //! A forms add Rn. Rn = PC is the plain form. No flags change. The extension
-//! itself reuses ops/extend.zig.
+//! itself reuses src/chip/core/cpu/ops/extend/extend.zig.
 //!
 //! Left unclaimed: Rd or Rm of SP or PC and Rn of SP (UNPREDICTABLE), and the
 //! dual-halfword SXTB16/UXTB16 rows from the DSP extension.

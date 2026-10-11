@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/ops/ldm_stm.zig.
+//! Covers src/chip/core/cpu/ops/ldm/stm/stm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const bus = ra8.chip.core.cpu.bus;

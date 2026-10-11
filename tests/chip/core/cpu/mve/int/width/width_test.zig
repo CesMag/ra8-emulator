@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/int_width.zig.
+//! Covers src/chip/core/cpu/mve/int/width/width.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const width = ra8.chip.core.cpu.mve.int.width;

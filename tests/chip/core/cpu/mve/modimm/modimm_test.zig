@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/modimm.zig.
+//! Covers src/chip/core/cpu/mve/modimm/modimm.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const modimm = ra8.chip.core.cpu.mve.modimm;

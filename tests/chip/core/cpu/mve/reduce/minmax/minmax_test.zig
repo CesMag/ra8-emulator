@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/reduce_minmax.zig.
+//! Covers src/chip/core/cpu/mve/reduce/minmax/minmax.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const rm = ra8.chip.core.cpu.mve.reduce.minmax;

@@ -1,4 +1,4 @@
-//! Covers float.laneMask in src/chip/core/cpu/mve/float.zig.
+//! Covers float.laneMask in src/chip/core/cpu/mve/float/float.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const float = ra8.chip.core.cpu.mve.float;

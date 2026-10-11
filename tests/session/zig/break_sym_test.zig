@@ -1,4 +1,4 @@
-//! Covers src/session/zig_break.zig: the `--break-sym` arrival a Zig
+//! Covers src/session/zig/break_sym.zig: the `--break-sym` arrival a Zig
 //! run counts and the verdict it prints (RA8EMU-603).
 const std = @import("std");
 const ra8 = @import("ra8");

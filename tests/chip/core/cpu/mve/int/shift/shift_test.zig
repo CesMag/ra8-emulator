@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/int_shift.zig.
+//! Covers src/chip/core/cpu/mve/int/shift/shift.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const shift = ra8.chip.core.cpu.mve.int.shift;

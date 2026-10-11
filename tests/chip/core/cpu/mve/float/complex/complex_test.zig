@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/float_complex.zig.
+//! Covers src/chip/core/cpu/mve/float/complex/complex.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const float_complex = ra8.chip.core.cpu.mve.float.complex;

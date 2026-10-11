@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/reduce.zig.
+//! Covers src/chip/core/cpu/mve/reduce/reduce.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const reduce = ra8.chip.core.cpu.mve.reduce;

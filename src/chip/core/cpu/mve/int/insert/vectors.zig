@@ -1,5 +1,5 @@
 //! Conformance vectors for VSRI and VSLI (int_insert.zig) and VQSHLU
-//! (int_shift.zig), worked from their pseudocode in the Arm ARM (DDI0553).
+//! src/chip/core/cpu/mve/int/shift/shift.zig, worked from their pseudocode in the Arm ARM (DDI0553).
 //! The insert vectors include the shifts at each end of the range, where
 //! VSRI keeps Qd whole and VSLI copies Qm whole.
 const vector = @import("../../../conformance/vector.zig");

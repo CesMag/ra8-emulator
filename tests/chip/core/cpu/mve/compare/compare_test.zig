@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/compare.zig.
+//! Covers src/chip/core/cpu/mve/compare/compare.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const compare = ra8.chip.core.cpu.mve.compare;

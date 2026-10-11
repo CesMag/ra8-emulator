@@ -1,4 +1,4 @@
-//! Tests for src/chip/core/second_zig.zig: CPU1 on the Zig core (RA8EMU-234).
+//! Tests for src/chip/core/second/zig/zig.zig: CPU1 on the Zig core (RA8EMU-234).
 const std = @import("std");
 const ra8 = @import("ra8");
 const second_core = ra8.chip.core.second.core;

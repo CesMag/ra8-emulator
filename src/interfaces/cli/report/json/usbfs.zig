@@ -1,6 +1,6 @@
 //! The `fs_host` object inside `usb` of `--report json` (RA8EMU-364): how
 //! far the scripted host on the USBFS jack got through enumeration, and the
-//! descriptors it was handed, the same facts report/usb.zig prints.
+//! descriptors it was handed, the same facts src/interfaces/cli/report/usb/usb.zig prints.
 //! Descriptors are lowercase hex strings, null when none came back.
 const std = @import("std");
 const usbfs_host = @import("ra8_chip").periph.usbfs.host;
@@ -36,7 +36,7 @@ fn hexOf(bytes: []const u8, buf: []u8) ?[]const u8 {
 }
 
 /// A string descriptor as text, '?' for anything outside printable ASCII,
-/// as report/usb.zig prints it; null when none came back.
+/// as src/interfaces/cli/report/usb/usb.zig prints it; null when none came back.
 fn textOf(bytes: []const u8, buf: []u8) ?[]const u8 {
     const length = @min(bytes[0], bytes.len);
     if (length < 2) return null;

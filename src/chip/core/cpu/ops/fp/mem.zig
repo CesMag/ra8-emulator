@@ -1,5 +1,5 @@
 //! The FP loads and stores (T1/T2): VLDR/VSTR, VLDM/VSTM and their
-//! VPUSH/VPOP aliases. fpu/transfer.zig plans the run of S words; this
+//! VPUSH/VPOP aliases. src/chip/core/cpu/fpu/transfer/transfer.zig plans the run of S words; this
 //! file reads or writes them through the bus, lowest address first, and
 //! writes Rn back only once every access has succeeded.
 //!

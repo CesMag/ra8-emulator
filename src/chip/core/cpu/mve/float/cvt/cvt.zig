@@ -2,7 +2,7 @@
 //! pure functions over Q register values.
 //!
 //! Each word lane converts on its own under StandardFPSCRValue, through the
-//! scalar FPConvert in fpu/half.zig: a single operand is flushed by FZ, a
+//! scalar FPConvert in src/chip/core/cpu/fpu/half/half.zig: a single operand is flushed by FZ, a
 //! half operand or result never is, and AHP is kept. F32 to F16 writes the
 //! bottom (VCVTB) or top (VCVTT) half of each destination word and keeps the
 //! other half; F16 to F32 reads that half of each source word. Following

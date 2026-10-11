@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json.zig: commas, nesting, escaping and
+//! Covers src/interfaces/cli/report/json/json.zig: commas, nesting, escaping and
 //! the scalar forms the report writes.
 const std = @import("std");
 const cli_app = @import("cli_app");

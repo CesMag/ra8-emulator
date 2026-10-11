@@ -1,5 +1,5 @@
 //! The `watch` entry of the `dumps` object (RA8EMU-391): the `--watch`
-//! store log, the same facts debug/watchpoint.zig print() writes: the
+//! store log, the same facts src/session/watchpoint.zig print() writes: the
 //! opening and closing stores, how many fell between, how they spaced out
 //! over periods, and who wrote what. Every tally row is listed (no top-N).
 const elf = @import("ra8_board").image.elf;

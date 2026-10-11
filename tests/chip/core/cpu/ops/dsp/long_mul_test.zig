@@ -58,7 +58,7 @@ test "smlal<x><y>, smlald and smlsld against the Arm ARM pseudocode" {
 
 test "the encodings it leaves alone" {
     const left = [_][2]u16{
-        .{ 0xFBC2, 0x0103 }, // plain smlal: ops/long_mul.zig
+        .{ 0xFBC2, 0x0103 }, // plain smlal: ops/long/mul.zig
         .{ 0xFBD2, 0x0183 }, // 0xFBD0 has no halfword form
         .{ 0xFBC2, 0x01E3 }, // hw2[7:5] = 111
         .{ 0xFBC2, 0x0083 }, // RdHi == RdLo

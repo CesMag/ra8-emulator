@@ -1,4 +1,4 @@
-//! Covers src/chip/periph/scb.zig: the AIRCR key gate, the architectural read-back
+//! Covers src/chip/periph/scb/scb.zig: the AIRCR key gate, the architectural read-back
 //! and the software-reset request the firmware makes through it.
 const std = @import("std");
 const ra8 = @import("ra8");

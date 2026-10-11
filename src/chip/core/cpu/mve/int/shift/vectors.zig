@@ -1,4 +1,4 @@
-//! Conformance vectors for the MVE integer shifts in int_shift.zig, worked
+//! Conformance vectors for the MVE integer shifts in src/chip/core/cpu/mve/int/shift/shift.zig, worked
 //! from the VSHL, VRSHL, VQSHL, VQRSHL, VSHR and VRSHR pseudocode in the Arm
 //! ARM (DDI0553). The register shift operands mix left and right shifts,
 //! zero, and amounts at and past the lane width in both directions.

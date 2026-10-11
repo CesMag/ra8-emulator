@@ -1,7 +1,7 @@
 //! The `usb` object of `--report json` (RA8EMU-364): the USBHS host
 //! controller with its self-loop cable, then the scripted host on the
 //! USBFS jack (json_usbfs.zig), the same facts report/serial.zig usb() and
-//! report/usb.zig, usb_cable.zig print. Every key is always present; the
+//! src/interfaces/cli/report/usb/usb.zig, usb_cable.zig print. Every key is always present; the
 //! refusal counts are the same sums the human report prints.
 const Board = @import("ra8_board").board.Board;
 const Host = @import("ra8_chip").periph.usbhs.Host;

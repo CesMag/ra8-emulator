@@ -6,7 +6,7 @@
 //! json_riic.zig, RA8EMU-360), then network (src/interfaces/cli/report/json/net.zig and
 //! json_i2c.zig, RA8EMU-362), ethernet and usb (src/interfaces/cli/report/json/ether.zig,
 //! json_usb.zig and json_usbfs.zig, RA8EMU-364), graphics
-//! (report/json_glcdc/json_glcdc.zig and src/interfaces/cli/report/json/glcdc/out.zig, RA8EMU-366; json_drw.zig, RA8EMU-371),
+//! (src/interfaces/cli/report/json/glcdc/glcdc.zig and src/interfaces/cli/report/json/glcdc/out.zig, RA8EMU-366; json_drw.zig, RA8EMU-371),
 //! audio, mipi_phy, capture (src/interfaces/cli/report/json/media.zig, RA8EMU-371), icu, pinfunc,
 //! options, part, backup (src/interfaces/cli/report/json/system.zig, json_options.zig) and
 //! analog (src/interfaces/cli/report/json/analog.zig, RA8EMU-373), compute

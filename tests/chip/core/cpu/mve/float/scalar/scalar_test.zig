@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/float_scalar.zig.
+//! Covers src/chip/core/cpu/mve/float/scalar/scalar.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const float_scalar = ra8.chip.core.cpu.mve.float.scalar;

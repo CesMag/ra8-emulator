@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/text/table_branch.zig against its parity digest.
+//! Covers src/chip/core/cpu/text/branch/table.zig against its parity digest.
 const parity = @import("../parity.zig");
 
 /// TBB and TBH for a low and a high Rm, plus SP or PC as Rm (unclaimed).

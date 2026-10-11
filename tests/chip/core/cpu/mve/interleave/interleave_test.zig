@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/interleave.zig.
+//! Covers src/chip/core/cpu/mve/interleave/interleave.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const interleave = ra8.chip.core.cpu.mve.interleave;

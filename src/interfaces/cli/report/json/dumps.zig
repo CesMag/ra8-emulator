@@ -1,6 +1,6 @@
 //! The `dumps` object of `--report json` (RA8EMU-381): the `--dump-sym`
 //! globals, `--dump-regs` and `--dump-mem` words, the same reads
-//! report/dumps.zig and debug/mem_dump.zig print. A symbol the images do
+//! report/dumps.zig and src/session/mem_dump.zig print. A symbol the images do
 //! not carry or a word the core will not read is null, never a number
 //! nothing measured. The `--dump-sd` block and the `--watch` log follow
 //! (RA8EMU-391, json_sd.zig and json_watched.zig).

@@ -1,6 +1,6 @@
 //! The run file behind a served session's snapshot and restore
 //! (RA8EMU-768), opened on the serving host. The board encodes and decodes
-//! it (board/session_state.zig); only this side touches the file
+//! it (src/session/board/state.zig); only this side touches the file
 //! (RA8EMU-1020).
 const std = @import("std");
 const session_state = @import("../board/state.zig");

@@ -1,4 +1,4 @@
-//! Covers src/components/fault.zig on the MAX17048 fuel gauge: each mode,
+//! Covers src/components/fault/fault.zig on the MAX17048 fuel gauge: each mode,
 //! seen through the I2C registry and the RIIC address phase.
 const std = @import("std");
 const ra8 = @import("ra8");

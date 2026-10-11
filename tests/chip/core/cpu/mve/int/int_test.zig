@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/int.zig.
+//! Covers src/chip/core/cpu/mve/int/int.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const int = ra8.chip.core.cpu.mve.int;

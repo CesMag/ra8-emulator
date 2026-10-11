@@ -1,4 +1,4 @@
-//! Covers src/chip/core/cpu/mve/contiguous.zig.
+//! Covers src/chip/core/cpu/mve/contiguous/contiguous.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const contiguous = ra8.chip.core.cpu.mve.contiguous;

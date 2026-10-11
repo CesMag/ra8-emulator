@@ -1,4 +1,4 @@
-//! Covers src/session/board_faults/board_faults.zig through the session API: each fault
+//! Covers src/session/board/faults/faults.zig through the session API: each fault
 //! mode set and cleared mid-run on a part plugged on the RIIC line, with the
 //! part's behaviour on the line following (RA8EMU-520).
 const std = @import("std");

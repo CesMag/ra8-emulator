@@ -1,4 +1,4 @@
-//! Tests for src/session/rtc.zig (RA8EMU-809): BCD counters decode
+//! Tests for src/session/rtc/rtc.zig (RA8EMU-809): BCD counters decode
 //! to a checked date, and anything no calendar has decodes to null.
 const std = @import("std");
 const ra8 = @import("ra8");
