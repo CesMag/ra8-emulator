@@ -10,6 +10,8 @@ const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const Theme = @import("colors.zig").Theme;
+const widget_paint = @import("ra8_render").widget_paint;
+const widget = @import("ra8_widget");
 
 const Color = draw_list.Color;
 const Rect = draw_list.Rect;
@@ -60,38 +62,83 @@ pub fn rowOrigin(area: Rect, row: usize) struct { x: i32, y: i32 } {
     return .{ .x = area.x + pad + 2, .y = area.y + pad + 2 + @as(i32, @intCast(row)) * row_h };
 }
 
+/// Draw the pane through the shared Paint table (RA8EMU-1159): the
+/// background fill dispatches through the table and the text is the
+/// firmware's label widget, so no pane code emits raw glyph commands.
 pub fn draw(list: *draw_list.DrawList, theme: *const Theme, area: Rect, snapshot: *const Snapshot) !void {
     if (area.w < min_w or rows(area) == 0) return;
-    try list.fill(area, theme.background);
     try list.pushClip(area);
     defer list.popClip();
-    for (0..@min(rows(area), snapshot.count)) |row| try drawRow(list, theme, area, snapshot, row);
+    var target = widget_paint.Target{ .list = list };
+    const paint = target.paint();
+    fillArea(&paint, area, word(theme.background));
+    for (0..@min(rows(area), snapshot.count)) |row| drawRow(&paint, theme, area, snapshot, row);
 }
 
-fn drawRow(list: *draw_list.DrawList, theme: *const Theme, area: Rect, snapshot: *const Snapshot, row: usize) !void {
+fn drawRow(table: *const widget.types.Paint, theme: *const Theme, area: Rect, snapshot: *const Snapshot, row: usize) void {
     const at = rowOrigin(area, row);
     var buffer: [8]u8 = undefined;
-    try font.draw(list, at.x, at.y, try std.fmt.bufPrint(&buffer, "{X:0>8}", .{snapshot.rowAddress(row)}), theme.muted);
+    const addr = std.fmt.bufPrint(&buffer, "{X:0>8}", .{snapshot.rowAddress(row)}) catch return;
+    drawText(table, at.x, at.y, addr, word(theme.muted), word(theme.background));
     for (0..per_row) |index| {
         const cell = row * per_row + index;
-        try drawByte(list, theme, at.x, at.y, index, snapshot.bytes[cell], snapshot.readable[cell]);
+        drawByte(table, theme, at.x, at.y, index, snapshot.bytes[cell], snapshot.readable[cell]);
     }
 }
 
-fn drawByte(list: *draw_list.DrawList, theme: *const Theme, x: i32, y: i32, index: usize, byte: u8, readable: bool) !void {
+fn drawByte(table: *const widget.types.Paint, theme: *const Theme, x: i32, y: i32, index: usize, byte: u8, readable: bool) void {
+    const bg = word(theme.background);
     const hex_x = x + column(hexColumn(index));
     const ascii_x = x + column(ascii_at + index);
     if (!readable) {
-        try font.draw(list, hex_x, y, "??", theme.muted);
-        return font.draw(list, ascii_x, y, "?", theme.muted);
+        drawText(table, hex_x, y, "??", word(theme.muted), bg);
+        return drawText(table, ascii_x, y, "?", word(theme.muted), bg);
     }
     var buffer: [2]u8 = undefined;
-    try font.draw(list, hex_x, y, try std.fmt.bufPrint(&buffer, "{X:0>2}", .{byte}), theme.ink);
+    const hex = std.fmt.bufPrint(&buffer, "{X:0>2}", .{byte}) catch return;
+    drawText(table, hex_x, y, hex, word(theme.ink), bg);
     const printable = byte >= 0x21 and byte < 0x7F;
     const shown = [1]u8{if (printable) byte else '.'};
-    try font.draw(list, ascii_x, y, &shown, if (printable) theme.ink else theme.muted);
+    drawText(table, ascii_x, y, &shown, word(if (printable) theme.ink else theme.muted), bg);
 }
 
 fn column(chars: usize) i32 {
     return @intCast(font.textWidth(chars));
+}
+
+/// One line of text as the firmware's label widget (RA8EMU-1159): the label
+/// owns the face and the aligned rendering; the rect is this line's cell.
+fn drawText(table: *const widget.types.Paint, x: i32, y: i32, text: []const u8, fg: u32, bg: u32) void {
+    var buffer: [64]u8 = undefined;
+    const n = @min(text.len, buffer.len - 1);
+    @memcpy(buffer[0..n], text[0..n]);
+    buffer[n] = 0;
+    var descriptor = widget.label.Label{
+        .paint = table,
+        .text = buffer[0..n :0].ptr,
+        .fg = fg,
+        .bg = bg,
+        .pad = 0,
+        .alignment = .left,
+        .face = .sans,
+    };
+    var w: widget.types.Widget = undefined;
+    _ = widget.label.ra8_widget_label_init(&w, &descriptor);
+    w.rect = .{
+        .x = x,
+        .y = y,
+        .w = @intCast(font.textWidth(text.len)),
+        .h = @intCast(font.cell_h),
+    };
+    w.vt.?.render.?(&w);
+}
+
+/// `area` filled with `color` through the shared Paint table.
+fn fillArea(table: *const widget.types.Paint, area: Rect, color: u32) void {
+    table.fill_rect.?(table.user, area.x, area.y, area.w, area.h, color);
+}
+
+/// `color` as the widget's 0x00RRGGBB colour word.
+fn word(color: Color) u32 {
+    return @as(u32, color.r) << 16 | @as(u32, color.g) << 8 | color.b;
 }
