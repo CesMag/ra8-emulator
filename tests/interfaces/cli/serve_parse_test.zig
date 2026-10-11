@@ -34,3 +34,15 @@ test "a repeated option, a --cpu1 with no image or stray words are refused" {
     try std.testing.expect(parse(&.{ "ra8_emulator", "serve", "--stdio", "a.elf", "extra" }) == null);
     try std.testing.expect(parse(&.{ "ra8_emulator", "serve" }) == null);
 }
+
+test "--sd-dir and repeated --app fill the card the server opens with (RA8EMU-1139)" {
+    const asked = parse(&.{ "ra8_emulator", "serve", "--app", "h.ra8app", "--sd-dir", "card", "--app", "f.ra8app", "--stdio", "a.elf" }).?;
+    try std.testing.expectEqualStrings("card", asked.sdhi.dir.?);
+    try std.testing.expectEqual(@as(usize, 2), asked.sdhi.appPaths().len);
+    try std.testing.expectEqualStrings("f.ra8app", asked.sdhi.appPaths()[1]);
+    try std.testing.expectEqualStrings("a.elf", asked.elf);
+}
+
+test "--sd-dir is taken at most once" {
+    try std.testing.expect(parse(&.{ "ra8_emulator", "serve", "--sd-dir", "a", "--sd-dir", "b", "--stdio", "a.elf" }) == null);
+}

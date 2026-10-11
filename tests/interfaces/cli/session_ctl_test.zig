@@ -254,6 +254,8 @@ test "ctl events parses topics, the text to wait for and durations" {
     try std.testing.expect(options.stop and options.uart);
     try std.testing.expectEqualStrings("ready", options.until.?);
     try std.testing.expect((try events.parse(&.{})).uart);
+    const modules = try events.parse(&.{ "--topic", "session" });
+    try std.testing.expect(modules.session and !modules.uart);
     try std.testing.expectError(error.UnknownTopic, events.parse(&.{ "--topic", "lcd" }));
     try std.testing.expectError(error.BadArguments, events.parse(&.{"--until"}));
 }

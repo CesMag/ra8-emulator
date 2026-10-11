@@ -1,8 +1,9 @@
-//! `ctl events [--topic uart|stop]... [--until TEXT] [--timeout D]`
+//! `ctl events [--topic uart|stop|session]... [--until TEXT] [--timeout D]`
 //! (RA8EMU-757): subscribe, run the core in budget chunks and print each
 //! event as it arrives. Exit 0 once TEXT appears in the UART output (or at
 //! the timeout when no TEXT was given), 1 on a timeout while waiting for
-//! TEXT or on any stop that is not the end of a chunk.
+//! TEXT or on any stop that is not the end of a chunk. `--topic session`
+//! prints session events, such as ThreadX module loads (RA8EMU-1139).
 const std = @import("std");
 const proto = @import("ra8_rpc").session_rpc;
 const Client = @import("ctl_client.zig").Client;
@@ -17,6 +18,7 @@ const max_until = 256;
 pub const Options = struct {
     uart: bool = false,
     stop: bool = false,
+    session: bool = false,
     until: ?[]const u8 = null,
     timeout_ms: i64 = 10_000,
 };
@@ -29,8 +31,12 @@ pub fn parse(args: []const []const u8) !Options {
         const name = args[index];
         const value = args[index + 1];
         if (std.mem.eql(u8, name, "--topic")) {
-            const topic = std.meta.stringToEnum(enum { uart, stop }, value) orelse return error.UnknownTopic;
-            if (topic == .uart) options.uart = true else options.stop = true;
+            const topic = std.meta.stringToEnum(enum { uart, stop, session }, value) orelse return error.UnknownTopic;
+            switch (topic) {
+                .uart => options.uart = true,
+                .stop => options.stop = true,
+                .session => options.session = true,
+            }
         } else if (std.mem.eql(u8, name, "--until")) {
             if (value.len == 0 or value.len > max_until) return error.BadUntil;
             options.until = value;
@@ -38,7 +44,7 @@ pub fn parse(args: []const []const u8) !Options {
             options.timeout_ms = try parseDuration(value);
         } else return error.BadArguments;
     }
-    if (!options.uart and !options.stop) options.uart = true;
+    if (!options.uart and !options.stop and !options.session) options.uart = true;
     if (options.until != null) options.uart = true;
     return options;
 }
@@ -74,6 +80,7 @@ const Window = struct {
 /// Run `options` on `client` and return the exit code.
 pub fn watch(client: *Client, w: anytype, json: bool, options: Options) !u8 {
     if (options.uart) _ = try client.call(proto.Ack, proto.Subscription, .subscribe, .{ .core = .cpu0, .topic = .uart });
+    if (options.session) _ = try client.call(proto.Ack, proto.Subscription, .subscribe, .{ .core = .cpu0, .topic = .session });
     _ = try client.call(proto.Ack, proto.Subscription, .subscribe, .{ .core = .cpu0, .topic = .stop });
     const deadline = client.nowMs() + options.timeout_ms;
     var window: Window = .{};
@@ -87,6 +94,12 @@ pub fn watch(client: *Client, w: anytype, json: bool, options: Options) !u8 {
                 try out.uart(w, json, uart);
                 const until = options.until orelse continue;
                 if (window.feed(until, uart.bytes)) return 0;
+                continue;
+            }
+            if (sent.topic == @backingInt(proto.Topic.session)) {
+                const event = try proto.decode(proto.SessionEvent, sent.payload);
+                // Every chunk ends in a stop; the stop topic already covers those.
+                if (event.kind != .stopped and event.kind != .paused) try out.session(w, json, event);
                 continue;
             }
             if (sent.topic != @backingInt(proto.Topic.stop)) continue;

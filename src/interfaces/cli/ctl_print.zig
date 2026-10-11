@@ -184,6 +184,14 @@ pub fn uart(w: anytype, json: bool, sent: proto.Uart) !void {
     try w.print("{{\"uart\":{{\"core\":\"{s}\",\"channel\":{d},\"virtual_ns\":{d},\"text\":{f}}}}}\n", .{ @tagName(sent.core), sent.channel, sent.virtual_ns, std.json.fmt(sent.bytes, .{}) });
 }
 
+/// One session event (RA8EMU-1139): its kind, core and address.
+pub fn session(w: anytype, json: bool, event: proto.SessionEvent) !void {
+    const core = @tagName(event.core);
+    const kind = @tagName(event.kind);
+    if (json) return w.print("{{\"session\":{{\"core\":\"{s}\",\"kind\":\"{s}\",\"address\":{d}}}}}\n", .{ core, kind, event.address });
+    try w.print("{s} {s} 0x{x:0>8}\n", .{ core, kind, event.address });
+}
+
 pub fn timeout(w: anytype, json: bool, until: []const u8) !void {
     if (json) return w.print("{{\"timeout\":{{\"until\":{f}}}}}\n", .{std.json.fmt(until, .{})});
     try w.print("\ntimed out waiting for {s}\n", .{until});

@@ -8,17 +8,19 @@ const std = @import("std");
 const served_setup = @import("ra8_rpc").served_setup;
 const loop = @import("serve_loop.zig");
 const listen = @import("serve_listen.zig");
+const card_setup = @import("card_setup.zig");
 
 pub const usage =
     \\usage: ra8_emulator serve [--profile-folded] [--cpu1 CPU1.elf] --stdio <firmware.elf>
     \\       ra8_emulator serve [--profile-folded] [--cpu1 CPU1.elf] --listen unix:PATH|tcp:[HOST]:PORT <firmware.elf>
     \\       --profile-folded samples each core's call stacks for `ctl folded`
     \\       --cpu1 brings CPU1 up from its own image, parked until it is run
+    \\       --sd-dir DIR and --app FILE.ra8app (repeatable) fill the SDHI card, as for a run
     \\
 ;
 
 const Where = union(enum) { stdio, listen: listen.Spec };
-const Asked = struct { where: Where, elf: []const u8, folded: bool = false, cpu1: ?[]const u8 = null };
+const Asked = struct { where: Where, elf: []const u8, folded: bool = false, cpu1: ?[]const u8 = null, sdhi: card_setup.Sdhi = .{} };
 
 /// Samples taken one every this many instructions under --profile-folded.
 pub const fold_every: u32 = 1000;
@@ -29,13 +31,21 @@ pub fn parse(argv: []const []const u8) ?Asked {
     if (argv.len < 2) return null;
     var folded = false;
     var cpu1: ?[]const u8 = null;
+    var sdhi: card_setup.Sdhi = .{};
     var at: usize = 2;
     while (at < argv.len) : (at += 1) {
+        const valued = at + 1 < argv.len;
         if (std.mem.eql(u8, argv[at], "--profile-folded") and !folded) {
             folded = true;
-        } else if (std.mem.eql(u8, argv[at], "--cpu1") and cpu1 == null and at + 1 < argv.len) {
+        } else if (std.mem.eql(u8, argv[at], "--cpu1") and cpu1 == null and valued) {
             at += 1;
             cpu1 = argv[at];
+        } else if (std.mem.eql(u8, argv[at], "--sd-dir") and sdhi.dir == null and valued) {
+            at += 1;
+            sdhi.dir = argv[at];
+        } else if (std.mem.eql(u8, argv[at], "--app") and valued) {
+            at += 1;
+            sdhi.addApp(argv[at]) catch return null;
         } else break;
     }
     // Drop the options; the transport then sits at index 2 as before.
@@ -48,6 +58,7 @@ pub fn parse(argv: []const []const u8) ?Asked {
     var asked = parseWhere(rest[0 .. 2 + left]) orelse return null;
     asked.folded = folded;
     asked.cpu1 = cpu1;
+    asked.sdhi = sdhi;
     return asked;
 }
 
@@ -70,6 +81,10 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         return 1;
     };
     defer setup.deinit();
+    card_setup.prepareSdhi(setup.owner.board(), io, asked.sdhi) catch |err| {
+        std.debug.print("serve: cannot fill the SD card: {s}\n", .{@errorName(err)});
+        return 1;
+    };
     if (asked.cpu1) |path| setup.openSecond(path) catch |err| {
         std.debug.print("serve: cannot bring up CPU1 from {s}: {s}\n", .{ path, @errorName(err) });
         return 1;
