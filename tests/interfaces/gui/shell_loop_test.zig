@@ -33,7 +33,7 @@ test "a frame presents the shell frame on the headless platform" {
     try std.testing.expectEqual(@as(u32, 1), window.presents);
     const frame = window.last.?;
     try std.testing.expectEqual(strip.border, frame.at(width - 1, height - strip.height));
-    try std.testing.expectEqual(shell_frame.title_fill, frame.at(width / 4, 0));
+    try std.testing.expectEqual(shell_frame.title_fill, frame.at(width / 4, 1));
 }
 
 test "quit closes the shell without presenting" {

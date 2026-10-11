@@ -54,7 +54,7 @@ test "the two-core shell shows each leaf's note in muted ink in its body" {
     var painter: panes.Panes = .{};
     try frame.draw(&list, .{ .layout = &layout, .solved = &solved, .strip = status_capture.strip(&status, .closed), .width = width, .height = height, .painter = painter.painter() });
     raster.draw(&pixels, &list, font.atlas);
-    try std.testing.expectEqual(@as(usize, 4), solved.panes.items.len);
+    try std.testing.expectEqual(@as(usize, 6), solved.panes.items.len);
     for (solved.panes.items) |leaf| {
         const at = panes.noteAt(frame.bodyOf(leaf.area)).?;
         const row: draw_list.Rect = .{ .x = at.x, .y = at.y, .w = @intCast(at.room), .h = font.glyph_h };

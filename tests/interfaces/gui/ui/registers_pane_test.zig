@@ -121,21 +121,21 @@ test "the pane rasterises to the pinned golden frame with every group open" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(sample(), sample(), pane.open);
-    try std.testing.expectEqual(@as(u64, 8997249121321803031), scene.digest());
+    try std.testing.expectEqual(@as(u64, 4969007086328797543), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame with the system group folded" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(sample(), sample(), system_folded);
-    try std.testing.expectEqual(@as(u64, 10111515778278663327), scene.digest());
+    try std.testing.expectEqual(@as(u64, 15679738979028817615), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame with the fpu group folded to its header" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(sample(), sample(), fpu_folded);
-    try std.testing.expectEqual(@as(u64, 2028304080827427193), scene.digest());
+    try std.testing.expectEqual(@as(u64, 10667715961952123429), scene.digest());
 }
 
 test "the MVE group is VPR, then q0-q7 as four lanes each, read from the S bank" {
@@ -164,7 +164,7 @@ test "the pane rasterises to the pinned golden frame with the MVE group open" {
     var now = sample();
     now.mve = true;
     try scene.renderIn(wide, now, now, pane.open);
-    try std.testing.expectEqual(@as(u64, 10717521405119458231), scene.digest());
+    try std.testing.expectEqual(@as(u64, 9925232080576388107), scene.digest());
 }
 
 test "the pane rasterises to the pinned golden frame with the MVE group folded to its header" {
@@ -173,7 +173,7 @@ test "the pane rasterises to the pinned golden frame with the MVE group folded t
     var now = sample();
     now.mve = true;
     try scene.renderIn(wide, now, now, mve_folded);
-    try std.testing.expectEqual(@as(u64, 10239409784839324337), scene.digest());
+    try std.testing.expectEqual(@as(u64, 8090772449662505419), scene.digest());
 }
 
 test "a changed S register marks its q lane too" {

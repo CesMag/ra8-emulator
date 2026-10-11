@@ -21,6 +21,7 @@ const Solved = pane_layout.Solved;
 pub const background = colors.background;
 pub const title_fill = colors.face;
 pub const gutter_fill = colors.gutter;
+pub const border = colors.border;
 pub const ink = status_strip.ink;
 pub const muted = colors.muted;
 pub const pad: i32 = 4;
@@ -109,6 +110,7 @@ fn drawLeaf(list: *draw_list.DrawList, pane: Pane, area: Rect, painter: ?Painter
     try list.fill(area, background);
     const title = titleOf(area);
     try list.fill(title, title_fill);
+    try list.fill(.{ .x = title.x, .y = title.y + title.h - 1, .w = title.w, .h = 1 }, border);
     const top = title.y + @divTrunc(title.h - @as(i32, font.glyph_h), 2);
     const core = coreName(pane.core);
     const core_w: i32 = @intCast(font.textWidth(core.len));
@@ -116,10 +118,21 @@ fn drawLeaf(list: *draw_list.DrawList, pane: Pane, area: Rect, painter: ?Painter
     if (room > 0) try font.draw(list, title.x + pad, top, font.fit(kindName(pane.kind), @intCast(room)), ink);
     const name_w: i32 = @intCast(font.textWidth(kindName(pane.kind).len));
     if (room >= name_w + pad + core_w) try font.draw(list, title.x + title.w - pad - core_w, top, core, muted);
-    const p = painter orelse return;
-    const body = bodyOf(area);
-    if (body.empty()) return;
-    try list.pushClip(body);
-    defer list.popClip();
-    try p.paint(p.context, list, pane, body);
+    if (painter) |p| {
+        const body = bodyOf(area);
+        if (!body.empty()) {
+            try list.pushClip(body);
+            defer list.popClip();
+            try p.paint(p.context, list, pane, body);
+        }
+    }
+    try drawBorder(list, area, border);
+}
+
+fn drawBorder(list: *draw_list.DrawList, area: Rect, color: Color) !void {
+    if (area.w <= 0 or area.h <= 0) return;
+    try list.fill(.{ .x = area.x, .y = area.y, .w = area.w, .h = 1 }, color);
+    try list.fill(.{ .x = area.x, .y = area.y + area.h - 1, .w = area.w, .h = 1 }, color);
+    try list.fill(.{ .x = area.x, .y = area.y, .w = 1, .h = area.h }, color);
+    try list.fill(.{ .x = area.x + area.w - 1, .y = area.y, .w = 1, .h = area.h }, color);
 }

@@ -75,6 +75,7 @@ test {
     _ = @import("interfaces/gui/stack_pane_test.zig");
     _ = @import("interfaces/gui/ui/hex_entry_test.zig");
     _ = @import("interfaces/gui/ui/colors_test.zig");
+    _ = @import("interfaces/gui/ui/contrast_test.zig");
     _ = @import("interfaces/gui/pane_edit_test.zig");
     _ = @import("interfaces/gui/window_still_test.zig");
     _ = @import("interfaces/gui/window_stills_test.zig");

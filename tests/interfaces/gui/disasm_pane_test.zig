@@ -192,7 +192,7 @@ test "a session capture rasterises to the pinned golden frame" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(u64, 7011153241417841614), scene.digest());
+    try std.testing.expectEqual(@as(u64, 11601210873936714354), scene.digest());
 }
 
 /// Bytes as the shell reads them over the link, with which came back.

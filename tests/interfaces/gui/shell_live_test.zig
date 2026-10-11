@@ -31,7 +31,7 @@ const Env = proto.Client.Env;
 const image_path = "tests/fixtures/fpu/fp_basic.elf";
 const dsp_path = "tests/fixtures/fpu/dsp.elf";
 const width = 2000;
-const height = 320;
+const height = 480;
 
 /// The three core leaves, fed in the shell's own order (shell_loop
 /// observeCore): registers take the arrival, then memory and code follow.
@@ -170,7 +170,8 @@ test "a spawned serve --stdio feeds live registers, memory and disassembly leave
     try std.testing.expectEqual(registers.value(.pc).?, leaves.code.cores[0].from);
     try std.testing.expect(leaves.registers.cores[1].now == null);
 
-    try expectFrame(gpa, &leaves, link.state, .registers, registers_pane.changed);
+    // fp_basic's second step moves only the pc, which keeps its own mark.
+    try expectFrame(gpa, &leaves, link.state, .registers, registers_pane.pc_mark);
     try expectFrame(gpa, &leaves, link.state, .memory, memory_pane.ink);
     try expectFrame(gpa, &leaves, link.state, .disasm, disasm_pane.pc_band);
 

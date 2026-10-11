@@ -204,5 +204,5 @@ test "a faulted row draws its mode in ink beside an unfaulted row's muted mark" 
     }
     try std.testing.expect(leaves > 0);
     const digest = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(pixels.pixels));
-    try std.testing.expectEqual(@as(u64, 15921208307697644887), digest);
+    try std.testing.expectEqual(@as(u64, 11480526738856646317), digest);
 }

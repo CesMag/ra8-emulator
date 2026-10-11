@@ -20,6 +20,8 @@ pub const background = colors.background;
 pub const muted = colors.muted;
 pub const ink = colors.ink;
 pub const changed = colors.highlight;
+/// The pc cell is always marked: it moves on every step, so `changed` would say nothing.
+pub const pc_mark = colors.pc_cyan;
 pub const heading = colors.accent;
 pub const pad: i32 = 4;
 /// A row is one text line with a pixel of air above and below.
@@ -226,9 +228,17 @@ fn drawHeader(list: *draw_list.DrawList, cell: Rect, name: []const u8, folded: b
 }
 
 fn drawCell(list: *draw_list.DrawList, cell: Rect, name: []const u8, value: u32, moved: bool) !void {
-    try font.draw(list, cell.x + 2, cell.y + 2, name, muted);
+    const is_pc = std.mem.eql(u8, name, "pc");
+    if (is_pc) {
+        try list.fill(cell, colors.pc_band_bg);
+    } else if (moved) {
+        try list.fill(cell, colors.dirty_cell_bg);
+    }
+    const name_color = if (is_pc) pc_mark else muted;
+    try font.draw(list, cell.x + 2, cell.y + 2, name, name_color);
     var buffer: [8]u8 = undefined;
     const text = try std.fmt.bufPrint(&buffer, "{X:0>8}", .{value});
     const at = valueOrigin(cell);
-    try font.draw(list, at.x, at.y, text, if (moved) changed else ink);
+    const val_color = if (is_pc) pc_mark else if (moved) changed else ink;
+    try font.draw(list, at.x, at.y, text, val_color);
 }

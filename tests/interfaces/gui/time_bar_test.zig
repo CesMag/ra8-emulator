@@ -102,7 +102,7 @@ test "the bar rasterises to the pinned golden frame" {
     defer scene.deinit();
     var models = Models.sample();
     try scene.render(.{ .x = 0, .y = 0, .w = 480, .h = bar.height }, models.view(false));
-    try std.testing.expectEqual(@as(u64, 14583060995985428246), scene.digest());
+    try std.testing.expectEqual(@as(u64, 10286064404821049616), scene.digest());
 }
 
 test "the editing field rasterises to its pinned golden frame" {
@@ -112,7 +112,7 @@ test "the editing field rasterises to its pinned golden frame" {
     models.status.run = .running;
     models.field.typed("5");
     try scene.render(.{ .x = 0, .y = 0, .w = 480, .h = bar.height }, models.view(true));
-    try std.testing.expectEqual(@as(u64, 8807121409433156495), scene.digest());
+    try std.testing.expectEqual(@as(u64, 4010156854608266249), scene.digest());
 }
 
 test "the bar with an RTC date rasterises to its pinned golden frame, wide enough for the whole line" {
@@ -121,7 +121,7 @@ test "the bar with an RTC date rasterises to its pinned golden frame, wide enoug
     var models = Models.sample();
     models.readout.date = .{ .year = 2026, .month = 10, .day = 8, .hour = 9, .minute = 47, .second = 5 };
     try scene.render(.{ .x = 0, .y = 0, .w = 640, .h = bar.height }, models.view(false));
-    try std.testing.expectEqual(@as(u64, 12718428090859206122), scene.digest());
+    try std.testing.expectEqual(@as(u64, 12740247427305482667), scene.digest());
 }
 
 test "a bar too narrow for its controls paints nothing past its area" {

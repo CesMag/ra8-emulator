@@ -188,17 +188,24 @@ fn span(area: Rect, axis: Axis) i32 {
     return if (axis == .across) area.w else area.h;
 }
 
-/// The starting two-core layout: CPU0's board over its console on the
-/// left, the devices over CPU1's console on the right. RA8EMU-199 decides
-/// the real dual-core layout; this only seeds one.
+/// The starting two-core layout: CPU0's deck on the left as four quadrants
+/// (board over disassembly, registers over console), CPU1's deck on the
+/// right with the devices over its console. RA8EMU-199 decides the real
+/// dual-core layout; this only seeds one.
 pub fn twoCore(allocator: std.mem.Allocator) !Layout {
     var layout = try Layout.init(allocator, .{ .kind = .board, .core = .cpu0 });
     errdefer layout.deinit();
-    const right = try layout.split(layout.root, .across, .{ .kind = .devices, .core = .cpu1 });
-    const left = layout.node(layout.root).body.split.first;
-    _ = try layout.split(left, .down, .{ .kind = .console, .core = .cpu0 });
-    _ = try layout.split(right, .down, .{ .kind = .console, .core = .cpu1 });
-    layout.nodes.items[left].body.split.ratio = 0.65;
-    layout.nodes.items[right].body.split.ratio = 0.65;
+    const cpu1_deck = try layout.split(layout.root, .across, .{ .kind = .devices, .core = .cpu1 });
+    const cpu0_deck = layout.node(layout.root).body.split.first;
+    const right = try layout.split(cpu0_deck, .across, .{ .kind = .registers, .core = .cpu0 });
+    const left = layout.node(cpu0_deck).body.split.first;
+    _ = try layout.split(left, .down, .{ .kind = .disasm, .core = .cpu0 });
+    _ = try layout.split(right, .down, .{ .kind = .console, .core = .cpu0 });
+    _ = try layout.split(cpu1_deck, .down, .{ .kind = .console, .core = .cpu1 });
+    layout.nodes.items[layout.root].body.split.ratio = 0.7;
+    layout.nodes.items[cpu0_deck].body.split.ratio = 0.55;
+    layout.nodes.items[left].body.split.ratio = 0.55;
+    layout.nodes.items[right].body.split.ratio = 0.6;
+    layout.nodes.items[cpu1_deck].body.split.ratio = 0.65;
     return layout;
 }

@@ -110,9 +110,167 @@ test "the chrome paints titles, gutters, bodies and the strip" {
     const status: status_bar.Status = .{};
     try scene.render(&status, null);
     const first = scene.solved.panes.items[0].area;
-    try std.testing.expectEqual(frame.title_fill, scene.at(first.x + first.w - 1, first.y));
-    try std.testing.expectEqual(frame.background, scene.at(first.x + 1, first.y + first.h - 1));
+    try std.testing.expectEqual(frame.border, scene.at(first.x + first.w - 1, first.y));
+    try std.testing.expectEqual(frame.title_fill, scene.at(first.x + first.w - 2, first.y + 1));
+    try std.testing.expectEqual(frame.border, scene.at(first.x + 1, first.y + first.h - 1));
+    try std.testing.expectEqual(frame.background, scene.at(first.x + 1, first.y + first.h - 2));
     const gap = scene.solved.gutters.items[0].area;
     try std.testing.expectEqual(frame.gutter_fill, scene.at(gap.x, gap.y + 1));
     try std.testing.expectEqual(strip.border, scene.at(width - 1, height - strip.height));
+}
+
+test "the perimeter border is retained when a painter fills the body" {
+    var scene = try Scene.init();
+    defer scene.deinit();
+    const status: status_bar.Status = .{};
+    const Filler = struct {
+        fn paint(_: *anyopaque, list: *draw_list.DrawList, _: pane_layout.Pane, body: draw_list.Rect) anyerror!void {
+            try list.fill(body, frame.title_fill);
+        }
+    };
+    try scene.render(&status, .{ .context = undefined, .paint = Filler.paint });
+    const first = scene.solved.panes.items[0].area;
+    try std.testing.expectEqual(frame.border, scene.at(first.x + first.w - 1, first.y));
+    try std.testing.expectEqual(frame.border, scene.at(first.x + 1, first.y + first.h - 1));
+    try std.testing.expectEqual(frame.border, scene.at(first.x, first.y + first.h - 2));
+    try std.testing.expectEqual(frame.border, scene.at(first.x + first.w - 1, first.y + first.h - 2));
+    try std.testing.expectEqual(frame.title_fill, scene.at(first.x + 1, first.y + first.h - 2));
+}
+
+test "shell frame edge: panesArea and barArea under constrained heights" {
+    const strip_h = strip.height;
+    const time_h = time_bar.height;
+    const chrome_h = strip_h + time_h;
+
+    const zero_panes = frame.panesArea(480, 10);
+    try std.testing.expectEqual(@as(i32, 0), zero_panes.h);
+    try std.testing.expect(zero_panes.w == 480);
+
+    const exact_panes = frame.panesArea(480, chrome_h);
+    try std.testing.expectEqual(@as(i32, 0), exact_panes.h);
+
+    const one_px_panes = frame.panesArea(480, chrome_h + 1);
+    try std.testing.expectEqual(@as(i32, 1), one_px_panes.h);
+
+    const bar = frame.barArea(480, 100);
+    try std.testing.expectEqual(time_h, bar.h);
+    try std.testing.expectEqual(100 - chrome_h, bar.y);
+}
+
+test "shell frame edge: titleOf and bodyOf never invert or exceed area" {
+    const areas = [_]draw_list.Rect{
+        .{ .x = 0, .y = 0, .w = 0, .h = 0 },
+        .{ .x = 5, .y = 5, .w = 1, .h = 1 },
+        .{ .x = 10, .y = 10, .w = 10, .h = frame.title_h - 1 },
+        .{ .x = 10, .y = 10, .w = 10, .h = frame.title_h },
+        .{ .x = 10, .y = 10, .w = 10, .h = frame.title_h + 1 },
+        .{ .x = 10, .y = 10, .w = 200, .h = 500 },
+        .{ .x = -50, .y = -50, .w = 20, .h = 30 },
+    };
+
+    for (areas) |area| {
+        const title = frame.titleOf(area);
+        const body = frame.bodyOf(area);
+
+        try std.testing.expect(title.w == area.w);
+        try std.testing.expect(title.h <= frame.title_h);
+        try std.testing.expect(title.h <= area.h);
+        try std.testing.expect(title.x == area.x);
+        try std.testing.expect(title.y == area.y);
+
+        try std.testing.expect(body.w == area.w);
+        try std.testing.expect(body.h >= 0);
+        try std.testing.expect(body.x == area.x);
+        try std.testing.expect(body.y == area.y + title.h);
+        try std.testing.expectEqual(area.h, title.h + body.h);
+    }
+}
+
+test "shell frame edge: draw renders across extreme window dimensions without panic" {
+    const gpa = std.testing.allocator;
+    const test_sizes = [_][2]i32{
+        .{ 480, 320 },
+        .{ 800, 600 },
+        .{ 1280, 860 },
+        .{ 481, 321 },
+        .{ 200, 100 },
+        .{ 120, 60 },
+        .{ 2000, 1200 },
+    };
+
+    for (test_sizes) |dim| {
+        const w = dim[0];
+        const h = dim[1];
+
+        var layout = try pane_layout.twoCore(gpa);
+        defer layout.deinit();
+
+        var solved = try frame.solve(&layout, gpa, w, h);
+        defer solved.deinit(gpa);
+
+        var list = draw_list.DrawList.init(gpa, @intCast(w), @intCast(h));
+        defer list.deinit();
+
+        var count: Count = .{};
+        const status: status_bar.Status = .{};
+
+        try frame.draw(&list, .{
+            .layout = &layout,
+            .solved = &solved,
+            .strip = status_capture.strip(&status, up),
+            .width = w,
+            .height = h,
+            .painter = .{ .context = &count, .paint = Count.paint },
+        });
+
+        for (list.commands.items) |cmd| {
+            switch (cmd.shape) {
+                .fill => |shape| {
+                    try std.testing.expect(shape.area.w >= 0);
+                    try std.testing.expect(shape.area.h >= 0);
+                },
+                .line => {},
+                .glyph => {},
+                .image => {},
+            }
+        }
+
+        var pixels = try raster.Framebuffer.init(gpa, @intCast(w), @intCast(h));
+        defer pixels.deinit(gpa);
+        raster.draw(&pixels, &list, font.atlas);
+    }
+}
+
+test "shell frame edge: leaf title clipping and border drawing with narrow widths" {
+    const gpa = std.testing.allocator;
+    const narrow_widths = [_]i32{ 1, 2, 3, 4, 7, 8, 9, 10, 15, 20, 50 };
+
+    for (narrow_widths) |nw| {
+        var layout = try pane_layout.twoCore(gpa);
+        defer layout.deinit();
+
+        const h = 200;
+        var solved = try frame.solve(&layout, gpa, nw, h);
+        defer solved.deinit(gpa);
+
+        var list = draw_list.DrawList.init(gpa, @intCast(nw), @intCast(h));
+        defer list.deinit();
+
+        const status: status_bar.Status = .{};
+
+        try frame.draw(&list, .{
+            .layout = &layout,
+            .solved = &solved,
+            .strip = status_capture.strip(&status, up),
+            .width = nw,
+            .height = h,
+            .painter = null,
+        });
+
+        try std.testing.expectEqual(@as(usize, 0), list.clips.items.len);
+
+        var pixels = try raster.Framebuffer.init(gpa, @intCast(nw), @intCast(h));
+        defer pixels.deinit(gpa);
+        raster.draw(&pixels, &list, font.atlas);
+    }
 }

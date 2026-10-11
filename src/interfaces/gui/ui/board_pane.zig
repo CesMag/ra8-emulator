@@ -110,13 +110,21 @@ pub fn draw(list: *draw_list.DrawList, area: Rect, view: View) !void {
     try list.fill(layout.panel, dark);
     if (view.panel) |image| try list.image(fit.fitIn(layout.panel, image.width, image.height), image);
     for (layout.leds, 0..) |led, index| {
-        try list.fill(led, if (view.leds.on[index]) lampOf(led_rgb565[index]) else off);
+        try list.fill(led, colors.led_bezel);
+        const inner = inset(led);
+        const on = view.leds.on[index];
+        try list.fill(inner, if (on) lampOf(led_rgb565[index]) else off);
+        if (on and inner.w > 4 and inner.h > 4) {
+            // Optical specular highlight on active LED diffuser
+            try list.fill(.{ .x = inner.x + 2, .y = inner.y + 2, .w = 2, .h = 2 }, colors.led_specular);
+        }
         try label(list, led, led_names[index], muted);
     }
     for (layout.switches, 0..) |button, index| {
-        try list.fill(button, border);
-        try list.fill(inset(button), if (view.pressed == index) pressed_face else face);
-        try label(list, button, switch_names[index], ink);
+        const is_pressed = view.pressed == index;
+        try list.fill(button, if (is_pressed) colors.accent else colors.control_border);
+        try list.fill(inset(button), if (is_pressed) pressed_face else face);
+        try label(list, button, switch_names[index], if (is_pressed) colors.accent else ink);
     }
 }
 

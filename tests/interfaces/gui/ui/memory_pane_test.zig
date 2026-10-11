@@ -74,7 +74,7 @@ test "the pane rasterises to the pinned golden frame" {
     defer scene.deinit();
     const snapshot = sample();
     try scene.render(&snapshot);
-    try std.testing.expectEqual(@as(u64, 13435636883611702039), scene.digest());
+    try std.testing.expectEqual(@as(u64, 11025890780803989611), scene.digest());
 }
 
 test "unreadable bytes draw only muted question marks" {

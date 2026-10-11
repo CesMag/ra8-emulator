@@ -18,9 +18,9 @@ const Rect = draw_list.Rect;
 pub const background = colors.background;
 pub const muted = colors.muted;
 pub const ink = colors.ink;
-pub const pc_band = colors.band;
-pub const pc_ink = colors.highlight;
-pub const break_mark = colors.bad;
+pub const pc_band = colors.pc_band;
+pub const pc_ink = colors.pc_cyan;
+pub const break_mark = colors.breakpoint;
 pub const pad: i32 = 4;
 /// A row is one text line with a pixel of air above and below.
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
@@ -85,7 +85,11 @@ pub fn draw(list: *draw_list.DrawList, area: Rect, snapshot: *const Snapshot, br
     for (0..@min(rows(area), snapshot.count)) |row| {
         const line = &snapshot.lines[row];
         const at_pc = line.address == snapshot.pc;
-        if (at_pc) try list.fill(rowRect(area, row), pc_band);
+        if (at_pc) {
+            const band = rowRect(area, row);
+            try list.fill(band, pc_band);
+            try list.fill(.{ .x = band.x, .y = band.y, .w = 2, .h = band.h }, pc_ink);
+        }
         if (std.mem.indexOfScalar(u32, breaks, line.address) != null) try list.fill(markRect(area, row), break_mark);
         try drawLine(list, area, row, line, at_pc);
     }

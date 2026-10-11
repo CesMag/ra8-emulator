@@ -70,7 +70,7 @@ test "the strip rasterises to the pinned golden frame" {
     defer scene.deinit();
     const status = sample();
     try scene.render(&status, up);
-    try std.testing.expectEqual(@as(u64, 10231971654060522697), scene.digest());
+    try std.testing.expectEqual(@as(u64, 9739888199703139288), scene.digest());
 }
 
 test "a narrow window cuts the line to whole cells inside the strip" {
@@ -78,7 +78,7 @@ test "a narrow window cuts the line to whole cells inside the strip" {
     defer scene.deinit();
     const status = sample();
     try scene.render(&status, up);
-    try std.testing.expectEqual(@as(u64, 3763643487859419405), scene.digest());
+    try std.testing.expectEqual(@as(u64, 14404408989058805433), scene.digest());
     var y: u32 = 1;
     while (y < scene.frame.height) : (y += 1) {
         var x: u32 = scene.width - @as(u32, @intCast(strip.pad));

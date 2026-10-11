@@ -90,7 +90,7 @@ test "the board pane frame with LED1 on is pinned" {
     try pane.draw(&list, .{ .x = 0, .y = 0, .w = w, .h = h }, .{ .leds = &leds, .panel = .{ .width = 64, .height = 36, .pixels = &pixels } });
     raster.draw(&frame, &list, font.atlas);
     const digest = std.hash.Fnv1a_64.hash(std.mem.sliceAsBytes(frame.pixels));
-    try std.testing.expectEqual(@as(u64, 11290556999026159831), digest);
+    try std.testing.expectEqual(@as(u64, 16709361613165744171), digest);
 }
 
 test "the pane's LED count and lamp colours are the chip's" {

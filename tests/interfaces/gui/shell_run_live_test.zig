@@ -36,7 +36,7 @@ test "ra8_gui's image opens halted, with Pause lit and nothing run" {
     try std.testing.expect(!live.time.run.lit);
     const pause = Live.barRect(.pause);
     const run = Live.barRect(.run);
-    try std.testing.expectEqual(bar.lit, live.pixel(pause.x + 1, pause.y + 1));
+    try std.testing.expectEqual(gui_app.colors.pause_lit, live.pixel(pause.x + 1, pause.y + 1));
     try std.testing.expectEqual(bar.face, live.pixel(run.x + 1, run.y + 1));
 }
 
@@ -65,7 +65,7 @@ test "Run keeps the image going frame after frame while the window keeps present
     // The bar shows it: Run is lit and Pause is not, and the strip says so.
     const pause = Live.barRect(.pause);
     const run = Live.barRect(.run);
-    try std.testing.expectEqual(bar.lit, live.pixel(run.x + 1, run.y + 1));
+    try std.testing.expectEqual(gui_app.colors.run_lit, live.pixel(run.x + 1, run.y + 1));
     try std.testing.expectEqual(bar.face, live.pixel(pause.x + 1, pause.y + 1));
     var line: [256]u8 = undefined;
     try std.testing.expect(std.mem.endsWith(u8, try live.shell.status.text(live.link.state, &line), "| running"));

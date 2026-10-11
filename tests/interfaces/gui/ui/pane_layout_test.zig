@@ -34,8 +34,8 @@ test "the two-core layout tiles the window exactly at several sizes" {
         const area = Rect{ .x = 0, .y = 0, .w = size[0], .h = size[1] };
         var solved = try layout.solve(allocator, area);
         defer solved.deinit(allocator);
-        try std.testing.expectEqual(@as(usize, 4), solved.panes.items.len);
-        try std.testing.expectEqual(@as(usize, 3), solved.gutters.items.len);
+        try std.testing.expectEqual(@as(usize, 6), solved.panes.items.len);
+        try std.testing.expectEqual(@as(usize, 5), solved.gutters.items.len);
         try expectTiles(&solved, area);
     }
 }
@@ -47,6 +47,8 @@ test "the two-core layout binds panes to both cores" {
     defer solved.deinit(allocator);
     const want = [_]layout_mod.Pane{
         .{ .kind = .board, .core = .cpu0 },
+        .{ .kind = .disasm, .core = .cpu0 },
+        .{ .kind = .registers, .core = .cpu0 },
         .{ .kind = .console, .core = .cpu0 },
         .{ .kind = .devices, .core = .cpu1 },
         .{ .kind = .console, .core = .cpu1 },
@@ -95,7 +97,7 @@ test "closing a pane gives its sibling the split and reuses the freed nodes" {
     try layout.close(before.panes.items[1].index);
     var after = try layout.solve(allocator, area);
     defer after.deinit(allocator);
-    try std.testing.expectEqual(@as(usize, 3), after.panes.items.len);
+    try std.testing.expectEqual(@as(usize, 5), after.panes.items.len);
     try std.testing.expectEqual(layout_mod.Kind.board, layout.pane(after.panes.items[0].index).?.kind);
     try std.testing.expectEqual(@as(i32, 0), after.panes.items[0].area.y);
     try std.testing.expectEqual(area.h, after.panes.items[0].area.h);

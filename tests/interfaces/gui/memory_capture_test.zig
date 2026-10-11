@@ -90,7 +90,7 @@ test "a capture from a session's core rasterises to the pinned golden frame" {
     try rig.init();
     try rig.session.write(.cpu1, 0xE0, "RA8 memory pane!");
     const snapshot = try capture.capture(&rig.session, .cpu1, 0xE8, 4);
-    try std.testing.expectEqual(@as(u64, 16333086650271298263), try digest(&snapshot));
+    try std.testing.expectEqual(@as(u64, 8642179144109265661), try digest(&snapshot));
 }
 
 test "capture reads each core through the session and marks unmapped bytes" {

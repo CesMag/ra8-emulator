@@ -216,5 +216,5 @@ test "the current line and a mark rasterise to the pinned golden frame" {
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(&snapshot, &marks);
-    try std.testing.expectEqual(@as(u64, 538249533579642651), scene.digest());
+    try std.testing.expectEqual(@as(u64, 2623801638214692635), scene.digest());
 }
