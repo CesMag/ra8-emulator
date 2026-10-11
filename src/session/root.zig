@@ -61,6 +61,7 @@ pub const txm_modules = @import("txm_modules.zig");
 pub const txm_report = @import("txm_report.zig");
 pub const txm_publish = @import("txm_publish.zig");
 pub const txm_symbols = @import("txm_symbols.zig");
+pub const txm_debug = @import("txm_debug.zig");
 pub const rtos_report = @import("rtos_report.zig");
 pub const run = @import("run.zig");
 pub const run_loop = @import("run_loop.zig");
