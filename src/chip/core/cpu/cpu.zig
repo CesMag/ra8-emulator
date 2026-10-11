@@ -6,7 +6,7 @@ const reset_mod = @import("reset.zig");
 const decode = @import("decode/decode.zig");
 const divide = @import("ops/divide.zig");
 const decode_cache = @import("decode/cache.zig");
-const block_cache = @import("block_cache.zig");
+const block_cache = @import("block/cache.zig");
 const cond = @import("cond.zig");
 const it_state = @import("it_state.zig");
 /// What step() does with a nonzero EPSR.ECI (RA8EMU-453).

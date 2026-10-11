@@ -5,8 +5,8 @@
 //! with no code of its own falls through to the nearest later line that
 //! has some, which is where gdb puts a break on a blank or comment line.
 const std = @import("std");
-const dwarf_line = @import("../dwarf_line/dwarf_line.zig");
-const line_header = @import("../dwarf_line/header.zig");
+const dwarf_line = @import("line.zig");
+const line_header = @import("header.zig");
 
 pub const Error = dwarf_line.Error;
 

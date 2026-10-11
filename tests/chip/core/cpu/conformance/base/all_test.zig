@@ -117,7 +117,7 @@ test {
     _ = @import("sp_arith_vectors_test.zig");
     _ = @import("special_data_vectors_test.zig");
     _ = @import("svc_vectors_test.zig");
-    _ = @import("table_branch_vectors_test.zig");
+    _ = @import("branch/table_vectors_test.zig");
     _ = @import("tt_vectors_test.zig");
     _ = @import("udf_vectors_test.zig");
     _ = @import("umaal_vectors_test.zig");

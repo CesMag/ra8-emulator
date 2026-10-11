@@ -2,7 +2,7 @@
 //! TBH names its scaling: `tbb [r1, r0]`, `tbh [pc, lr, lsl #1]`.
 const Instr = @import("../../instr.zig").Instr;
 const text = @import("../text.zig");
-const table_branch = @import("../../ops/table/branch.zig");
+const table_branch = @import("../../ops/branch/table.zig");
 
 pub fn print(instr: Instr, out: *text.Text) void {
     const half = table_branch.isHalf(instr);

@@ -64,8 +64,8 @@ test {
     _ = @import("host/tape_dir_test.zig");
     _ = @import("host/worker_test.zig");
     _ = @import("session/board/events_test.zig");
-    _ = @import("session/board_faults/board_faults_test.zig");
-    _ = @import("session/board_faults/lines_test.zig");
+    _ = @import("session/board/faults/faults_test.zig");
+    _ = @import("session/board/faults/lines_test.zig");
     _ = @import("session/board/plug_test.zig");
     _ = @import("session/board/camera_test.zig");
     _ = @import("session/board_plug_list_test.zig");

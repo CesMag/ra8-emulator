@@ -4,5 +4,5 @@
 pub const pacer = @import("pacer.zig");
 pub const pacing = @import("pacing.zig");
 pub const soak = @import("soak/soak.zig");
-pub const soak_fault = @import("soak_fault.zig");
+pub const soak_fault = @import("soak/fault.zig");
 pub const speed = @import("speed.zig");

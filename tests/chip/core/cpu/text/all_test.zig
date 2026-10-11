@@ -1,7 +1,7 @@
 //! Covers src/chip/core/cpu/text/all.zig.
 test {
     _ = @import("text_test.zig");
-    _ = @import("table/table_test.zig");
+    _ = @import("table_test.zig");
     _ = @import("disasm_test.zig");
     _ = @import("mve/vpred_test.zig");
     _ = @import("mve/vctp_test.zig");
@@ -82,7 +82,7 @@ test {
     _ = @import("ldm/stm/wide_test.zig");
     _ = @import("exclusive_test.zig");
     _ = @import("acq_rel_test.zig");
-    _ = @import("table/branch_test.zig");
+    _ = @import("branch/table_test.zig");
     _ = @import("branch/wide_test.zig");
     _ = @import("mrs_msr_test.zig");
     _ = @import("misc_wide_test.zig");

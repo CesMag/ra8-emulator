@@ -5,7 +5,7 @@ const ra8 = @import("ra8");
 
 const find = ra8.session.dwarf_line_find;
 const session_source = ra8.session.source;
-const unit = @import("../dwarf_units.zig").unit;
+const unit = @import("../../dwarf_units.zig").unit;
 
 // Directories "src"; files "main.c" in directory 1, "/abs/boot.s" in 0.
 const tables = "src\x00\x00main.c\x00\x01\x00\x00/abs/boot.s\x00\x00\x00\x00\x00";
@@ -83,5 +83,5 @@ test "a break on a function's entry moves past the prologue, or is refused befor
 }
 
 test {
-    _ = @import("info_test.zig");
+    _ = @import("../info_test.zig");
 }

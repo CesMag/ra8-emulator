@@ -58,7 +58,7 @@ test {
     _ = @import("ops/svc_test.zig");
     _ = @import("ops/udf_test.zig");
     _ = @import("ops/bkpt_test.zig");
-    _ = @import("ops/table/branch_test.zig");
+    _ = @import("ops/branch/table_test.zig");
     _ = @import("ops/blxns_test.zig");
     _ = @import("ops/bxns_test.zig");
     _ = @import("ops/security_round_trip_test.zig");
@@ -132,7 +132,7 @@ test {
     _ = @import("ops/mve/float/maxnma_test.zig");
     _ = @import("ops/mve/float/maxnmv_test.zig");
     _ = @import("ops/mve_float_complex_ops_test.zig");
-    _ = @import("ops/table/table_test.zig");
+    _ = @import("ops/table_test.zig");
     _ = @import("ops/pac_test.zig");
     _ = @import("qarma_test.zig");
 }

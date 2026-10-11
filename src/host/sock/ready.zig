@@ -2,7 +2,7 @@
 //! Posix asks poll; Windows asks WSAPoll, which takes the same shape.
 const std = @import("std");
 const builtin = @import("builtin");
-const win32 = @import("win32.zig");
+const win32 = @import("../win32.zig");
 
 pub const Handle = std.posix.fd_t;
 

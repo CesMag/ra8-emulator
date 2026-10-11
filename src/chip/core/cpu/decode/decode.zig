@@ -1,7 +1,7 @@
 //! The decoder: asks each group in src/chip/core/cpu/ops/table.zig in turn and
 //! returns the first one that recognises the encoding.
 const op = @import("../op.zig");
-const table = @import("../ops/table/table.zig");
+const table = @import("../ops/table.zig");
 const Instr = @import("../instr.zig").Instr;
 
 pub const Hit = struct {
@@ -43,7 +43,7 @@ pub const cache = @import("cache.zig");
 
 /// Straight-line runs of decoded instructions (RA8EMU-403).
 pub const block = @import("../block/block.zig");
-pub const block_cache = @import("../block_cache.zig");
+pub const block_cache = @import("../block/cache.zig");
 pub const code_lines = @import("../code_lines.zig");
 
 /// The disassembler built on this table (RA8EMU-17).

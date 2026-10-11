@@ -49,9 +49,9 @@ test "an enabled comparator in an enabled unit matches its address" {
 }
 
 test {
-    _ = @import("dwarf_line/dwarf_line_test.zig");
+    _ = @import("dwarf/line/line_test.zig");
     _ = @import("source_test.zig");
-    _ = @import("dwarf/line_find_test.zig");
+    _ = @import("dwarf/line/find_test.zig");
     _ = @import("dwarf/frame_test.zig");
     _ = @import("unwind/unwind_test.zig");
     _ = @import("unwind/exception_test.zig");

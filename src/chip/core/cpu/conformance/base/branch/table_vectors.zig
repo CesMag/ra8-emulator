@@ -5,7 +5,7 @@
 //! Rn of PC reads as the address plus 4. They run over 1 KiB of RAM at
 //! 0x2000_0000; a table outside it faults. Rn of SP, Rm of SP or PC, hw2
 //! bits 11:5 other than 0, and the 16-bit space are left unclaimed.
-const vector = @import("../vector.zig");
+const vector = @import("../../vector.zig");
 
 /// Where the RAM starts and where most tables sit in it.
 pub const ram: u32 = 0x2000_0000;

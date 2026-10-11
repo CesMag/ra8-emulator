@@ -6,7 +6,7 @@ const ra8 = @import("ra8");
 const vector = ra8.chip.core.cpu.conformance.vector;
 const vectors = ra8.chip.core.cpu.conformance.base.table_branch_vectors;
 const cpu_ns = ra8.chip.core.cpu;
-const fixture = @import("../../exception/ram.zig");
+const fixture = @import("../../../exception/ram.zig");
 
 fn run(in: vectors.In) vectors.Out {
     var ram: fixture.Ram = .{};

@@ -2,7 +2,7 @@
 //! then dispatch to the matching instruction-group printer.
 const decode = @import("../decode/decode.zig");
 const Instr = @import("../instr.zig").Instr;
-const table = @import("table/table.zig");
+const table = @import("table.zig");
 const vpst = @import("mve/vpst.zig");
 const Text = @import("text.zig").Text;
 

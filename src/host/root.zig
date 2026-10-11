@@ -6,7 +6,7 @@
 //! and the application fills it from here.
 pub const profiles = @import("profiles.zig");
 pub const sock = @import("sock/sock.zig");
-pub const sock_ready = @import("sock_ready.zig");
+pub const sock_ready = @import("sock/ready.zig");
 pub const win32 = @import("win32.zig");
 pub const console = @import("console.zig");
 pub const read = @import("read.zig");
