@@ -186,6 +186,8 @@ test "ctl parse: speed, break and watch" {
     try std.testing.expectError(error.BadSpeed, ctl.parse(a, &(base ++ [_][]const u8{ "speed", "0" })));
     const brk = try ctl.parse(a, &(base ++ [_][]const u8{ "break", "0x100" }));
     try std.testing.expectEqual(@as(u32, 0x100), brk.command.set_break);
+    const named = try ctl.parse(a, &(base ++ [_][]const u8{ "break", "demo_module_start" }));
+    try std.testing.expectEqualStrings("demo_module_start", named.command.set_break_name);
     const unbrk = try ctl.parse(a, &(base ++ [_][]const u8{ "break", "--clear", "3" }));
     try std.testing.expectEqual(@as(u32, 3), unbrk.command.clear_break);
     const watch = try ctl.parse(a, &(base ++ [_][]const u8{ "watch", "0x20000000", "access" }));

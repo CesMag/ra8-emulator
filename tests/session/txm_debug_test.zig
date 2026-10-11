@@ -59,3 +59,75 @@ test "a reused instance address takes the later load" {
     const want = txm_symbols.Module.at(image, placed + 0x1000).?.addressOf(function).?;
     try std.testing.expectEqual(want, table.addressOf(function).?);
 }
+
+const fake = struct {
+    var state: u8 = 0;
+    var armed: usize = 0;
+    var dropped: usize = 0;
+    var last: u32 = 0;
+    fn reset() void {
+        armed = 0;
+        dropped = 0;
+        last = 0;
+    }
+    fn arm(ctx: *anyopaque, of: txm_debug.Core, address: u32) anyerror!u32 {
+        _ = ctx;
+        _ = of;
+        armed += 1;
+        last = address;
+        return 900 + @as(u32, @intCast(armed));
+    }
+    fn drop(ctx: *anyopaque, of: txm_debug.Core, id: u32) anyerror!void {
+        _ = ctx;
+        _ = of;
+        _ = id;
+        dropped += 1;
+    }
+};
+
+fn withArmer(table: *txm_debug.Table) void {
+    table.armer = .{ .ctx = @ptrCast(&fake.state), .arm = fake.arm, .drop = fake.drop };
+}
+
+test "a break named before its module loads arms when the module does" {
+    fake.reset();
+    const bytes = try read();
+    defer std.testing.allocator.free(bytes);
+    const image = try elf.Image.init(bytes);
+    var pairs = [_]txm_debug.Pair{.{ .label = label, .image = image }};
+    var table: txm_debug.Table = .{ .pairs = &pairs };
+    withArmer(&table);
+    const id = try table.deferBreak(.cpu0, function);
+    try std.testing.expectEqual(txm_debug.pending_base, id);
+    try std.testing.expectEqual(@as(usize, 0), fake.armed);
+    try std.testing.expect(table.loaded(instance, label, placed));
+    try std.testing.expectEqual(@as(usize, 1), fake.armed);
+    const want = txm_symbols.Module.at(image, placed).?.addressOf(function).?;
+    try std.testing.expectEqual(want & ~@as(u32, 1), fake.last & ~@as(u32, 1));
+}
+
+test "an unload drops the armed break and the pending entry stays" {
+    fake.reset();
+    const bytes = try read();
+    defer std.testing.allocator.free(bytes);
+    var pairs = [_]txm_debug.Pair{.{ .label = label, .image = try elf.Image.init(bytes) }};
+    var table: txm_debug.Table = .{ .pairs = &pairs };
+    withArmer(&table);
+    const id = try table.deferBreak(.cpu0, function);
+    _ = table.loaded(instance, label, placed);
+    table.unloaded(instance);
+    try std.testing.expectEqual(@as(usize, 1), fake.dropped);
+    _ = table.loaded(instance, label, placed);
+    try std.testing.expectEqual(@as(usize, 2), fake.armed);
+    try std.testing.expect(table.remove(id));
+    try std.testing.expectEqual(@as(usize, 2), fake.dropped);
+    try std.testing.expect(!table.remove(id));
+}
+
+test "a pending name longer than the cap is refused" {
+    var table: txm_debug.Table = .{ .pairs = &.{} };
+    const long = try std.testing.allocator.alloc(u8, txm_debug.max_name + 1);
+    defer std.testing.allocator.free(long);
+    @memset(long, 'x');
+    try std.testing.expectError(error.NameTooLong, table.deferBreak(.cpu0, long));
+}

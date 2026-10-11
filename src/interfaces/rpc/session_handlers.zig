@@ -4,6 +4,7 @@ const std = @import("std");
 const rpc = @import("ra8_rpc_wire");
 const proto = @import("session_rpc.zig");
 const api = @import("ra8_session").api;
+const session_symbols = @import("ra8_session").symbols;
 const stop_machine = @import("ra8_session").stop_machine;
 const region_map = @import("ra8_session").region_map;
 const source_spec = @import("ra8_host").camera.source_spec;
@@ -107,7 +108,7 @@ pub const Context = struct {
     clock: ?session_rtc.Clock = null,
     /// Loaded ThreadX modules' own symbols, asked before the image's
     /// (RA8EMU-1141); null names module code from the image alone.
-    modules: ?*const @import("ra8_session").txm_debug.Table = null,
+    modules: ?*@import("ra8_session").txm_debug.Table = null,
     /// Turns RTOS tracing on when a client first wants the trace topic.
     trace_on: ?TraceOn = null,
     /// Reads a thread's name for the trace topic.
@@ -212,8 +213,38 @@ pub fn setBreakpoint(context: *Context, args: proto.Point) rpc.Outcome(proto.U32
 }
 
 pub fn clearBreakpoint(context: *Context, args: proto.PointId) Ack {
-    context.session.clearBreakpoint(core(args.core), args.id) catch |err| return refuse(proto.Ack, err);
+    context.session.clearBreakpoint(core(args.core), args.id) catch |err| {
+        if (err != error.NoSuchBreak) return refuse(proto.Ack, err);
+        if (context.modules) |table| if (table.remove(args.id)) return ack;
+        return refuse(proto.Ack, err);
+    };
     return ack;
+}
+
+/// `break NAME` (RA8EMU-1141): placed where the name resolves now, the
+/// module table asked before the image; an unknown name waits for its
+/// module to load.
+pub fn setBreakpointNamed(context: *Context, args: proto.NamedBreak) rpc.Outcome(proto.NamedPoint) {
+    const which = core(args.core);
+    if (context.modules) |table| if (table.addressOf(args.name)) |address|
+        return placeNamed(context, which, address);
+    if (imageOf(context, which)) |image| if (session_symbols.addressOf(image, args.name)) |address|
+        return placeNamed(context, which, address);
+    const table = context.modules orelse return refuse(proto.NamedPoint, error.UnknownSymbol);
+    const id = table.deferBreak(which, args.name) catch return refuse(proto.NamedPoint, error.NoRoom);
+    return .{ .ok = .{ .id = id, .address = 0, .deferred = 1 } };
+}
+
+fn placeNamed(context: *Context, which: api.Core, address: u32) rpc.Outcome(proto.NamedPoint) {
+    const id = context.session.setBreakpoint(which, .{ .address = address }) catch |err|
+        return refuse(proto.NamedPoint, err);
+    return .{ .ok = .{ .id = id, .address = address, .deferred = 0 } };
+}
+
+fn imageOf(context: *Context, which: api.Core) ?@import("ra8_session").symbols.Image {
+    const mapping = context.mapping orelse return null;
+    const imageFn = mapping.imageFn orelse return null;
+    return imageFn(mapping.context, @backingInt(which));
 }
 
 pub fn setWatchpoint(context: *Context, args: proto.Watch) rpc.Outcome(proto.U32) {

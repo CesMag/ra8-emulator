@@ -20,7 +20,7 @@ pub const usage =
     \\usage: ra8_emulator ctl --connect unix:PATH|tcp:[HOST]:PORT [--json] COMMAND
     \\       ra8_emulator ctl --host NAME [--hosts FILE] --image ELF [--json] COMMAND
     \\  commands: load ELF | run [--budget N] | step | pause | regs [NAME...] | mem ADDRESS LENGTH
-    \\            speed FACTOR|max | break ADDRESS | break --clear ID
+    \\            speed FACTOR|max | break ADDRESS|NAME | break --clear ID
     \\            watch ADDRESS read|write|access | watch --clear ID
     \\            events [--topic uart|stop]... [--until TEXT] [--timeout 500ms|30s]
     \\            advance 500ms|600s
@@ -51,6 +51,7 @@ pub const Command = union(enum) {
     /// Thousandths of the default rate; zero is `max`.
     speed: u64,
     set_break: u32,
+    set_break_name: []const u8,
     clear_break: u32,
     set_watch: struct { address: u32, access: proto.Access },
     clear_watch: u32,
@@ -141,7 +142,7 @@ fn parseCommand(allocator: std.mem.Allocator, name: []const u8, args: []const []
     if (eql(u8, name, "periph")) return if (args.len <= 1) .{ .periph = if (args.len == 1) args[0] else "" } else error.BadArguments;
     if (eql(u8, name, "regs")) return .{ .regs = try parseRegs(allocator, args) };
     if (eql(u8, name, "speed")) return if (args.len == 1) .{ .speed = try parseSpeed(args[0]) } else error.BadArguments;
-    if (eql(u8, name, "break")) return parseBreak(args);
+    if (eql(u8, name, "break")) return parseBreak(allocator, args);
     if (eql(u8, name, "watch")) return parseWatch(args);
     if (eql(u8, name, "events")) return .{ .events = try events.parse(args) };
     if (eql(u8, name, "plug")) return part(.plug, args);
@@ -192,8 +193,11 @@ fn parseSpeed(word: []const u8) !u64 {
     return @intFromFloat(@round(factor * 1000.0));
 }
 
-fn parseBreak(args: []const []const u8) !Command {
-    if (args.len == 1) return .{ .set_break = try std.fmt.parseInt(u32, args[0], 0) };
+fn parseBreak(allocator: std.mem.Allocator, args: []const []const u8) !Command {
+    if (args.len == 1) {
+        if (std.fmt.parseInt(u32, args[0], 0)) |address| return .{ .set_break = address } else |_| {}
+        return .{ .set_break_name = try allocator.dupe(u8, args[0]) };
+    }
     if (args.len == 2 and std.mem.eql(u8, args[0], "--clear")) return .{ .clear_break = try std.fmt.parseInt(u32, args[1], 0) };
     return error.BadArguments;
 }
@@ -233,6 +237,14 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
     const client = Client.open(allocator, io, reach) catch |err| return out.failed(io, request.json, err, 0);
     defer client.close();
     return perform(allocator, io, client, request) catch |err| return out.failed(io, request.json, err, client.refused);
+}
+
+/// Ask for a break by symbol name: the server places it, or pends it
+/// until its module loads (RA8EMU-1141).
+fn breakNamed(client: *Client, w: *std.Io.Writer, json: bool, name: []const u8) !void {
+    const reply = try client.call(proto.NamedPoint, proto.NamedBreak, .set_breakpoint_name, .{ .core = .cpu0, .name = name });
+    if (reply.deferred == 0) return out.point(w, json, "breakpoint", reply.id, reply.address, null);
+    if (json) try w.print("{{\"breakpoint\":{d},\"pending\":\"{s}\"}}\n", .{ reply.id, name }) else try w.print("breakpoint {d} pending ({s})\n", .{ reply.id, name });
 }
 
 fn perform(allocator: std.mem.Allocator, io: std.Io, client: *Client, request: Request) !u8 {
@@ -277,6 +289,7 @@ fn perform(allocator: std.mem.Allocator, io: std.Io, client: *Client, request: R
             const id = try client.call(proto.U32, proto.Point, .set_breakpoint, .{ .core = .cpu0, .address = address });
             try out.point(w, json, "breakpoint", id.value, address, null);
         },
+        .set_break_name => |name| try breakNamed(client, w, json, name),
         .set_watch => |at| {
             const last = std.math.add(u32, at.address, watch_bytes - 1) catch return error.BadAddress;
             const args: proto.Watch = .{ .core = .cpu0, .first = at.address, .last = last, .access = at.access };

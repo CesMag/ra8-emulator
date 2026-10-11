@@ -11,6 +11,7 @@ const listen = @import("serve_listen.zig");
 const card_setup = @import("card_setup.zig");
 const card_apps = @import("card_apps.zig");
 const txm_debug = @import("ra8_session").txm_debug;
+const session_api = @import("ra8_session").api;
 const elf = @import("ra8_board").image.elf;
 
 pub const usage =
@@ -78,6 +79,20 @@ fn pairUp(apps: []const card_apps.Staged, into: *[card_apps.max_apps]txm_debug.P
     return into[0..apps.len];
 }
 
+/// Places and clears real breakpoints for breaks named before their
+/// module loaded, through the served session (RA8EMU-1141).
+const BreakArmer = struct {
+    session: *session_api.Session,
+    fn arm(ctx: *anyopaque, of: txm_debug.Core, address: u32) anyerror!u32 {
+        const self: *BreakArmer = @ptrCast(@alignCast(ctx));
+        return self.session.setBreakpoint(of, .{ .address = address });
+    }
+    fn drop(ctx: *anyopaque, of: txm_debug.Core, id: u32) anyerror!void {
+        const self: *BreakArmer = @ptrCast(@alignCast(ctx));
+        return self.session.clearBreakpoint(of, id);
+    }
+};
+
 /// Serve `argv` (`ra8_emulator serve ...`) and return the exit code.
 pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !u8 {
     const asked = parse(argv) orelse {
@@ -105,6 +120,9 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         std.debug.print("serve: a module ELF is not an ELF: {s}\n", .{@errorName(err)});
         return 1;
     });
+    var armer = BreakArmer{ .session = setup.context.session };
+    if (setup.context.modules) |table|
+        table.armer = .{ .ctx = &armer, .arm = BreakArmer.arm, .drop = BreakArmer.drop };
     if (asked.cpu1) |path| setup.openSecond(path) catch |err| {
         std.debug.print("serve: cannot bring up CPU1 from {s}: {s}\n", .{ path, @errorName(err) });
         return 1;

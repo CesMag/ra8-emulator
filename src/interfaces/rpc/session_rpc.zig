@@ -5,7 +5,8 @@ pub const protocol_version: u16 = 1;
 /// Bit 0: LCD dirty rectangles. Bit 1: plug, unplug and fault methods.
 /// Bit 2: advance. Bit 3: snapshot and restore. Bit 6: stack. Bit 7: rtc.
 /// Bit 8: input. Bit 9: backtrace. Bit 10: periph. Bit 11: folded.
-pub const capabilities: u32 = 0x0000_0FFF;
+/// Bit 12: break by name.
+pub const capabilities: u32 = 0x0000_1FFF;
 pub const max_payload = 1_048_576;
 
 /// Refusal codes this message set adds above the library's own.
@@ -54,6 +55,7 @@ pub const Method = enum(u16) {
     backtrace = 0x0120,
     periph = 0x0121,
     folded = 0x0122,
+    set_breakpoint_name = 0x0123,
 };
 pub const Topic = enum(u16) { stop = 0x0100, uart = 0x0101, speed = 0x0102, lcd_dirty = 0x0103, trace = 0x0104, session = 0x0105 };
 pub const Core = enum(u8) { cpu0, cpu1 };
@@ -86,6 +88,16 @@ pub const WriteMemory = struct {
 };
 pub const Point = struct { core: Core, address: u32 };
 pub const PointId = struct { core: Core, id: u32 };
+/// `break NAME`, resolved against the module table and then the image
+/// (RA8EMU-1141); unknown names wait for their module to load.
+pub const NamedBreak = struct {
+    core: Core,
+    name: []const u8,
+    pub const max_len = .{ .name = 256 };
+};
+/// Where a named break landed: placed at `address`, or waiting with an id
+/// from the table's pending numbering.
+pub const NamedPoint = struct { id: u32, address: u32, deferred: u8 };
 pub const Watch = struct { core: Core, first: u32, last: u32, access: Access };
 pub const Subscription = struct { core: Core, topic: Topic };
 pub const Now = struct { core: Core };

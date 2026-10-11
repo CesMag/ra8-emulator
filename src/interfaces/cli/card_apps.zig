@@ -19,8 +19,9 @@ const host_folder = @import("ra8_host").folder;
 /// The most `--app` flags one run takes.
 pub const max_apps = 8;
 
-/// An admitted app: the name it takes in the card's root, its bytes, its
-/// header's display name, and the module ELF paired with it, if any.
+/// An admitted app: the name it takes in the card's root, its bytes, the
+/// name the manager gives the instance (the app file's stem), and the
+/// module ELF paired with it, if any.
 pub const Staged = struct {
     name: []const u8,
     bytes: []const u8,
@@ -61,7 +62,7 @@ fn loadOne(io: std.Io, allocator: std.mem.Allocator, value: []const u8) !Staged 
     const name = std.fs.path.basename(paths.app);
     const module = if (paths.elf) |path| try readFile(io, allocator, path) else null;
     std.debug.print("app: {s} ({s}, \"{s}\") -> card root\n", .{ name, header.id(), header.name() });
-    return .{ .name = name, .bytes = bytes, .label = labelIn(bytes), .elf = module };
+    return .{ .name = name, .bytes = bytes, .label = stem(name), .elf = module };
 }
 
 fn readFile(io: std.Io, allocator: std.mem.Allocator, path: []const u8) ![]u8 {
@@ -71,11 +72,12 @@ fn readFile(io: std.Io, allocator: std.mem.Allocator, path: []const u8) ![]u8 {
     };
 }
 
-/// The header's display name, as a slice of the app's own bytes.
-fn labelIn(bytes: []const u8) []const u8 {
-    const at = ra8app.words * 4 + ra8app.app_id_width;
-    const field = bytes[at..][0..ra8app.name_width];
-    return field[0 .. std.mem.indexOfScalar(u8, field, 0) orelse field.len];
+/// The name a manager call passes for this app: the file name without
+/// its .ra8app extension (txm_sd_hello_m85's loader names instances this
+/// way, and the emulator only knows the file name).
+fn stem(name: []const u8) []const u8 {
+    const mark = std.mem.lastIndexOf(u8, name, pair_mark[0..0] ++ ".ra8app") orelse return name;
+    return name[0..mark];
 }
 
 /// The paired values among `values`, each with its display name and module
@@ -91,7 +93,7 @@ pub fn paired(io: std.Io, allocator: std.mem.Allocator, values: []const []const 
         out[count] = .{ .name = std.fs.path.basename(paths.app), .bytes = bytes };
         count += 1;
         _ = try ra8app.parse(bytes);
-        out[count - 1].label = labelIn(bytes);
+        out[count - 1].label = stem(out[count - 1].name);
         out[count - 1].elf = try readFile(io, allocator, module);
     }
     return out[0..count];

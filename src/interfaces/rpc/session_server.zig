@@ -44,6 +44,7 @@ const routes = .{
     .{ @backingInt(M.read_memory), handlers.readMemory },
     .{ @backingInt(M.write_memory), handlers.writeMemory },
     .{ @backingInt(M.set_breakpoint), handlers.setBreakpoint },
+    .{ @backingInt(M.set_breakpoint_name), handlers.setBreakpointNamed },
     .{ @backingInt(M.clear_breakpoint), handlers.clearBreakpoint },
     .{ @backingInt(M.set_watchpoint), handlers.setWatchpoint },
     .{ @backingInt(M.clear_watchpoint), handlers.clearWatchpoint },

@@ -229,7 +229,7 @@ pub const Harness = struct {
 
     /// The module ELFs `--app FILE.ra8app=MODULE.elf` paired (RA8EMU-1141),
     /// placed as their modules load; `pairs` outlives the harness.
-    pub fn pairModules(self: *Harness, pairs: []const txm_debug.Pair) *const txm_debug.Table {
+    pub fn pairModules(self: *Harness, pairs: []const txm_debug.Pair) *txm_debug.Table {
         self.state.modules = .{ .pairs = pairs };
         return &self.state.modules;
     }

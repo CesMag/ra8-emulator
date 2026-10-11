@@ -107,7 +107,7 @@ test "an --app value splits into the app and its module ELF" {
     try std.testing.expectEqual(@as(?[]const u8, null), alone.elf);
 }
 
-test "a paired app keeps its module ELF under the header's display name" {
+test "a paired app keeps its module ELF under the app file's stem" {
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
     const bytes = sample();
@@ -121,7 +121,7 @@ test "a paired app keeps its module ELF under the header's display name" {
     const apps = try card_apps.load(io, std.testing.allocator, &.{value}, &out);
     defer card_apps.unload(std.testing.allocator, apps);
     try std.testing.expectEqualStrings("hello.ra8app", apps[0].name);
-    try std.testing.expectEqualStrings("Hello", apps[0].label);
+    try std.testing.expectEqualStrings("hello", apps[0].label);
     try std.testing.expectEqualStrings("module elf", apps[0].elf.?);
 }
 
@@ -139,6 +139,6 @@ test "only paired values are read for a debugger" {
     const apps = try card_apps.paired(io, std.testing.allocator, &.{ app, value }, &out);
     defer card_apps.unload(std.testing.allocator, apps);
     try std.testing.expectEqual(@as(usize, 1), apps.len);
-    try std.testing.expectEqualStrings("Hello", apps[0].label);
+    try std.testing.expectEqualStrings("hello", apps[0].label);
     try std.testing.expectEqualStrings("module elf", apps[0].elf.?);
 }
