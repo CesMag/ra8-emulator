@@ -13,6 +13,7 @@ const gui = @import("gui_app");
 const render = @import("ra8_render");
 pub const c = @import("c.zig").c;
 pub const geometry = @import("geometry.zig");
+pub const opener = @import("opener.zig").opener;
 
 const Event = gui.platform.Event;
 const Size = gui.platform.Size;

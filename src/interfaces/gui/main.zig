@@ -14,24 +14,8 @@ comptime {
     _ = host.camera.av_info_plist;
 }
 
-/// The one window ra8_gui opens, alive from open until close.
-var backend: ?sdl.Sdl = null;
-
-fn open() ?app.platform.Platform {
-    backend = sdl.Sdl.init("ra8 emulator") catch return null;
-    if (backend) |*window| return window.platform();
-    return null;
-}
-
-fn close() void {
-    if (backend) |*window| window.deinit();
-    backend = null;
-}
-
-const opener: app.platform.Opener = .{ .open = open, .close = close };
-
 pub fn main(init: std.process.Init) !u8 {
     const allocator = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(allocator);
-    return app.shell.main.run(allocator, init.io, init.environ_map, argv, opener);
+    return app.shell.main.run(allocator, init.io, init.environ_map, argv, sdl.opener);
 }
