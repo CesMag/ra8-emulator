@@ -19,6 +19,7 @@ const session_advance = @import("session_advance.zig");
 const session_files = @import("session_files.zig");
 const session_map = @import("session_map.zig");
 const session_stack = @import("session_stack.zig");
+const session_folded = @import("session_folded.zig");
 const session_backtrace = @import("session_backtrace.zig");
 const session_periph = @import("session_periph.zig");
 const session_rtc = @import("session_rtc.zig");
@@ -61,6 +62,7 @@ const routes = .{
     .{ @backingInt(M.stack), session_stack.stack },
     .{ @backingInt(M.backtrace), session_backtrace.backtrace },
     .{ @backingInt(M.periph), session_periph.periph },
+    .{ @backingInt(M.folded), session_folded.folded },
     .{ @backingInt(M.rtc), session_rtc.rtc },
     .{ @backingInt(M.input), session_input.input },
     .{ @backingInt(M.advance), session_advance.advance },

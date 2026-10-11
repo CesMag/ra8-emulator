@@ -39,6 +39,14 @@ pub const Peripherals = struct {
     listFn: *const fn (*anyopaque, usize, []const u8, bool, []u8) anyerror![]const u8,
 };
 
+/// Folds sampled call stacks (RA8EMU-833): the core index, the thread
+/// (null for all), the window [from_ns, to_ns), and the buffer to write
+/// into. error.NothingSampled when the window and thread take no sample.
+pub const Folding = struct {
+    context: *anyopaque,
+    foldFn: *const fn (*anyopaque, usize, ?u32, u64, u64, []u8) anyerror![]const u8,
+};
+
 pub const Listing = struct {
     context: *anyopaque,
     listFn: *const fn (*anyopaque, []u8) anyerror![]const u8,
@@ -76,6 +84,8 @@ pub const Context = struct {
     mapping: ?Mapping = null,
     /// Lists peripheral blocks and registers for `periph`; a server without one refuses it.
     peripherals: ?Peripherals = null,
+    /// Folds sampled stacks for `folded`; a server that samples none refuses it.
+    folding: ?Folding = null,
     /// Snapshots the RTC counters for `rtc`; a server without one refuses it.
     clock: ?session_rtc.Clock = null,
 

@@ -30,6 +30,7 @@ pub const usage =
     \\            stack (MSP and PSP, the lowest each reached, any overflow)
     \\            rtc (the board's RTC date and time)
     \\            periph [BLOCK] (the peripheral blocks, or one block's registers)
+    \\            folded [THREAD] [FROM_NS TO_NS] (sampled stacks; serve --profile-folded)
     \\            fault MODEL@ENDPOINT=MODE | fault --clear ENDPOINT
     \\
 ;
@@ -66,7 +67,12 @@ pub const Command = union(enum) {
     rtc,
     /// The peripheral blocks, or one block's registers when named (RA8EMU-818).
     periph: []const u8,
+    /// CPU0's sampled stacks, folded, for one thread and window (RA8EMU-833).
+    folded: Folded,
 };
+
+/// What `ctl folded` asks for; the defaults take every thread, all time.
+pub const Folded = struct { thread: u32 = proto.all_threads, from_ns: u64 = 0, to_ns: u64 = 0xFFFF_FFFF_FFFF_FFFF };
 
 pub const Part = struct { method: proto.Method, text: []const u8 };
 
@@ -131,6 +137,7 @@ fn parseCommand(allocator: std.mem.Allocator, name: []const u8, args: []const []
     if (eql(u8, name, "map")) return if (args.len == 0) .map else error.BadArguments;
     if (eql(u8, name, "stack")) return if (args.len == 0) .stack else error.BadArguments;
     if (eql(u8, name, "rtc")) return if (args.len == 0) .rtc else error.BadArguments;
+    if (eql(u8, name, "folded")) return .{ .folded = try parseFolded(args) };
     if (eql(u8, name, "periph")) return if (args.len <= 1) .{ .periph = if (args.len == 1) args[0] else "" } else error.BadArguments;
     if (eql(u8, name, "regs")) return .{ .regs = try parseRegs(allocator, args) };
     if (eql(u8, name, "speed")) return if (args.len == 1) .{ .speed = try parseSpeed(args[0]) } else error.BadArguments;
@@ -150,6 +157,22 @@ fn parseCommand(allocator: std.mem.Allocator, name: []const u8, args: []const []
 }
 
 /// A duration in `events --timeout` syntax, as virtual nanoseconds.
+/// `folded`, `folded THREAD`, `folded FROM TO` or `folded THREAD FROM TO`.
+fn parseFolded(args: []const []const u8) !Folded {
+    var asked: Folded = .{};
+    const window = switch (args.len) {
+        0 => return asked,
+        1 => return .{ .thread = try std.fmt.parseInt(u32, args[0], 0) },
+        2 => args,
+        3 => args[1..],
+        else => return error.BadArguments,
+    };
+    if (args.len == 3) asked.thread = try std.fmt.parseInt(u32, args[0], 0);
+    asked.from_ns = try std.fmt.parseInt(u64, window[0], 0);
+    asked.to_ns = try std.fmt.parseInt(u64, window[1], 0);
+    return asked;
+}
+
 fn parseAdvance(word: []const u8) !u64 {
     const ms: u64 = @intCast(try events.parseDuration(word));
     return ms * std.time.ns_per_ms;
@@ -278,6 +301,7 @@ fn perform(allocator: std.mem.Allocator, io: std.Io, client: *Client, request: R
             const listed = try client.call(proto.PeriphText, proto.PeriphAsk, .periph, .{ .core = .cpu0, .json = @intFromBool(json), .block = block });
             try out.periph(w, json, listed.text);
         },
+        .folded => |asked| try foldedRows(client, w, json, asked),
         .stack => {
             const report = try client.call(proto.StackReport, proto.CoreOnly, .stack, .{ .core = .cpu0 });
             try out.stack(w, json, report);
@@ -293,6 +317,13 @@ fn perform(allocator: std.mem.Allocator, io: std.Io, client: *Client, request: R
 /// Bytes a `watch` covers from its address, the same span the debugger's
 /// own watch command uses.
 const watch_bytes = 4;
+
+/// CPU0's sampled stacks folded for one thread and window (RA8EMU-833).
+fn foldedRows(client: *Client, w: anytype, json: bool, asked: Folded) !void {
+    const ask: proto.FoldedAsk = .{ .core = .cpu0, .thread = asked.thread, .from_ns = asked.from_ns, .to_ns = asked.to_ns };
+    const rows = try client.call(proto.FoldedText, proto.FoldedAsk, .folded, ask);
+    try out.folded(w, json, rows.text);
+}
 
 fn clear(client: *Client, w: anytype, json: bool, method: proto.Method, id: u32) !void {
     _ = try client.call(proto.Ack, proto.PointId, method, .{ .core = .cpu0, .id = id });

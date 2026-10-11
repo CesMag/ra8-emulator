@@ -16,6 +16,8 @@ const symbols = @import("ra8_session").symbols;
 const region_map_json = @import("ra8_session").region_map_json;
 const region_map_text = @import("ra8_session").region_map_text;
 const periph_list = @import("ra8_session").periph_list;
+const stack_samples = @import("ra8_session").stack_samples;
+const stack_profile = @import("ra8_session").stack_profile;
 const source_spec = @import("ra8_host").camera.source_spec;
 const source_open = @import("ra8_host").camera.source_open;
 const proto = @import("session_rpc.zig");
@@ -30,6 +32,8 @@ pub const Served = struct {
     gpa: std.mem.Allocator,
     /// What camera sources are opened with.
     io: std.Io,
+    /// CPU0's sampled call stacks, once sampleStacks asked (RA8EMU-833).
+    stacks: ?*harness.stacks.Stacks = null,
 
     /// Open `elf_path` and fill the context. The context points into
     /// `self`, so `self` stays put until `deinit`.
@@ -51,7 +55,21 @@ pub const Served = struct {
         self.context.camera = .{ .context = self, .setFn = setCamera };
     }
 
+    /// Sample CPU0's call stacks every `every` instructions and answer
+    /// `folded` from them (RA8EMU-833). Call once, after open.
+    pub fn sampleStacks(self: *Served, every: u32) !void {
+        const stacks = try self.gpa.create(harness.stacks.Stacks);
+        stacks.* = .{ .every = @max(every, 1) };
+        self.stacks = stacks;
+        self.owner.sampleStacks(stacks);
+        self.context.folding = .{ .context = self, .foldFn = foldStacks };
+    }
+
     pub fn deinit(self: *Served) void {
+        if (self.stacks) |stacks| {
+            self.owner.unsampleStacks(stacks);
+            self.gpa.destroy(stacks);
+        }
         self.gpa.free(self.context.scratch);
         self.gpa.free(self.tx);
         self.gpa.free(self.rx);
@@ -91,6 +109,20 @@ fn mapImage(context: *anyopaque, core: usize, json: bool, out: []u8) anyerror![]
 fn listPeriph(context: *anyopaque, core: usize, block: []const u8, json: bool, out: []u8) anyerror![]const u8 {
     const owner: *harness.Harness = @ptrCast(@alignCast(context));
     return periph_list.list(&owner.board().bus, core, block, json, out);
+}
+
+/// CPU0's sampled stacks over [from_ns, to_ns), named by the opened image
+/// they were walked with; a window and thread that take none are refused.
+fn foldStacks(context: *anyopaque, core: usize, thread: ?u32, from_ns: u64, to_ns: u64, out: []u8) anyerror![]const u8 {
+    const self: *Served = @ptrCast(@alignCast(context));
+    const stacks = self.stacks orelse return error.NothingSampled;
+    const image = self.owner.image();
+    var w: std.Io.Writer = .fixed(out);
+    var scratch: [stack_samples.limits.samples]usize = undefined;
+    const filter: stack_samples.Filter = .{ .core = @intCast(core), .from_ns = from_ns, .to_ns = to_ns, .thread = thread };
+    try stack_samples.fold(&stacks.store, filter, stack_profile.names(&image), &w, &scratch);
+    if (w.end == 0) return error.NothingSampled;
+    return w.buffered();
 }
 
 /// The main stack reservation of a core's last loaded image, if it names one.

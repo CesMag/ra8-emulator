@@ -328,3 +328,20 @@ test "ctl parse: periph lists blocks, or one block's registers when named" {
     try std.testing.expect(rtc.json);
     try std.testing.expectError(error.BadArguments, ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "periph", "RTC", "AGT" }));
 }
+
+test "ctl parse: folded takes an optional thread and an optional window" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const all = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded" });
+    try std.testing.expectEqual(ra8.rpc.session_rpc.all_threads, all.command.folded.thread);
+    const one = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded", "0x22025060" });
+    try std.testing.expectEqual(@as(u32, 0x22025060), one.command.folded.thread);
+    const window = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded", "100", "200" });
+    try std.testing.expectEqual(@as(u64, 100), window.command.folded.from_ns);
+    try std.testing.expectEqual(@as(u64, 200), window.command.folded.to_ns);
+    const both = try ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded", "0", "1", "2" });
+    try std.testing.expectEqual(@as(u32, 0), both.command.folded.thread);
+    try std.testing.expectEqual(@as(u64, 2), both.command.folded.to_ns);
+    try std.testing.expectError(error.BadArguments, ctl.parse(a, &.{ "ra8", "ctl", "--connect", "unix:/s", "folded", "1", "2", "3", "4" }));
+}

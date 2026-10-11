@@ -4,8 +4,8 @@ const rpc = @import("ra8_rpc_wire");
 pub const protocol_version: u16 = 1;
 /// Bit 0: LCD dirty rectangles. Bit 1: plug, unplug and fault methods.
 /// Bit 2: advance. Bit 3: snapshot and restore. Bit 6: stack. Bit 7: rtc.
-/// Bit 8: input. Bit 9: backtrace. Bit 10: periph.
-pub const capabilities: u32 = 0x0000_07FF;
+/// Bit 8: input. Bit 9: backtrace. Bit 10: periph. Bit 11: folded.
+pub const capabilities: u32 = 0x0000_0FFF;
 pub const max_payload = 1_048_576;
 
 /// Refusal codes this message set adds above the library's own.
@@ -53,6 +53,7 @@ pub const Method = enum(u16) {
     input = 0x011f,
     backtrace = 0x0120,
     periph = 0x0121,
+    folded = 0x0122,
 };
 pub const Topic = enum(u16) { stop = 0x0100, uart = 0x0101, speed = 0x0102, lcd_dirty = 0x0103, trace = 0x0104, session = 0x0105 };
 pub const Core = enum(u8) { cpu0, cpu1 };
@@ -158,6 +159,16 @@ pub const PeriphAsk = struct {
 };
 /// The block list or one block's registers.
 pub const PeriphText = struct {
+    text: []const u8,
+    pub const max_len = .{ .text = 65536 };
+};
+/// `thread` in a FoldedAsk that takes every thread.
+pub const all_threads: u32 = 0xFFFF_FFFF;
+/// A core's sampled call stacks folded over the virtual-time window
+/// [from_ns, to_ns), for one thread or all of them (RA8EMU-833).
+pub const FoldedAsk = struct { core: Core, thread: u32 = all_threads, from_ns: u64 = 0, to_ns: u64 = 0xFFFF_FFFF_FFFF_FFFF };
+/// One `frames;... count` row per distinct stack, as --profile-folded.
+pub const FoldedText = struct {
     text: []const u8,
     pub const max_len = .{ .text = 65536 };
 };

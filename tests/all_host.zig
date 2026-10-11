@@ -171,6 +171,7 @@ test {
     _ = @import("interfaces/rpc/backtrace_wire_test.zig");
     _ = @import("interfaces/rpc/session_rtc_test.zig");
     _ = @import("interfaces/rpc/session_periph_test.zig");
+    _ = @import("interfaces/rpc/session_folded_test.zig");
     _ = @import("interfaces/rpc/session_input_test.zig");
     _ = @import("interfaces/rpc/session_event_feed_test.zig");
 }

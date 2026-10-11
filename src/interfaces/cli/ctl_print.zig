@@ -109,6 +109,12 @@ pub fn periph(w: anytype, json: bool, text: []const u8) !void {
     try w.writeAll(text);
 }
 
+/// Sampled stacks, one `frames;... count` row each (RA8EMU-833).
+pub fn folded(w: anytype, json: bool, text: []const u8) !void {
+    if (json) return w.print("{{\"folded\":{f}}}\n", .{std.json.fmt(text, .{})});
+    try w.writeAll(text);
+}
+
 /// The stack pointers, their low marks and the reservation (RA8EMU-816).
 pub fn stack(w: anytype, json: bool, r: proto.StackReport) !void {
     if (json) {
