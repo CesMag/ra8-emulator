@@ -38,7 +38,7 @@ pub const Framebuffer = struct {
         return .{ .x = 0, .y = 0, .w = @intCast(self.width), .h = @intCast(self.height) };
     }
 
-    fn put(self: *Framebuffer, x: i32, y: i32, color: Color) void {
+    pub fn put(self: *Framebuffer, x: i32, y: i32, color: Color) void {
         const index = @as(usize, @intCast(y)) * self.width + @as(usize, @intCast(x));
         self.pixels[index] = blend(self.pixels[index], color);
     }
@@ -77,7 +77,7 @@ pub fn draw(target: *Framebuffer, list: *const draw_list.DrawList, atlas: ?Atlas
     }
 }
 
-fn fillRect(target: *Framebuffer, area: Rect, color: Color) void {
+pub fn fillRect(target: *Framebuffer, area: Rect, color: Color) void {
     var y = area.y;
     while (y < area.y + area.h) : (y += 1) {
         var x = area.x;
@@ -86,7 +86,7 @@ fn fillRect(target: *Framebuffer, area: Rect, color: Color) void {
 }
 
 /// Bresenham, both end points included.
-fn line(target: *Framebuffer, shape: draw_list.Line, clip: Rect) void {
+pub fn line(target: *Framebuffer, shape: draw_list.Line, clip: Rect) void {
     const dx: i32 = @intCast(@abs(shape.x1 - shape.x0));
     const dy: i32 = -@as(i32, @intCast(@abs(shape.y1 - shape.y0)));
     const step_x: i32 = if (shape.x0 < shape.x1) 1 else -1;

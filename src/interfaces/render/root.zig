@@ -10,6 +10,7 @@ pub const raster = @import("raster.zig");
 pub const font = @import("gfx_font.zig");
 pub const geometry = @import("geometry.zig");
 pub const widget_paint = @import("widget_paint.zig");
+pub const paint_backend = @import("paint_backend.zig");
 pub const board_view = @import("board_view.zig");
 pub const png = @import("png.zig");
 pub const gif = @import("gif/gif.zig");
