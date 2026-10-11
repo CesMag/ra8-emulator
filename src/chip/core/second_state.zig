@@ -3,7 +3,7 @@
 //! reads and writes CPU1's memory only through a memory.Guest.
 const fault = @import("fault.zig");
 const memmap = @import("memmap.zig");
-const nvic = @import("../periph/nvic.zig");
+const nvic = @import("../periph/nvic/nvic.zig");
 const clocks = @import("../periph/clocks.zig");
 const second_wait = @import("second_wait.zig");
 const rate = @import("rate.zig");

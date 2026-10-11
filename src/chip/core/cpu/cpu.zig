@@ -3,9 +3,9 @@
 const bus = @import("bus.zig");
 const regs_mod = @import("regs.zig");
 const reset_mod = @import("reset.zig");
-const decode = @import("decode.zig");
+const decode = @import("decode/decode.zig");
 const divide = @import("ops/divide.zig");
-const decode_cache = @import("decode_cache.zig");
+const decode_cache = @import("decode/cache.zig");
 const block_cache = @import("block_cache.zig");
 const cond = @import("cond.zig");
 const it_state = @import("it_state.zig");
@@ -130,7 +130,7 @@ pub const Cpu = struct {
     /// What a WFI or WFE left the core waiting for, or null while it runs.
     waiting: ?exception.sleep.Wait = null,
     /// Which encodings this core implements: an M85's unless the board
-    /// says otherwise (src/chip/core/part.zig, RA8EMU-233).
+    /// says otherwise (src/chip/core/part/part.zig, RA8EMU-233).
     profile: decode.profile.Profile = decode.profile.Profile.m85,
     /// One trip of a calm loop under watch (RA8EMU-463).
     trip: fixed_trip.Watch = .{},

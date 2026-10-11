@@ -6,7 +6,7 @@
 //! block that answers per core (IPCSEM, the ICU's per-core view) sees the
 //! right one. The SAU, MPU and fault-clear units are CPU1's own.
 //!
-//! The core carries the M33's profile (src/chip/core/part.zig), so an Armv8.1-M
+//! The core carries the M33's profile (src/chip/core/part/part.zig), so an Armv8.1-M
 //! encoding takes UsageFault UNDEFINSTR here, where CPU0 would run it.
 //! Its NVIC, decode cache and block cache are its own too, and it polls
 //! the NVIC through its own quiet source, as CPU0 does (RA8EMU-440).
@@ -19,12 +19,12 @@ const GuestBus = @import("cpu/memory/guest_bus.zig").GuestBus;
 const mpu_check = @import("cpu/mpu_check.zig");
 const NvicSource = @import("cpu/exception/nvic_source.zig").NvicSource;
 const QuietSource = @import("cpu/exception/quiet_source.zig").QuietSource;
-const DecodeCache = @import("cpu/decode_cache.zig").DecodeCache;
+const DecodeCache = @import("cpu/decode/cache.zig").DecodeCache;
 const BlockCache = @import("cpu/block_cache.zig").BlockCache;
 const code_lines = @import("cpu/code_lines.zig");
-const part = @import("part.zig");
+const part = @import("part/part.zig");
 const Second = @import("second_core.zig").Second;
-const sau = @import("../periph/sau.zig");
+const sau = @import("../periph/sau/sau.zig");
 const mpu = @import("../periph/mpu/mpu.zig");
 const fault_clear = @import("../periph/fault_clear.zig");
 const mpu_guard = @import("mpu_guard.zig");

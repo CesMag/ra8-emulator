@@ -7,7 +7,7 @@
 //! firmware write cannot change it. With C_DEBUGEN set, a write carrying
 //! DBGKEY may set C_HALT, which halts the core once the store retires, and
 //! C_STEP and C_MASKINTS. With C_STEP kept, the next resume runs one
-//! instruction and halts again. C_MASKINTS reads back, and src/chip/periph/nvic.zig reads it to hold back
+//! instruction and halts again. C_MASKINTS reads back, and src/chip/periph/nvic/nvic.zig reads it to hold back
 //! PendSV, SysTick and external interrupts (`masksInterrupts`)
 //! yet. C_HALT is not
 //! kept: the core only runs again after the debugger resumes it, and a

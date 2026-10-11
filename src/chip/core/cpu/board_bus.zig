@@ -11,7 +11,7 @@ const bus = @import("bus.zig");
 const GuestBus = @import("memory/guest_bus.zig").GuestBus;
 const registry = @import("../../periph/registry.zig");
 const memmap = @import("../memmap.zig");
-const sau = @import("../../periph/sau.zig");
+const sau = @import("../../periph/sau/sau.zig");
 const mpu = @import("../../periph/mpu/mpu.zig");
 const mpu_ns = @import("../../periph/mpu/ns.zig");
 /// Public so a test can build the latch without a root export.

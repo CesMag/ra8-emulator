@@ -1,13 +1,13 @@
 //! The board's SAU as the Zig core's attribution source (RA8EMU-352).
 //!
-//! The firmware programs the SAU the board keeps (src/chip/periph/sau.zig); this
+//! The firmware programs the SAU the board keeps (src/chip/periph/sau/sau.zig); this
 //! answers the core's two questions from it: which state a fetched address
 //! belongs to (SG, the INVEP check) and what TT reports for a target.
 //! The IDAU is the board's RA8 map when it gives one (RA8EMU-277, address
 //! bit 28 and SRAMSABARn); with none it is the empty IDAU, which leaves the
 //! SAU to decide, as it did before.
-const sau = @import("../../periph/sau.zig");
-const sau_attr = @import("../../periph/sau_attr.zig");
+const sau = @import("../../periph/sau/sau.zig");
+const sau_attr = @import("../../periph/sau/attribution.zig");
 const tt = @import("../tt.zig");
 const attribution = @import("attribution.zig");
 

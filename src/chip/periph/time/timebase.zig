@@ -7,7 +7,7 @@
 //! which loses under one nanosecond per change.
 //!
 //! Until the clock tree feeds the rate (RA8EMU-515), it is the part's CPU0
-//! ceiling, 1 GHz (core/part_clock.zig). Normal runs charge one cycle per
+//! ceiling, 1 GHz (core/part/clock.zig). Normal runs charge one cycle per
 //! instruction; the `--ms` boundary scales its fixed instruction cadence into
 //! cycles at the selected rate.
 pub const ns_per_s: u64 = 1_000_000_000;

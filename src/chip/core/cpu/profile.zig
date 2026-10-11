@@ -4,7 +4,7 @@
 //! MVE and the low-overhead branches. CPU1 is a Cortex-M33: Armv8.0-M
 //! Mainline with DSP and FPv5-SP only, so an Armv8.1-M encoding there is
 //! UNDEFINED and takes UsageFault UNDEFINSTR, as it would on silicon.
-//! src/chip/core/part.zig picks the profile for each CPU.
+//! src/chip/core/part/part.zig picks the profile for each CPU.
 
 /// What a decode group needs from the core before it may claim an encoding.
 pub const Feature = enum {

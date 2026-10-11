@@ -1,14 +1,14 @@
 //! Where the Zig core asks which security state an address belongs to
 //! (RA8EMU-357).
 //!
-//! The board builds one from src/chip/periph/sau_attr.zig, which combines the SAU
+//! The board builds one from src/chip/periph/sau/attribution.zig, which combines the SAU
 //! with the IDAU. A core with no source treats every address as Secure, the
 //! way it behaved before this seam existed, so nothing changes for a board
 //! that does not set one.
 //!
 //! The source answers for a Non-secure fetch: an exempt address takes the
 //! accessing state, so it should answer non_secure.
-const sau_attr = @import("../../periph/sau_attr.zig");
+const sau_attr = @import("../../periph/sau/attribution.zig");
 const tt = @import("../tt.zig");
 const Instr = @import("instr.zig").Instr;
 const sg = @import("ops/sg.zig");

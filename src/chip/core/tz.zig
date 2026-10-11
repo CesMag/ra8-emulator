@@ -24,7 +24,7 @@
 //!
 //! WHAT IS MODELLED INSTEAD. This emulator has one flat, fully accessible
 //! address space and no Secure and Non-Secure worlds to place an access in
-//! (the same call src/chip/periph/sau.zig records: the map is kept, attribution
+//! (the same call src/chip/periph/sau/sau.zig records: the map is kept, attribution
 //! is not enforced). In a single domain, entering the Non-Secure world *is*
 //! a branch. So the site is hooked, the branch is performed here, and the
 //! core never executes the BLXNS: it stays in Secure state, where every

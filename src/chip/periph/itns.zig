@@ -14,7 +14,7 @@
 //! its banked stack and masks) and the Non-secure RAZ/WI view both need the
 //! core's banked security state (RA8EMU-41).
 
-const nvic = @import("nvic.zig");
+const nvic = @import("nvic/nvic.zig");
 
 pub const base: u32 = 0xE000_E380;
 /// The last ITNS word the architecture defines.

@@ -47,5 +47,5 @@ test "the standing candidate can be the one that loses nothing" {
 }
 
 test {
-    _ = @import("nvic_banked_test.zig");
+    _ = @import("nvic/banked_test.zig");
 }

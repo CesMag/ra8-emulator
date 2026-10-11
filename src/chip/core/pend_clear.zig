@@ -10,7 +10,7 @@
 //! Three writers can. The controller clears it on entry, which is the
 //! architecture and is counted as an entry already. The model's own
 //! read-modify-writes of the register (the SysTick pend in
-//! src/chip/periph/clocks.zig, `clearPending` in src/chip/periph/nvic.zig) go through
+//! src/chip/periph/clocks.zig, `clearPending` in src/chip/periph/nvic/nvic.zig) go through
 //! the model and so cannot be seen from a store hook at all. And the
 //! FIRMWARE can, because against a plain-RAM PPB a store of a whole word is
 //! just a store: on silicon `PENDSVSET` is write-one-to-set and a zero in

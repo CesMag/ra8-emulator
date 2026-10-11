@@ -2,7 +2,7 @@
 //!
 //! The CPU model runs these instructions against its own SAU, which nothing
 //! programs: the board keeps the SAU the firmware writes in
-//! src/chip/periph/sau.zig, and the PPB the registers live in is plain RAM to the
+//! src/chip/periph/sau/sau.zig, and the PPB the registers live in is plain RAM to the
 //! CPU model. So its TT said every address was Secure, and
 //! cmse_check_address_range refused every Non-secure buffer a veneer was
 //! handed. This file builds the response word from the board's map instead;
@@ -13,8 +13,8 @@
 //! CPU model's MPU was never programmed either (the board keeps the table
 //! the firmware writes), so that is what its TT gave too. Taking
 //! R and RW from the board's MPU table is a later slice.
-const sau = @import("../periph/sau.zig");
-const sau_attr = @import("../periph/sau_attr.zig");
+const sau = @import("../periph/sau/sau.zig");
+const sau_attr = @import("../periph/sau/attribution.zig");
 
 /// Both halfwords, so the PC moves past it in one step.
 pub const width: u32 = 4;

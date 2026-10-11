@@ -175,7 +175,7 @@ pub const Board = struct {
     /// The code-MRAM frequency latches and the prefetch buffer. Keyed
     /// registers, so nothing lands here without the key the driver writes.
     memory_rates: mrms.Mrms = .{},
-    /// The MRAM ECC controls and program speed (src/chip/periph/mrms_ecc.zig).
+    /// The MRAM ECC controls and program speed (src/chip/periph/mrms/ecc.zig).
     memory_ecc: mrms.ecc.Ecc = .{},
     /// The SDRAM controller and SDCKOCR (src/chip/periph/sdramc.zig).
     sdram: sdramc.Sdramc = .{},

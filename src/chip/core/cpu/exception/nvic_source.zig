@@ -1,4 +1,4 @@
-//! The NVIC model (src/chip/periph/nvic.zig) as the Zig core's exception source.
+//! The NVIC model (src/chip/periph/nvic/nvic.zig) as the Zig core's exception source.
 //! The model reads ICSR, SHPR3, ISER/ISPR and IPR through the core's own
 //! bus; taking an exception clears its pending bit and sets its active bit,
 //! and a return clears the active bit again.
@@ -14,10 +14,10 @@
 //! (RA8EMU-465).
 const bus = @import("../bus.zig");
 const banked_mod = @import("../../banked.zig");
-const nvic_banked = @import("../../../periph/nvic_banked.zig");
+const nvic_banked = @import("../../../periph/nvic/banked.zig");
 const scs_alias = @import("../../../periph/scs_alias.zig");
-const nvic = @import("../../../periph/nvic.zig");
-const nvic_clear = @import("../../../periph/nvic_clear.zig");
+const nvic = @import("../../../periph/nvic/nvic.zig");
+const nvic_clear = @import("../../../periph/nvic/clear.zig");
 const Entry = @import("active.zig").Entry;
 const Source = @import("source.zig").Source;
 

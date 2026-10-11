@@ -10,8 +10,8 @@
 //! which reports any fault or unknown encoding exactly as before.
 const Instr = @import("instr.zig").Instr;
 const bus = @import("bus.zig");
-const decode = @import("decode.zig");
-const block = @import("block.zig");
+const decode = @import("decode/decode.zig");
+const block = @import("block/block.zig");
 const code_lines = @import("code_lines.zig");
 
 /// Direct-mapped by start address; a power of two.

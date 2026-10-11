@@ -1,6 +1,6 @@
 //! The Zig core's own disassembler (RA8EMU-17): decode with the core table,
 //! then dispatch to the matching instruction-group printer.
-const decode = @import("../decode.zig");
+const decode = @import("../decode/decode.zig");
 const Instr = @import("../instr.zig").Instr;
 const table = @import("table.zig");
 const vpst = @import("mve_vpst.zig");

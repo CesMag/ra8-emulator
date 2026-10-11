@@ -52,13 +52,13 @@ const fault = @import("fault.zig");
 const loaded_image = @import("loaded_image.zig");
 const memmap = @import("memmap.zig");
 const cadence = @import("cadence.zig");
-const sau = @import("../periph/sau.zig");
+const sau = @import("../periph/sau/sau.zig");
 const mpu = @import("../periph/mpu/mpu.zig");
 const mpu_guard = @import("mpu_guard.zig");
 const cpuid = @import("../periph/cpuid.zig");
 const scb = @import("../periph/scb.zig");
 const fault_clear = @import("../periph/fault_clear.zig");
-const nvic = @import("../periph/nvic.zig");
+const nvic = @import("../periph/nvic/nvic.zig");
 const clocks = @import("../periph/clocks.zig");
 const second_wait = @import("second_wait.zig");
 

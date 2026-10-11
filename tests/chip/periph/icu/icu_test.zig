@@ -112,7 +112,7 @@ test "a still-latched line is pended again at the boundary" {
 
     unit.write(icu.slotAddress(1), 4, 0x123);
     try unit.raise(&core, 0x123);
-    // Entry clears ISPR, the way src/chip/periph/nvic.zig does when it vectors in.
+    // Entry clears ISPR, the way src/chip/periph/nvic/nvic.zig does when it vectors in.
     try core.writeWord(memmap.nvic.ispr, 0);
 
     try unit.repend(&core);

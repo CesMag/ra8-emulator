@@ -276,7 +276,7 @@ fn slotAt(address: u32) ?usize {
 }
 
 /// Pend an ICU line in the NVIC. The PPB is plain RAM in this emulator, so the
-/// ICU sets the ISPR bit and src/chip/periph/nvic.zig picks it up at the same chunk
+/// ICU sets the ISPR bit and src/chip/periph/nvic/nvic.zig picks it up at the same chunk
 /// boundary.
 ///
 /// The pend is unconditional, which is the one place this diverges from dev.

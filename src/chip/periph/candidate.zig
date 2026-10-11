@@ -5,7 +5,7 @@
 //!
 //! This sits in its own file because the pick is no longer only a choice:
 //! src/chip/periph/passed.zig wants the candidate that LOST, and asking
-//! src/chip/periph/nvic.zig for the type would put the two files in a cycle.
+//! src/chip/periph/nvic/nvic.zig for the type would put the two files in a cycle.
 
 /// One exception that could be taken right now.
 pub const Candidate = struct {

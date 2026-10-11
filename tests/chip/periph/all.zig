@@ -131,12 +131,12 @@ test {
     _ = @import("mram/mram_test.zig");
     _ = @import("mram/window_test.zig");
     _ = @import("mstp/drops_test.zig");
-    _ = @import("mrms_test.zig");
-    _ = @import("mrms_ecc_test.zig");
+    _ = @import("mrms/mrms_test.zig");
+    _ = @import("mrms/ecc_test.zig");
     _ = @import("sdramc_test.zig");
     _ = @import("mstp/mstp_test.zig");
     _ = @import("npu/all_test.zig");
-    _ = @import("nvic_test.zig");
+    _ = @import("nvic/nvic_test.zig");
     _ = @import("candidate_test.zig");
     _ = @import("held_test.zig");
     _ = @import("passed_test.zig");
@@ -170,8 +170,8 @@ test {
     _ = @import("pfs/protect_test.zig");
     _ = @import("pfs/route_test.zig");
     _ = @import("pscu_test.zig");
-    _ = @import("cpscu_test.zig");
-    _ = @import("cpscu_sram_test.zig");
+    _ = @import("cpscu/cpscu_test.zig");
+    _ = @import("cpscu/sram_test.zig");
     _ = @import("poeg_test.zig");
     _ = @import("oscsf_test.zig");
     _ = @import("prcr_test.zig");
@@ -207,8 +207,8 @@ test {
     _ = @import("debug_monitor_test.zig");
     _ = @import("sci/sci_test.zig");
     _ = @import("sci/tap_test.zig");
-    _ = @import("sau_test.zig");
-    _ = @import("sau_attr_test.zig");
+    _ = @import("sau/sau_test.zig");
+    _ = @import("sau/attribution_test.zig");
     _ = @import("scs_alias_test.zig");
     _ = @import("scb_bank_test.zig");
     _ = @import("sci/line_test.zig");

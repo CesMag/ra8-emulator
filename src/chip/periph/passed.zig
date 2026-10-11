@@ -1,6 +1,6 @@
 //! Pends that were ready, lost the pick, and stayed pending.
 //!
-//! WHY THIS EXISTS. src/chip/periph/nvic.zig's `pick` walks everything pending and
+//! WHY THIS EXISTS. src/chip/periph/nvic/nvic.zig's `pick` walks everything pending and
 //! returns the most urgent one. The others are dropped on the floor: no
 //! counter moved, no line printed, and from the report they were never ready
 //! at all. src/chip/periph/held.zig does NOT cover them. `held.outranked` is a

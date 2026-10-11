@@ -87,7 +87,7 @@ pub const SysTicks = enum {
     one,
     two,
 
-    /// The variant for a part's timer count, as src/chip/core/part.zig gives it.
+    /// The variant for a part's timer count, as src/chip/core/part/part.zig gives it.
     pub fn of(count: u2) SysTicks {
         return if (count >= 2) .two else .one;
     }

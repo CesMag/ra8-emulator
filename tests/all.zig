@@ -33,8 +33,8 @@ test {
     _ = @import("chip/core/cpu/cortex_test.zig");
     _ = @import("chip/core/cpu/memory/all_test.zig");
     _ = @import("chip/core/cpu/cpu_test.zig");
-    _ = @import("chip/core/cpu/decode_test.zig");
-    _ = @import("chip/core/cpu/decode_cache_test.zig");
+    _ = @import("chip/core/cpu/decode/decode_test.zig");
+    _ = @import("chip/core/cpu/decode/cache_test.zig");
     _ = @import("chip/core/cpu/text/all_test.zig");
     _ = @import("chip/core/cpu/instr_test.zig");
     _ = @import("chip/core/cpu/op_test.zig");
@@ -106,9 +106,9 @@ test {
     _ = @import("chip/core/memmap_test.zig");
     _ = @import("board/sizing/sweep_test.zig");
     _ = @import("board/image/pages_test.zig");
-    _ = @import("chip/core/part_test.zig");
-    _ = @import("chip/core/part_map_test.zig");
-    _ = @import("chip/core/part_clock_test.zig");
+    _ = @import("chip/core/part/part_test.zig");
+    _ = @import("chip/core/part/map_test.zig");
+    _ = @import("chip/core/part/clock_test.zig");
     _ = @import("chip/core/rate_test.zig");
     _ = @import("board/image/ra8app_test.zig");
     _ = @import("chip/core/module_place_test.zig");

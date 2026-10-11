@@ -13,7 +13,7 @@
 //! a copy, so the caller still owns the thing and can ask it afterwards
 //! what happened during the run.
 const clocks = @import("../periph/clocks.zig");
-const nvic = @import("../periph/nvic.zig");
+const nvic = @import("../periph/nvic/nvic.zig");
 const mpu_guard = @import("mpu_guard.zig");
 const reboot = @import("reboot.zig");
 const stop = @import("stop.zig");

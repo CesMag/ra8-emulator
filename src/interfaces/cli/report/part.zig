@@ -2,7 +2,7 @@
 //!
 //! `--part ra8p1` used to change only whether the NPU window answers, and a
 //! run said nothing about which part it modelled. This line names the part
-//! and the geometry src/chip/core/part_map.zig cites for it. It prints only off
+//! and the geometry src/chip/core/part/map.zig cites for it. It prints only off
 //! the default part, so an RA8D2 run's report stays byte identical to the
 //! one every corpus expectation was recorded against.
 const std = @import("std");

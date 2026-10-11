@@ -10,7 +10,7 @@
 //! ranges Non-secure in the SAU (HUM p3267).
 //!
 //! SRAM IS SPLIT AT RUN TIME by SRAMSABAR0..3 (HUM 58.2.1, p3527; modelled
-//! in cpscu_sram.zig). Each word holds an offset from the SRAM base: in its
+//! in cpscu/sram.zig). Each word holds an offset from the SRAM base: in its
 //! bank, below the boundary is Secure and at or above it is Non-secure. So
 //! the Non-secure SRAM alias is Non-secure only above the boundary of the
 //! bank it falls in.
@@ -25,9 +25,9 @@
 //! external RAM and device space to 0xDFFF_FFFF; the exempt space from
 //! 0xE000_0000 is region 0.
 
-const sau = @import("sau.zig");
-const sau_attr = @import("sau_attr.zig");
-const cpscu_sram = @import("cpscu_sram.zig");
+const sau = @import("sau/sau.zig");
+const sau_attr = @import("sau/attribution.zig");
+const cpscu_sram = @import("cpscu/sram.zig");
 
 pub const alias_bit: u32 = 1 << 28;
 pub const sram_ns_base: u32 = 0x3200_0000;

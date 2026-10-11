@@ -14,7 +14,7 @@
 const Cpu = @import("cpu.zig").Cpu;
 const regs_mod = @import("regs.zig");
 const it_state = @import("it_state.zig");
-const block = @import("block.zig");
+const block = @import("block/block.zig");
 const block_cache = @import("block_cache.zig");
 
 /// The narrow NOP hint.

@@ -62,7 +62,7 @@ pub const Region = struct {
 pub const itcm_base: u32 = 0x0000_0000;
 pub const itcm_end: u32 = itcm_base + 0x0001_0000;
 
-/// The 1 MB of code MRAM. src/chip/core/part_map.zig gives its size for both
+/// The 1 MB of code MRAM. src/chip/core/part/map.zig gives its size for both
 /// parts. The board maps the whole array, so a read anywhere in it lands,
 /// as it does on silicon. A Secure boot that copies a fixed-size window out
 /// of it (secure_boot_ns_hil copies 64 KB of the Non-Secure image) reads
@@ -233,7 +233,7 @@ pub const syst = struct {
 
 /// The NVIC's register file. Set and clear registers are separate on
 /// hardware, and against a plain-RAM PPB both are just words:
-/// src/chip/periph/nvic.zig folds the clear side into the set side at the
+/// src/chip/periph/nvic/nvic.zig folds the clear side into the set side at the
 /// chunk boundary.
 pub const nvic = struct {
     pub const iser: u32 = 0xE000_E100;

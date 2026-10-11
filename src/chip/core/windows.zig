@@ -2,7 +2,7 @@
 //! bus (RA8EMU-1012): its SAU, its MPU table and guard, its AIRCR and its
 //! owed fault clears. A chip type, so CPU1's bring-up names it without
 //! importing the board that primes it.
-const sau = @import("../periph/sau.zig");
+const sau = @import("../periph/sau/sau.zig");
 const mpu = @import("../periph/mpu/mpu.zig");
 const mpu_guard = @import("mpu_guard.zig");
 const scb = @import("../periph/scb.zig");

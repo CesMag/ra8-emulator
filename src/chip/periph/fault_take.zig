@@ -9,7 +9,7 @@ const memmap = @import("../core/memmap.zig");
 const status = @import("fault_status.zig");
 const fault_route = @import("fault_route.zig");
 const exec_priority = @import("exec_priority.zig");
-const nvic = @import("nvic.zig");
+const nvic = @import("nvic/nvic.zig");
 
 /// Route `fault`, raised by the instruction at `pc`, and enter its handler.
 pub fn take(core: anytype, controller: *nvic.Nvic, fault: status.Fault, pc: u32) !fault_route.Taken {
