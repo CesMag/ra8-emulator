@@ -12,6 +12,7 @@ const board_rtc = @import("ra8_session").board_rtc;
 const session_plug = @import("ra8_session").board_plug;
 const session_api = @import("ra8_session").api;
 const region_map = @import("ra8_session").region_map;
+const symbols = @import("ra8_session").symbols;
 const region_map_json = @import("ra8_session").region_map_json;
 const region_map_text = @import("ra8_session").region_map_text;
 const source_spec = @import("ra8_host").camera.source_spec;
@@ -43,7 +44,7 @@ pub const Served = struct {
         self.* = .{ .owner = owner, .context = undefined, .rx = rx, .tx = tx, .gpa = allocator, .io = io };
         self.context = .{ .session = self.owner.session(), .scratch = scratch, .state = self.owner.stateFiles(), .gpa = allocator };
         self.context.listing = .{ .context = self.owner.plugs(), .listFn = listParts };
-        self.context.mapping = .{ .context = &self.owner, .mapFn = mapImage, .stackFn = stackOf };
+        self.context.mapping = .{ .context = &self.owner, .mapFn = mapImage, .stackFn = stackOf, .imageFn = imageOf };
         self.context.clock = board_rtc.clock(self.owner.board());
         self.context.camera = .{ .context = self, .setFn = setCamera };
     }
@@ -89,4 +90,10 @@ fn stackOf(context: *anyopaque, core: usize) ?region_map.Stack {
     const which: session_api.Core = if (core == 0) .cpu0 else .cpu1;
     const image = owner.loadedImage(which) orelse return null;
     return region_map.stackOf(image, &region_map.ek_ra8d2);
+}
+
+/// A core's last loaded image, for the backtrace's names and lines.
+fn imageOf(context: *anyopaque, core: usize) ?symbols.Image {
+    const owner: *harness.Harness = @ptrCast(@alignCast(context));
+    return owner.loadedImage(if (core == 0) .cpu0 else .cpu1);
 }

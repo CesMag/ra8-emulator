@@ -34,6 +34,7 @@ const shell_plug = @import("shell_plug.zig");
 const shell_camera_file = @import("shell_camera_file.zig");
 const shell_startup = @import("shell_startup.zig");
 const shell_registers = @import("shell_registers.zig");
+const shell_stack = @import("shell_stack.zig");
 const shell_memory = @import("shell_memory.zig");
 const shell_time = @import("shell_time.zig");
 const wall_clock = @import("wall_clock.zig");
@@ -76,6 +77,8 @@ pub const Shell = struct {
     registers: ?*shell_registers.Pair = null,
     memory: ?*shell_memory.Pair = null,
     code: ?*shell_memory.Pair = null,
+    /// The call stack leaves, walked again after a load and every stop.
+    stack: ?*shell_stack.Pair = null,
     /// The time bar's models: the run, the speed field and the clock.
     time: ?*shell_time.Time = null,
     /// The session when it is served in this process; null for a remote one.
@@ -255,6 +258,7 @@ pub const Shell = struct {
         const time = self.time orelse return;
         if (!time.settle(&self.status)) return;
         if (self.registers) |registers| registers.refresh();
+        if (self.stack) |stack| stack.refresh();
     }
 
     /// Feed what the session sent into the status bar model and the leaves.
@@ -272,6 +276,7 @@ pub const Shell = struct {
         if (self.registers) |registers| registers.attach(link);
         if (self.memory) |memory| memory.attach(link);
         if (self.code) |code| code.attach(link);
+        if (self.stack) |stack| stack.attach(link);
         self.drained = false;
         var taken: usize = 0;
         while (taken < max_arrivals) : (taken += 1) {
@@ -303,10 +308,14 @@ pub const Shell = struct {
         self.settle();
     }
 
-    /// The registers, memory and code leaves: all start over after a load,
+    /// The stack, registers, memory and code leaves: all start over after a load,
     /// then take the arrival, and memory and code follow each core's fresh
     /// registers.
     fn observeCore(self: *Shell, loaded: bool, arrival: session_link.Arrival) void {
+        if (self.stack) |stack| {
+            if (loaded) stack.reload();
+            stack.observe(arrival);
+        }
         const registers = self.registers orelse return;
         if (loaded) registers.reload();
         registers.observe(arrival);

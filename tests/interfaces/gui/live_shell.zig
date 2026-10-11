@@ -27,6 +27,7 @@ pub const Live = struct {
     clock: Manual,
     time: gui_app.shell_time.Time,
     registers: gui_app.shell_registers.Pair,
+    stack: gui_app.shell_stack.Pair,
     board: gui_app.shell_board.Board,
     pointer: gui_app.shell_board_input.Pointer,
     panes: gui_app.shell_panes.Panes,
@@ -46,14 +47,16 @@ pub const Live = struct {
         self.time = .{};
         self.time.field.applied = milli;
         self.registers = .{};
+        self.stack = .{};
         self.board = .init(gpa);
         self.pointer = .{};
-        self.panes = .{ .board = &self.board, .board_input = &self.pointer };
+        self.panes = .{ .board = &self.board, .board_input = &self.pointer, .stack = &self.stack };
         self.shell.link = &self.link;
         self.shell.server = gui_app.shell_main.served(&self.session);
         self.shell.clock = self.clock.clock();
         self.shell.time = &self.time;
         self.shell.registers = &self.registers;
+        self.shell.stack = &self.stack;
         self.shell.board = &self.board;
         self.shell.board_input = &self.pointer;
         self.shell.painter = self.panes.painter();
@@ -127,6 +130,17 @@ pub const Live = struct {
     /// Board time at the end of the last slice.
     pub fn boardTime(self: *const Live) u64 {
         return self.time.run.board_ns.?;
+    }
+
+    /// Step until cpu0's stack leaf shows a chain whose innermost frame is
+    /// at `pc` with no ask due or in flight, for at most thirty frames.
+    pub fn untilStack(self: *Live, pc_at: u32) !void {
+        const stack = &self.stack.cores[0];
+        for (0..30) |_| {
+            if (stack.now) |*now| if (now.count != 0 and now.frames[0].pc == pc_at and !stack.want and stack.asked == null) return;
+            try self.step();
+        }
+        return error.NeverSettled;
     }
 
     /// CPU0's PC as the registers leaf shows it.

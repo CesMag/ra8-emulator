@@ -57,6 +57,7 @@ pub fn kindName(kind: pane_layout.Kind) []const u8 {
         .registers => "Registers",
         .memory => "Memory",
         .disasm => "Disassembly",
+        .stack => "Call stack",
     };
 }
 

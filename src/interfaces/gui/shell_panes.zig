@@ -35,6 +35,8 @@ const shell_memory = @import("shell_memory.zig");
 const memory_pane = @import("ui/memory_pane.zig");
 const disasm_pane = @import("ui/disasm_pane.zig");
 const disasm_capture = @import("disasm_capture.zig");
+const shell_stack = @import("shell_stack.zig");
+const stack_pane = @import("ui/stack_pane.zig");
 
 const Rect = draw_list.Rect;
 
@@ -49,6 +51,7 @@ pub fn waitingFor(kind: pane_layout.Kind) ?[]const u8 {
         .registers => "waiting for the registers",
         .memory => "waiting for memory",
         .disasm => "waiting for the code",
+        .stack => "waiting for the call stack",
     };
 }
 
@@ -68,6 +71,7 @@ pub const Panes = struct {
     memory: ?*const shell_memory.Pair = null,
     /// The memory read from each core's PC, for the disassembly leaves.
     code: ?*const shell_memory.Pair = null,
+    stack: ?*const shell_stack.Pair = null,
 
     pub fn painter(self: *Panes) shell_frame.Painter {
         return .{ .context = self, .paint = paint };
@@ -113,6 +117,9 @@ fn paint(context: *anyopaque, list: *draw_list.DrawList, pane: pane_layout.Pane,
         const model = pair.of(pane.core);
         if (model.now) |*read| return drawCode(list, body, model.from, read);
     };
+    if (pane.kind == .stack) if (self.stack) |pair| {
+        if (pair.of(pane.core).now) |*now| return stack_pane.draw(list, body, now, 0);
+    };
     if (pane.kind == .board) if (self.board) |board| {
         const pressed = if (self.board_input) |pointer| pointer.press.held else null;
         if (!board_pane.Layout.of(body).board.empty()) return board_pane.draw(list, body, board.view(pressed));
@@ -153,6 +160,9 @@ fn noteFor(self: *const Panes, pane: pane_layout.Pane) ?[]const u8 {
     };
     if (pane.kind == .disasm) if (self.code) |pair| {
         if (pair.of(pane.core).refused) return "the session would not read the code";
+    };
+    if (pane.kind == .stack) if (self.stack) |pair| {
+        if (pair.of(pane.core).note()) |note| return note;
     };
     return waitingFor(pane.kind);
 }

@@ -15,7 +15,7 @@ pub const gutter: i32 = 4;
 pub const min_size: i32 = 48;
 
 pub const Core = enum { cpu0, cpu1 };
-pub const Kind = enum { empty, board, console, camera, devices, registers, memory, disasm };
+pub const Kind = enum { empty, board, console, camera, devices, registers, memory, disasm, stack };
 /// `across` places the two sides left and right; `down` stacks them.
 pub const Axis = enum { across, down };
 

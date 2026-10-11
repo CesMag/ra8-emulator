@@ -4,8 +4,8 @@ const rpc = @import("ra8_rpc_wire");
 pub const protocol_version: u16 = 1;
 /// Bit 0: LCD dirty rectangles. Bit 1: plug, unplug and fault methods.
 /// Bit 2: advance. Bit 3: snapshot and restore. Bit 6: stack. Bit 7: rtc.
-/// Bit 8: input.
-pub const capabilities: u32 = 0x0000_01FF;
+/// Bit 8: input. Bit 9: backtrace.
+pub const capabilities: u32 = 0x0000_03FF;
 pub const max_payload = 1_048_576;
 
 /// Refusal codes this message set adds above the library's own.
@@ -51,6 +51,7 @@ pub const Method = enum(u16) {
     stack = 0x011d,
     rtc = 0x011e,
     input = 0x011f,
+    backtrace = 0x0120,
 };
 pub const Topic = enum(u16) { stop = 0x0100, uart = 0x0101, speed = 0x0102, lcd_dirty = 0x0103, trace = 0x0104, session = 0x0105 };
 pub const Core = enum(u8) { cpu0, cpu1 };
@@ -160,6 +161,35 @@ pub const StackReport = struct {
     size: u32,
     overflow: u32,
 };
+/// A core's call chain, innermost first (RA8EMU-1125): `count` frames in
+/// `frames`, each a StackFrame as backtrace_wire.zig packs it.
+pub const Backtrace = struct {
+    core: Core,
+    count: u8,
+    frames: []const u8,
+    pub const max_len = .{ .frames = backtrace_bytes };
+};
+/// One frame of a Backtrace. `interrupted` is 1 when an exception sits
+/// between this frame and the one inside it; `line` is 0 and `file` empty
+/// where the line table does not cover the frame, and `name` empty where
+/// no symbol does.
+pub const StackFrame = struct {
+    pc: u32,
+    interrupted: u8,
+    offset: u32,
+    line: u32,
+    name: []const u8,
+    file: []const u8,
+    pub const max_len = .{ .name = frame_name_cap, .file = frame_file_cap };
+};
+/// The most frames a Backtrace carries, and the characters a frame's
+/// function and file name keep.
+pub const backtrace_frames = 32;
+pub const frame_name_cap = 40;
+pub const frame_file_cap = 32;
+/// One frame's widest encoding plus the length byte before it.
+pub const frame_bytes = 1 + 4 + 1 + 4 + 4 + 4 + frame_name_cap + 4 + frame_file_cap;
+pub const backtrace_bytes = backtrace_frames * frame_bytes;
 /// The board's RTC calendar (RA8EMU-809). With `valid` 0 the counters hold
 /// no date and every date field is 0; `running` is RCR2.START.
 pub const RtcReport = struct {

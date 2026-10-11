@@ -20,5 +20,7 @@ pub const session_rpc = @import("session_rpc.zig");
 pub const session_rtc = @import("session_rtc.zig");
 pub const session_server = @import("session_server.zig");
 pub const session_stack = @import("session_stack.zig");
+pub const session_backtrace = @import("session_backtrace.zig");
+pub const backtrace_wire = @import("backtrace_wire.zig");
 pub const socket_transport = @import("socket_transport.zig");
 pub const stdio_transport = @import("stdio_transport.zig");

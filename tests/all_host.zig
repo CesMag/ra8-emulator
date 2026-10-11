@@ -120,6 +120,8 @@ test {
     _ = @import("interfaces/gui/ui/shell_field_test.zig");
     _ = @import("interfaces/gui/shell_plug_test.zig");
     _ = @import("interfaces/gui/shell_registers_test.zig");
+    _ = @import("interfaces/gui/shell_stack_test.zig");
+    _ = @import("interfaces/gui/shell_stack_live_test.zig");
     _ = @import("interfaces/gui/shell_memory_test.zig");
     _ = @import("interfaces/gui/shell_live_test.zig");
     _ = @import("interfaces/gui/shell_camera_test.zig");
@@ -164,6 +166,8 @@ test {
     _ = @import("interfaces/rpc/session_advance_test.zig");
     _ = @import("interfaces/rpc/session_files_test.zig");
     _ = @import("interfaces/rpc/session_stack_test.zig");
+    _ = @import("interfaces/rpc/session_backtrace_test.zig");
+    _ = @import("interfaces/rpc/backtrace_wire_test.zig");
     _ = @import("interfaces/rpc/session_rtc_test.zig");
     _ = @import("interfaces/rpc/session_input_test.zig");
     _ = @import("interfaces/rpc/session_event_feed_test.zig");

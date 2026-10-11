@@ -1,11 +1,10 @@
-//! Covers src/interfaces/gui/ui/stack_pane.zig (RA8EMU-744) and the capture
-//! file that fills it, src/interfaces/gui/stack_capture.zig (RA8EMU-1079),
-//! on the uart_irq_echo fixture,
-//! the one image with .debug_frame, .debug_line and .symtab: a core stopped
-//! inside ra8_sci_init walks out through its callers with names and lines,
-//! a capture with no image still has the pcs, a click maps to its frame, a
-//! pane too narrow draws nothing, and the stop rasterises to a pinned
-//! golden frame.
+//! Covers src/interfaces/gui/ui/stack_pane.zig (RA8EMU-744) on the
+//! uart_irq_echo fixture, the one image with .debug_frame, .debug_line and
+//! .symtab, its snapshot filled the way the shell fills it: the session's
+//! backtrace answer (RA8EMU-1125) unpacked by gui/shell_stack.zig. The
+//! columns line up, a click maps to its frame, a pane too narrow draws
+//! nothing, and the stop rasterises to a pinned golden frame. The walk
+//! itself is tested in tests/interfaces/rpc/session_backtrace_test.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
@@ -14,7 +13,8 @@ const draw_list = ra8.render.draw_list;
 const raster = ra8.render.raster;
 const font = ra8.render.font;
 const pane = gui_app.stack_pane;
-const capture = gui_app.stack_capture;
+const server = ra8.rpc.session_server;
+const proto = ra8.rpc.session_rpc;
 
 const Rect = draw_list.Rect;
 /// Room for 64 characters past the pc and six rows.
@@ -35,6 +35,26 @@ fn stopped() !ra8.session.harness.Harness {
     _ = try session.run(.cpu0, .cont);
     try std.testing.expectEqual(sci_init, try session.register(.cpu0, .pc));
     return opened;
+}
+
+fn imageOf(context: *anyopaque, core: usize) ?ra8.session.symbols.Image {
+    const harness: *ra8.session.harness.Harness = @ptrCast(@alignCast(context));
+    return harness.loadedImage(if (core == 0) .cpu0 else .cpu1);
+}
+
+fn noMap(_: *anyopaque, _: usize, _: bool, _: []u8) anyerror![]const u8 {
+    return error.NoImage;
+}
+
+/// cpu0's chain as the shell's stack leaf would show it.
+fn walk(opened: *ra8.session.harness.Harness) !pane.Snapshot {
+    var scratch: [proto.backtrace_bytes]u8 = undefined;
+    var context: server.Context = .{ .session = opened.session(), .scratch = &scratch };
+    context.mapping = .{ .context = opened, .mapFn = noMap, .imageFn = imageOf };
+    return switch (ra8.rpc.session_backtrace.backtrace(&context, .{ .core = .cpu0 })) {
+        .ok => |chain| gui_app.shell_stack.unpack(chain),
+        .err => error.Refused,
+    };
 }
 
 const Scene = struct {
@@ -70,43 +90,6 @@ test "the gutter, number, pc and function columns line up" {
     try std.testing.expectEqual(pane.pad + 2 * pane.row_h, pane.rowRect(area, 2).y);
 }
 
-test "a stop inside ra8_sci_init walks out through its callers with lines" {
-    var opened = try stopped();
-    defer opened.deinit();
-    const snapshot = try capture.capture(opened.session(), .cpu0, opened.image());
-    try std.testing.expectEqual(@as(usize, 4), snapshot.count);
-    const top = &snapshot.frames[0];
-    try std.testing.expectEqual(sci_init, top.pc);
-    try std.testing.expectEqualStrings("ra8_sci_init", top.name());
-    try std.testing.expectEqual(@as(u32, 0), top.offset);
-    for (snapshot.frames[0..snapshot.count]) |*frame| {
-        try std.testing.expect(frame.name_len != 0);
-        try std.testing.expect(!frame.interrupted);
-    }
-    try std.testing.expectEqualStrings("ra8_sci.c", top.file());
-    try std.testing.expectEqual(@as(u32, 411), top.line);
-    const callers = [_][]const u8{ "uart_irq_setup_or_halt", "main", "Reset_Handler" };
-    const lines = [_]u32{ 275, 299, 529 };
-    for (callers, lines, snapshot.frames[1..4]) |called, line, *frame| {
-        try std.testing.expectEqualStrings(called, frame.name());
-        try std.testing.expectEqual(line, frame.line);
-        try std.testing.expect(frame.offset != 0);
-    }
-}
-
-test "with no image the frames carry only their pcs" {
-    var opened = try stopped();
-    defer opened.deinit();
-    const named = try capture.capture(opened.session(), .cpu0, opened.image());
-    const bare = try capture.capture(opened.session(), .cpu0, null);
-    try std.testing.expect(bare.count >= 1);
-    try std.testing.expectEqual(named.frames[0].pc, bare.frames[0].pc);
-    for (bare.frames[0..bare.count]) |*frame| {
-        try std.testing.expectEqual(@as(usize, 0), frame.name_len);
-        try std.testing.expectEqual(@as(u32, 0), frame.line);
-    }
-}
-
 test "a click picks the frame on its row and nothing past the last" {
     var snapshot: pane.Snapshot = .{ .count = 3 };
     try std.testing.expectEqual(@as(?usize, 0), pane.frameAt(area, &snapshot, pane.pad));
@@ -126,7 +109,7 @@ test "a pane too narrow draws nothing" {
 test "the stop rasterises to the pinned golden frame" {
     var opened = try stopped();
     defer opened.deinit();
-    const snapshot = try capture.capture(opened.session(), .cpu0, opened.image());
+    const snapshot = try walk(&opened);
     var scene = try Scene.init();
     defer scene.deinit();
     try scene.render(&snapshot, 1);

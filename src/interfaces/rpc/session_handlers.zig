@@ -26,6 +26,9 @@ pub const Mapping = struct {
     mapFn: *const fn (*anyopaque, usize, bool, []u8) anyerror![]const u8,
     /// The main stack reservation of a core's last loaded image (RA8EMU-816).
     stackFn: ?*const fn (*anyopaque, usize) ?region_map.Stack = null,
+    /// A core's last loaded image, for the backtrace's names and lines
+    /// (RA8EMU-1125).
+    imageFn: ?*const fn (*anyopaque, usize) ?@import("ra8_session").symbols.Image = null,
 };
 
 pub const Listing = struct {

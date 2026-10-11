@@ -7,7 +7,7 @@ const pane_layout = gui_app.pane_layout;
 const frame = gui_app.shell_frame;
 const titles = gui_app.shell_titles;
 
-test "the kinds cycle from empty through disassembly and back to empty" {
+test "the kinds cycle from empty through the call stack and back to empty" {
     try std.testing.expectEqual(pane_layout.Kind.board, titles.nextKind(.empty));
     try std.testing.expectEqual(pane_layout.Kind.console, titles.nextKind(.board));
     try std.testing.expectEqual(pane_layout.Kind.camera, titles.nextKind(.console));
@@ -15,7 +15,8 @@ test "the kinds cycle from empty through disassembly and back to empty" {
     try std.testing.expectEqual(pane_layout.Kind.registers, titles.nextKind(.devices));
     try std.testing.expectEqual(pane_layout.Kind.memory, titles.nextKind(.registers));
     try std.testing.expectEqual(pane_layout.Kind.disasm, titles.nextKind(.memory));
-    try std.testing.expectEqual(pane_layout.Kind.empty, titles.nextKind(.disasm));
+    try std.testing.expectEqual(pane_layout.Kind.stack, titles.nextKind(.disasm));
+    try std.testing.expectEqual(pane_layout.Kind.empty, titles.nextKind(.stack));
 }
 
 test "a press on a title steps that leaf's kind and keeps its core" {

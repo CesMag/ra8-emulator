@@ -5,8 +5,9 @@
 //! it. The innermost frame is amber; the shell's selected frame sits on a
 //! band. A frame an exception interrupted carries a muted '~' in its gutter.
 //!
-//! gui/stack_capture.zig copies names into the snapshot, so `draw` holds no
-//! slice into the image and the shell can keep a snapshot past a reload.
+//! The session walks the chain (rpc/session_backtrace.zig) and
+//! gui/shell_stack.zig copies names into the snapshot, so `draw` holds no
+//! slice into the link's buffer and the shell keeps a snapshot past a reload.
 //! The pane never imports the session.
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
@@ -23,8 +24,8 @@ pub const band = colors.band;
 pub const top_ink = colors.highlight;
 pub const pad: i32 = 4;
 pub const row_h: i32 = @as(i32, @intCast(font.cell_h)) + 4;
-/// The most frames a backtrace walks; gui/stack_capture.zig checks it
-/// against the unwinder's limit at comptime.
+/// The most frames a backtrace walks; gui/shell_stack.zig checks it
+/// against the wire's limit at comptime.
 pub const max_frames: usize = 32;
 /// Characters a function name and a file name keep.
 pub const name_cap: usize = 40;
