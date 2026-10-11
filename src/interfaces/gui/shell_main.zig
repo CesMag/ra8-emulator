@@ -197,6 +197,8 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     var faults: shell_fault.Faults = .{};
     shell.faults = &faults;
     var camera: shell_camera.Camera = .{};
+    // The project is the directory ra8_gui was started in (RA8EMU-1124).
+    camera.kept = .begin(io, std.Io.Dir.cwd(), &camera.panel);
     if (args.camera) |spec| shell_camera.start(&camera, spec);
     shell.camera = &camera;
     shell.startup = startup;

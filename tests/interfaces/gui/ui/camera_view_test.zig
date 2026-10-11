@@ -109,6 +109,50 @@ test "the dialog row does nothing while closed and clicks outside are not taken"
     try std.testing.expect(!view.click(&panel, layout, 250, 120));
 }
 
+test "while Always stands its button shows, whole and clear of the dialog's three" {
+    var plain = try render(.{});
+    defer plain.deinit(std.testing.allocator);
+    const at = layout.withdraw();
+    try std.testing.expectEqual(view.background, pixel(&plain, at));
+    var standing = try render(.{ .always = true });
+    defer standing.deinit(std.testing.allocator);
+    try std.testing.expectEqual(view.withdraw_color, pixel(&standing, at));
+    try std.testing.expect(inked(&standing, at, view.inkOn(view.withdraw_color)) > 40);
+    try std.testing.expect(ra8.render.font.textWidth(view.withdraw_label.len) <= at.w - 2);
+    for (std.enums.values(gui_app.camera_panel.Answer)) |reply| {
+        const answer = layout.dialog(reply);
+        try std.testing.expect(at.x >= answer.x + answer.w);
+        try std.testing.expectEqual(answer.y, at.y);
+    }
+    const area = layout.area();
+    try std.testing.expect(at.x + at.w <= area.x + area.w and at.y + at.h <= area.y + area.h);
+}
+
+test "a click on the button takes Always back, and only while it stands" {
+    var panel = Panel{};
+    const c = centre(layout.withdraw());
+    try std.testing.expect(view.click(&panel, layout, c[0], c[1]));
+    try std.testing.expect(!panel.always);
+    panel.pick(.webcam);
+    panel.answer(.always);
+    try std.testing.expect(view.click(&panel, layout, c[0], c[1]));
+    try std.testing.expect(!panel.always);
+    try std.testing.expect(panel.cameraOn());
+    panel.pick(.gradient);
+    panel.pick(.webcam);
+    try std.testing.expect(panel.asking);
+}
+
+test "a second click where Always was answered does not take it back" {
+    var panel = Panel{};
+    panel.pick(.webcam);
+    const c = centre(layout.dialog(.always));
+    try std.testing.expect(view.click(&panel, layout, c[0], c[1]));
+    try std.testing.expect(view.click(&panel, layout, c[0], c[1]));
+    try std.testing.expect(panel.always);
+    try std.testing.expect(panel.cameraOn());
+}
+
 test "every source and dialog button carries a label in ink that reads on it" {
     var frame = try render(.{ .asking = true });
     defer frame.deinit(std.testing.allocator);

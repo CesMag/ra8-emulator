@@ -64,6 +64,21 @@ test "always skips the dialog for the rest of the run" {
     try std.testing.expect(panel.cameraOn());
 }
 
+test "always withdrawn asks again at the next pick and leaves the source alone" {
+    var panel = Panel{};
+    panel.pick(.webcam);
+    panel.answer(.always);
+    const changes = panel.changes;
+    panel.withdraw();
+    try std.testing.expect(!panel.always);
+    try std.testing.expect(panel.cameraOn());
+    try std.testing.expectEqual(changes, panel.changes);
+    panel.pick(.video);
+    panel.pick(.webcam);
+    try std.testing.expect(panel.asking);
+    try std.testing.expect(!panel.cameraOn());
+}
+
 test "an answer with no dialog open changes nothing" {
     var panel = Panel{};
     panel.answer(.always);

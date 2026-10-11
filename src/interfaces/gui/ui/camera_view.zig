@@ -7,7 +7,9 @@
 //! red while the webcam is the source; and, while the webcam permission is
 //! being asked, a dialog of Allow once, Always for this project and Cancel.
 //! Each button has its own colour and a short label in the built-in font
-//! (RA8EMU-677).
+//! (RA8EMU-677). While Always stands, the dialog row holds one button that
+//! takes it back (RA8EMU-1124), clear of the dialog's own three so a second
+//! click on Always cannot land on it.
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
 const camera_panel = @import("../camera_panel.zig");
@@ -59,6 +61,10 @@ pub fn answerLabel(reply: Answer) []const u8 {
     };
 }
 
+/// The label and colour of the button that takes Always back.
+pub const withdraw_label = "FORGET ALWAYS";
+pub const withdraw_color = colors.hue.blue;
+
 /// Label ink that reads on `fill`: the dark background on light fills,
 /// the light ring colour on dark ones.
 pub fn inkOn(fill: Color) Color {
@@ -104,6 +110,14 @@ pub const Layout = struct {
         const y = self.y + 2 * gap + button;
         return .{ .x = self.x + gap + at * (button + gap), .y = y, .w = button, .h = button };
     }
+
+    /// The button that takes Always back: the rest of the dialog row,
+    /// after the last answer's slot.
+    pub fn withdraw(self: Layout) Rect {
+        const at: i32 = @intCast(std.enums.values(Answer).len);
+        const left = gap + at * (button + gap);
+        return .{ .x = self.x + left, .y = self.y + 2 * gap + button, .w = self.area().w - left - gap, .h = button };
+    }
 };
 
 /// Appends the panel as it stands to `list`.
@@ -118,6 +132,10 @@ pub fn draw(list: *draw_list.DrawList, layout: Layout, panel: Panel) !void {
         try font.centred(list, at, labelOf(kind), inkOn(colorOf(kind)));
     }
     try list.fill(layout.indicator(), if (panel.cameraOn()) camera_on else camera_off);
+    if (panel.always) {
+        try list.fill(layout.withdraw(), withdraw_color);
+        try font.centred(list, layout.withdraw(), withdraw_label, inkOn(withdraw_color));
+    }
     if (!panel.asking) return;
     for (std.enums.values(Answer)) |reply| {
         try list.fill(layout.dialog(reply), answerColor(reply));
@@ -127,7 +145,8 @@ pub fn draw(list: *draw_list.DrawList, layout: Layout, panel: Panel) !void {
 
 /// Applies a click at (`x`, `y`) to `panel`. While the dialog is open only
 /// its buttons and the source row answer; a click anywhere else is not the
-/// panel's. Returns whether the panel took the click.
+/// panel's. While Always stands, its button takes it back. Returns whether
+/// the panel took the click.
 pub fn click(panel: *Panel, layout: Layout, x: i32, y: i32) bool {
     if (panel.asking) {
         for (std.enums.values(Answer)) |reply| {
@@ -136,6 +155,10 @@ pub fn click(panel: *Panel, layout: Layout, x: i32, y: i32) bool {
                 return true;
             }
         }
+    }
+    if (panel.always and layout.withdraw().contains(x, y)) {
+        panel.withdraw();
+        return true;
     }
     for (Layout.kinds) |kind| {
         if (layout.source(kind).contains(x, y)) {

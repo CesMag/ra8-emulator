@@ -19,6 +19,7 @@ pub const pipe_windows = @import("camera/pipe_windows.zig");
 /// Host camera capture backends and file formats (RA8EMU-1011).
 pub const camera = struct {
     pub const consent = @import("camera/webcam/consent.zig");
+    pub const always = @import("camera/webcam/always.zig");
     pub const privacy = @import("camera/webcam/privacy.zig");
     pub const av_permission = @import("camera/av_permission.zig");
     pub const av_info_plist = @import("camera/av_info_plist.zig");

@@ -79,6 +79,7 @@ test {
     _ = @import("interfaces/gui/window_still_test.zig");
     _ = @import("interfaces/gui/window_stills_test.zig");
     _ = @import("interfaces/gui/camera_open_test.zig");
+    _ = @import("interfaces/gui/camera_always_test.zig");
     _ = @import("interfaces/gui/ui/camera_view_test.zig");
     _ = @import("interfaces/render/board_view_test.zig");
     _ = @import("interfaces/gui/present_gate_test.zig");

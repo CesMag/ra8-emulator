@@ -5,7 +5,8 @@
 //! carry allow_webcam. The panel's ring follows the source the session runs:
 //! a refusal, or a kind that still needs a file, puts it back on the last
 //! source the session took. The kind that needed a file is kept in `wants`
-//! for the leaf's file field (RA8EMU-799).
+//! for the leaf's file field (RA8EMU-799). With a project to keep it in,
+//! the dialog's Always outlasts the run (RA8EMU-1124, camera_always.zig).
 const std = @import("std");
 const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
@@ -16,6 +17,7 @@ const shell_frame = @import("ui/shell_frame.zig");
 const camera_panel = @import("camera_panel.zig");
 const camera_view = @import("ui/camera_view.zig");
 const camera_open = @import("camera_open.zig");
+const camera_always = @import("camera_always.zig");
 const Spec = @import("ra8_host").camera.source_spec.Spec;
 
 const Kind = camera_panel.Kind;
@@ -25,6 +27,9 @@ pub const Status = enum { idle, asking, switched, refused, needs_file };
 
 pub const Camera = struct {
     panel: camera_panel.Panel = .{},
+    /// Where the panel's Always is kept between runs; null keeps it for
+    /// this run only.
+    kept: ?camera_always.Kept = null,
     args: camera_open.Args = .{},
     /// The source the session runs, as far as the shell knows.
     running: Kind = .gradient,
@@ -75,8 +80,10 @@ pub const Camera = struct {
         self.status = status;
     }
 
-    /// What the leaf says under the panel, or null with nothing to say.
+    /// What the leaf says under the panel, or null with nothing to say. An
+    /// Always the project did not keep or let go comes first.
     pub fn note(self: *const Camera) ?[]const u8 {
+        if (self.kept) |kept| if (kept.note(&self.panel)) |said| return said;
         return switch (self.status) {
             .idle => null,
             .asking => "asking the session to switch",
@@ -96,7 +103,10 @@ pub const Camera = struct {
             };
             if (leaf.kind != .camera) continue;
             const body = shell_frame.bodyOf(placed.area);
-            if (body.contains(x, y)) return camera_view.click(&self.panel, layoutIn(body), x, y);
+            if (body.contains(x, y)) {
+                defer if (self.kept) |*kept| kept.follow(&self.panel);
+                return camera_view.click(&self.panel, layoutIn(body), x, y);
+            }
         }
         return false;
     }
@@ -105,7 +115,8 @@ pub const Camera = struct {
 /// Start the panel on `spec`, the `--camera-source` flag (RA8EMU-1095):
 /// its argument goes where the panel looks for that kind's file, and the
 /// pick goes to the session like any other once the shell connects. The
-/// webcam still passes the panel's consent dialog.
+/// webcam still passes the panel's consent dialog, unless the project
+/// already answered Always (`kept`, begun before this).
 pub fn start(camera: *Camera, spec: Spec) void {
     switch (spec.kind) {
         .gradient, .webcam => {},
