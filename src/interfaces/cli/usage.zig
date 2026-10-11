@@ -40,6 +40,7 @@ pub const text =
     \\  --app FILE.ra8app  put a ThreadX module app in the SDHI card's root
     \\                     (beside --sd-dir's files) for the firmware's
     \\                     loader, after checking its header; repeatable
+    \\                     (FILE.ra8app=MODULE.elf also reads the module's ELF)
     \\  --device NAME      the same thing, spelled the way the firmware's
     \\                     own emulator-in-the-loop suite spells it
     \\  --dump-sym NAME    read that global out of RAM after the run and

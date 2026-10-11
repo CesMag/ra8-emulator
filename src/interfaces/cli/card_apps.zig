@@ -7,6 +7,11 @@
 //! refused with the same error the loader would name instead of after a
 //! boot; the signature stays the firmware's check. Root lays the admitted
 //! apps beside the `--sd-dir` folder's own entries for the card builder.
+//!
+//! `--app FILE.ra8app=MODULE.elf` (RA8EMU-1141) also reads the module's ELF,
+//! kept beside the app under the header's display name: the name the loader
+//! hands the Module Manager, so a debugger can pair a loaded instance with
+//! its symbols. The ELF never goes on the card.
 const std = @import("std");
 const ra8app = @import("ra8_board").image.ra8app;
 const host_folder = @import("ra8_host").folder;
@@ -14,8 +19,24 @@ const host_folder = @import("ra8_host").folder;
 /// The most `--app` flags one run takes.
 pub const max_apps = 8;
 
-/// An admitted app: the name it takes in the card's root and its bytes.
-pub const Staged = struct { name: []const u8, bytes: []const u8 };
+/// An admitted app: the name it takes in the card's root, its bytes, its
+/// header's display name, and the module ELF paired with it, if any.
+pub const Staged = struct {
+    name: []const u8,
+    bytes: []const u8,
+    label: []const u8 = "",
+    elf: ?[]const u8 = null,
+};
+
+/// The separator between an app and its module ELF in one `--app` value.
+pub const pair_mark = ".ra8app=";
+
+/// The app path and the module ELF path, when `value` pairs them.
+pub fn split(value: []const u8) struct { app: []const u8, elf: ?[]const u8 } {
+    const at = std.mem.indexOf(u8, value, pair_mark) orelse return .{ .app = value, .elf = null };
+    const cut = at + pair_mark.len - 1;
+    return .{ .app = value[0..cut], .elf = value[cut + 1 ..] };
+}
 
 /// Read each app, admit its header, and fill `out`; free with `unload`.
 /// A file that can't be read or isn't admitted is reported by path.
@@ -29,23 +50,39 @@ pub fn load(io: std.Io, allocator: std.mem.Allocator, paths: []const []const u8,
     return out[0..count];
 }
 
-fn loadOne(io: std.Io, allocator: std.mem.Allocator, path: []const u8) !Staged {
-    const bytes = std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .limited(std.math.maxInt(u32))) catch |err| {
+fn loadOne(io: std.Io, allocator: std.mem.Allocator, value: []const u8) !Staged {
+    const paths = split(value);
+    const bytes = try readFile(io, allocator, paths.app);
+    errdefer allocator.free(bytes);
+    const header = ra8app.parse(bytes) catch |err| {
+        std.debug.print("--app {s}: refused, {s}\n", .{ paths.app, @errorName(err) });
+        return err;
+    };
+    const name = std.fs.path.basename(paths.app);
+    const module = if (paths.elf) |path| try readFile(io, allocator, path) else null;
+    std.debug.print("app: {s} ({s}, \"{s}\") -> card root\n", .{ name, header.id(), header.name() });
+    return .{ .name = name, .bytes = bytes, .label = labelIn(bytes), .elf = module };
+}
+
+fn readFile(io: std.Io, allocator: std.mem.Allocator, path: []const u8) ![]u8 {
+    return std.Io.Dir.cwd().readFileAlloc(io, path, allocator, .limited(std.math.maxInt(u32))) catch |err| {
         std.debug.print("--app {s}: {s}\n", .{ path, @errorName(err) });
         return err;
     };
-    errdefer allocator.free(bytes);
-    const header = ra8app.parse(bytes) catch |err| {
-        std.debug.print("--app {s}: refused, {s}\n", .{ path, @errorName(err) });
-        return err;
-    };
-    const name = std.fs.path.basename(path);
-    std.debug.print("app: {s} ({s}, \"{s}\") -> card root\n", .{ name, header.id(), header.name() });
-    return .{ .name = name, .bytes = bytes };
+}
+
+/// The header's display name, as a slice of the app's own bytes.
+fn labelIn(bytes: []const u8) []const u8 {
+    const at = ra8app.words * 4 + ra8app.app_id_width;
+    const field = bytes[at..][0..ra8app.name_width];
+    return field[0 .. std.mem.indexOfScalar(u8, field, 0) orelse field.len];
 }
 
 pub fn unload(allocator: std.mem.Allocator, apps: []const Staged) void {
-    for (apps) |app| allocator.free(app.bytes);
+    for (apps) |app| {
+        allocator.free(app.bytes);
+        if (app.elf) |module| allocator.free(module);
+    }
 }
 
 /// The card's root as the builder reads it: the `--sd-dir` folder, when

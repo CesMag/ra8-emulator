@@ -15,7 +15,7 @@ pub const usage =
     \\       ra8_emulator serve [--profile-folded] [--cpu1 CPU1.elf] --listen unix:PATH|tcp:[HOST]:PORT <firmware.elf>
     \\       --profile-folded samples each core's call stacks for `ctl folded`
     \\       --cpu1 brings CPU1 up from its own image, parked until it is run
-    \\       --sd-dir DIR and --app FILE.ra8app (repeatable) fill the SDHI card, as for a run
+    \\       --sd-dir DIR and --app FILE.ra8app[=MODULE.elf] (repeatable) fill the SDHI card, as for a run
     \\
 ;
 

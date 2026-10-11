@@ -97,3 +97,30 @@ test "two apps with one file name are refused" {
     const root: card_apps.Root = .{ .base = null, .apps = &.{ app, app } };
     try std.testing.expectError(error.AppNameTaken, root.list(std.testing.allocator));
 }
+
+test "an --app value splits into the app and its module ELF" {
+    const paired = card_apps.split("out/hello.ra8app=out/hello.elf");
+    try std.testing.expectEqualStrings("out/hello.ra8app", paired.app);
+    try std.testing.expectEqualStrings("out/hello.elf", paired.elf.?);
+    const alone = card_apps.split("out/hello.ra8app");
+    try std.testing.expectEqualStrings("out/hello.ra8app", alone.app);
+    try std.testing.expectEqual(@as(?[]const u8, null), alone.elf);
+}
+
+test "a paired app keeps its module ELF under the header's display name" {
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const bytes = sample();
+    try tmp.dir.writeFile(io, .{ .sub_path = "hello.ra8app", .data = &bytes });
+    try tmp.dir.writeFile(io, .{ .sub_path = "hello.elf", .data = "module elf" });
+    const app = try pathIn(tmp, "hello.ra8app");
+    defer std.testing.allocator.free(app);
+    const value = try std.fmt.allocPrint(std.testing.allocator, "{s}=.zig-cache/tmp/{s}/hello.elf", .{ app, tmp.sub_path });
+    defer std.testing.allocator.free(value);
+    var out: [card_apps.max_apps]card_apps.Staged = undefined;
+    const apps = try card_apps.load(io, std.testing.allocator, &.{value}, &out);
+    defer card_apps.unload(std.testing.allocator, apps);
+    try std.testing.expectEqualStrings("hello.ra8app", apps[0].name);
+    try std.testing.expectEqualStrings("Hello", apps[0].label);
+    try std.testing.expectEqualStrings("module elf", apps[0].elf.?);
+}
