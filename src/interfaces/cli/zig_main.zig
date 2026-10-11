@@ -55,9 +55,11 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, image: elf.Image, options: 
     var schedule: fault_file.Run = undefined;
     if (options.faults) |path| schedule.open(&board, io, path) catch return 2;
     defer if (options.faults != null) schedule.deinit();
+    if (options.count_pc_len != 0) for (options.count_pc[0..options.count_pc_len]) |at| parts.hits.want(at & ~@as(u32, 1));
     const ends: zig_run.Ends = .{
         .stop = if (stop) |*watch| watch else null,
         .point = if (point) |*one| one else null,
+        .hits = if (options.count_pc_len != 0) &parts.hits else null,
         .timed = if (timed) |*due| due else null,
         .undefined_sites = if (swept) |*found| found else null,
         .schedule = if (options.faults != null) &schedule.applier else null,

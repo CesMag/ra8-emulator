@@ -15,6 +15,7 @@ const report_run = @import("report/run.zig");
 const json_run = @import("report/json_run.zig");
 const report_dumps = @import("report/dumps.zig");
 const report_profile = @import("report/profile.zig");
+const report_timing = @import("report/timing.zig");
 const frame_out = @import("frame_out.zig");
 const frames_out = @import("report.zig").frames_out;
 const eink_log = @import("eink_log.zig");
@@ -99,9 +100,12 @@ pub fn run(out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timeba
         const modules = txm_report.list(symbols.addressOf(image, txm_modules.list_symbol), rtos_hook.Memory{ .guest = clock.memory });
         if (options.report_json) {
             const load = loadOf(clock.memory, if (tracer.*) |*found| found else null, clock.cpu1);
-            try json_run.document(out, board, .{ .engine = "zig", .elapsed = ran.*, .elapsed_cycles = clock.wall_cycles, .external = clock.memory, .bus_errors = clock.bus_tally, .where = .{ .image = image, .profile = profile_table }, .dumps = &.{ .registers = .{ .zig = final }, .memory = clock.memory, .image = image, .options = &options, .io = io, .watched = watched }, .load = if (options.cpu_load) &load else null, .modules = &modules, .eink_log = if (options.frames.eink_log != null) &eink_recorder else null });
+            var sites: ?json_run.json_sites.Sites = null;
+            if (ends.hits != null) sites = .{ .image = image, .hits = ends.hits };
+            try json_run.document(out, board, .{ .engine = "zig", .sites = if (sites) |*found| found else null, .elapsed = ran.*, .elapsed_cycles = clock.wall_cycles, .external = clock.memory, .bus_errors = clock.bus_tally, .where = .{ .image = image, .profile = profile_table }, .dumps = &.{ .registers = .{ .zig = final }, .memory = clock.memory, .image = image, .options = &options, .io = io, .watched = watched }, .load = if (options.cpu_load) &load else null, .modules = &modules, .eink_log = if (options.frames.eink_log != null) &eink_recorder else null });
         } else try report_run.zigCore(out, board, clock.policy, timebase.*, ran.*, clock.bus_tally);
         if (profile_table) |table| try profileOut(out, io, image, table.*, options);
+        if (!options.report_json) if (ends.hits) |hits| try report_timing.pcHits(out, image, hits.*);
         try report_run.cpu1(out, if (clock.cpu1) |second| &second.second else null);
         // Globals a memory-probe verdict reads, out of the Zig core's memory.
         if (!options.report_json) try textDumps(out, io, board, clock.memory, final, image, options, watched);

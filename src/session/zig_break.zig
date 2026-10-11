@@ -7,6 +7,7 @@
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 const breakpoint = @import("breakpoint.zig");
+const pc_hits = @import("pc_hits.zig");
 const profile = @import("profile.zig");
 const cpu = @import("ra8_chip").core.cpu.cpu;
 
@@ -27,12 +28,15 @@ pub fn resolve(image: elf.Image, place: ?[]const u8, arrival: u32) ?Break {
 pub const Retire = struct {
     table: ?*profile.Table = null,
     point: ?*Break = null,
+    /// The `--count-pc` addresses (RA8EMU-951), counted on every retired
+    /// instruction.
+    hits: ?*pc_hits.Hits = null,
     /// The address of the wanted arrival, once it happened.
     at: u32 = 0,
 
     /// The core's listener, or null when nothing listens.
     pub fn listener(self: *Retire) ?cpu.RetireListener {
-        if (self.table == null and self.point == null) return null;
+        if (self.table == null and self.point == null and self.hits == null) return null;
         return .{ .context = self, .instructionFn = instructionThunk };
     }
 
@@ -40,6 +44,7 @@ pub const Retire = struct {
     /// is met, so the report says the wanted arrival.
     pub fn instruction(self: *Retire, address: u32) void {
         if (self.table) |table| table.instruction(address);
+        if (self.hits) |hits| hits.hit(address & ~breakpoint.limits.thumb_bit);
         const point = self.point orelse return;
         if (point.reached) return;
         if (@as(u64, address & ~breakpoint.limits.thumb_bit) != point.watchedAddress()) return;

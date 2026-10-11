@@ -360,7 +360,10 @@ fn parseDebug(options: *Options, argv: []const []const u8, index: *usize) !bool 
         options.taken_in_place = try world_flags.next(argv, index);
     } else if (std.mem.eql(u8, flag, "--count-pc")) {
         const at = try std.fmt.parseInt(u32, try world_flags.next(argv, index), 0);
-        if (options.count_pc_len >= options.count_pc.len) return error.BadValue;
+        if (options.count_pc_len >= options.count_pc.len) {
+            std.debug.print("--count-pc: a run can count at most {d} addresses\n", .{options.count_pc.len});
+            return error.BadValue;
+        }
         options.count_pc[options.count_pc_len] = at;
         options.count_pc_len += 1;
     } else if (std.mem.eql(u8, flag, "--chunk")) {

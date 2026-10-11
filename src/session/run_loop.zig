@@ -25,6 +25,7 @@ const zig_watch = @import("zig_watch.zig");
 const soak_symbols = @import("soak_symbols.zig");
 const itm_console = @import("itm_console.zig");
 const break_sym = @import("zig_break.zig");
+const pc_hits = @import("pc_hits.zig");
 const undefined_sites = @import("zig_undefined.zig");
 const zig_snapshot = @import("zig_snapshot.zig");
 const state_options = @import("state_options.zig");
@@ -38,6 +39,8 @@ pub const Clock = run_clock.Clock;
 pub const Ends = struct {
     stop: ?*Stop = null,
     point: ?*break_sym.Break = null,
+    /// The `--count-pc` addresses a Zig run counts (RA8EMU-951).
+    hits: ?*pc_hits.Hits = null,
     /// The `--ms` window, read against the clocks' SysTick periods.
     timed: ?*Deadline = null,
     /// The swept sites `--stop-on-undefined` ends the run on.
@@ -87,7 +90,7 @@ pub const Loop = struct {
             listener = .{ .tracer = found };
         }
         const wrap = self.watcher.arm(image, options.watch_place, if (self.tracer != null) listener.wrap() else null, &timebase.ticks);
-        self.retire = .{ .table = profile_table, .point = ends.point };
+        self.retire = .{ .table = profile_table, .point = ends.point, .hits = ends.hits };
         var stacks = stack_profile.Run.of(profile_table, image, options.budget, &clock.wall_cycles, if (self.tracer) |*found| &found.trace else null);
         var itm_port = itm_console.opened(); // --console opens the ITM as a probe would (RA8EMU-629)
         if (options.console) try itm_console.prime(clock.memory, &itm_port);
