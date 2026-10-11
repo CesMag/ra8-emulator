@@ -26,12 +26,39 @@ pub const Block = struct {
     }
 };
 
+/// Where a core's main stack stands (RA8EMU-815), read live beside the
+/// reservation the image names, so the pane can draw the SP band and the
+/// overflow.
+pub const Marks = struct {
+    /// The main stack pointer now, and the lowest it has sat since reset.
+    current: u32,
+    low: u32,
+    /// The reservation from the image's linker symbols.
+    base: u32,
+    size: u32,
+    /// Whether the core has set the SP since reset.
+    touched: bool = false,
+
+    /// Bytes the lowest SP sat under the reservation's base: zero when it
+    /// stayed inside, was never set, or the image names no reservation.
+    pub fn overflowBytes(self: Marks) u32 {
+        if (!self.touched) return 0;
+        return self.base -| self.low;
+    }
+
+    pub fn overflowed(self: Marks) bool {
+        return self.overflowBytes() > 0;
+    }
+};
+
 pub const max_blocks = 64;
 
 pub const Layout = struct {
     map: region_map.Map,
     blocks: [max_blocks]Block = undefined,
     count: usize = 0,
+    /// The live stack marks, when a core is attached (RA8EMU-815).
+    marks: ?Marks = null,
 
     pub fn items(self: *const Layout) []const Block {
         return self.blocks[0..self.count];

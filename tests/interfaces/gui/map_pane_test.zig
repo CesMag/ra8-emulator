@@ -21,6 +21,11 @@ const Rect = draw_list.Rect;
 const image_bytes = @embedFile("../../fixtures/sections/fault_crashlog_hil.elf");
 const area: Rect = .{ .x = 0, .y = 0, .w = 320, .h = 240 };
 
+const image_path = "tests/fixtures/sections/fault_crashlog_hil.elf";
+const stack = region_map.Stack{ .base = 0x220F_DF00, .size = 0x2000, .region = null };
+const IN_DIGEST: u64 = 7368987722379181284;
+const OVER_DIGEST: u64 = 10788268521560618784;
+
 fn laidOut() !map_layout.Layout {
     return map_layout.build(try elf.Image.init(image_bytes), &region_map.ek_ra8d2);
 }
@@ -41,7 +46,7 @@ fn middle(layout: *const map_layout.Layout, index: usize) struct { x: i32, y: i3
     return .{ .x = box.x + @divTrunc(box.w, 2), .y = box.y + @divTrunc(box.h, 2) };
 }
 
-fn digest(theme: *const Theme, layout: *const map_layout.Layout, hover: ?usize) !u64 {
+fn digest(theme: *const Theme, layout: *const map_layout.Layout, hover: ?usize, path: [:0]const u8) !u64 {
     var list = draw_list.DrawList.init(std.testing.allocator, @intCast(area.w), @intCast(area.h));
     defer list.deinit();
     var frame = try raster.Framebuffer.init(std.testing.allocator, @intCast(area.w), @intCast(area.h));
@@ -53,7 +58,7 @@ fn digest(theme: *const Theme, layout: *const map_layout.Layout, hover: ?usize) 
         defer out.deinit(std.testing.allocator);
         try out.print(std.testing.allocator, "P6\n{d} {d}\n255\n", .{ frame.width, frame.height });
         for (frame.pixels) |p| try out.appendSlice(std.testing.allocator, &.{ p.r, p.g, p.b });
-        const file = std.c.fopen("/tmp/map781.ppm", "wb") orelse return error.Open;
+        const file = std.c.fopen(path, "wb") orelse return error.Open;
         _ = std.c.fwrite(out.items.ptr, 1, out.items.len, file);
         _ = std.c.fclose(file);
     }
@@ -110,5 +115,64 @@ test "a pane too small draws nothing" {
 test "the map with .data hovered rasterises to the pinned golden frame" {
     const layout = try laidOut();
     const hover = named(&layout, ".data", false).?;
-    try std.testing.expectEqual(@as(u64, 14900232072201817988), try digest(dark, &layout, hover));
+    try std.testing.expectEqual(@as(u64, 14990597390328499780), try digest(dark, &layout, hover, "/tmp/map781.ppm"));
+}
+
+test "marks flag an overflow only when the lowest SP sat under the reservation" {
+    var marks: map_layout.Marks = .{ .current = stack.base + 0x100, .low = stack.base + 0x800, .base = stack.base, .size = stack.size };
+    try std.testing.expectEqual(@as(u32, 0), marks.overflowBytes());
+    try std.testing.expect(!marks.overflowed());
+    marks.touched = true;
+    try std.testing.expect(!marks.overflowed());
+    marks.low = stack.base - 0x40;
+    try std.testing.expect(marks.overflowed());
+    try std.testing.expectEqual(@as(u32, 0x40), marks.overflowBytes());
+}
+
+fn liveMarks(opened: *ra8.session.harness.Harness) !map_layout.Marks {
+    const view = try opened.session().view(.cpu0);
+    const marks = view.stack();
+    const loaded = opened.loadedImage(.cpu0).?;
+    const reservation = region_map.stackOf(loaded, &region_map.ek_ra8d2).?;
+    const never = ra8.chip.core.cpu.regs.never_low;
+    return .{
+        .current = marks.msp,
+        .low = marks.low_msp,
+        .base = reservation.base,
+        .size = reservation.size,
+        .touched = marks.low_msp != never,
+    };
+}
+
+test "a run's live stack draws the band and no red" {
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path });
+    defer opened.deinit();
+    opened.session().live.budget = 2_000;
+    _ = try opened.session().run(.cpu0, .cont);
+    const marks = try liveMarks(&opened);
+    try std.testing.expect(marks.touched);
+    try std.testing.expect(!marks.overflowed());
+    var layout = try laidOut();
+    layout.marks = marks;
+    try std.testing.expectEqual(@as(u64, IN_DIGEST), try digest(dark, &layout, null, "/tmp/map815_in.ppm"));
+}
+
+test "an MSP set under the base draws the stack block red and the band runs on under it" {
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = image_path });
+    defer opened.deinit();
+    try opened.session().setRegister(.cpu0, .msp, stack.base - 0x40);
+    try opened.session().setRegister(.cpu0, .msp, stack.base + 0x100);
+    const marks = try liveMarks(&opened);
+    try std.testing.expect(marks.overflowed());
+    try std.testing.expectEqual(@as(u32, 0x40), marks.overflowBytes());
+    var layout = try laidOut();
+    layout.marks = marks;
+    try std.testing.expectEqual(@as(u64, OVER_DIGEST), try digest(dark, &layout, null, "/tmp/map815_over.ppm"));
+}
+
+test "marks that never set the SP draw the plain pane" {
+    var layout = try laidOut();
+    const plain = try digest(dark, &layout, null, "/tmp/map781.ppm");
+    layout.marks = .{ .current = 0, .low = 0, .base = stack.base, .size = stack.size };
+    try std.testing.expectEqual(plain, try digest(dark, &layout, null, "/tmp/map815_plain.ppm"));
 }

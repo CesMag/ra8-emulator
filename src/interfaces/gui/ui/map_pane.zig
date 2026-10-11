@@ -10,6 +10,7 @@ const draw_list = @import("ra8_render").draw_list;
 const font = @import("ra8_render").font;
 const Theme = @import("colors.zig").Theme;
 const layout_mod = @import("../map_layout.zig");
+const region_map = @import("ra8_session").region_map;
 const Layout = layout_mod.Layout;
 const Block = layout_mod.Block;
 const Rect = draw_list.Rect;
@@ -95,11 +96,45 @@ fn drawBar(list: *draw_list.DrawList, theme: *const Theme, layout: *const Layout
     try font.draw(list, bar.x, bar.y - row_h + 2, name, theme.ink);
     try list.fill(bar, theme.border);
     try list.fill(.{ .x = bar.x + 1, .y = bar.y + 1, .w = bar.w - 2, .h = bar.h - 2 }, theme.well);
-    for (layout.items(), 0..) |block, index| {
+    for (layout.items()) |block| {
         if (block.region != region) continue;
-        const shown = if (hover == index) theme.highlight else color(theme, block.kind);
-        try list.fill(blockRect(layout, bar, block), shown);
+        try list.fill(blockRect(layout, bar, block), color(theme, block.kind));
     }
+    try drawMarks(list, theme, layout, bar, region);
+    if (hover) |index| {
+        const block = layout.blocks[index];
+        if (block.region == region) try list.fill(blockRect(layout, bar, block), theme.highlight);
+    }
+}
+
+/// The screen y of an address in a region's bar, the same scaling the
+/// blocks use, so a band drawn from it lines up with the stack block.
+fn addressY(bar: Rect, region: region_map.Region, address: u64) i32 {
+    const height: u64 = @intCast(bar.h);
+    const offset = address -| region.base;
+    return bar.y + @as(i32, @intCast(offset * height / region.size));
+}
+
+/// The live stack marks (RA8EMU-815): a band from the current SP down to
+/// the lowest SP seen inside the stack block, the block red when the stack
+/// overflowed, the band running on into whatever the linker placed under
+/// it, and one ink line at the current SP.
+fn drawMarks(list: *draw_list.DrawList, theme: *const Theme, layout: *const Layout, bar: Rect, region: usize) !void {
+    const marks = layout.marks orelse return;
+    if (!marks.touched) return;
+    const stack = layout.map.stack orelse return;
+    const where = region_map.regionAt(layout.map.regions, stack.base, stack.size) orelse return;
+    if (where != region) return;
+    const reg = layout.map.regions[region];
+    if (marks.overflowed()) {
+        for (layout.items()) |block| {
+            if (block.region == region and block.kind == .stack) try list.fill(blockRect(layout, bar, block), theme.bad);
+        }
+    }
+    const top = addressY(bar, reg, marks.low);
+    const bottom = addressY(bar, reg, marks.current);
+    try list.fill(.{ .x = bar.x + 1, .y = top, .w = bar.w - 2, .h = @max(1, bottom - top) }, if (marks.overflowed()) theme.bad else theme.highlight);
+    try list.fill(.{ .x = bar.x + 1, .y = bottom, .w = bar.w - 2, .h = 1 }, theme.ink);
 }
 
 fn drawHover(list: *draw_list.DrawList, theme: *const Theme, area: Rect, layout: *const Layout, bars: []const usize, index: usize) !void {
