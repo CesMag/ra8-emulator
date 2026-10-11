@@ -2,12 +2,12 @@
 //! power domain and the GLCDC display controller (the framebuffer it
 //! fetches, its palettes, the panel timing and pin routing), the same facts
 //! report/graphics.zig prints. The layers, the mixer, the scan, the output
-//! stage and the system block follow in json_glcdc_out.zig;
+//! stage and the system block follow in out.zig;
 //! the drawing engine and the e-ink panel in json_drw.zig (RA8EMU-371). Every key is
 //! always present; lists hold only the entries the firmware programmed.
 const Board = @import("ra8_board").board.Board;
-const json_glcdc_out = @import("json_glcdc_out.zig");
-const json_drw = @import("json_drw.zig");
+const out = @import("out.zig");
+const json_drw = @import("../json_drw.zig");
 
 /// The whole `graphics` object, keyed inside the document.
 pub fn section(j: anytype, board: *Board) !void {
@@ -25,7 +25,7 @@ pub fn section(j: anytype, board: *Board) !void {
     try framebuffer(j, unit);
     try palettes(j, unit);
     try timing(j, unit);
-    try json_glcdc_out.parts(j, unit);
+    try out.parts(j, unit);
     try j.close('}');
     try json_drw.parts(j, board);
     try j.close('}');

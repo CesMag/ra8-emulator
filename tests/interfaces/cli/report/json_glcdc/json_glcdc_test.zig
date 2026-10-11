@@ -1,4 +1,4 @@
-//! Covers src/interfaces/cli/report/json_glcdc.zig and json_glcdc_out.zig:
+//! Covers src/interfaces/cli/report/json_glcdc/json_glcdc.zig and json_glcdc/out.zig:
 //! the `graphics` object of `--report json`, parsed back with std.json.
 const std = @import("std");
 const ra8 = @import("ra8");
@@ -6,7 +6,7 @@ const cli_app = @import("cli_app");
 
 const json_run = cli_app.report.json_run;
 const Value = std.json.Value;
-const Fixture = @import("json_board.zig").Fixture;
+const Fixture = @import("../json_board.zig").Fixture;
 
 fn render(board: *ra8.board.board.Board, buf: *std.Io.Writer.Allocating) !std.json.Parsed(Value) {
     try json_run.document(&buf.writer, board, .{ .engine = "zig", .elapsed = 1 });

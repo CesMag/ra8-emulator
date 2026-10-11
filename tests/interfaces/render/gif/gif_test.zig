@@ -1,10 +1,10 @@
-//! Covers src/interfaces/render/gif.zig: the encoder round-trips frames with
+//! Covers src/interfaces/render/gif/gif.zig: the encoder round-trips frames with
 //! their emulated delay, writes the same bytes for the same frames, and
 //! refuses a size the format cannot hold.
 const std = @import("std");
 const cli_app = @import("cli_app");
 const gif = cli_app.report.gif;
-const lzw_decode = @import("gif_lzw_decode.zig");
+const lzw_decode = @import("lzw_decode.zig");
 
 const Decoded = struct {
     pixels: []u8,

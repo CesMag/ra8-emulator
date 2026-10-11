@@ -4,7 +4,7 @@
 //! beside it on the board, with the policy's own files in run/, until the
 //! session run loop takes it (RA8EMU-1047).
 const pacing = @import("run/pacing.zig");
-const soak = @import("run/soak.zig");
+const soak = @import("run/soak/soak.zig");
 
 pub const RunPolicy = struct {
     pacing: ?pacing.Pacing = null,

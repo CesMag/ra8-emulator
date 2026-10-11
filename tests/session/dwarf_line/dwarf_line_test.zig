@@ -5,7 +5,7 @@ const ra8 = @import("ra8");
 
 const dwarf_line = ra8.session.dwarf_line;
 
-const unit = @import("dwarf_units.zig").unit;
+const unit = @import("../dwarf_units.zig").unit;
 
 // Directories "src"; files "main.c" in directory 1.
 const tables_v4 = "src\x00\x00main.c\x00\x01\x00\x00\x00";

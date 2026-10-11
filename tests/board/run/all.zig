@@ -4,8 +4,8 @@ test {
     _ = @import("pacer_test.zig");
     _ = @import("pacing_test.zig");
     _ = @import("speed_test.zig");
-    _ = @import("soak_test.zig");
+    _ = @import("soak/soak_test.zig");
     _ = @import("soak_fault_test.zig");
-    _ = @import("soak_watch_test.zig");
-    _ = @import("soak_threads_test.zig");
+    _ = @import("soak/watch_test.zig");
+    _ = @import("soak/threads_test.zig");
 }

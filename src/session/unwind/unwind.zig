@@ -5,12 +5,12 @@
 //! looked up one byte back: a call that ends a function returns past its
 //! last byte, into whatever comes next. An EXC_RETURN in the return
 //! register means the frame is a handler: the walk steps out through the
-//! stacked exception frame (unwind_exception.zig) to the interrupted pc,
+//! stacked exception frame (unwind/exception.zig) to the interrupted pc,
 //! which is looked up as it is, since nothing called from there.
 const std = @import("std");
-const core_view = @import("core_view.zig");
-const dwarf_frame = @import("dwarf_frame.zig");
-pub const exception = @import("unwind_exception.zig");
+const core_view = @import("../core_view.zig");
+const dwarf_frame = @import("../dwarf_frame.zig");
+pub const exception = @import("exception.zig");
 
 pub const limits = struct {
     /// The most frames one backtrace prints.

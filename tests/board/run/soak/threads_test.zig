@@ -1,8 +1,7 @@
-//! Tests for src/board/run/soak_threads.zig.
+//! Tests for src/board/run/soak/threads.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const soak = ra8.board.run.soak;
-const soak_threads = soak.soak_threads;
 
 const base: u32 = 0x2000_0000;
 const head: u32 = base;
@@ -29,12 +28,12 @@ const Fake = struct {
         var memory: Fake = .{};
         memory.at(head).* = thread_a;
         memory.at(count_at).* = 2;
-        memory.at(thread_a + soak_threads.stack_start_offset).* = stack_a;
-        memory.at(thread_a + soak_threads.created_next_offset).* = thread_b;
-        memory.at(thread_b + soak_threads.stack_start_offset).* = stack_b;
-        memory.at(thread_b + soak_threads.created_next_offset).* = thread_a;
-        memory.at(stack_a).* = soak_threads.fill;
-        memory.at(stack_b).* = soak_threads.fill;
+        memory.at(thread_a + soak.threads.stack_start_offset).* = stack_a;
+        memory.at(thread_a + soak.threads.created_next_offset).* = thread_b;
+        memory.at(thread_b + soak.threads.stack_start_offset).* = stack_b;
+        memory.at(thread_b + soak.threads.created_next_offset).* = thread_a;
+        memory.at(stack_a).* = soak.threads.fill;
+        memory.at(stack_b).* = soak.threads.fill;
         return memory;
     }
 };
@@ -81,7 +80,7 @@ test "a deleted thread's stack is dropped when the count moves" {
     var memory = Fake.twoThreads();
     run.check(&memory, 0);
     memory.at(count_at).* = 1;
-    memory.at(thread_a + soak_threads.created_next_offset).* = thread_a;
+    memory.at(thread_a + soak.threads.created_next_offset).* = thread_a;
     run.check(&memory, 1);
     memory.at(stack_b).* = 0;
     run.check(&memory, 2);

@@ -12,5 +12,5 @@ pub const geometry = @import("geometry.zig");
 pub const widget_paint = @import("widget_paint.zig");
 pub const board_view = @import("board_view.zig");
 pub const png = @import("png.zig");
-pub const gif = @import("gif.zig");
+pub const gif = @import("gif/gif.zig");
 pub const wav = @import("wav.zig");

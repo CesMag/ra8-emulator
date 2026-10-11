@@ -16,7 +16,7 @@ const riic_bus = @import("ra8_chip").periph.riic.bus;
 const spi = @import("ra8_chip").periph.spi;
 const sci = @import("ra8_chip").periph.sci;
 const sci_device = @import("ra8_chip").periph.sci.device;
-const lines = @import("board_faults_lines.zig");
+const lines = @import("lines.zig");
 const Board = @import("ra8_board").board.Board;
 
 pub const Error = error{ WrongEndpoint, NothingFitted, TooManyFaults } || lines.Error;

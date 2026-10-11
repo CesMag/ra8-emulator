@@ -12,7 +12,7 @@ const core_view = @import("core_view.zig");
 const rtos_trace = @import("rtos_trace.zig");
 const stack_samples = @import("stack_samples.zig");
 const stack_walk = @import("stack_walk.zig");
-const unwind = @import("unwind.zig");
+const unwind = @import("unwind/unwind.zig");
 
 pub const Sampler = struct {
     view: core_view.View,

@@ -3,7 +3,7 @@
 const std = @import("std");
 const cli_app = @import("cli_app");
 const lzw = cli_app.report.gif.lzw;
-const lzw_decode = @import("gif_lzw_decode.zig");
+const lzw_decode = @import("lzw_decode.zig");
 
 fn roundTrip(indices: []const u8) !usize {
     var encoded: std.ArrayList(u8) = .empty;

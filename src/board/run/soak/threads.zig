@@ -10,7 +10,8 @@
 //! The list is re-read only when `_tx_thread_created_count` moves. Canaries
 //! are rebuilt from the list then, so a deleted thread's reused stack is
 //! never reported as an overrun.
-const soak_watch = @import("soak_watch.zig");
+const Watch = @import("watch.zig").Watch;
+const max_words = @import("watch.zig").max_words;
 
 pub const created_ptr_symbol = "_tx_thread_created_ptr";
 pub const created_count_symbol = "_tx_thread_created_count";
@@ -29,7 +30,7 @@ pub const Threads = struct {
 
     /// Rebuild the stack canaries when the created count has moved.
     /// `memory` is anything with `readWord(address) !u32`.
-    pub fn refresh(self: *Threads, watch: *soak_watch.Watch, memory: anytype) void {
+    pub fn refresh(self: *Threads, watch: *Watch, memory: anytype) void {
         const head = self.head orelse return;
         if (self.count_at) |at| {
             const count = memory.readWord(at) catch return;
@@ -40,7 +41,7 @@ pub const Threads = struct {
         const first = memory.readWord(head) catch return;
         var thread = first;
         var walked: usize = 0;
-        while (thread != 0 and walked < soak_watch.max_words) : (walked += 1) {
+        while (thread != 0 and walked < max_words) : (walked += 1) {
             watchStack(watch, memory, thread);
             thread = memory.readWord(thread +% created_next_offset) catch return;
             if (thread == first) return;
@@ -49,7 +50,7 @@ pub const Threads = struct {
 };
 
 /// Watch `thread`'s lowest stack word if it still holds the fill.
-fn watchStack(watch: *soak_watch.Watch, memory: anytype, thread: u32) void {
+fn watchStack(watch: *Watch, memory: anytype, thread: u32) void {
     const start = memory.readWord(thread +% stack_start_offset) catch return;
     for (watch.list()) |word| if (word.address == start) return;
     const now = memory.readWord(start) catch return;

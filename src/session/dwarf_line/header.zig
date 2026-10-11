@@ -9,7 +9,7 @@
 //! zero meaning the compilation directory. Version 5 numbers both from zero
 //! and describes each entry with a list of (content, form) pairs.
 const std = @import("std");
-const dwarf_cursor = @import("dwarf_cursor.zig");
+const dwarf_cursor = @import("../dwarf_cursor.zig");
 
 const Cursor = dwarf_cursor.Cursor;
 pub const Error = dwarf_cursor.Error;

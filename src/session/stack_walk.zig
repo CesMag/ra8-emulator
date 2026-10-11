@@ -10,7 +10,7 @@
 //! lr left by a call that already returned), which only a function-start
 //! lookup can tell.
 const dwarf_frame = @import("dwarf_frame.zig");
-const unwind = @import("unwind.zig");
+const unwind = @import("unwind/unwind.zig");
 
 pub const limits = struct {
     pub const fp: usize = 7;

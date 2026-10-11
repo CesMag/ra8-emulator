@@ -3,7 +3,7 @@
 //! it, and syncs and closes it after `finish`.
 const std = @import("std");
 
-pub const lzw = @import("gif_lzw.zig");
+pub const lzw = @import("lzw.zig");
 
 /// Whether a frame of this size fits the format's 16-bit screen.
 pub fn fits(width: u32, height: u32) bool {

@@ -7,8 +7,8 @@ const std = @import("std");
 test {
     _ = @import("board/run/all.zig");
     _ = @import("chip/core/systick_bank_test.zig");
-    _ = @import("session/harness_test.zig");
-    _ = @import("session/harness_files_test.zig");
+    _ = @import("session/harness/harness_test.zig");
+    _ = @import("session/harness/files_test.zig");
     _ = @import("board/profile_test.zig");
     _ = @import("board/external_memory_test.zig");
     _ = @import("board/external_backing_test.zig");
@@ -64,8 +64,8 @@ test {
     _ = @import("host/tape_dir_test.zig");
     _ = @import("host/worker_test.zig");
     _ = @import("session/board_events_test.zig");
-    _ = @import("session/board_faults_test.zig");
-    _ = @import("session/board_faults_lines_test.zig");
+    _ = @import("session/board_faults/board_faults_test.zig");
+    _ = @import("session/board_faults/lines_test.zig");
     _ = @import("session/board_plug_test.zig");
     _ = @import("session/board_camera_test.zig");
     _ = @import("session/board_plug_list_test.zig");

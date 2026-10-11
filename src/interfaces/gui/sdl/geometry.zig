@@ -6,7 +6,7 @@
 //! indices, blending straight alpha source-over as raster.zig does.
 const std = @import("std");
 const render = @import("ra8_render");
-const c = @import("sdl_c.zig").c;
+const c = @import("c.zig").c;
 
 const geometry = render.geometry;
 const draw_list = render.draw_list;

@@ -6,11 +6,11 @@
 //! the same stop.
 const elf = @import("ra8_board").image.elf;
 const core_view = @import("core_view.zig");
-const dwarf_line = @import("dwarf_line.zig");
+const dwarf_line = @import("dwarf_line/dwarf_line.zig");
 const session_source = @import("source.zig");
 const session_view = @import("view.zig");
 const symbols = @import("symbols.zig");
-const unwind = @import("unwind.zig");
+const unwind = @import("unwind/unwind.zig");
 const stop_machine = @import("stop_machine.zig");
 
 /// An address as eight hex digits, with `<symbol+offset>` when the image

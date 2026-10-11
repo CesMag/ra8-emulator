@@ -83,7 +83,7 @@ test {
     _ = @import("../interfaces/cli/report/json_serial_test.zig");
     _ = @import("../interfaces/cli/report/json_net_test.zig");
     _ = @import("../interfaces/cli/report/json_ether_test.zig");
-    _ = @import("../interfaces/cli/report/json_glcdc_test.zig");
+    _ = @import("../interfaces/cli/report/json_glcdc/json_glcdc_test.zig");
     _ = @import("../interfaces/cli/report/json_media_test.zig");
     _ = @import("../interfaces/cli/report/json_system_test.zig");
     _ = @import("../interfaces/cli/report/json_compute_test.zig");

@@ -12,19 +12,19 @@ const read_image = @import("ra8_board").image.load;
 const Board = @import("ra8_board").board.Board;
 const option_memory = @import("ra8_chip").periph.iwdt.option_memory;
 const Reboot = @import("ra8_chip").core.reboot.Reboot;
-const session_plug = @import("board_plug.zig");
-const session_faults = @import("board_faults.zig");
-const board_boundary = @import("board_boundary.zig");
-const session_events = @import("board_events.zig");
+const session_plug = @import("../board_plug.zig");
+const session_faults = @import("../board_faults/board_faults.zig");
+const board_boundary = @import("../board_boundary.zig");
+const session_events = @import("../board_events.zig");
 const second_core = @import("ra8_chip").core.second_core;
-const session_display = @import("board_display.zig");
-const session_state = @import("board_state.zig");
-const harness_files = @import("harness_files.zig");
-const debug_session = @import("session.zig");
-const session_api = @import("api.zig");
-const stop_machine = @import("stop_machine.zig");
-const step_hook = @import("step_hook.zig");
-const watch_bus = @import("watch_bus.zig");
+const session_display = @import("../board_display.zig");
+const session_state = @import("../board_state.zig");
+const files = @import("files.zig");
+const debug_session = @import("../session.zig");
+const session_api = @import("../api.zig");
+const stop_machine = @import("../stop_machine.zig");
+const step_hook = @import("../step_hook.zig");
+const watch_bus = @import("../watch_bus.zig");
 const rtos_hook = step_hook.rtos_hook;
 const rtos_publish = step_hook.rtos_publish;
 const Cpu0 = @import("ra8_board").cpu0_store.Cpu0;
@@ -90,7 +90,7 @@ const State = struct {
     faults: session_faults.Faults,
     edge: board_boundary.BoardBoundary,
     files: session_state.Files,
-    state_file: harness_files.StateFile,
+    state_file: files.StateFile,
     reboot: Reboot,
     display: session_display.Host,
     tracer: ?rtos_hook.Tracer,

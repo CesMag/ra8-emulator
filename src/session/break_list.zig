@@ -9,7 +9,7 @@ const watch_table = @import("watch_table.zig");
 const elf = @import("ra8_board").image.elf;
 const symbols = @import("symbols.zig");
 const session_source = @import("source.zig");
-const dwarf_line = @import("dwarf_line.zig");
+const dwarf_line = @import("dwarf_line/dwarf_line.zig");
 
 pub const header = "Num     Type            Disp Enb Address    What\n";
 pub const empty = "No breakpoints or watchpoints.\n";

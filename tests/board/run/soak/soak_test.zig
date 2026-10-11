@@ -1,4 +1,4 @@
-//! Tests for src/board/run/soak.zig.
+//! Tests for src/board/run/soak/soak.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const soak = ra8.board.run.soak;

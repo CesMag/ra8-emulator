@@ -13,7 +13,7 @@
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 const dwarf_cursor = @import("dwarf_cursor.zig");
-const dwarf_line = @import("dwarf_line.zig");
+const dwarf_line = @import("dwarf_line/dwarf_line.zig");
 
 const Cursor = dwarf_cursor.Cursor;
 pub const Error = dwarf_cursor.Error;

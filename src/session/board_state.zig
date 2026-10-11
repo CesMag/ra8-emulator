@@ -3,7 +3,7 @@
 //! a stretch section), written from and read back into a live harness.
 //!
 //! This file encodes and decodes it; the harness opens the file on the
-//! serving host (harness_files.zig, RA8EMU-1020).
+//! serving host (harness/files.zig, RA8EMU-1020).
 //!
 //! A session's boundary charges whole chunks, so nothing is owed and the
 //! stretch section says so; `--load-state` reads the file as its own, and

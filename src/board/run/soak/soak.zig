@@ -7,12 +7,12 @@
 //! follows from it is not news. A fault the core latched into CFSR, HFSR
 //! or SFSR is an event too (slice 2b, src/board/run/soak_fault.zig), and so
 //! is a watched stack canary or heap guard word that changed (RA8EMU-619,
-//! src/board/run/soak_watch.zig).
+//! src/board/run/soak/watch.zig).
 const std = @import("std");
 const timebase = @import("ra8_chip").periph.timebase;
 const Calendar = @import("ra8_chip").periph.rtc.clock.Calendar;
-pub const soak_watch = @import("soak_watch.zig");
-pub const soak_threads = @import("soak_threads.zig");
+pub const watch = @import("watch.zig");
+pub const threads = @import("threads.zig");
 
 pub const Kind = enum {
     watchdog_reset,
@@ -59,9 +59,9 @@ pub const Soak = struct {
     armed: bool = false,
     event: ?Event = null,
     /// Canary and guard words read at each boundary while armed.
-    watch: soak_watch.Watch = .{},
+    watch: watch.Watch = .{},
     /// ThreadX's created-thread list, whose stack canaries join `watch`.
-    threads: soak_threads.Threads = .{},
+    threads: threads.Threads = .{},
 
     /// Keep the first event of an armed run; anything else is ignored.
     pub fn note(self: *Soak, kind: Kind, at_ns: u64) void {

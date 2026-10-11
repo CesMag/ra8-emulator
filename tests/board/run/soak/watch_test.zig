@@ -1,8 +1,7 @@
-//! Tests for src/board/run/soak_watch.zig.
+//! Tests for src/board/run/soak/watch.zig.
 const std = @import("std");
 const ra8 = @import("ra8");
 const soak = ra8.board.run.soak;
-const soak_watch = soak.soak_watch;
 
 /// Four words of memory at 0x2000_0000; anything else is unreadable.
 const Fake = struct {
@@ -14,15 +13,15 @@ const Fake = struct {
     }
 };
 
-fn watchTwo() !soak_watch.Watch {
-    var watch: soak_watch.Watch = .{};
+fn watchTwo() !soak.watch.Watch {
+    var watch: soak.watch.Watch = .{};
     try watch.add(.{ .address = 0x2000_0004, .expected = 0xEFEF_EFEF, .kind = .stack_canary });
     try watch.add(.{ .address = 0x2000_0008, .expected = 0xFEED_FACE, .kind = .heap_guard });
     return watch;
 }
 
 test "an empty watch never finds a change" {
-    const watch: soak_watch.Watch = .{};
+    const watch: soak.watch.Watch = .{};
     try std.testing.expect(watch.changed(&Fake{}) == null);
 }
 
@@ -43,14 +42,14 @@ test "the first changed word names its kind and address" {
 }
 
 test "an unreadable word is skipped, not a change" {
-    var watch: soak_watch.Watch = .{};
+    var watch: soak.watch.Watch = .{};
     try watch.add(.{ .address = 0x1000_0000, .expected = 1, .kind = .stack_canary });
     try std.testing.expect(watch.changed(&Fake{}) == null);
 }
 
 test "a full watch refuses another word" {
-    var watch: soak_watch.Watch = .{};
-    for (0..soak_watch.max_words) |_| try watch.add(.{ .address = 0, .expected = 0, .kind = .heap_guard });
+    var watch: soak.watch.Watch = .{};
+    for (0..soak.watch.max_words) |_| try watch.add(.{ .address = 0, .expected = 0, .kind = .heap_guard });
     try std.testing.expectError(error.Full, watch.add(.{ .address = 0, .expected = 0, .kind = .heap_guard }));
 }
 

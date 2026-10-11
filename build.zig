@@ -324,7 +324,7 @@ fn usbipAttach(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.bu
     b.step("usbip-attach", "Attach --usbip PORT and check it end to end: -- PORT").dependOn(&usbip.step);
 }
 
-/// The SDL3 backend module (src/interfaces/gui/sdl.zig, RA8EMU-616, ADR 0001 in the
+/// The SDL3 backend module (src/interfaces/gui/sdl/sdl.zig, RA8EMU-616, ADR 0001 in the
 /// knowledge base, RA8EMU-A-8) that ra8_gui and gui-test take under
 /// -Dgui. It draws what gui_app hands it and imports nothing else of ours
 /// but the render library. SDL is a lazy dependency asked for only under -Dgui, so test and
@@ -332,7 +332,7 @@ fn usbipAttach(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.bu
 fn sdlModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, gui_app: *std.Build.Module, render: *std.Build.Module, enabled: bool) ?*std.Build.Module {
     if (!enabled) return null;
     const sdl_dep = b.lazyDependency("sdl", .{ .target = target, .optimize = optimize }) orelse return null;
-    const sdl_mod = b.createModule(.{ .root_source_file = b.path("src/interfaces/gui/sdl.zig"), .target = target, .optimize = optimize });
+    const sdl_mod = b.createModule(.{ .root_source_file = b.path("src/interfaces/gui/sdl/sdl.zig"), .target = target, .optimize = optimize });
     sdl_mod.addImport("gui_app", gui_app);
     sdl_mod.addImport("ra8_render", render);
     sdl_mod.linkLibrary(sdl_dep.artifact("SDL3"));
@@ -377,7 +377,7 @@ fn guiTest(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builti
         return;
     }
     const sdl = sdl_mod orelse return;
-    const mod = b.createModule(.{ .root_source_file = b.path("tests/interfaces/gui/sdl_geometry_test.zig"), .target = target, .optimize = optimize });
+    const mod = b.createModule(.{ .root_source_file = b.path("tests/interfaces/gui/sdl/geometry_test.zig"), .target = target, .optimize = optimize });
     mod.addImport("ra8", emu);
     mod.addImport("gui_sdl", sdl);
     step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = mod })).step);

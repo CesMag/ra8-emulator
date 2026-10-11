@@ -1,12 +1,12 @@
 //! Source lines to addresses: where `break fw.zig:8` should go.
 //!
-//! The reverse of src/session/dwarf_line.zig's lookup. Every unit's rows are
+//! The reverse of src/session/dwarf_line/dwarf_line.zig's lookup. Every unit's rows are
 //! read, and the lowest address of a row on the asked line wins. A line
 //! with no code of its own falls through to the nearest later line that
 //! has some, which is where gdb puts a break on a blank or comment line.
 const std = @import("std");
-const dwarf_line = @import("dwarf_line.zig");
-const line_header = @import("dwarf_line_header.zig");
+const dwarf_line = @import("dwarf_line/dwarf_line.zig");
+const line_header = @import("dwarf_line/header.zig");
 
 pub const Error = dwarf_line.Error;
 

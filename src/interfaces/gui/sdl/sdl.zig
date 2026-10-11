@@ -1,6 +1,6 @@
 //! The SDL3 backend behind platform.zig (RA8EMU-616, ADR 0001 in the knowledge base, RA8EMU-A-8).
 //! It owns one window, one renderer and one streaming texture, and
-//! draws each frame's list through SDL geometry (sdl_geometry.zig). The
+//! draws each frame's list through SDL geometry (sdl/geometry.zig). The
 //! CPU-rasterized framebuffer, shown as a streaming texture, is the
 //! fallback: RA8_GUI_CPU forces it and a geometry failure falls back to it.
 //!
@@ -10,8 +10,8 @@
 const std = @import("std");
 const gui = @import("gui_app");
 const render = @import("ra8_render");
-pub const c = @import("sdl_c.zig").c;
-pub const geometry = @import("sdl_geometry.zig");
+pub const c = @import("c.zig").c;
+pub const geometry = @import("geometry.zig");
 
 const Event = gui.platform.Event;
 const Size = gui.platform.Size;

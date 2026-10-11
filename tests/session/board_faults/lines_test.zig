@@ -1,4 +1,4 @@
-//! Covers src/session/board_faults_lines.zig through the session API: the
+//! Covers src/session/board_faults/lines.zig through the session API: the
 //! three line modes set and cleared mid-run on a modem on SCI3 and on a part
 //! on SPI channel 0, plus the modes these lines refuse (RA8EMU-520).
 const std = @import("std");
