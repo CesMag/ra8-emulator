@@ -206,3 +206,12 @@ test "RA8EMU-950: a session core sees CPACR, so fp_basic's first VADD lands" {
     } else return error.SumNeverStored;
     try std.testing.expectEqual(@as(u32, 0x00F0_0000), opened.primaryCpu().fp.cpacr);
 }
+
+test "RA8EMU-1148: a session core runs under the MPU check a plain run arms" {
+    var opened = try ra8.session.harness.open(std.testing.allocator, std.testing.io, .{ .elf_path = "tests/fixtures/threadx/threadx_stkof.elf" });
+    defer opened.deinit();
+    const cpu = opened.primaryCpu();
+    const check = cpu.mpu orelse return error.NoMpuCheck;
+    try std.testing.expect(check.unit == &opened.board().regions);
+    try std.testing.expect(!check.armed);
+}

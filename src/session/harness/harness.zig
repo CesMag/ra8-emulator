@@ -3,6 +3,7 @@ const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 const part = @import("ra8_chip").core.part;
 const BoardBus = @import("ra8_chip").core.cpu.board_bus.BoardBus;
+const mpu_check = @import("ra8_chip").core.cpu.board_bus.mpu_check;
 const cpu_mod = @import("ra8_chip").core.cpu.cpu;
 const NvicSource = @import("ra8_chip").core.cpu.exception.nvic_source.NvicSource;
 const QuietSource = @import("ra8_chip").core.cpu.exception.quiet_source.QuietSource;
@@ -83,6 +84,8 @@ const State = struct {
     board: Board,
     cpu0: Cpu0,
     memory: BoardBus,
+    /// CPU0's MPU check, armed as a plain run arms it (boot.zig).
+    check: mpu_check.Check,
     machine: stop_machine.Machine,
     driver: step_hook.Driver,
     watching: watch_bus.WatchBus,
@@ -264,12 +267,18 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     const vector = state.image.vectorBase() orelse return error.NoVectorTable;
     option_memory.apply(&state.board.heartbeat, state.cpu0.own());
     state.memory = .{ .memory = .{ .store = .{ .store = &state.cpu0.store.?, .initiator = .cpu0 } }, .periph = &state.board.bus, .scs = .{ .partitions = &state.board.partitions, .regions = &state.board.regions, .clears = &state.board.clears } };
+    // The MPU check, as a plain run arms it (boot.zig), before any view
+    // copies the direct path: without it a session core refused nothing, so
+    // a ThreadX module's out-of-region store landed (RA8EMU-1148).
+    state.check = .{ .unit = &state.board.regions, .state = &state.cpu.banked.current };
+    state.memory.armCheck(&state.check);
     state.machine = .{};
     state.driver = .{ .machine = &state.machine };
     state.watching = .{ .inner = state.memory.view(), .driver = &state.driver };
     state.pending = .{};
     state.quiet = .{ .inner = state.pending.source(), .memory = state.watching.view() };
     state.cpu = .{ .bus = state.quiet.bus(), .source = state.quiet.source(), .quiet = &state.quiet };
+    state.cpu.mpu = &state.check;
     state.pending.banked = &state.cpu.banked;
     state.pending.clear_due = &state.quiet.clear_due;
     state.decoded = .{};
