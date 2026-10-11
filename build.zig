@@ -166,6 +166,10 @@ fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         .{ .name = "ra8_chip", .module = chip },
         .{ .name = "ra8_host", .module = host },
     });
+    // The host listener (RA8EMU-1156) serves a session's gdb port, so it
+    // drives the remote protocol through ra8_gdb. A library edge, never a
+    // CLI import: the GUI still never sees the CLI.
+    rpc.addImport("ra8_gdb", gdb);
     const usbip = library(b, target, optimize, "ra8_usbip", "src/interfaces/usbip/root.zig", &.{
         .{ .name = "ra8_board", .module = board },
         .{ .name = "ra8_chip", .module = chip },

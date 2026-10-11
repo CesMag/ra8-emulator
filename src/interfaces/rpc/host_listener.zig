@@ -13,6 +13,8 @@ const win32 = @import("ra8_host").win32;
 pub const served = @import("session/server.zig");
 const proto = @import("session/rpc.zig");
 const socket_transport = @import("socket_transport.zig");
+const session_api = @import("ra8_session").api;
+const host_gdb = @import("host_gdb.zig");
 
 /// One connected client's receive buffer, as big as the shell's own.
 const rx_size = 2 * proto.Client.Env.max_frame;
@@ -32,11 +34,6 @@ pub const Address = union(enum) {
 };
 
 /// One entry the discovery file lists.
-pub const Session = struct {
-    gdb_port: ?u16,
-    elf: []const u8,
-};
-
 pub const Listener = struct {
     gpa: std.mem.Allocator,
     io: std.Io,
@@ -46,6 +43,7 @@ pub const Listener = struct {
     socket_path: ?[]const u8,
     discovery_path: []const u8,
     client: ?Client,
+    gdb: std.ArrayList(*host_gdb.Session),
 
     pub const Client = struct {
         conn: socket_transport.Connection,
@@ -77,6 +75,7 @@ pub const Listener = struct {
                 .socket_path = null,
                 .discovery_path = discovery_path,
                 .client = null,
+                .gdb = .empty,
             };
         }
 
@@ -95,13 +94,14 @@ pub const Listener = struct {
             .socket_path = socket_path,
             .discovery_path = discovery_path,
             .client = null,
+            .gdb = .empty,
         };
     }
 
     /// Write the discovery file listing the RPC address and the sessions,
     /// replacing what was there. The app calls this when sessions change;
     /// deinit removes the file.
-    pub fn announce(self: *Listener, sessions: []const Session) !void {
+    pub fn announce(self: *Listener) !void {
         const file = try std.Io.Dir.cwd().createFile(self.io, self.discovery_path, .{ .truncate = true });
         defer file.close(self.io);
         var staging: [4096]u8 = undefined;
@@ -110,14 +110,54 @@ pub const Listener = struct {
         try w.print("rpc ", .{});
         try self.address.write(w);
         try w.writeByte('\n');
-        for (sessions) |session| {
-            if (session.gdb_port) |port| {
-                try w.print("session {d} {s}\n", .{ port, session.elf });
-            } else {
-                try w.print("session - {s}\n", .{session.elf});
-            }
+        for (self.gdb.items) |session| {
+            try w.print("session {d} {s}\n", .{ session.port, session.elf });
         }
         try w.flush();
+    }
+
+    /// Bind a loopback gdb port for a session and list it in the
+    /// discovery file (RA8EMU-1156). `live` is the session the panes draw
+    /// through; its runs get the gdb budget while a client is attached.
+    pub fn addGdb(self: *Listener, elf: []const u8, live: ?*session_api.Session) !u16 {
+        var address = std.Io.net.IpAddress.parse("127.0.0.1", 0) catch unreachable;
+        _ = &address;
+        var listener = try address.listen(self.io, .{ .reuse_address = true });
+        errdefer listener.deinit(self.io);
+        const owned = try self.gpa.dupe(u8, elf);
+        errdefer self.gpa.free(owned);
+        const session = try self.gpa.create(host_gdb.Session);
+        errdefer self.gpa.destroy(session);
+        session.* = .{
+            .gpa = self.gpa,
+            .io = self.io,
+            .elf = owned,
+            .port = listener.socket.address.getPort(),
+            .listener = listener,
+            .live = live,
+        };
+        try self.gdb.append(self.gpa, session);
+        return session.port;
+    }
+
+    /// Close one session's gdb port and rewrite the discovery file.
+    pub fn removeGdb(self: *Listener, elf: []const u8) void {
+        var at: usize = 0;
+        while (at < self.gdb.items.len) : (at += 1) {
+            const session = self.gdb.items[at];
+            if (!std.mem.eql(u8, session.elf, elf)) continue;
+            _ = self.gdb.orderedRemove(at);
+            session.deinit();
+            self.gpa.free(session.elf);
+            self.gpa.destroy(session);
+            self.announce() catch {};
+            return;
+        }
+    }
+
+    /// Pump every session's gdb port once, before the RPC client's answer.
+    pub fn pumpGdb(self: *Listener) void {
+        for (self.gdb.items) |session| session.pump();
     }
 
     /// Accept a waiting client, then answer what a connected client has
@@ -140,6 +180,12 @@ pub const Listener = struct {
         std.Io.Dir.cwd().deleteFile(self.io, self.discovery_path) catch {};
         if (self.socket_path) |path| std.Io.Dir.cwd().deleteFile(self.io, path) catch {};
         self.dropClient();
+        for (self.gdb.items) |session| {
+            session.deinit();
+            self.gpa.free(session.elf);
+            self.gpa.destroy(session);
+        }
+        self.gdb.deinit(self.gpa);
         self.server.deinit(self.io);
         self.gpa.free(self.discovery_path);
         if (self.socket_path) |path| self.gpa.free(path);

@@ -29,6 +29,12 @@ pub const Target = struct {
     /// Asked between budgets while a continue runs; null runs one budget.
     poll: ?debug_session.Poll = null,
     last: ?zig_drive.Ended = null,
+    /// Pump mode (RA8EMU-1156): a resume runs one budget per pump and
+    /// sends no reply while it still runs, so the pump's host (the GUI
+    /// loop) keeps painting and serves its other clients between budgets.
+    pump: bool = false,
+    /// True while a pumped continue has run budgets but not stopped yet.
+    pending: bool = false,
 };
 
 /// Whether `request` is one this file answers.
@@ -76,6 +82,7 @@ fn vcont(target: *Target, actions: []const u8, out: []u8) Error![]const u8 {
 }
 
 fn resume_(target: *Target, command: session_api.Run, out: []u8) Error![]const u8 {
+    if (target.pump) return pumpResume(target, command, out);
     var ended = target.session.run(target.session.currentCore(), command) catch return copy(out, request_error);
     while (command == .cont and ended == .count) {
         const poll = target.poll orelse break;
@@ -158,4 +165,40 @@ fn copy(out: []u8, text: []const u8) Error![]const u8 {
     if (text.len > out.len) return Error.NoSpace;
     @memcpy(out[0..text.len], text);
     return out[0..text.len];
+}
+/// A pumped resume: one budget now, and the stop reply only once the run
+/// has ended. gdb waits for the stop reply, so an empty payload here means
+/// "nothing to send this frame" and the pump sends nothing.
+fn pumpResume(target: *Target, command: session_api.Run, out: []u8) Error![]const u8 {
+    if (target.pending) return out[0..0];
+    const ended = target.session.run(target.session.currentCore(), command) catch return copy(out, request_error);
+    if (command == .cont and ended == .count) {
+        target.pending = true;
+        return out[0..0];
+    }
+    target.last = ended;
+    return stopReply(target, out);
+}
+
+/// Keep a pumped continue going: one more budget, an interrupt check, and
+/// the stop reply once the run ends. Empty payload while still running.
+pub fn pumpTick(target: *Target, out: []u8) Error![]const u8 {
+    if (!target.pending) return out[0..0];
+    const ended = target.session.run(target.session.currentCore(), .cont) catch {
+        target.pending = false;
+        return copy(out, request_error);
+    };
+    if (ended == .count) {
+        const poll = target.poll orelse return out[0..0];
+        if (poll.check(poll.context)) {
+            const stopped = target.session.interrupt(target.session.currentCore()) catch return copy(out, request_error);
+            target.pending = false;
+            target.last = .{ .stop = stopped };
+            return stopReply(target, out);
+        }
+        return out[0..0];
+    }
+    target.pending = false;
+    target.last = ended;
+    return stopReply(target, out);
 }

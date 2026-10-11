@@ -41,8 +41,8 @@ test "the discovery file lists the rpc address and the sessions" {
     defer env.deinit();
     var bound = try listener_mod.Listener.bind(gpa, std.testing.io, &env);
 
-    const sessions = [_]listener_mod.Session{.{ .gdb_port = null, .elf = "/some/image.elf" }};
-    try bound.announce(&sessions);
+    const port = try bound.addGdb("/some/image.elf", null);
+    try bound.announce();
     var path_buf: [std.fs.max_path_bytes]u8 = undefined;
     const path = try std.fmt.bufPrint(&path_buf, "{s}", .{bound.discovery_path});
     const text = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, path, gpa, .limited(4096));
@@ -53,7 +53,9 @@ test "the discovery file lists the rpc address and the sessions" {
     try std.testing.expect(std.mem.endsWith(u8, rpc_line, "rpc.sock"));
     const spec = try cli_app.serve.listen.Spec.parse(rpc_line["rpc ".len..]);
     try std.testing.expectEqualStrings(bound.socket_path.?, spec.unix);
-    try std.testing.expectEqualStrings("session - /some/image.elf", lines.next().?);
+    var port_buf: [32]u8 = undefined;
+    const port_line = try std.fmt.bufPrint(&port_buf, "session {d} /some/image.elf", .{port});
+    try std.testing.expectEqualStrings(port_line, lines.next().?);
     try std.testing.expectEqual(@as(?[]const u8, null), lines.next());
 
     bound.deinit();

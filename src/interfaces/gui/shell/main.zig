@@ -7,6 +7,7 @@
 //! halted at reset until Run is pressed on the time bar (RA8EMU-1118).
 //! Only the local host connects so far; SSH profiles join with RA8EMU-761.
 const std = @import("std");
+const session_api = @import("ra8_session").api;
 const host_profiles = @import("ra8_host").profiles;
 const platform = @import("../platform.zig");
 const pane_layout = @import("../ui/pane_layout.zig");
@@ -225,7 +226,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     if (host_listener.Listener.bind(allocator, io, env)) |bound| {
         hosted = .{ .listener = bound, .context = &session.setup.context, .tx = try allocator.alloc(u8, Env.max_frame), .gpa = allocator };
         const h = &hosted.?;
-        h.announce(path);
+        h.announce(path, session.setup.owner.session());
         shell.listener = .{ .context = h, .answerFn = answerHosted };
     } else |_| {}
     var host_clock = wall_clock.Host.init(io);
@@ -280,13 +281,14 @@ const Hosted = struct {
     tx: []u8,
     gpa: std.mem.Allocator,
 
-    /// List the one session, with no gdb port yet (RA8EMU-1156 part 2).
-    fn announce(self: *Hosted, elf: []const u8) void {
-        const sessions = [_]host_listener.Session{.{ .gdb_port = null, .elf = elf }};
-        self.listener.announce(&sessions) catch {};
+    /// List the one session and its gdb port in the discovery file.
+    fn announce(self: *Hosted, elf: []const u8, live: ?*session_api.Session) void {
+        _ = self.listener.addGdb(elf, live) catch return;
+        self.listener.announce() catch {};
     }
 
     fn answer(self: *Hosted) !void {
+        self.listener.pumpGdb();
         return self.listener.answer(self.context, self.tx);
     }
 
