@@ -63,6 +63,11 @@ pub const Shell = struct {
     painter: ?shell_frame.Painter = null,
     /// The palette every leaf, bar and strip paints with.
     theme: *const colors.Theme = colors.of(.dark),
+    /// Repaint `theme` from the OS appearance (RA8EMU-962): read on the
+    /// first frame and again whenever the OS reports a change.
+    follow_os: bool = false,
+    /// The OS appearance has been read at least once.
+    styled: bool = false,
     console: ?*shell_console.Console = null,
     board: ?*shell_board.Board = null,
     /// The pointer on the board leaf: switch clicks and panel touches.
@@ -121,7 +126,11 @@ pub const Shell = struct {
         var solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         defer solved.deinit(self.allocator);
         self.bar = shell_frame.barArea(width, height);
-        while (window.poll()) |event| self.handle(event, &solved);
+        if (!self.styled) self.restyle(window);
+        while (window.poll()) |event| {
+            if (event == .appearance) self.restyle(window);
+            self.handle(event, &solved);
+        }
         if (!self.open) return false;
         try self.exchange();
         try self.paySlices();
@@ -143,6 +152,14 @@ pub const Shell = struct {
         raster.draw(frame, &list, font.atlas);
         try window.present(frame);
         return true;
+    }
+
+    /// Pick the palette from the OS appearance when following it; an OS
+    /// with no answer gets Light.
+    fn restyle(self: *Shell, window: platform.Platform) void {
+        self.styled = true;
+        if (!self.follow_os) return;
+        self.theme = colors.resolve(.system, window.appearance() == .dark);
     }
 
     /// Apply one input event against this frame's layout.

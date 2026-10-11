@@ -66,6 +66,7 @@ pub const Sdl = struct {
         .present = present,
         .show = show,
         .interval = interval,
+        .appearance = appearance,
     };
 
     fn from(ctx: *anyopaque) *Sdl {
@@ -105,6 +106,15 @@ pub const Sdl = struct {
 
     /// One frame through geometry. A failure drops to the CPU path for
     /// the rest of the run, so a renderer without geometry still draws.
+    fn appearance(ctx: *anyopaque) gui.platform.Appearance {
+        _ = ctx;
+        return switch (c.SDL_GetSystemTheme()) {
+            c.SDL_SYSTEM_THEME_LIGHT => .light,
+            c.SDL_SYSTEM_THEME_DARK => .dark,
+            else => .unknown,
+        };
+    }
+
     fn interval(ctx: *anyopaque) u64 {
         const self: *Sdl = @ptrCast(@alignCast(ctx));
         return if (self.vsync) 0 else gui.present_gate.default_interval_ns;
@@ -161,6 +171,7 @@ fn translate(ev: *const c.SDL_Event) ?Event {
             .height = @intCast(@max(ev.window.data2, 0)),
         } },
         c.SDL_EVENT_WINDOW_EXPOSED => .expose,
+        c.SDL_EVENT_SYSTEM_THEME_CHANGED => .appearance,
         c.SDL_EVENT_KEY_DOWN, c.SDL_EVENT_KEY_UP => .{ .key = .{ .code = ev.key.key, .down = ev.key.down } },
         c.SDL_EVENT_TEXT_INPUT => .{ .text = gui.platform.Text.of(std.mem.span(ev.text.text)) },
         c.SDL_EVENT_MOUSE_MOTION => .{ .pointer = .{ .x = @intFromFloat(ev.motion.x), .y = @intFromFloat(ev.motion.y) } },

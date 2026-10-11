@@ -65,3 +65,12 @@ test "light is a light surface with dark ink" {
     try std.testing.expect(light.background.r > 0xF0 and light.background.g > 0xF0 and light.background.b > 0xF0);
     try std.testing.expect(light.ink.r < 0x20 and light.ink.g < 0x20 and light.ink.b < 0x40);
 }
+
+test "system resolves to the OS setting and falls back to light" {
+    const colors = gui_app.colors;
+    try std.testing.expectEqual(&colors.palettes.dark, colors.resolve(.system, true));
+    try std.testing.expectEqual(&colors.palettes.light, colors.resolve(.system, false));
+    try std.testing.expectEqual(&colors.palettes.light, colors.of(.system));
+    try std.testing.expectEqual(&colors.palettes.dark, colors.resolve(.dark, false));
+    try std.testing.expectEqual(&colors.palettes.light, colors.resolve(.light, true));
+}

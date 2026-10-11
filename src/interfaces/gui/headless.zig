@@ -15,6 +15,8 @@ pub const Headless = struct {
     /// A copy of the last presented frame.
     last: ?raster.Framebuffer = null,
     presents: u32 = 0,
+    /// The OS appearance this window reports; tests set it.
+    os: platform_mod.Appearance = .unknown,
 
     pub fn init(allocator: std.mem.Allocator, width: u32, height: u32) Headless {
         return .{ .allocator = allocator, .drawable = .{ .width = width, .height = height } };
@@ -31,7 +33,7 @@ pub const Headless = struct {
     }
 
     pub fn platform(self: *Headless) platform_mod.Platform {
-        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present } };
+        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present, .appearance = appearance } };
     }
 
     fn poll(ctx: *anyopaque) ?Event {
@@ -55,6 +57,11 @@ pub const Headless = struct {
     fn scale(ctx: *anyopaque) f32 {
         const self: *Headless = @ptrCast(@alignCast(ctx));
         return self.dpi;
+    }
+
+    fn appearance(ctx: *anyopaque) platform_mod.Appearance {
+        const self: *Headless = @ptrCast(@alignCast(ctx));
+        return self.os;
     }
 
     fn present(ctx: *anyopaque, frame: *const raster.Framebuffer) anyerror!void {

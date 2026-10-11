@@ -37,7 +37,7 @@ const colors = @import("ui/colors.zig");
 const Env = proto.Client.Env;
 const usage = "usage: ra8_gui [--host NAME] [--hosts FILE] [--attach MODEL@ENDPOINT]... [--click]\n" ++
     "    [--camera-source KIND[:ARG]] [--window-stills DIR [--window-stills-every N]]\n" ++
-    "    [--frames N] [--theme dark|light] IMAGE\n";
+    "    [--frames N] [--theme dark|light|system] IMAGE\n";
 
 /// The word `ra8_gui shell IMAGE` carried while ra8_gui also had a live
 /// window; still taken in front of the flags, and it changes nothing.
@@ -64,7 +64,8 @@ pub const Args = struct {
     /// `--frames N`: close the window after N frames drawn with the image
     /// loaded, for a smoke run with nobody to close it (RA8EMU-1089).
     frames: ?u32 = null,
-    /// `--theme dark|light`: the palette the window paints with (RA8EMU-961).
+    /// `--theme dark|light|system`: the palette the window paints with
+    /// (RA8EMU-961); system follows the OS setting live (RA8EMU-962).
     theme: colors.Choice = .dark,
 };
 
@@ -184,6 +185,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     link.open(session.transport(), rx, tx);
     var shell = shell_loop.Shell.init(allocator, try pane_layout.twoCore(allocator));
     shell.theme = colors.of(args.theme);
+    shell.follow_os = args.theme == .system;
     defer shell.deinit();
     shell.link = &link;
     shell.server = served(&session);

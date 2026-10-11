@@ -61,3 +61,14 @@ test "presenting a frame of another size replaces the copy" {
     try std.testing.expectEqual(@as(u32, 4), window.last.?.width);
     try std.testing.expectEqual(@as(u32, 2), window.presents);
 }
+
+test "the headless window reports the appearance a test gives it" {
+    var window = gui.headless.Headless.init(std.testing.allocator, 640, 480);
+    defer window.deinit();
+    const platform = window.platform();
+    try std.testing.expectEqual(gui.platform.Appearance.unknown, platform.appearance());
+    window.os = .dark;
+    try std.testing.expectEqual(gui.platform.Appearance.dark, platform.appearance());
+    try window.feed(.appearance);
+    try std.testing.expect(platform.poll().? == .appearance);
+}

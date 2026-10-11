@@ -1,5 +1,6 @@
 //! Covers src/interfaces/gui/platform.zig: Text keeps the first bytes of the UTF-8 it
-//! was given, and show falls back to the CPU path unless the backend draws.
+//! was given, show falls back to the CPU path unless the backend draws, and a
+//! backend with no appearance reports unknown.
 const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
@@ -59,4 +60,22 @@ test "a backend's show answer decides whether the CPU path runs" {
         try std.testing.expectEqual(answer, try window.show(&list, null));
         try std.testing.expectEqual(@as(usize, 1), stub.shown);
     }
+}
+
+test "a backend with no appearance reports unknown" {
+    const Stub = struct {
+        fn poll(_: *anyopaque) ?platform.Event {
+            return null;
+        }
+        fn size(_: *anyopaque) platform.Size {
+            return .{ .width = 1, .height = 1 };
+        }
+        fn scale(_: *anyopaque) f32 {
+            return 1.0;
+        }
+        fn present(_: *anyopaque, _: *const raster.Framebuffer) anyerror!void {}
+    };
+    var ctx: u8 = 0;
+    const window: platform.Platform = .{ .ctx = &ctx, .vtable = &.{ .poll = Stub.poll, .size = Stub.size, .scale = Stub.scale, .present = Stub.present } };
+    try std.testing.expectEqual(platform.Appearance.unknown, window.appearance());
 }

@@ -59,11 +59,12 @@ test "--frames keeps a count above zero" {
     try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--frames", "many", "app.elf" }));
 }
 
-test "--theme picks dark or light and dark is the default" {
+test "--theme picks dark, light or system and dark is the default" {
     const colors = @import("gui_app").colors;
     try std.testing.expectEqual(colors.Choice.dark, (try shell_main.parse(&.{ "ra8_gui", "app.elf" })).theme);
     try std.testing.expectEqual(colors.Choice.light, (try shell_main.parse(&.{ "ra8_gui", "--theme", "light", "app.elf" })).theme);
     try std.testing.expectEqual(colors.Choice.dark, (try shell_main.parse(&.{ "ra8_gui", "--theme", "dark", "app.elf" })).theme);
+    try std.testing.expectEqual(colors.Choice.system, (try shell_main.parse(&.{ "ra8_gui", "--theme", "system", "app.elf" })).theme);
     try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--theme", "sepia", "app.elf" }));
 }
 

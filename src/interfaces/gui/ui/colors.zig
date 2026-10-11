@@ -77,13 +77,21 @@ pub const Theme = struct {
 /// board's own output, not chrome, so every theme shares it.
 pub const unseen = rgb(0x00, 0x00, 0x00);
 
-pub const Choice = enum { dark, light };
+/// `system` follows the OS light or dark setting (RA8EMU-962).
+pub const Choice = enum { dark, light, system };
 
-/// The palette a theme choice paints with.
+/// The palette a theme choice paints with when the OS gives no answer:
+/// System falls back to Light.
 pub fn of(choice: Choice) *const Theme {
+    return resolve(choice, false);
+}
+
+/// The palette `choice` paints with on an OS set to dark (`os_dark`) or not.
+pub fn resolve(choice: Choice, os_dark: bool) *const Theme {
     return switch (choice) {
         .dark => &palettes.dark,
         .light => &palettes.light,
+        .system => if (os_dark) &palettes.dark else &palettes.light,
     };
 }
 

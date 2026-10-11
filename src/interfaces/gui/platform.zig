@@ -26,8 +26,14 @@ pub const Text = struct {
     }
 };
 
+/// Whether the OS is set to a light or dark appearance (RA8EMU-962).
+/// Unknown when the backend or the desktop gives no answer.
+pub const Appearance = enum { unknown, light, dark };
+
 pub const Event = union(enum) {
     quit,
+    /// The OS appearance changed; read it again with `appearance`.
+    appearance,
     resize: Size,
     /// The window was uncovered and must be drawn again.
     expose,
@@ -60,6 +66,8 @@ pub const Platform = struct {
         show: ?*const fn (ctx: *anyopaque, list: *const draw_list.DrawList, atlas: ?raster.Atlas) anyerror!bool = null,
         /// The least time between presents (RA8EMU-732); null is no cap.
         interval: ?*const fn (ctx: *anyopaque) u64 = null,
+        /// The OS light or dark setting (RA8EMU-962); null is unknown.
+        appearance: ?*const fn (ctx: *anyopaque) Appearance = null,
     };
 
     /// The next input event, or null once this frame's events are drained.
@@ -93,6 +101,12 @@ pub const Platform = struct {
     /// Nanoseconds the next present must wait after the last; 0 is no cap.
     pub fn interval(self: Platform) u64 {
         const get = self.vtable.interval orelse return 0;
+        return get(self.ctx);
+    }
+
+    /// The OS light or dark setting, or unknown when the backend has none.
+    pub fn appearance(self: Platform) Appearance {
+        const get = self.vtable.appearance orelse return .unknown;
         return get(self.ctx);
     }
 };

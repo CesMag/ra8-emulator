@@ -122,3 +122,44 @@ test "a local session connects and loads a corpus image through the shell" {
     local.end();
     _ = try local.reap();
 }
+
+test "a shell following the OS restyles live when the appearance changes" {
+    const light = &gui_app.colors.palettes.light;
+    var window = Headless.init(std.testing.allocator, width, height);
+    defer window.deinit();
+    var s = try shell();
+    defer s.deinit();
+    s.follow_os = true;
+    window.os = .light;
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expectEqual(light, s.theme);
+    try std.testing.expectEqual(light.face, window.last.?.at(width / 4, 1));
+    window.os = .dark;
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expectEqual(light, s.theme);
+    try window.feed(.appearance);
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expectEqual(dark, s.theme);
+    try std.testing.expectEqual(dark.face, window.last.?.at(width / 4, 1));
+}
+
+test "a shell following an OS with no answer paints light" {
+    var window = Headless.init(std.testing.allocator, width, height);
+    defer window.deinit();
+    var s = try shell();
+    defer s.deinit();
+    s.follow_os = true;
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expectEqual(&gui_app.colors.palettes.light, s.theme);
+}
+
+test "a shell not following the OS keeps its theme" {
+    var window = Headless.init(std.testing.allocator, width, height);
+    defer window.deinit();
+    var s = try shell();
+    defer s.deinit();
+    window.os = .light;
+    try window.feed(.appearance);
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expectEqual(dark, s.theme);
+}
