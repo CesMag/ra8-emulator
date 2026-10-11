@@ -8,7 +8,7 @@ that indirectly calls `worker` when built with
 repository carries no C. It has `PACBTI` in `main`, `BTI` at the indirect
 target `worker`, and `AUT` before returning to reset.
 
-Rebuild with Zig 0.14.1:
+Rebuild with Zig 0.17.0:
 
 ```sh
 zig cc -target thumb-freestanding-eabihf -mcpu=cortex_m85 -c startup.S -o startup.o

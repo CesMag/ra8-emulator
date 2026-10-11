@@ -3,7 +3,7 @@
 //! has traffic to time across the memory matrix. Every word is read from
 //! OSPI and written to SDRAM, then read back. A checksum and the marker
 //! `0x5EE9C0DE` go to SRAM `0x22000100` when the run is done.
-//! Built freestanding with Zig 0.14.1; see README.md for the command.
+//! Built freestanding with Zig 0.17.0; see README.md for the command.
 
 const ospi: [*]const volatile u32 = @ptrFromInt(0x8000_0000);
 const sdram: [*]volatile u32 = @ptrFromInt(0x6800_0000);

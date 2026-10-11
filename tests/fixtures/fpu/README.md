@@ -9,8 +9,8 @@ Before every operation it clears FPSCR, and afterwards it stores the result
 and FPSCR at SRAM `0x22000100`. The run ends with the marker `0x0F9C0DE5`.
 The source is Zig, so the repository carries no C.
 
-Zig 0.14.1's `cortex_m85` has no FP features, so the build adds them.
-Rebuild with Zig 0.14.1:
+The build names the FP features in `-mcpu` itself rather than relying on
+what `cortex_m85` turns on. Rebuild with Zig 0.17.0:
 
 ```sh
 M=cortex_m85+fp_armv8d16+fullfp16
@@ -75,5 +75,5 @@ narrowing F32 into an operand) and an abs-and-scale pass, storing eight words
 per count. Build it like `lob`, swapping in `nnf`. `nnf_corpus_test.zig`
 boots it on the Zig core and compares against the host-worked words in
 `nnf_vectors.zig`. The dequantize scale is 9/128 on purpose: with a power of
-two, Zig 0.14.1's LLVM folds the multiply into a fixed-point VCVT whose
+two, LLVM folds the multiply into a fixed-point VCVT whose
 fraction-bit count does not match the source (see RA8EMU-321).

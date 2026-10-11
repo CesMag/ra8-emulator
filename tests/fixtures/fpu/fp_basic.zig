@@ -1,6 +1,6 @@
 //! FPU corpus image (RA8EMU-143): single- and double-precision arithmetic
 //! on the Cortex-M85, each result stored to SRAM beside the FPSCR it left.
-//! Built freestanding with Zig 0.14.1; see README.md for the command.
+//! Built freestanding with Zig 0.17.0; see README.md for the command.
 
 const results: [*]volatile u32 = @ptrFromInt(0x2200_0100);
 

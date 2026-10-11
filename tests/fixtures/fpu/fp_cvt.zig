@@ -1,7 +1,7 @@
 //! FPU corpus image (RA8EMU-143): float to integer, integer to float,
 //! precision changes and round-to-integral on the Cortex-M85. Each result
 //! goes to SRAM beside the FPSCR flags it raised. Built freestanding with
-//! Zig 0.14.1; see README.md for the command.
+//! Zig 0.17.0; see README.md for the command.
 
 const results: [*]volatile u32 = @ptrFromInt(0x2200_0100);
 /// Only the cumulative exception flags (IOC, DZC, OFC, UFC, IXC, IDC).

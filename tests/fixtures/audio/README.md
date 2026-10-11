@@ -14,7 +14,7 @@ at +0x4000, then 24 at -0x4000. At a 48 kHz `--audio-rate` that is 1 kHz for
 the Zig core with the `--audio-out` recorder armed, and checks the WAV:
 480 frames, 24-frame half periods (1000 Hz at 48000), and no silence.
 
-Rebuild with Zig 0.14.1:
+Rebuild with Zig 0.17.0:
 
 ```sh
 zig build-exe -target thumb-freestanding-eabi -mcpu=cortex_m85 -O ReleaseSmall \

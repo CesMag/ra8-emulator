@@ -21,7 +21,7 @@ const out: *volatile [4]u32 = @ptrFromInt(0x2200_0100);
 
 const Vectors = extern struct {
     sp: u32,
-    reset: *const fn () callconv(.C) noreturn,
+    reset: *const fn () callconv(.c) noreturn,
 };
 
 export const vector_table linksection(".isr_vector") = Vectors{
@@ -52,7 +52,7 @@ fn probe() bool {
     return nacked;
 }
 
-export fn Reset_Handler() callconv(.C) noreturn {
+export fn Reset_Handler() callconv(.c) noreturn {
     out.* = .{ 0, 0, 0, 0 };
     mstpcrb.* &= ~riic1_stop;
     reg(iccr1).* = 0xC0;

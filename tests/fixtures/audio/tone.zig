@@ -30,12 +30,12 @@ const done_marker: u32 = 0x70E0_C0DE;
 
 const Vectors = extern struct {
     stack: u32,
-    reset: *const fn () callconv(.C) noreturn,
+    reset: *const fn () callconv(.c) noreturn,
 };
 
 export const vectors linksection(".isr_vector") = Vectors{ .stack = 0x2219_FFF8, .reset = &reset };
 
-fn reset() callconv(.C) noreturn {
+fn reset() callconv(.c) noreturn {
     mstpcrc.* &= ~mstp_ssie0;
     while (ssisr.* & iirq == 0) {}
     ssicr.* = dwl_16 | pdta;

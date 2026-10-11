@@ -16,7 +16,7 @@ counts what came back in four SRAM words at `0x22000100`:
 gauge through the session partway through the run and plugs it back later,
 then checks these counts against the session's event stream.
 
-The source is Zig, so the repository carries no C. Rebuild with Zig 0.14.1:
+The source is Zig, so the repository carries no C. Rebuild with Zig 0.17.0:
 
 ```sh
 zig build-obj -target thumb-freestanding-eabihf -mcpu=cortex_m85 -O ReleaseSmall -fno-stack-check -fstrip -fno-compiler-rt -ffunction-sections gauge_poll.zig -femit-bin=gauge_poll.o

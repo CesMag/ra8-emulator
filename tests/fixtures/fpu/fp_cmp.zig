@@ -2,7 +2,7 @@
 //! and double precision on the Cortex-M85, over ordered pairs, signed zeros,
 //! infinities, subnormals and quiet and signalling NaNs. Each compare stores
 //! FPSCR (NZCV and flags); each min/max stores its result and the flags.
-//! Built freestanding with Zig 0.14.1; see README.md for the command.
+//! Built freestanding with Zig 0.17.0; see README.md for the command.
 
 const results: [*]volatile u32 = @ptrFromInt(0x2200_0100);
 /// NZCV and the cumulative exception flags.

@@ -14,7 +14,7 @@ ra8_emulator sweep --elf tests/fixtures/sizing/ext_stream.elf --stop-sym ext_str
 ```
 
 The symbol table has to stay, so the image is not stripped. Rebuild with
-Zig 0.14.1 from this directory:
+Zig 0.17.0 from this directory:
 
 ```sh
 M=cortex_m85
