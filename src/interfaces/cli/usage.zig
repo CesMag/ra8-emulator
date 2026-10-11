@@ -37,6 +37,9 @@ pub const text =
     \\                     which writes the card back over IMAGE at the end
     \\  --sd-dir DIR       back the SDHI card with a FAT32 image built from DIR,
     \\                     the same bytes every build (dotfiles skipped)
+    \\  --app FILE.ra8app  put a ThreadX module app in the SDHI card's root
+    \\                     (beside --sd-dir's files) for the firmware's
+    \\                     loader, after checking its header; repeatable
     \\  --device NAME      the same thing, spelled the way the firmware's
     \\                     own emulator-in-the-loop suite spells it
     \\  --dump-sym NAME    read that global out of RAM after the run and

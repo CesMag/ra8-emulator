@@ -22,6 +22,7 @@ const card_setup = cli.card_setup;
 /// `index` past any value it took; false leaves it where it was.
 pub fn parse(options: *Options, argv: []const []const u8, index: *usize) !bool {
     if (try parseSplit(options, argv, index)) return true;
+    if (try parseSdhi(options, argv, index)) return true;
     if (try @import("audio_out.zig").parse(&options.audio, argv, index)) return true;
     const flag = argv[index.*];
     if (std.mem.eql(u8, flag, "--console")) {
@@ -43,12 +44,6 @@ pub fn parse(options: *Options, argv: []const []const u8, index: *usize) !bool {
     } else if (std.mem.eql(u8, flag, "--sd") or std.mem.eql(u8, flag, "--sd-save")) {
         options.sd_path = try next(argv, index);
         options.sd_save = flag.len > "--sd".len;
-    } else if (std.mem.eql(u8, flag, "--sd-image")) {
-        options.sdhi.image = try next(argv, index);
-    } else if (std.mem.eql(u8, flag, "--sd-dir")) {
-        options.sdhi.dir = try next(argv, index);
-    } else if (std.mem.eql(u8, flag, "--sd-writable")) {
-        options.sdhi.writable = true;
     } else if (std.mem.eql(u8, flag, "--dump-sd")) {
         options.dump_sd = try std.fmt.parseInt(u32, try next(argv, index), 0);
     } else if (std.mem.eql(u8, flag, "--usb-loop")) {
@@ -109,6 +104,22 @@ fn parseSplit(options: *Options, argv: []const []const u8, index: *usize) !bool 
         options.cms = try area(try next(argv, index));
     } else if (std.mem.eql(u8, flag, "--sfs")) {
         options.sfs = try area(try next(argv, index));
+    } else return false;
+    return true;
+}
+
+/// The SDHI card's flags: `--sd-image`, `--sd-writable`, `--sd-dir` and
+/// the `--app` files laid in its root (RA8EMU-1138).
+fn parseSdhi(options: *Options, argv: []const []const u8, index: *usize) !bool {
+    const flag = argv[index.*];
+    if (std.mem.eql(u8, flag, "--sd-image")) {
+        options.sdhi.image = try next(argv, index);
+    } else if (std.mem.eql(u8, flag, "--sd-dir")) {
+        options.sdhi.dir = try next(argv, index);
+    } else if (std.mem.eql(u8, flag, "--app")) {
+        try options.sdhi.addApp(try next(argv, index));
+    } else if (std.mem.eql(u8, flag, "--sd-writable")) {
+        options.sdhi.writable = true;
     } else return false;
     return true;
 }

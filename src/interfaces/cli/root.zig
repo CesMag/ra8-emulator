@@ -8,6 +8,7 @@ pub const probe_ctl = @import("probe_ctl.zig");
 pub const serve_main = @import("serve_main.zig");
 pub const camera_source = @import("camera_source.zig");
 pub const usb_disk_option = @import("usb_disk_option.zig");
+pub const card_apps = @import("card_apps.zig");
 pub const map_main = @import("map_main.zig");
 pub const serve_listen = @import("serve_listen.zig");
 pub const session_ctl = @import("session_ctl.zig");
