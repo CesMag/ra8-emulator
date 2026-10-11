@@ -9,14 +9,18 @@ const Writer = @import("../report.zig").Writer;
 
 pub fn write(out: Writer, io: std.Io, image: elf.Image, table: profile.Table, path: ?[]const u8) !void {
     try print(out, image, table);
-    if (path) |destination| {
-        const file = try std.Io.Dir.cwd().createFile(io, destination, .{});
-        defer file.close(io);
-        var buffer: [4096]u8 = undefined;
-        var writer = file.writer(io, &buffer);
-        try folded(&writer.interface, image, table);
-        try writer.interface.flush();
-    }
+    if (path) |destination| try writeFolded(io, image, table, destination);
+}
+
+/// The folded rows into the file at `destination`, alone: a `--report
+/// json` run writes the file and prints nothing (RA8EMU-1143).
+pub fn writeFolded(io: std.Io, image: elf.Image, table: profile.Table, destination: []const u8) !void {
+    const file = try std.Io.Dir.cwd().createFile(io, destination, .{});
+    defer file.close(io);
+    var buffer: [4096]u8 = undefined;
+    var writer = file.writer(io, &buffer);
+    try folded(&writer.interface, image, table);
+    try writer.interface.flush();
 }
 
 pub fn print(out: Writer, image: elf.Image, table: profile.Table) !void {

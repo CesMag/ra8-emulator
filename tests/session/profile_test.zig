@@ -13,3 +13,9 @@ test "profile ranks functions by cycles and keeps instruction counts" {
     try std.testing.expectEqual(@as(u64, 5), ranked[1].cycles);
     try std.testing.expectEqual(@as(u64, 5), ranked[1].instructions);
 }
+
+test "profile ranks an empty table without tripping its insertion sort" {
+    const table = profile.Table{ .image = .{ .bytes = &.{} } };
+    var into: [profile.limits.functions]profile.Site = undefined;
+    try std.testing.expectEqual(@as(usize, 0), table.ranked(&into).len);
+}

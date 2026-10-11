@@ -88,6 +88,8 @@ pub const Table = struct {
     pub fn ranked(self: *const Table, into: *[limits.functions]Site) []Site {
         @memcpy(into[0..self.used], self.sites[0..self.used]);
         const out = into[0..self.used];
+        // An image with no sized function leaves the table empty (RA8EMU-1143).
+        if (out.len < 2) return out;
         for (1..out.len) |index| {
             var at = index;
             while (at > 0 and out[at].cycles > out[at - 1].cycles) : (at -= 1) {

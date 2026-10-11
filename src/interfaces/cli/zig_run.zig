@@ -14,6 +14,7 @@ const board_wiring = @import("ra8_board").wiring;
 const report_run = @import("report/run.zig");
 const json_run = @import("report/json_run.zig");
 const report_dumps = @import("report/dumps.zig");
+const report_profile = @import("report/profile.zig");
 const frame_out = @import("frame_out.zig");
 const frames_out = @import("report.zig").frames_out;
 const eink_log = @import("eink_log.zig");
@@ -96,6 +97,7 @@ pub fn run(out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timeba
             const load = loadOf(clock.memory, if (tracer.*) |*found| found else null, clock.cpu1);
             try json_run.document(out, board, .{ .engine = "zig", .elapsed = ran.*, .elapsed_cycles = clock.wall_cycles, .external = clock.memory, .bus_errors = clock.bus_tally, .where = .{ .image = image, .profile = profile_table }, .dumps = &.{ .registers = .{ .zig = final }, .memory = clock.memory, .image = image, .options = &options, .io = io, .watched = watched }, .load = if (options.cpu_load) &load else null, .eink_log = if (options.frames.eink_log != null) &eink_recorder else null });
         } else try report_run.zigCore(out, board, timebase.*, ran.*, clock.bus_tally);
+        if (profile_table) |table| try profileOut(out, io, image, table.*, options);
         try report_run.cpu1(out, if (clock.cpu1) |second| &second.second else null);
         // Globals a memory-probe verdict reads, out of the Zig core's memory.
         if (!options.report_json) try textDumps(out, io, board, clock.memory, final, image, options, watched);
@@ -107,6 +109,14 @@ pub fn run(out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timeba
     } else try captureFrames(board, io, options);
     try finishEinkLog(out, io, options, &eink_recorder);
     return status;
+}
+
+/// The `--profile` table after the report: its lines in a text run, and
+/// the `--profile-folded` file in either mode (RA8EMU-1143). The engine
+/// path printed these through report/after.zig until RA8EMU-606 removed it.
+fn profileOut(out: *std.Io.Writer, io: std.Io, image: elf.Image, table: profile.Table, options: cli.Options) !void {
+    if (!options.report_json) try report_profile.print(out, image, table);
+    if (options.profile_folded) |path| try report_profile.writeFolded(io, image, table, path);
 }
 
 /// The loop's options, read off the CLI's.

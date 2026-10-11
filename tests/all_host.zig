@@ -126,6 +126,7 @@ test {
     _ = @import("interfaces/gui/shell_camera_file_test.zig");
     _ = @import("interfaces/gui/shell_titles_test.zig");
     _ = @import("interfaces/cli/report/dma_test.zig");
+    _ = @import("interfaces/cli/report/profile_test.zig");
     _ = @import("interfaces/cli/report/unmodelled_test.zig");
     _ = @import("interfaces/cli/report/watchdog_test.zig");
     _ = @import("interfaces/cli/report/dtc1_test.zig");
