@@ -9,7 +9,7 @@ const served_setup = @import("ra8_rpc").served_setup;
 const loop = @import("loop.zig");
 const listen = @import("listen.zig");
 const card_setup = @import("../card/setup.zig");
-const card_apps = @import("../card/apps.zig");
+const card_apps = @import("ra8_rpc").card_apps;
 const txm_debug = @import("ra8_session").txm.debug;
 const session_api = @import("ra8_session").api;
 const elf = @import("ra8_board").image.elf;
@@ -74,11 +74,6 @@ fn parseWhere(argv: []const []const u8) ?Asked {
 }
 
 /// Each paired app's display name and module ELF, as the session places them.
-fn pairUp(apps: []const card_apps.Staged, into: *[card_apps.max_apps]txm_debug.Pair) ![]const txm_debug.Pair {
-    for (apps, 0..) |app, index| into[index] = .{ .label = app.label, .image = try elf.Image.init(app.elf.?) };
-    return into[0..apps.len];
-}
-
 /// Places and clears real breakpoints for breaks named before their
 /// module loaded, through the served session (RA8EMU-1141).
 const BreakArmer = struct {
@@ -116,7 +111,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
     };
     defer card_apps.unload(allocator, apps);
     var pairs: [card_apps.max_apps]txm_debug.Pair = undefined;
-    setup.pairModules(pairUp(apps, &pairs) catch |err| {
+    setup.pairModules(card_apps.pairs(apps, &pairs) catch |err| {
         std.debug.print("serve: a module ELF is not an ELF: {s}\n", .{@errorName(err)});
         return 1;
     });

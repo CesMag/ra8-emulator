@@ -23,6 +23,8 @@ const stack_samples = @import("ra8_session").stack.samples;
 const stack_profile = @import("ra8_session").stack.profile;
 const source_spec = @import("ra8_host").camera.source_spec;
 const source_open = @import("ra8_host").camera.source_open;
+const card_apps = @import("card_apps.zig");
+const txm_debug = @import("ra8_session").txm.debug;
 const proto = @import("session/rpc.zig");
 const served = @import("session/server.zig");
 
@@ -70,6 +72,19 @@ pub const Served = struct {
     /// `pairs` outlives the server.
     pub fn pairModules(self: *Served, pairs: []const @import("ra8_session").txm.debug.Pair) void {
         self.context.modules = self.owner.pairModules(pairs);
+    }
+
+    /// Fill the board's SDHI card with the apps in `app_paths` and pair each
+    /// app's module ELF with the loaded-module table (RA8EMU-1142), the way
+    /// the CLI's serve does for `--app`. Call once, after open.
+    pub fn stageApps(self: *Served, io: std.Io, allocator: std.mem.Allocator, app_paths: []const []const u8) !void {
+        if (app_paths.len == 0) return;
+        try card_apps.fillCard(self.owner.board(), io, allocator, app_paths);
+        var staged: [card_apps.max_apps]card_apps.Staged = undefined;
+        const apps = try card_apps.paired(io, allocator, app_paths, &staged);
+        defer card_apps.unload(allocator, apps);
+        var pairs: [card_apps.max_apps]txm_debug.Pair = undefined;
+        self.pairModules(try card_apps.pairs(apps, &pairs));
     }
 
     pub fn sampleStacks(self: *Served, every: u32) !void {

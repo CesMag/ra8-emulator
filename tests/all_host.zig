@@ -164,7 +164,8 @@ test {
     _ = @import("interfaces/cli/cli_test.zig");
     _ = @import("interfaces/cli/camera_source_test.zig");
     _ = @import("interfaces/cli/usb_disk_option_test.zig");
-    _ = @import("interfaces/cli/card/apps_test.zig");
+    _ = @import("interfaces/rpc/card_apps_test.zig");
+    _ = @import("interfaces/rpc/served_apps_test.zig");
     _ = @import("interfaces/usbip/wire_test.zig");
     _ = @import("interfaces/usbip/exported_test.zig");
     _ = @import("interfaces/cli/debug_front_test.zig");

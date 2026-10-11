@@ -4,10 +4,9 @@ const Board = @import("ra8_board").board.Board;
 const sd_format = @import("ra8_components").sd_card.format;
 const sd_advice = @import("ra8_components").sd_card.format_advice;
 const sd_image = @import("ra8_components").sd_card.image;
-const sd_mkimage = @import("ra8_components").sd_card.mkimage;
 const disk_file = @import("ra8_host").disk_file;
 const host_folder = @import("ra8_host").folder;
-const card_apps = @import("apps.zig");
+const card_apps = @import("ra8_rpc").card_apps;
 
 /// The label a `--sd-new` format gives the card when the spec names none.
 pub const default_label = "RA8";
@@ -77,20 +76,11 @@ fn fromDir(board: *Board, io: std.Io, sdhi: Sdhi) !void {
     };
     defer root.close();
     const source = sdhi.dir orelse "--app";
-    var img = sd_image.Image.init(allocator);
-    defer img.deinit();
-    const built = sd_mkimage.build(allocator, &img, root, default_label) catch |err| {
+    const built = card_apps.buildCard(board, allocator, root, default_label) catch |err| {
         std.debug.print("--sd-dir {s}: {s}\n", .{ source, @errorName(err) });
         return err;
     };
-    const bytes = try allocator.alloc(u8, @as(usize, img.capacity_blocks) * 512);
-    defer allocator.free(bytes);
-    var index: u32 = 0;
-    while (index < img.capacity_blocks) : (index += 1) {
-        _ = img.read(index, bytes[@as(usize, index) * 512 ..][0..512]);
-    }
-    try board.host_card.loadBytes(bytes);
-    std.debug.print("sd-dir: {s} -> FAT32 {d} MiB, {d} files, {d} dirs\n", .{ source, img.capacity_blocks / 2048, built.files, built.dirs });
+    std.debug.print("sd-dir: {s} -> FAT32 {d} MiB, {d} files, {d} dirs\n", .{ source, built.blocks / 2048, built.files, built.dirs });
 }
 
 /// Write the SDHI card back over its image when `--sd-writable` asked.

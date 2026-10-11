@@ -27,6 +27,7 @@ const shell_registers = @import("registers.zig");
 const shell_memory = @import("memory.zig");
 const session_link = @import("../session_link.zig");
 const local_session = @import("../local_session.zig");
+const card_apps = @import("ra8_rpc").card_apps;
 const shell_run = @import("run.zig");
 const shell_time = @import("time.zig");
 const wall_clock = @import("../wall_clock.zig");
@@ -36,7 +37,7 @@ const colors = @import("../ui/colors.zig");
 
 const Env = proto.Client.Env;
 const usage = "usage: ra8_gui [--host NAME] [--hosts FILE] [--attach MODEL@ENDPOINT]... [--click]\n" ++
-    "    [--camera-source KIND[:ARG]] [--window-stills DIR [--window-stills-every N]]\n" ++
+    "    [--app FILE.ra8app[=MODULE.elf]]... [--camera-source KIND[:ARG]] [--window-stills DIR [--window-stills-every N]]\n" ++
     "    [--frames N] [--theme dark|light|system] IMAGE\n";
 
 /// The word `ra8_gui shell IMAGE` carried while ra8_gui also had a live
@@ -52,6 +53,10 @@ const frame_ns: u64 = shell_run.frame_ns;
 
 pub const Args = struct {
     image: []const u8,
+    /// `--app FILE.ra8app[=MODULE.elf]`, repeatable (RA8EMU-1142): ThreadX
+    /// module apps the session stages onto the board's card before boot.
+    apps: [card_apps.max_apps][]const u8 = undefined,
+    app_count: usize = 0,
     host: ?[]const u8 = null,
     hosts: ?[]const u8 = null,
     /// The `--attach` and `--click` plugs (RA8EMU-1095).
@@ -70,6 +75,13 @@ pub const Args = struct {
 };
 
 /// Parse `ra8_gui [flags] IMAGE`; see `usage`.
+/// One more `--app` value.
+fn addApp(args: *Args, path: []const u8) !void {
+    if (args.app_count == card_apps.max_apps) return error.TooManyApps;
+    args.apps[args.app_count] = path;
+    args.app_count += 1;
+}
+
 pub fn parse(argv: []const []const u8) error{Usage}!Args {
     if (argv.len < 2) return error.Usage;
     var args: Args = .{ .image = "" };
@@ -91,7 +103,7 @@ pub fn parse(argv: []const []const u8) error{Usage}!Args {
     return args;
 }
 
-const valued_flags = [_][]const u8{ "--host", "--hosts", "--attach", "--camera-source", "--window-stills", "--window-stills-every", "--frames", "--theme" };
+const valued_flags = [_][]const u8{ "--host", "--hosts", "--attach", "--app", "--camera-source", "--window-stills", "--window-stills-every", "--frames", "--theme" };
 
 fn valued(arg: []const u8) bool {
     for (valued_flags) |flag| if (std.mem.eql(u8, arg, flag)) return true;
@@ -106,6 +118,8 @@ fn take(args: *Args, flag: []const u8, value: []const u8) !void {
         args.hosts = value;
     } else if (std.mem.eql(u8, flag, "--attach")) {
         try args.startup.add(value);
+    } else if (std.mem.eql(u8, flag, "--app")) {
+        addApp(args, value) catch return error.Usage;
     } else if (std.mem.eql(u8, flag, "--camera-source")) {
         args.camera = try source_spec.parse(value);
     } else if (std.mem.eql(u8, flag, "--window-stills")) {
@@ -179,6 +193,10 @@ fn local(allocator: std.mem.Allocator, io: std.Io, window: platform.Platform, ar
     var session: local_session.LocalSession = undefined;
     try session.open(allocator, io, path);
     defer session.deinit();
+    session.setup.stageApps(io, allocator, args.apps[0..args.app_count]) catch |err| {
+        std.debug.print("ra8_gui: cannot stage the apps: {s}\n", .{@errorName(err)});
+        return err;
+    };
     const rx = try allocator.alloc(u8, 2 * Env.max_frame);
     const tx = try allocator.alloc(u8, Env.max_frame);
     var link: session_link.Link = undefined;

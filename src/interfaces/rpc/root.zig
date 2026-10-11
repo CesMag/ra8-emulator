@@ -7,6 +7,7 @@
 //! It imports the session, the components (whose endpoint, request and
 //! fault types the wire carries), the host, and the firmware's wire library
 //! as `ra8_rpc_wire`.
+pub const card_apps = @import("card_apps.zig");
 pub const child_transport = @import("child_transport.zig");
 pub const served_setup = @import("served_setup.zig");
 pub const session = @import("session/session.zig");

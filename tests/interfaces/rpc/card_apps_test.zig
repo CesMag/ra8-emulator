@@ -3,9 +3,8 @@
 const std = @import("std");
 const io = std.testing.io;
 const ra8 = @import("ra8");
-const cli_app = @import("cli_app");
 const ra8app = ra8.board.image.ra8app;
-const card_apps = cli_app.card.apps;
+const card_apps = ra8.rpc.card_apps;
 
 const code_len = 16;
 const data_len = 8;

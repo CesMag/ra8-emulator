@@ -158,6 +158,7 @@ fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         .{ .name = "ra8_session", .module = session },
         .{ .name = "ra8_components", .module = components },
         .{ .name = "ra8_host", .module = host },
+        .{ .name = "ra8_board", .module = board },
         .{ .name = "ra8_rpc_wire", .module = firmware.module("ra8_rpc") },
     });
     const gdb = library(b, target, optimize, "ra8_gdb", "src/interfaces/gdb/root.zig", &.{
