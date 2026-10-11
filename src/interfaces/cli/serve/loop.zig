@@ -33,17 +33,29 @@ pub fn answer(context: *served.Context, wire: served.rpc_lib.Transport, fd: std.
 }
 
 /// Wait briefly on `fd`; true once the peer hung up with nothing left to read.
-/// A pipe reports that as HUP. A socket reports it as readable with zero
-/// bytes behind it, so the socket is peeked.
-fn closed(fd: std.posix.fd_t, link: Link) !bool {
+/// A socket reports that as readable with zero bytes behind it, so the socket
+/// is peeked. A pipe reports HUP: alone on Linux once it is drained, but with
+/// readable beside it on Darwin whether or not bytes are left, so a pipe that
+/// reads as both is asked what it still holds.
+pub fn closed(fd: std.posix.fd_t, link: Link) !bool {
     if (on_windows and link == .pipe) return pipeClosed(fd);
     const ready = try sock_ready.wait(fd, idle_wait_ms);
     if (!ready.readable) return ready.hung_up;
-    if (link == .pipe) return false;
+    if (link == .pipe) return ready.hung_up and pipeDrained(fd);
     return peerGone(fd);
 }
 
 const on_windows = builtin.os.tag == .windows;
+
+/// FIONREAD, the bytes a read would take now. Zig 0.17's std names the
+/// request for Linux; Darwin's <sys/filio.h> gives _IOR('f', 127, int).
+fn pipeDrained(pipe: std.posix.fd_t) bool {
+    if (on_windows) return false;
+    const request: c_int = if (builtin.os.tag.isDarwin()) 0x4004667f else std.posix.T.FIONREAD;
+    var waiting: c_int = 0;
+    if (std.c.ioctl(pipe, request, &waiting) != 0) return false;
+    return waiting == 0;
+}
 
 /// Windows pipes have no wait; an empty pipe sleeps the idle wait instead.
 fn pipeClosed(pipe: std.posix.fd_t) bool {

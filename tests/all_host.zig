@@ -11,6 +11,7 @@ test {
     _ = @import("interfaces/cli/host/bytes_test.zig");
     _ = @import("interfaces/cli/probe_ctl_test.zig");
     _ = @import("interfaces/cli/serve/listen_test.zig");
+    _ = @import("interfaces/cli/serve/loop_test.zig");
     _ = @import("interfaces/cli/session_ctl_test.zig");
     _ = @import("interfaces/cli/ctl_end_to_end_test.zig");
     _ = @import("interfaces/cli/ctl_map_test.zig");
