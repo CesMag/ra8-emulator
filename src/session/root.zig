@@ -55,6 +55,7 @@ pub const rtos_hook = @import("rtos_hook.zig");
 pub const rtos_load = @import("rtos_load.zig");
 pub const rtos_names = @import("rtos_names.zig");
 pub const txm_modules = @import("txm_modules.zig");
+pub const txm_report = @import("txm_report.zig");
 pub const rtos_report = @import("rtos_report.zig");
 pub const run_loop = @import("run_loop.zig");
 pub const script = @import("script.zig");

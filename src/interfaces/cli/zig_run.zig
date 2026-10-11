@@ -20,6 +20,9 @@ const frames_out = @import("report.zig").frames_out;
 const eink_log = @import("eink_log.zig");
 const audio_out = @import("audio_out.zig");
 const rtos_hook = @import("ra8_session").rtos_hook;
+const txm_report = @import("ra8_session").txm_report;
+const txm_modules = @import("ra8_session").txm_modules;
+const symbols = @import("ra8_session").symbols;
 const run_loop = @import("ra8_session").run_loop;
 const second_core = @import("ra8_chip").core.second_core;
 const profile = @import("ra8_session").profile;
@@ -102,6 +105,7 @@ pub fn run(out: *std.Io.Writer, io: std.Io, memory: Guest, board: *Board, timeba
         // Globals a memory-probe verdict reads, out of the Zig core's memory.
         if (!options.report_json) try textDumps(out, io, board, clock.memory, final, image, options, watched);
         if (tracer.*) |*found| try rtos_hook.report.all(out, io, options, found, rtos_hook.Memory{ .guest = clock.memory });
+        if (!options.report_json) try txm_report.print(out, symbols.addressOf(image, txm_modules.list_symbol), rtos_hook.Memory{ .guest = clock.memory });
         if (clock.cpu1) |second| try rtos_hook.second.printOn(out, io, options, second.guest());
         try finishFrames(out, io, board, options, &frames, &audio);
     } else if (options.ctl_cpu_load) {
