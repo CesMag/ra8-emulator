@@ -65,6 +65,7 @@ test {
     _ = @import("rtos_publish_test.zig");
     _ = @import("rtos_hook_test.zig");
     _ = @import("rtos_names_test.zig");
+    _ = @import("txm_modules_test.zig");
     _ = @import("rtos_isr_test.zig");
     _ = @import("rtos_zig_test.zig");
     _ = @import("rtos_second_test.zig");
