@@ -105,3 +105,36 @@ test "a centred label is cut to fit and sits in the middle of its area" {
     try font.centred(&list, .{ .x = 0, .y = 0, .w = 6, .h = 8 }, "x", Color.rgb(1, 2, 3));
     try std.testing.expectEqual(@as(usize, 0), list.commands.items.len);
 }
+
+test "text drawn at negative offsets keeps its shapes; only the target clips" {
+    const ink = Color.rgb(255, 0, 0);
+    var list = draw_list.DrawList.init(std.testing.allocator, 64, 32);
+    defer list.deinit();
+    var baseline = try raster.Framebuffer.init(std.testing.allocator, 64, 32);
+    defer baseline.deinit(std.testing.allocator);
+    var frame = try raster.Framebuffer.init(std.testing.allocator, 64, 32);
+    defer frame.deinit(std.testing.allocator);
+    try font.draw(&list, 10, 12, "WIWI", ink);
+    raster.draw(&baseline, &list, font.atlas);
+    list.commands.clearRetainingCapacity();
+    try font.draw(&list, 3, 3, "WIWI", ink);
+    raster.draw(&frame, &list, font.atlas);
+    // "WIWI" is four cells wide, so the run at (3, 3) names the baseline
+    // run's pixel seven right and nine down, and names it in bounds: the
+    // overlap must match exactly, so no round-toward-zero clipped, sheared
+    // or skewed a negative position.
+    var overlap: usize = 0;
+    for (0..23) |py| for (0..57) |px| {
+        const shifted = frame.at(@intCast(px), @intCast(py)).a != 0;
+        const named = baseline.at(@intCast(px + 7), @intCast(py + 9)).a != 0;
+        try std.testing.expectEqual(named, shifted);
+        if (shifted) overlap += 1;
+    };
+    try std.testing.expect(overlap > 100);
+    // Nothing ink outside the overlap: negative positions drew nothing
+    // off-target.
+    for (0..32) |py| for (0..64) |px| {
+        if (px < 35 and py < 19) continue;
+        try std.testing.expectEqual(@as(u8, 0), frame.at(@intCast(px), @intCast(py)).a);
+    };
+}
