@@ -95,6 +95,18 @@ pub const Time = struct {
         return true;
     }
 
+    /// The session answered a load (RA8EMU-959). An image it took starts
+    /// halted at its reset vector, so a lit Run goes dark with no halt of
+    /// the old image to hand on, and the clock is read again; an image it
+    /// refused leaves the run as it was.
+    pub fn loaded(self: *Time, status: *const Status) void {
+        if (status.refused != null and status.refused.? == .load) return;
+        self.run.replaced();
+        self.readout.achieved_milli = null;
+        self.readout.last = null;
+        self.stale = true;
+    }
+
     /// Board time as near as the shell knows it: where the last slice
     /// ended, or the last clock answer.
     pub fn boardNow(self: *const Time) u64 {

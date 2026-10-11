@@ -128,6 +128,8 @@ test {
     _ = @import("interfaces/gui/shell/time_test.zig");
     _ = @import("interfaces/gui/shell/theme_test.zig");
     _ = @import("interfaces/gui/shell_run_live_test.zig");
+    _ = @import("interfaces/gui/shell/open_test.zig");
+    _ = @import("interfaces/gui/shell_open_live_test.zig");
     _ = @import("interfaces/gui/shell/panes_test.zig");
     _ = @import("interfaces/gui/shell/console_test.zig");
     _ = @import("interfaces/gui/shell/board/board_test.zig");

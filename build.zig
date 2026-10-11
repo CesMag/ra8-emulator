@@ -378,8 +378,9 @@ fn guiExe(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin
 }
 
 /// The SDL-backed GUI tests (RA8EMU-733): the geometry presenter against
-/// the CPU golden on SDL's software renderer, then the smoke run
-/// (RA8EMU-1089), both headless. Kept out of `zig build test` so the tests
+/// the CPU golden on SDL's software renderer, the file picker's handoff
+/// through SDL's event queue (RA8EMU-959), then the smoke run
+/// (RA8EMU-1089), all headless. Kept out of `zig build test` so the tests
 /// need no SDL.
 fn guiTest(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, emu: *std.Build.Module, enabled: bool, sdl_mod: ?*std.Build.Module, gui_exe: ?*std.Build.Step.Compile) void {
     const step = b.step("gui-test", "Run the SDL-backed GUI tests and the ra8_gui --frames smoke run (needs -Dgui)");
@@ -388,9 +389,11 @@ fn guiTest(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builti
         return;
     }
     const sdl = sdl_mod orelse return;
-    const mod = b.createModule(.{ .root_source_file = b.path("tests/interfaces/gui/sdl/geometry_test.zig"), .target = target, .optimize = optimize });
-    mod.addImport("ra8", emu);
-    mod.addImport("gui_sdl", sdl);
-    step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = mod })).step);
+    for ([_][]const u8{ "tests/interfaces/gui/sdl/geometry_test.zig", "tests/interfaces/gui/sdl/dialog_test.zig" }) |root| {
+        const mod = b.createModule(.{ .root_source_file = b.path(root), .target = target, .optimize = optimize });
+        mod.addImport("ra8", emu);
+        mod.addImport("gui_sdl", sdl);
+        step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = mod })).step);
+    }
     if (gui_exe) |exe| step.dependOn(gui_smoke.smoke(b, exe));
 }

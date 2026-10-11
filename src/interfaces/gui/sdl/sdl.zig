@@ -14,6 +14,7 @@ const render = @import("ra8_render");
 pub const c = @import("c.zig").c;
 pub const geometry = @import("geometry.zig");
 pub const opener = @import("opener.zig").opener;
+pub const dialog = @import("dialog.zig");
 
 const Event = gui.platform.Event;
 const Size = gui.platform.Size;
@@ -36,6 +37,8 @@ pub const Sdl = struct {
     /// Pixels per layout point (RA8EMU-966), set on the renderer so the
     /// shell draws in points and SDL scales every frame up to the pixels.
     ui_scale: u32 = 1,
+    /// The OS's file picker for a firmware image (RA8EMU-959).
+    files: dialog.Picker = .{ .kind = 0 },
 
     /// Opens at most of the screen it lands on (window_size.initial) and
     /// never shrinks under window_size.min (RA8EMU-966).
@@ -64,7 +67,7 @@ pub const Sdl = struct {
 
         // Shifted characters reach the console pane as text events.
         _ = c.SDL_StartTextInput(window);
-        var self = Sdl{ .window = window, .renderer = renderer, .vsync = vsync };
+        var self = Sdl{ .window = window, .renderer = renderer, .vsync = vsync, .files = .init() };
         if (!cpuForced()) {
             self.presenter = geometry.Presenter.init(std.heap.page_allocator, renderer);
         }
@@ -74,6 +77,7 @@ pub const Sdl = struct {
     pub fn deinit(self: *Sdl) void {
         render_driver.active = "";
         render_driver.gpu = null;
+        self.files.deinit();
         if (self.presenter) |*p| p.deinit();
         if (self.texture) |t| c.SDL_DestroyTexture(t);
         c.SDL_DestroyRenderer(self.renderer);
@@ -94,6 +98,8 @@ pub const Sdl = struct {
         .interval = interval,
         .appearance = appearance,
         .focus = focus,
+        .open_image = openImage,
+        .title = setTitle,
     };
 
     fn from(ctx: *anyopaque) *Sdl {
@@ -108,11 +114,13 @@ pub const Sdl = struct {
 
     /// The next event, pointer positions in layout points. The full-screen
     /// key is the window's own and never reaches the shell; a size or
-    /// display-scale change reads as a resize to the new point size.
+    /// display-scale change reads as a resize to the new point size, and a
+    /// choice from the file picker as the path chosen.
     fn poll(ctx: *anyopaque) ?Event {
         const self = from(ctx);
         var ev: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&ev)) {
+            if (self.files.take(&ev)) |path| return .{ .picked = path };
             if (ev.type == c.SDL_EVENT_KEY_DOWN and !ev.key.repeat and window_keys.togglesFullscreen(ev.key.key, mods(ev.key.mod), mac)) {
                 self.toggleFullscreen();
                 continue;
@@ -125,6 +133,19 @@ pub const Sdl = struct {
             if (translate(&ev)) |event| return event;
         }
         return null;
+    }
+
+    fn openImage(ctx: *anyopaque) void {
+        const self = from(ctx);
+        self.files.show(self.window);
+    }
+
+    fn setTitle(ctx: *anyopaque, text: []const u8) void {
+        var buf: [256]u8 = undefined;
+        const len = @min(text.len, buf.len - 1);
+        @memcpy(buf[0..len], text[0..len]);
+        buf[len] = 0;
+        _ = c.SDL_SetWindowTitle(from(ctx).window, buf[0..len :0].ptr);
     }
 
     fn toggleFullscreen(self: *Sdl) void {
@@ -245,7 +266,7 @@ fn translate(ev: *const c.SDL_Event) ?Event {
         c.SDL_EVENT_QUIT, c.SDL_EVENT_WINDOW_CLOSE_REQUESTED => .quit,
         c.SDL_EVENT_WINDOW_EXPOSED => .expose,
         c.SDL_EVENT_SYSTEM_THEME_CHANGED => .appearance,
-        c.SDL_EVENT_KEY_DOWN, c.SDL_EVENT_KEY_UP => .{ .key = .{ .code = ev.key.key, .down = ev.key.down } },
+        c.SDL_EVENT_KEY_DOWN, c.SDL_EVENT_KEY_UP => .{ .key = .{ .code = ev.key.key, .down = ev.key.down, .primary = window_keys.primary(mods(ev.key.mod), mac) } },
         c.SDL_EVENT_TEXT_INPUT => .{ .text = gui.platform.Text.of(std.mem.span(ev.text.text)) },
         c.SDL_EVENT_MOUSE_MOTION => .{ .pointer = .{ .x = @intFromFloat(ev.motion.x), .y = @intFromFloat(ev.motion.y) } },
         c.SDL_EVENT_MOUSE_BUTTON_DOWN, c.SDL_EVENT_MOUSE_BUTTON_UP => .{ .button = .{

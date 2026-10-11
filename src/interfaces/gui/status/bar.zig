@@ -1,6 +1,7 @@
 //! The shell's status bar model (RA8EMU-752): the session link, the loaded
 //! image and the run state, read as one line of text. Actions go through the
-//! session; the model changes only on what the session sends back.
+//! session; the model changes only on what the session sends back, or on a
+//! picked file that never got as far as the session.
 const std = @import("std");
 const proto = @import("ra8_rpc").session.rpc;
 const session_link = @import("../session_link.zig");
@@ -42,11 +43,17 @@ pub const Run = union(enum) {
 pub const Refusal = enum {
     load,
     run,
+    /// A picked file never reached the session (RA8EMU-959): it could not
+    /// be read, or it is larger than one load can carry.
+    unread,
+    too_large,
 
     pub fn message(self: Refusal) []const u8 {
         return switch (self) {
             .load => "the session refused the image",
             .run => "the session refused to run",
+            .unread => "the file could not be read",
+            .too_large => "the image is too large for the session (1 MiB at most)",
         };
     }
 };
@@ -64,7 +71,10 @@ pub const Status = struct {
     render: ?[]const u8 = null,
 
     /// Load `bytes` (read from `path`) on this core, then read where it halted.
+    /// An image longer than one load carries is turned back here, before
+    /// the link is asked to send what it cannot.
     pub fn load(self: *Status, link: *Link, path: []const u8, bytes: []const u8) !void {
+        if (bytes.len > proto.Load.max_len.image) return error.ImageTooLarge;
         _ = try link.send(proto.Subscription, .subscribe, .{ .core = self.core, .topic = .stop });
         self.load_id = try link.send(proto.Load, .load, .{ .core = self.core, .image = bytes });
         self.staged = Image.of(path, bytes);

@@ -33,6 +33,7 @@ const shell_titles = @import("titles.zig");
 const shell_plug = @import("plug.zig");
 const shell_camera_file = @import("camera/file.zig");
 const shell_startup = @import("startup.zig");
+const shell_open = @import("open.zig");
 const shell_registers = @import("registers.zig");
 const shell_memory = @import("memory.zig");
 const shell_time = @import("time.zig");
@@ -85,6 +86,8 @@ pub const Shell = struct {
     stack: ?*shell_stack.Pair = null,
     /// The time bar's models: the run, the speed field and the clock.
     time: ?*shell_time.Time = null,
+    /// Opening another image from the OS's file picker (RA8EMU-959).
+    files: ?*shell_open.Open = null,
     /// The session when it is served in this process; null for a remote one.
     server: ?Server = null,
     /// The per-user listener outside clients (ctl, IDEs) connect to
@@ -135,6 +138,7 @@ pub const Shell = struct {
         if (!self.themes.styled) self.themes.restyle(window.appearance());
         try self.exchange();
         try self.paySlices();
+        if (self.files) |files| files.frame(window, &self.status);
         solved.deinit(self.allocator);
         solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         var list = draw_list.DrawList.init(self.allocator, size.width, size.height);
@@ -158,6 +162,7 @@ pub const Shell = struct {
 
     /// Apply one input event against this frame's layout.
     pub fn handle(self: *Shell, event: platform.Event, solved: *const pane_layout.Solved) void {
+        if (self.files) |files| if (files.key(event)) return;
         switch (event) {
             .quit => self.open = false,
             .button => |press| {
@@ -197,6 +202,7 @@ pub const Shell = struct {
                 if (self.plug) |plug| _ = plug.handle(event);
                 if (self.camera_file) |file| _ = file.handle(event);
             },
+            .picked => |path| if (self.files) |files| if (self.link) |link| files.picked(path, link, &self.status),
             else => {},
         }
     }
@@ -279,7 +285,8 @@ pub const Shell = struct {
         const time = self.time orelse return;
         const link = self.link orelse return;
         time.frame(link, self.now());
-        while (self.drained and time.run.next(link, self.now())) {
+        // No slice goes out behind a load: the image it would run may be gone.
+        while (self.drained and self.status.load_id == null and time.run.next(link, self.now())) {
             const server = self.server orelse return;
             try server.answer();
             if (self.listener) |listener| try listener.answer();
@@ -325,6 +332,7 @@ pub const Shell = struct {
             self.status.observe(link, arrival);
             const answered = loading != null and self.status.load_id == null;
             if (answered) self.loaded = true;
+            if (answered) if (self.time) |time| time.loaded(&self.status);
             self.observeCore(answered, arrival);
             if (self.console) |console| try console.observe(arrival);
             if (self.board) |board| try board.observe(arrival);

@@ -37,11 +37,20 @@ pub const Event = union(enum) {
     resize: Size,
     /// The window was uncovered and must be drawn again.
     expose,
-    key: struct { code: u32, down: bool },
+    key: struct {
+        code: u32,
+        down: bool,
+        /// The OS's shortcut modifier was held: Cmd on macOS, Ctrl elsewhere.
+        primary: bool = false,
+    },
     text: Text,
     pointer: struct { x: i32, y: i32 },
     button: struct { button: u8, down: bool, x: i32, y: i32 },
     wheel: struct { dx: f32, dy: f32 },
+    /// The image chosen in the picker `openImage` put up (RA8EMU-959). The
+    /// path is the backend's and holds until the next poll; a picker that
+    /// was cancelled sends nothing.
+    picked: []const u8,
 };
 
 /// How an executable opens and closes its window. ra8_gui passes
@@ -71,6 +80,12 @@ pub const Platform = struct {
         /// Raises the window to the front (RA8EMU-1156); null on backends
         /// that have no window to raise.
         focus: ?*const fn (ctx: *anyopaque) void = null,
+        /// Puts up the OS's own file picker for a firmware image
+        /// (RA8EMU-959) and returns at once; the choice comes back as a
+        /// `picked` event. Null for a backend with no picker.
+        open_image: ?*const fn (ctx: *anyopaque) void = null,
+        /// Sets the window's title; null for a backend with none.
+        title: ?*const fn (ctx: *anyopaque, text: []const u8) void = null,
     };
 
     /// The next input event, or null once this frame's events are drained.
@@ -117,5 +132,20 @@ pub const Platform = struct {
     pub fn focus(self: Platform) void {
         const raise = self.vtable.focus orelse return;
         raise(self.ctx);
+    }
+
+    /// Put up the OS's file picker for a firmware image. It does not wait:
+    /// a choice arrives later as a `picked` event. False when the backend
+    /// has no picker.
+    pub fn openImage(self: Platform) bool {
+        const put_up = self.vtable.open_image orelse return false;
+        put_up(self.ctx);
+        return true;
+    }
+
+    /// Set the window's title, on a backend that has one.
+    pub fn title(self: Platform, text: []const u8) void {
+        const set = self.vtable.title orelse return;
+        set(self.ctx, text);
     }
 };

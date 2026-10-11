@@ -64,7 +64,9 @@ An ordinary run takes breakpoints and dumps too: `--break-sym`, `--watch`,
 in the same process. The image opens halted; Run, Pause and Step on the
 time bar along the foot of the window run it, and the field beside them
 takes a speed (`0.5`, `2`, `max`). The board leaf shows the board with its
-LEDs; SW1, SW2 and the panel take clicks. `serve` and `ctl` run a
+LEDs; SW1, SW2 and the panel take clicks. Cmd+O (Ctrl+O on Windows and
+Linux) picks another image in the OS's own file dialog, and it opens halted
+the same way. `serve` and `ctl` run a
 session in one process and drive it from another, locally or over TCP.
 
 ## Library

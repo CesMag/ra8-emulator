@@ -31,6 +31,7 @@ pub const Live = struct {
     pointer: gui_app.shell.board.input.Pointer,
     panes: gui_app.shell.panes.Panes,
     stack: gui_app.shell.stack.Pair,
+    files: gui_app.shell.open.Open,
 
     /// Opens in place and steps until `image` has loaded and halted. The
     /// bar's speed starts at `milli` thousandths of real time: the fixture
@@ -60,6 +61,8 @@ pub const Live = struct {
         self.shell.board = &self.board;
         self.shell.board_input = &self.pointer;
         self.shell.painter = self.panes.painter();
+        self.files = .{ .io = std.testing.io, .allocator = gpa };
+        self.shell.files = &self.files;
         try self.step();
         const bytes = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, image, gpa, .limited(1 << 20));
         defer gpa.free(bytes);

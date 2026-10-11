@@ -113,6 +113,14 @@ pub const Run = struct {
         if (self.slice_id == null) self.settled = self.address;
     }
 
+    /// The image under the run was replaced (RA8EMU-959): no further slice
+    /// goes out, and there is no halt of the old image to hand out.
+    pub fn replaced(self: *Run) void {
+        self.lit = false;
+        self.settled = null;
+        self.refused = false;
+    }
+
     /// Where a pause, or a refused slice, left the core; handed out once.
     pub fn halted(self: *Run) ?u32 {
         const at = self.settled orelse return null;

@@ -215,3 +215,17 @@ test "RA8EMU-1148: a session core runs under the MPU check a plain run arms" {
     try std.testing.expect(check.unit == &opened.board().regions);
     try std.testing.expect(!check.armed);
 }
+
+test "RA8EMU-959: an image loaded over another is the one a firmware reset restarts" {
+    const gpa = std.testing.allocator;
+    var opened = try ra8.session.harness.open(gpa, std.testing.io, .{ .elf_path = "tests/fixtures/gpio/blink.elf" });
+    defer opened.deinit();
+    const reboot = opened.board().reboot.?;
+    try std.testing.expectEqual(@as(u32, 0x0200_0000), reboot.vector_base);
+    // An image linked further up the MRAM, so its vector table is elsewhere.
+    const bytes = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, "tests/fixtures/trustzone/cpu1_pingpong_ipc_cpu1.elf", gpa, .limited(1 << 20));
+    defer gpa.free(bytes);
+    try opened.session().load(.cpu0, bytes);
+    try std.testing.expectEqual(@as(?u32, 0x020C_0000), opened.loadedImage(.cpu0).?.vectorBase());
+    try std.testing.expectEqual(@as(u32, 0x020C_0000), reboot.vector_base);
+}

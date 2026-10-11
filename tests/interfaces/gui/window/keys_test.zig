@@ -19,3 +19,23 @@ test "F11 alone toggles full screen on Windows and Linux and Ctrl+Cmd+F does not
     try std.testing.expect(!keys.togglesFullscreen(keys.letter_f, .{ .ctrl = true, .gui = true }, false));
     try std.testing.expect(!keys.togglesFullscreen('a', .{}, false));
 }
+
+test "a shortcut is held with Cmd on macOS and with Ctrl elsewhere" {
+    try std.testing.expect(keys.primary(.{ .gui = true }, true));
+    try std.testing.expect(keys.primary(.{ .gui = true, .shift = true }, true));
+    try std.testing.expect(!keys.primary(.{ .ctrl = true }, true));
+    try std.testing.expect(!keys.primary(.{}, true));
+    try std.testing.expect(keys.primary(.{ .ctrl = true }, false));
+    try std.testing.expect(keys.primary(.{ .ctrl = true, .shift = true }, false));
+    try std.testing.expect(!keys.primary(.{ .gui = true }, false));
+    try std.testing.expect(!keys.primary(.{}, false));
+}
+
+test "the two OSes' modifiers together, or Alt, are no shortcut on either" {
+    for ([_]bool{ true, false }) |mac| {
+        try std.testing.expect(!keys.primary(.{ .ctrl = true, .gui = true }, mac));
+        try std.testing.expect(!keys.primary(.{ .ctrl = true, .gui = true, .alt = true }, mac));
+        try std.testing.expect(!keys.primary(.{ .gui = true, .alt = true }, mac));
+        try std.testing.expect(!keys.primary(.{ .ctrl = true, .alt = true }, mac));
+    }
+}

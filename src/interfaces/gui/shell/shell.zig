@@ -11,6 +11,7 @@ pub const frame = @import("../ui/shell/frame.zig");
 pub const loop = @import("loop.zig");
 pub const main = @import("main.zig");
 pub const memory = @import("memory.zig");
+pub const open = @import("open.zig");
 pub const panes = @import("panes.zig");
 pub const plug = @import("plug.zig");
 pub const registers = @import("registers.zig");

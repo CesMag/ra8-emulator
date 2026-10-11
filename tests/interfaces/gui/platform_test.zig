@@ -1,6 +1,7 @@
 //! Covers src/interfaces/gui/platform.zig: Text keeps the first bytes of the UTF-8 it
-//! was given, show falls back to the CPU path unless the backend draws, and a
-//! backend with no appearance reports unknown.
+//! was given, show falls back to the CPU path unless the backend draws, a
+//! backend with no appearance reports unknown, and one with no file picker
+//! or title says so and is left alone.
 const std = @import("std");
 const ra8 = @import("ra8");
 const gui_app = @import("gui_app");
@@ -78,4 +79,16 @@ test "a backend with no appearance reports unknown" {
     var ctx: u8 = 0;
     const window: platform.Platform = .{ .ctx = &ctx, .vtable = &.{ .poll = Stub.poll, .size = Stub.size, .scale = Stub.scale, .present = Stub.present } };
     try std.testing.expectEqual(platform.Appearance.unknown, window.appearance());
+}
+
+test "a backend with no file picker puts none up, and one with no title takes none" {
+    var stub = ShowStub{ .answer = false };
+    const window = platform.Platform{ .ctx = &stub, .vtable = &.{ .poll = ShowStub.poll, .size = ShowStub.size, .scale = ShowStub.scale, .present = ShowStub.present } };
+    try std.testing.expect(!window.openImage());
+    window.title("ignored");
+}
+
+test "a key carries no shortcut modifier unless the backend says one was held" {
+    const plain: platform.Event = .{ .key = .{ .code = 'o', .down = true } };
+    try std.testing.expect(!plain.key.primary);
 }

@@ -56,6 +56,10 @@ const LoaderState = struct {
     /// An owned copy of each core's last loaded image, for the memory map
     /// (RA8EMU-794); replaced on every load.
     loaded: [2]?[]u8 = .{ null, null },
+    /// Where a reset the firmware asks for restarts CPU0. A load moves it
+    /// to the new image's vector table (RA8EMU-959), or an image loaded
+    /// over another would reboot into the one it replaced.
+    reboot: ?*Reboot = null,
 
     fn load(context: *anyopaque, core: session_api.Core, bytes: []const u8) anyerror!void {
         const self: *LoaderState = @ptrCast(@alignCast(context));
@@ -67,7 +71,11 @@ const LoaderState = struct {
         // loads with, so option-setting segments land (RA8EMU-760).
         const loaded = try read_image.read(image);
         _ = try memory_load.image(memory, loaded.image());
-        try cpu.reset(image.vectorBase() orelse return error.NoVectorTable);
+        const base = image.vectorBase() orelse return error.NoVectorTable;
+        try cpu.reset(base);
+        if (core == .cpu0) if (self.reboot) |reboot| {
+            reboot.vector_base = base;
+        };
         const copy = try self.allocator.dupe(u8, bytes);
         if (self.loaded[index]) |old| self.allocator.free(old);
         self.loaded[index] = copy;
@@ -324,6 +332,7 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     state.session.attachFaults(&state.faults);
     state.reboot = .{ .vector_base = vector };
     state.board.reboot = &state.reboot;
+    state.loading.reboot = &state.reboot;
     state.chunk = .{ .cpu = &state.cpu, .mark = state.cpu.retired };
     state.session.event_sources.chunk = &state.chunk;
     state.edge = .{ .board = &state.board, .core = state.cpu0.own(), .cpu = &state.cpu, .reboot = &state.reboot, .selected = &state.session.live.index, .chunk = &state.chunk };

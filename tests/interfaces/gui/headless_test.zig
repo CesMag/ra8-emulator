@@ -72,3 +72,28 @@ test "the headless window reports the appearance a test gives it" {
     try window.feed(.appearance);
     try std.testing.expect(platform.poll().? == .appearance);
 }
+
+test "the image picker is counted, and a choice comes back as the event it was fed" {
+    var window = gui.headless.Headless.init(std.testing.allocator, 8, 8);
+    defer window.deinit();
+    const platform = window.platform();
+    try std.testing.expectEqual(@as(u32, 0), window.pickers);
+    try std.testing.expect(platform.openImage());
+    try std.testing.expect(platform.openImage());
+    try std.testing.expectEqual(@as(u32, 2), window.pickers);
+    try window.feed(.{ .picked = "tests/fixtures/gpio/blink.elf" });
+    try std.testing.expectEqualStrings("tests/fixtures/gpio/blink.elf", platform.poll().?.picked);
+    try std.testing.expect(platform.poll() == null);
+}
+
+test "the title last set is kept, cut to what the window holds" {
+    var window = gui.headless.Headless.init(std.testing.allocator, 8, 8);
+    defer window.deinit();
+    const platform = window.platform();
+    try std.testing.expectEqualStrings("", window.title());
+    platform.title("blink.elf - ra8 emulator");
+    try std.testing.expectEqualStrings("blink.elf - ra8 emulator", window.title());
+    const long: [200]u8 = @splat('x');
+    platform.title(&long);
+    try std.testing.expectEqual(@as(usize, 128), window.title().len);
+}

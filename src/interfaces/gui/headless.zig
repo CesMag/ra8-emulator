@@ -19,6 +19,12 @@ pub const Headless = struct {
     os: platform_mod.Appearance = .unknown,
     /// How many times the shell focused this window (RA8EMU-1156).
     focuses: u32 = 0,
+    /// How many times the image picker was asked for (RA8EMU-959); a test
+    /// answers by feeding a `picked` event.
+    pickers: u32 = 0,
+    /// The title last set.
+    title_buf: [128]u8 = undefined,
+    title_len: usize = 0,
 
     pub fn init(allocator: std.mem.Allocator, width: u32, height: u32) Headless {
         return .{ .allocator = allocator, .drawable = .{ .width = width, .height = height } };
@@ -35,7 +41,11 @@ pub const Headless = struct {
     }
 
     pub fn platform(self: *Headless) platform_mod.Platform {
-        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present, .appearance = appearance, .focus = focus } };
+        return .{ .ctx = self, .vtable = &.{ .poll = poll, .size = size, .scale = scale, .present = present, .appearance = appearance, .focus = focus, .open_image = openImage, .title = setTitle } };
+    }
+
+    pub fn title(self: *const Headless) []const u8 {
+        return self.title_buf[0..self.title_len];
     }
 
     fn poll(ctx: *anyopaque) ?Event {
@@ -69,6 +79,17 @@ pub const Headless = struct {
     fn focus(ctx: *anyopaque) void {
         const self: *Headless = @ptrCast(@alignCast(ctx));
         self.focuses += 1;
+    }
+
+    fn openImage(ctx: *anyopaque) void {
+        const self: *Headless = @ptrCast(@alignCast(ctx));
+        self.pickers += 1;
+    }
+
+    fn setTitle(ctx: *anyopaque, text: []const u8) void {
+        const self: *Headless = @ptrCast(@alignCast(ctx));
+        self.title_len = @min(text.len, self.title_buf.len);
+        @memcpy(self.title_buf[0..self.title_len], text[0..self.title_len]);
     }
 
     fn present(ctx: *anyopaque, frame: *const raster.Framebuffer) anyerror!void {

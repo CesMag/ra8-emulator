@@ -37,6 +37,7 @@ const shell_time = @import("time.zig");
 const wall_clock = @import("../wall_clock.zig");
 const proto = @import("ra8_rpc").session.rpc;
 const shell_stack = @import("stack.zig");
+const shell_open = @import("open.zig");
 const colors = @import("../ui/colors.zig");
 
 const Env = proto.Client.Env;
@@ -197,6 +198,10 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
             std.debug.print("ra8_gui: the session did not load {s}\n", .{args.image});
             return 1;
         },
+        error.ImageTooLarge => {
+            std.debug.print("ra8_gui: {s} is {d} bytes, and the session takes an image of at most {d}\n", .{ args.image, bytes.len, proto.Load.max_len.image });
+            return 1;
+        },
         else => return err,
     };
     return 0;
@@ -272,6 +277,8 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     shell.memory = &memory;
     var code: shell_memory.Pair = .{ .follows = .pc };
     shell.code = &code;
+    var files: shell_open.Open = .{ .io = io, .allocator = allocator };
+    shell.files = &files;
     var panes: shell_panes.Panes = .{ .console = &console, .board = &board, .board_input = &board_input, .devices = &devices, .faults = &faults, .camera = &camera, .plug = &plug, .camera_file = &camera_file, .registers = &registers, .memory = &memory, .code = &code, .stack = &stack };
     shell.painter = panes.painter();
     try drive(io, &shell, window, path, bytes, args.frames);
