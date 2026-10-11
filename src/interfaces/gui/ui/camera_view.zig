@@ -10,7 +10,7 @@
 //! (RA8EMU-677).
 const std = @import("std");
 const draw_list = @import("ra8_render").draw_list;
-const camera_panel = @import("../camera_panel.zig");
+const camera_panel = @import("../camera/panel.zig");
 const font = @import("ra8_render").font;
 const colors = @import("colors.zig");
 const Color = draw_list.Color;

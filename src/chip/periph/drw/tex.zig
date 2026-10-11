@@ -25,7 +25,7 @@
 //!     texture that shears the wrong way is this decision being wrong.
 const std = @import("std");
 
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 const clut = @import("clut.zig");
 const memmap = @import("../../core/memmap.zig");
 const texel = @import("texel.zig");

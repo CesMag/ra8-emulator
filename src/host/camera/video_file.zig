@@ -11,8 +11,8 @@
 //! otherwise. A trailing frame cut short by the end of the file is dropped.
 const std = @import("std");
 const decoded = @import("decoded_image.zig");
-pub const y4m = @import("y4m_header.zig");
-pub const yuv = @import("y4m_frame.zig");
+pub const y4m = @import("y4m/header.zig");
+pub const yuv = @import("y4m/frame.zig");
 
 /// The longest header or FRAME line read before the line is refused.
 const max_line: usize = 256;

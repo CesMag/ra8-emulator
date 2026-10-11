@@ -13,8 +13,8 @@
 const std = @import("std");
 const memmap = @import("ra8_chip").core.memmap;
 const store_mod = @import("ra8_chip").core.cpu.memory.store;
-const external = @import("../external_memory.zig");
-const external_backing = @import("../external_backing.zig");
+const external = @import("../external/memory.zig");
+const external_backing = @import("../external/backing.zig");
 const file = @import("ra8_snapshot").file;
 const fields = @import("ra8_snapshot").fields;
 

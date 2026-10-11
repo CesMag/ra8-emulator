@@ -39,7 +39,7 @@
 //! driver's own retry sees it.
 const std = @import("std");
 
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 const memmap = @import("../../core/memmap.zig");
 const desc = @import("desc.zig");
 const eth_line = @import("line.zig");

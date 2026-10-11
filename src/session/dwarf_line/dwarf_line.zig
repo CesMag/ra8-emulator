@@ -8,7 +8,7 @@
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 const symbols = @import("../symbols.zig");
-const dwarf_cursor = @import("../dwarf_cursor.zig");
+const dwarf_cursor = @import("../dwarf/cursor.zig");
 const line_header = @import("header.zig");
 
 const Cursor = dwarf_cursor.Cursor;

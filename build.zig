@@ -83,7 +83,7 @@ pub fn build(b: *std.Build) void {
 
     // tools/example_table.zig prints the RA8EMU-66 pass table; the tests read
     // its parser through the same module the executable is built from.
-    const table_mod = toolModule(b, target, optimize, "tools/example_table.zig");
+    const table_mod = toolModule(b, target, optimize, "tools/example/table.zig");
     const table = b.addRunArtifact(b.addExecutable(.{ .name = "example_table", .root_module = table_mod }));
     table.addPassthruArgs();
     b.step("examples", "Print the example pass table: -- EMULATOR DIR [INSTRUCTIONS]").dependOn(&table.step);
@@ -257,7 +257,7 @@ fn harnessChecks(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.
     test_step.dependOn(&consumer.step);
     test_step.dependOn(exe_step);
     const harness_tests = b.addTest(.{ .root_module = b.createModule(.{
-        .root_source_file = b.path("tests/session/harness_test.zig"),
+        .root_source_file = b.path("tests/session/harness/harness_test.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,

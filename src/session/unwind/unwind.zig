@@ -9,7 +9,7 @@
 //! which is looked up as it is, since nothing called from there.
 const std = @import("std");
 const core_view = @import("../core_view.zig");
-const dwarf_frame = @import("../dwarf_frame.zig");
+const dwarf_frame = @import("../dwarf/frame.zig");
 pub const exception = @import("exception.zig");
 
 pub const limits = struct {

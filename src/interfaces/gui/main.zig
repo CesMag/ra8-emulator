@@ -7,7 +7,7 @@
 const std = @import("std");
 const app = @import("gui_app");
 const host = @import("ra8_host");
-const gui_window = @import("window.zig");
+const gui_window = @import("window/window.zig");
 
 // A macOS build carries the Info.plist the camera permission needs.
 comptime {

@@ -9,9 +9,9 @@ const std = @import("std");
 const boot = @import("ra8_chip").core.cpu.boot;
 const api = @import("api.zig");
 const Board = @import("ra8_board").board.Board;
-const session_plug = @import("board_plug.zig");
+const session_plug = @import("board/plug.zig");
 const session_faults = @import("board_faults/board_faults.zig");
-const session_schedule = @import("board_schedule.zig");
+const session_schedule = @import("board/schedule.zig");
 const fault_schedule = @import("ra8_components").fault_schedule;
 
 pub const Applier = session_schedule.Applier;

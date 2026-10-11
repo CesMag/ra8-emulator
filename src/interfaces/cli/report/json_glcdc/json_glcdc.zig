@@ -7,7 +7,7 @@
 //! always present; lists hold only the entries the firmware programmed.
 const Board = @import("ra8_board").board.Board;
 const out = @import("out.zig");
-const json_drw = @import("../json_drw.zig");
+const json_drw = @import("../json/drw.zig");
 
 /// The whole `graphics` object, keyed inside the document.
 pub fn section(j: anytype, board: *Board) !void {

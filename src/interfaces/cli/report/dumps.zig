@@ -18,7 +18,7 @@ const symbols = @import("ra8_session").symbols;
 const sd_dump = @import("ra8_components").sd_card.dump;
 const sd_image = @import("ra8_components").sd_card.image;
 const registers = @import("ra8_session").registers;
-const json_regs = @import("json_regs.zig");
+const json_regs = @import("json/regs.zig");
 
 /// Read each `--dump-sym` global out of RAM and print it.
 ///

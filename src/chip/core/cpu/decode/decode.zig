@@ -1,7 +1,7 @@
 //! The decoder: asks each group in src/chip/core/cpu/ops/table.zig in turn and
 //! returns the first one that recognises the encoding.
 const op = @import("../op.zig");
-const table = @import("../ops/table.zig");
+const table = @import("../ops/table/table.zig");
 const Instr = @import("../instr.zig").Instr;
 
 pub const Hit = struct {

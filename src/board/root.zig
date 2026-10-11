@@ -7,7 +7,7 @@
 //!
 //! The board's own files are exported by name. Each namespace below is the
 //! index file beside its directory.
-pub const run = @import("run.zig");
+pub const run = @import("run/run.zig");
 pub const image = @import("image.zig");
 pub const snapshot = @import("snapshot.zig");
 pub const sizing = @import("sizing.zig");
@@ -18,16 +18,16 @@ pub const core_clock = @import("core_clock.zig");
 pub const cpu0_store = @import("cpu0_store.zig");
 pub const display_settled = @import("display_settled.zig");
 pub const event_sink = @import("event_sink.zig");
-pub const external_backing = @import("external_backing.zig");
-pub const external_memory = @import("external_memory.zig");
+pub const external_backing = @import("external/backing.zig");
+pub const external_memory = @import("external/memory.zig");
 pub const frame_capture = @import("frame_capture.zig");
 pub const i2c = @import("i2c.zig");
 pub const net = @import("net.zig");
 pub const plug = @import("plug.zig");
 pub const profile = @import("profile.zig");
 pub const quiet_due = @import("quiet_due.zig");
-pub const run_policy = @import("run_policy.zig");
+pub const run_policy = @import("run/policy.zig");
 pub const switches = @import("switches.zig");
-pub const usb = @import("usb.zig");
-pub const usb_plug = @import("usb_plug.zig");
+pub const usb = @import("usb/usb.zig");
+pub const usb_plug = @import("usb/plug.zig");
 pub const wiring = @import("wiring.zig");

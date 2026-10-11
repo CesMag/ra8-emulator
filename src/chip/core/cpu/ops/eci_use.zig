@@ -5,8 +5,8 @@
 const op = @import("../op.zig");
 const Instr = @import("../instr.zig").Instr;
 const lob_group = @import("lob.zig");
-const lob_tp = @import("mve_lob_tp.zig");
-const fp_mem = @import("fp_mem.zig");
+const lob_tp = @import("mve/lob_tp.zig");
+const fp_mem = @import("fp/mem.zig");
 
 pub fn lob(instr: Instr) op.Eci {
     const f = lob_group.fields(instr) orelse return .refuses;

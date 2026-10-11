@@ -12,8 +12,8 @@
 
 const std = @import("std");
 const memmap = @import("../../memmap.zig");
-const fault_route = @import("../../../periph/fault_route.zig");
-const status = @import("../../../periph/fault_status.zig");
+const fault_route = @import("../../../periph/fault/route.zig");
+const status = @import("../../../periph/fault/status.zig");
 const active = @import("active.zig");
 const dispatch = @import("dispatch.zig");
 const fault = @import("fault.zig");

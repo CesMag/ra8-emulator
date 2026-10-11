@@ -31,7 +31,7 @@
 //! of its own and is reached as `caller+offset`.
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
-const place = @import("place.zig");
+const place = @import("place/place.zig");
 const symbols = @import("symbols.zig");
 
 /// How the address is compared, and what an unset count means.

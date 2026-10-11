@@ -3,7 +3,7 @@
 //! A thin vtable rather than a concrete type, for the same reason the
 //! peripheral bus takes one: the run loop has no business knowing what a
 //! board is made of. The board hands one in; the run loop only calls it.
-const Guest = @import("cpu/memory/guest.zig").Guest;
+const Guest = @import("cpu/memory/guest/guest.zig").Guest;
 
 pub const Tick = struct {
     context: *anyopaque,

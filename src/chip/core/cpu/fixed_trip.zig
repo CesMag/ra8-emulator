@@ -35,7 +35,7 @@ const Regs = @import("regs.zig").Regs;
 const FpState = @import("fpu/state.zig").State;
 const Banked = @import("../banked.zig").Banked;
 const Active = @import("exception/all.zig").active.Active;
-const counted = @import("counted_trip.zig");
+const counted = @import("counted/trip.zig");
 const td = @import("trip_decode.zig");
 
 pub const max_trip: u32 = 64;

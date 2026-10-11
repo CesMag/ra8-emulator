@@ -38,7 +38,7 @@
 //! A `#` starts a comment, and a blank line is nothing at all, so a script
 //! can explain itself.
 const std = @import("std");
-const watch_table = @import("watch_table.zig");
+const watch_table = @import("watch/table.zig");
 
 pub const Error = error{ UnknownCommand, MissingArgument, ExtraArgument, BadNumber, BadCore, BadSwitch };
 

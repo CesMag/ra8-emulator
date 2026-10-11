@@ -19,7 +19,7 @@
 //! 0x02E1_7700 in most of the corpus), so the order matters both ways: a
 //! page an image already mapped is left alone, and the image loader skips
 //! a page attach already mapped and writes its bytes over the fill.
-const Guest = @import("../../core/cpu/memory/guest.zig");
+const Guest = @import("../../core/cpu/memory/guest/guest.zig");
 const cells = @import("otp.zig");
 
 pub const page: u32 = 0x1000;

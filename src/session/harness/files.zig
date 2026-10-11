@@ -3,7 +3,7 @@
 //! it (board/session_state.zig); only this side touches the file
 //! (RA8EMU-1020).
 const std = @import("std");
-const session_state = @import("../board_state.zig");
+const session_state = @import("../board/state.zig");
 
 /// The largest file a restore reads.
 const max_bytes = 1 << 30;

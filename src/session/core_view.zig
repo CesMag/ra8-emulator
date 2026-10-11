@@ -2,7 +2,7 @@
 //! src/session/zig_core.zig. The session and its views read registers and
 //! memory through this. The union has one arm, so a second kind of core can join without touching the callers.
 const bus = @import("ra8_chip").core.cpu.bus;
-const zig_core = @import("zig_core.zig");
+const zig_core = @import("zig/core.zig");
 
 pub const Cortex = @import("ra8_chip").core.cpu.cortex.Cortex;
 /// Only memory can fail: the Zig core's register file always answers.

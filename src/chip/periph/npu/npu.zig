@@ -57,7 +57,7 @@
 //! high word is refused rather than truncated into a plausible pointer.
 const std = @import("std");
 const Bounded = @import("../../core/bounded.zig").Bounded;
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 pub const cmd = @import("cmd.zig");

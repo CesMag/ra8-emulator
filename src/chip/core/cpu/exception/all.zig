@@ -2,8 +2,8 @@
 pub const exc_return = @import("exc_return.zig");
 pub const frame = @import("frame.zig");
 pub const callee = @import("callee.zig");
-pub const fp_frame = @import("fp_frame.zig");
-pub const fp_ready = @import("fp_ready.zig");
+pub const fp_frame = @import("fp/frame.zig");
+pub const fp_ready = @import("fp/ready.zig");
 pub const entry = @import("entry.zig");
 pub const ret = @import("ret.zig");
 pub const active = @import("active.zig");

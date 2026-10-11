@@ -82,7 +82,7 @@
 //! it, and a store to it is refused there for the same reason a store to
 //! MSTATR is refused here.
 const std = @import("std");
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 const periph = @import("../registry.zig");
 const lanes = @import("../lanes.zig");
 const maci = @import("../maci.zig");

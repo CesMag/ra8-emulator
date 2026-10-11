@@ -10,7 +10,7 @@
 const fields = @import("ra8_snapshot").fields;
 const blocks = @import("ra8_snapshot").blocks;
 const SpiCard = @import("card/card.zig").Card;
-const BusCard = @import("bus_card.zig").Card;
+const BusCard = @import("bus/card.zig").Card;
 
 const image_wiring = .{ "allocator", "blocks" };
 

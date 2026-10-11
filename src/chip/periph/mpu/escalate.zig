@@ -21,7 +21,7 @@
 //!   HFSR  0xE000_ED2C, FORCED     [30]  (DDI0553 D1.2.12)
 
 /// HardFault, exception 3 (DDI0553 B3.6).
-const status = @import("../fault_status.zig");
+const status = @import("../fault/status.zig");
 
 pub const hard_fault: u16 = 3;
 

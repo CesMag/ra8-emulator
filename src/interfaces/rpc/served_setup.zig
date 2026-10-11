@@ -16,8 +16,8 @@ const region_map_json = @import("ra8_session").region_map_json;
 const region_map_text = @import("ra8_session").region_map_text;
 const source_spec = @import("ra8_host").camera.source_spec;
 const source_open = @import("ra8_host").camera.source_open;
-const proto = @import("session_rpc.zig");
-const served = @import("session_server.zig");
+const proto = @import("session/rpc.zig");
+const served = @import("session/server.zig");
 
 pub const Served = struct {
     owner: harness.Harness,

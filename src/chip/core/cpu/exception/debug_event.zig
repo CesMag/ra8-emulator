@@ -12,7 +12,7 @@
 //! address. The register addresses match src/chip/periph/dcb.zig; the core does
 //! not import the debug layer.
 const memmap = @import("../../memmap.zig");
-const status = @import("../../../periph/fault_status.zig");
+const status = @import("../../../periph/fault/status.zig");
 const active = @import("active.zig");
 const dispatch = @import("dispatch.zig");
 const fault = @import("fault.zig");

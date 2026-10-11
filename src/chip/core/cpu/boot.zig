@@ -6,8 +6,8 @@
 //! one line saying which, so a corpus sweep can tell how far each image
 //! gets; main then prints the board's own report (report/run.zig, zigCore).
 const std = @import("std");
-const Guest = @import("memory/guest.zig").Guest;
-const GuestBus = @import("memory/guest_bus.zig").GuestBus;
+const Guest = @import("memory/guest/guest.zig").Guest;
+const GuestBus = @import("memory/guest/bus.zig").GuestBus;
 const BoardBus = @import("board_bus.zig").BoardBus;
 const registry = @import("../../periph/registry.zig");
 const cpu_mod = @import("cpu.zig");
@@ -22,8 +22,8 @@ const SauSource = @import("sau_source.zig").SauSource;
 const DataGate = @import("data_gate.zig").Gate;
 const Attribution = @import("attribution.zig").Attribution;
 const mpu = @import("../../periph/mpu/mpu.zig");
-const fault_clear = @import("../../periph/fault_clear.zig");
-const fault_status = @import("../../periph/fault_status.zig");
+const fault_clear = @import("../../periph/fault/clear.zig");
+const fault_status = @import("../../periph/fault/status.zig");
 const bus_fault = @import("../../periph/bus_fault.zig");
 const Bus = @import("bus.zig").Bus;
 const code_lines = @import("code_lines.zig");

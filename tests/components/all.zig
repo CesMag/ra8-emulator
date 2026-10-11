@@ -26,12 +26,12 @@ test {
     _ = @import("sd_card/dirent_test.zig");
     _ = @import("sd_card/dump_test.zig");
     _ = @import("sd_card/fat_test.zig");
-    _ = @import("sd_card/format_test.zig");
+    _ = @import("sd_card/format/format_test.zig");
     _ = @import("sd_card/image_test.zig");
     _ = @import("sd_card/mkimage_test.zig");
     _ = @import("sd_card/trace_test.zig");
     _ = @import("sd_card/write_test.zig");
-    _ = @import("sd_card/bus_card_test.zig");
+    _ = @import("sd_card/bus/card_test.zig");
     _ = @import("sd_card/bus_card_image_test.zig");
     _ = @import("modem_at/modem_test.zig");
     _ = @import("modem_at/script_test.zig");

@@ -2,7 +2,7 @@
 //! (gather.beatAddress), worked from the Arm ARM (DDI0553) pseudocode by
 //! /workspace/tools/mve_gather64.py on the lane's box.
 const vector = @import("../conformance/vector.zig");
-const gather = @import("gather.zig");
+const gather = @import("gather/gather.zig");
 
 const V = vector.Vector(gather.Beat, u32);
 

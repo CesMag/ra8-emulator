@@ -29,7 +29,7 @@
 //! its domain is dark is the shape of the C tree's issue #247.
 const periph = @import("../registry.zig");
 const pdctr = @import("../pdctr.zig");
-const Guest = @import("../../core/cpu/memory/guest.zig").Guest;
+const Guest = @import("../../core/cpu/memory/guest/guest.zig").Guest;
 pub const clut = @import("clut.zig");
 const lanes = @import("../lanes.zig");
 pub const pixel = @import("pixel.zig");

@@ -7,8 +7,8 @@
 const std = @import("std");
 const elf = @import("ra8_board").image.elf;
 const dwarf_line = @import("dwarf_line/dwarf_line.zig");
-const dwarf_line_find = @import("dwarf_line_find.zig");
-const dwarf_info = @import("dwarf_info.zig");
+const dwarf_line_find = @import("dwarf/line_find.zig");
+const dwarf_info = @import("dwarf/info.zig");
 
 pub const limits = struct {
     /// Lines `list` shows before the one it centres on.

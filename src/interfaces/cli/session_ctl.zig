@@ -8,13 +8,13 @@
 //! fresh machine booted from ELF.
 const std = @import("std");
 const proto = @import("ra8_rpc").session_rpc;
-const Spec = @import("serve_listen.zig").Spec;
-const ctl_client = @import("ctl_client.zig");
+const Spec = @import("serve/listen.zig").Spec;
+const ctl_client = @import("ctl/client.zig");
 const Client = ctl_client.Client;
 const profiles = @import("ra8_host").profiles;
-const host_spawn = @import("host_spawn.zig");
-const out = @import("ctl_print.zig");
-pub const events = @import("ctl_events.zig");
+const host_spawn = @import("host/spawn.zig");
+const out = @import("ctl/print.zig");
+pub const events = @import("ctl/events.zig");
 
 pub const usage =
     \\usage: ra8_emulator ctl --connect unix:PATH|tcp:[HOST]:PORT [--json] COMMAND

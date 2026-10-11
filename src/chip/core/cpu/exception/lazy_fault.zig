@@ -11,8 +11,8 @@
 //! FPCCR.LSPACT stays set, so the push is retried when it runs again.
 
 const memmap = @import("../../memmap.zig");
-const fault_route = @import("../../../periph/fault_route.zig");
-const status = @import("../../../periph/fault_status.zig");
+const fault_route = @import("../../../periph/fault/route.zig");
+const status = @import("../../../periph/fault/status.zig");
 const dispatch = @import("dispatch.zig");
 const fault = @import("fault.zig");
 const cpu_mod = @import("../cpu.zig");

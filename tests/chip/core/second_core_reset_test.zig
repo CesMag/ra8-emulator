@@ -164,5 +164,5 @@ test "CPU1's image and VTOR are seeded into a store with no engine open" {
 }
 
 test {
-    _ = @import("second_state_test.zig");
+    _ = @import("second/state_test.zig");
 }

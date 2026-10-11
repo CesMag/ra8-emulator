@@ -9,9 +9,9 @@
 //! and never stops the run; before the first frame the capture is black.
 const std = @import("std");
 const decoded = @import("../decoded_image.zig");
-const raw = @import("../pipe_frame.zig");
-const abi = @import("../v4l2_abi.zig");
-const negotiate = @import("../v4l2_negotiate.zig");
+const raw = @import("../pipe/frame.zig");
+const abi = @import("../v4l2/abi.zig");
+const negotiate = @import("../v4l2/negotiate.zig");
 
 /// One frame's bytes from the device: true when `out` was filled.
 pub const Capture = struct {

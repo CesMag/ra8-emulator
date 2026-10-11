@@ -90,7 +90,7 @@ const spi = @import("ra8_chip").periph.spi;
 const sram = @import("ra8_chip").periph.sram;
 const ssie = @import("ra8_chip").periph.ssie;
 const ulpt = @import("ra8_chip").periph.ulpt;
-const usb = @import("usb.zig");
+const usb = @import("usb/usb.zig");
 const iwdt = @import("ra8_chip").periph.iwdt;
 const wdt = @import("ra8_chip").periph.wdt;
 const xspi = @import("ra8_chip").periph.xspi;
@@ -106,7 +106,7 @@ pub const Board = struct {
     /// GTCLKCR, the GPT bank's clock domain, writable only while stopped.
     gpt_clock: gtclkcr.Unit,
     time: clocks.Time = .{}, // RA8EMU-179 virtual time and its event queue
-    run: @import("run_policy.zig").RunPolicy = .{}, // RA8EMU-1046 pacing and soak
+    run: @import("run/policy.zig").RunPolicy = .{}, // RA8EMU-1046 pacing and soak
     events: icu.Icu,
     /// The event link controller: where a source event drives a peripheral
     /// rather than an NVIC line, and the only way firmware raises an event.
@@ -161,7 +161,7 @@ pub const Board = struct {
     /// An unset CMS keeps the IDAU's bit-28 answer for code (RA8EMU-389/420).
     memory_monitors: pscu.samon.Unit = .{},
     /// OSPI/SDRAM geometry and timing from the board profile (RA8EMU-643).
-    external_memory: @import("external_memory.zig").Config = .{},
+    external_memory: @import("external/memory.zig").Config = .{},
     /// The IDAU over those words and address bit 28 (RA8EMU-277). Pointed
     /// at sram_attribution in attach(), where the board's address is final.
     idau: sau.idau.Map = .{},

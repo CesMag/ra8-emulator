@@ -11,12 +11,12 @@ const sd_format = @import("ra8_components").sd_card.format;
 const cpu_choice = @import("ra8_chip").core.cpu.choice;
 const rtos_load = @import("ra8_session").rtos_load;
 const request = @import("ra8_components").request;
-pub const ctl_args = @import("ctl_args.zig");
+pub const ctl_args = @import("ctl/args.zig");
 const rtc_start = @import("ra8_session").rtc_start;
 pub const usage = @import("usage.zig").text;
 pub const card_setup = @import("card_setup.zig");
 pub const console_output = @import("console_output.zig");
-pub const host_bytes = @import("host_bytes.zig");
+pub const host_bytes = @import("host/bytes.zig");
 /// How many `--dump-sym` names one run will carry: the suite asks for at most
 /// two (progress and failure counters), so this is a little room above that.
 pub const dump_limit: usize = 8;
@@ -75,7 +75,7 @@ pub const Options = struct {
     /// `--frame-out PATH`: the panel as a PNG at the end of the run (RA8EMU-73).
     frame_out: ?[]const u8 = null,
     panel_only: bool = false, // `--panel-only`: only the glass, at its own size
-    frames: @import("frames_args.zig").Options = .{},
+    frames: @import("frames/args.zig").Options = .{},
     audio: @import("audio_out.zig").Options = .{}, // `--audio-out`, `--audio-rate`
     rtc_start: ?@import("ra8_session").rtc_start.Start = null,
     speed: ?u64 = null, // `--speed`/`--realtime`: thousandths of 1x; null runs flat out
@@ -317,7 +317,7 @@ fn parseCtl(argv: []const []const u8) !Options {
 /// `parse` to keep each chain inside the length gate. True when the flag was
 /// one of these and `index` has been walked past any value it took.
 fn parseDebug(options: *Options, argv: []const []const u8, index: *usize) !bool {
-    if (try @import("frames_args.zig").parse(&options.frames, argv, index)) return true;
+    if (try @import("frames/args.zig").parse(&options.frames, argv, index)) return true;
     if (try @import("state_args.zig").parse(&options.state, argv, index)) return true;
     const flag = argv[index.*];
     if (std.mem.eql(u8, flag, "--cpu1")) {
