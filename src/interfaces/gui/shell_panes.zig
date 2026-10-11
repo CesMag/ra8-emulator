@@ -91,7 +91,7 @@ pub fn noteAt(body: Rect) ?struct { x: i32, y: i32, room: u32 } {
 fn paint(context: *anyopaque, list: *draw_list.DrawList, theme: *const Theme, pane: pane_layout.Pane, body: Rect) anyerror!void {
     const self: *Panes = @ptrCast(@alignCast(context));
     if (pane.kind == .console) if (self.console) |console| {
-        if (console.hasOutput()) return console_pane.draw(list, theme, body, &console.log, 0);
+        if (console.hasOutput()) return console_pane.draw(list, theme, body, &console.log, console.scroll.back);
     };
     if (pane.kind == .devices) if (self.devices) |devices| {
         if (self.plug) |plug| if (devices.answered and !devices.refused) {

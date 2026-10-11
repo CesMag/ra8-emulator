@@ -99,6 +99,8 @@ pub const Shell = struct {
     bar: draw_list.Rect = .{ .x = 0, .y = 0, .w = 0, .h = 0 },
     /// The splitter being dragged, from its button press to its release.
     held: ?pane_layout.Gutter = null,
+    /// Where the pointer last was, for the wheel and page keys.
+    pointer_at: struct { x: i32, y: i32 } = .{ .x = -1, .y = -1 },
     open: bool = true,
     frame: ?raster.Framebuffer = null,
 
@@ -183,11 +185,17 @@ pub const Shell = struct {
                 _ = camera.clickIn(&self.layout, solved, press.x, press.y);
             },
             .pointer => |at| {
+                self.pointer_at = .{ .x = at.x, .y = at.y };
                 const found = self.held orelse return self.moveBoard(at.x, at.y);
                 const axis = self.layout.node(found.split).body.split.axis;
                 self.layout.drag(found, if (axis == .across) at.x else at.y);
             },
+            .wheel => |turn| {
+                const console = self.console orelse return;
+                _ = console.wheelIn(&self.layout, solved, self.pointer_at.x, self.pointer_at.y, turn.dy);
+            },
             .text, .key => {
+                if (self.pageConsole(event, solved)) return;
                 if (self.time) |time| if (self.link) |link| {
                     if (time.handle(event, link)) return;
                 };
@@ -196,6 +204,17 @@ pub const Shell = struct {
             },
             else => {},
         }
+    }
+
+    /// Page Up or Page Down over a console leaf (RA8EMU-1122).
+    fn pageConsole(self: *Shell, event: platform.Event, solved: *const pane_layout.Solved) bool {
+        const key = switch (event) {
+            .key => |key| key,
+            else => return false,
+        };
+        const console = self.console orelse return false;
+        if (!key.down) return false;
+        return console.pageIn(&self.layout, solved, self.pointer_at.x, self.pointer_at.y, key.code);
     }
 
     /// Offer a press to the text fields and the time bar, so each one it

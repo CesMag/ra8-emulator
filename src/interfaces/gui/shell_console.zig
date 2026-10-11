@@ -6,6 +6,10 @@ const std = @import("std");
 const proto = @import("ra8_rpc").session_rpc;
 const session_link = @import("session_link.zig");
 const console_log = @import("console_log.zig");
+const console_scroll = @import("console_scroll.zig");
+const pane_layout = @import("ui/pane_layout.zig");
+const shell_frame = @import("ui/shell_frame.zig");
+const console_pane = @import("ui/console_pane.zig");
 
 /// Lines the shell's console keeps before the oldest falls off.
 pub const scrollback: usize = 2000;
@@ -13,6 +17,8 @@ pub const scrollback: usize = 2000;
 pub const Console = struct {
     log: console_log.Log,
     subscribed: bool = false,
+    /// How far back the console leaves are scrolled (RA8EMU-1122).
+    scroll: console_scroll.Scroll = .{},
 
     pub fn init(allocator: std.mem.Allocator) Console {
         return .{ .log = console_log.Log.init(allocator, scrollback) };
@@ -40,6 +46,22 @@ pub const Console = struct {
         if (event.topic != @backingInt(proto.Topic.uart)) return;
         const sent = proto.decode(proto.Uart, event.payload) catch return;
         try self.log.feedAll(sent.bytes, sent.virtual_ns);
+        self.scroll.follow(&self.log);
+    }
+
+    /// A wheel turn with the pointer at `x`, `y`: scrolls when it is over
+    /// a console leaf.
+    pub fn wheelIn(self: *Console, layout: *const pane_layout.Layout, solved: *const pane_layout.Solved, x: i32, y: i32, dy: f32) bool {
+        _ = bodyAt(layout, solved, x, y) orelse return false;
+        self.scroll.wheel(dy, &self.log);
+        return true;
+    }
+
+    /// Page Up or Page Down with the pointer at `x`, `y` over a console
+    /// leaf: moves by the rows that leaf shows.
+    pub fn pageIn(self: *Console, layout: *const pane_layout.Layout, solved: *const pane_layout.Solved, x: i32, y: i32, code: u32) bool {
+        const body = bodyAt(layout, solved, x, y) orelse return false;
+        return self.scroll.page(code, console_pane.rows(body), &self.log);
     }
 
     /// Whether the log holds anything to show yet.
@@ -47,3 +69,14 @@ pub const Console = struct {
         return self.log.lines().len > 0 or self.log.partial().len > 0;
     }
 };
+
+/// The body of the console leaf under a point, if any.
+fn bodyAt(layout: *const pane_layout.Layout, solved: *const pane_layout.Solved, x: i32, y: i32) ?pane_layout.Rect {
+    for (solved.panes.items) |placed| {
+        const pane = layout.pane(placed.index) orelse continue;
+        if (pane.kind != .console) continue;
+        const body = shell_frame.bodyOf(placed.area);
+        if (body.contains(x, y)) return body;
+    }
+    return null;
+}
