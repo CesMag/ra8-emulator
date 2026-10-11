@@ -59,7 +59,7 @@ test "ctl map follows the last loaded image, prints what --map prints, and carri
     defer answer.deinit();
     try std.testing.expectEqual(Term{ .exited = 0 }, answer.term);
     const regions = answer.field("map").object.get("regions").?;
-    try std.testing.expectEqual(@as(i64, 0x3576), try used(regions, "MRAM"));
+    try std.testing.expectEqual(@as(i64, 0x3454), try used(regions, "MRAM"));
     try std.testing.expectEqual(@as(i64, 0xb78), try used(regions, "SRAM"));
     try std.testing.expectEqual(@as(i64, 0x5c), try used(regions, "NOINIT"));
     try std.testing.expectEqual(@as(usize, 1), listed(regions, "MRAM", ".data", "load"));

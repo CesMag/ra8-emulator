@@ -25,7 +25,7 @@ fn expectLine(text: []const u8, line: []const u8) !void {
 test "each region prints its range, used over total and percent" {
     var out = try rendered(std.testing.allocator);
     defer out.deinit();
-    try expectLine(out.written(), "MRAM     0x02000000-0x020fffff     13686 /  1048576 bytes  1.3%");
+    try expectLine(out.written(), "MRAM     0x02000000-0x020fffff     13396 /  1048576 bytes  1.2%");
     try expectLine(out.written(), "SRAM     0x22000000-0x220ffeff      2936 /  1048320 bytes  0.2%");
     try expectLine(out.written(), "NOINIT   0x220fff00-0x220fffff        92 /      256 bytes  35.9%");
     try expectLine(out.written(), "ITCM     0x00000000-0x0000ffff         0 /    65536 bytes  0.0%");
@@ -34,12 +34,12 @@ test "each region prints its range, used over total and percent" {
 test "sections sit under their region, .data under both" {
     var out = try rendered(std.testing.allocator);
     defer out.deinit();
-    try expectLine(out.written(), "  .text                          run  0x02000200                       9068");
-    try expectLine(out.written(), "  .data                          load 0x02003550  (runs at 0x22000000)        40");
-    try expectLine(out.written(), "  .data                          run  0x22000000  load 0x02003550        40");
+    try expectLine(out.written(), "  .text                          run  0x02000200                       8864");
+    try expectLine(out.written(), "  .data                          load 0x0200342c  (runs at 0x22000000)        40");
+    try expectLine(out.written(), "  .data                          run  0x22000000  load 0x0200342c        40");
     try expectLine(out.written(), "  .noinit                        run  0x220fff00                         92");
     // The stored copy is listed under MRAM, before the SRAM block opens.
-    const copy = std.mem.indexOf(u8, out.written(), "load 0x02003550  (runs").?;
+    const copy = std.mem.indexOf(u8, out.written(), "load 0x0200342c  (runs").?;
     try std.testing.expect(copy < std.mem.indexOf(u8, out.written(), "SRAM     ").?);
     try std.testing.expect(copy > std.mem.indexOf(u8, out.written(), "MRAM     ").?);
 }

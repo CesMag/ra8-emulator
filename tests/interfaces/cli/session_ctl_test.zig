@@ -217,7 +217,7 @@ test "ctl load takes a firmware image with option-setting segments and resets to
     defer regs.deinit();
     try std.testing.expectEqual(Term{ .exited = 0 }, regs.term);
     const pc = regs.field("registers").object.get("pc").?;
-    try std.testing.expectEqual(@as(i64, 0x02000AFC), try expectInteger(pc));
+    try std.testing.expectEqual(@as(i64, 0x02000B04), try expectInteger(pc));
 }
 
 test "ctl events waits for a UART line and times out on one that never comes" {

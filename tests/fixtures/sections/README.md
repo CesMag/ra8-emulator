@@ -1,9 +1,9 @@
 # Section-table fixtures
 
-`fault_crashlog_hil.elf` (149892 bytes, sha256 `f385be4717988ccafb1767a0c619941b552850fdd0db78a8ac29601c113b3080`) is the
+`fault_crashlog_hil.elf` (138936 bytes, sha256 `96e6a425dbbf2287cd69c54b908f0fd9ce8d7d67aeff98a39c2d472daee14ef1`) is the
 `examples/ek_ra8d2/hw_validated/hil/fault_crashlog_hil` app from ra8-firmware
-commit `63c6f32cd372c57f6d0802889f9bf970020b7491`, built standalone with
-Arm GNU Toolchain 13.3.rel1 and Zig 0.14.1:
+commit `39bf91816e348b10e585493d5b3500259c5487df`, built standalone with
+Arm GNU Toolchain 13.3.rel1 and Zig 0.17.0:
 
 ```sh
 cmake -G Ninja -S examples/ek_ra8d2/hw_validated/hil/fault_crashlog_hil -B build \

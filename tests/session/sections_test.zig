@@ -12,18 +12,18 @@ const Row = struct { name: []const u8, vma: u32, lma: u32, size: u32, kind: sect
 /// The rows objdump -h prints for the fixture, less the unallocated ones.
 const expected = [_]Row{
     .{ .name = ".vectors", .vma = 0x0200_0000, .lma = 0x0200_0000, .size = 0x200, .kind = .read_only },
-    .{ .name = ".text", .vma = 0x0200_0200, .lma = 0x0200_0200, .size = 0x236c, .kind = .code },
-    .{ .name = ".rodata", .vma = 0x0200_256c, .lma = 0x0200_256c, .size = 0xfba, .kind = .read_only },
-    .{ .name = ".ARM.exidx", .vma = 0x0200_3528, .lma = 0x0200_3528, .size = 0x28, .kind = .read_only },
+    .{ .name = ".text", .vma = 0x0200_0200, .lma = 0x0200_0200, .size = 0x22a0, .kind = .code },
+    .{ .name = ".rodata", .vma = 0x0200_24a0, .lma = 0x0200_24a0, .size = 0xf64, .kind = .read_only },
+    .{ .name = ".ARM.exidx", .vma = 0x0200_3404, .lma = 0x0200_3404, .size = 0x28, .kind = .read_only },
     .{ .name = ".option_setting_ofs0", .vma = 0x02c9_f040, .lma = 0x02c9_f040, .size = 4, .kind = .read_only },
     .{ .name = ".option_setting_ofs1", .vma = 0x02c9_f4c0, .lma = 0x02c9_f4c0, .size = 4, .kind = .read_only },
 };
 
 const tail = [_]Row{
     .{ .name = ".option_setting_otp_zhuk", .vma = 0x02e1_7920, .lma = 0x02e1_7920, .size = 4, .kind = .read_only },
-    .{ .name = ".data", .vma = 0x2200_0000, .lma = 0x0200_3550, .size = 0x28, .kind = .initialised },
-    .{ .name = ".bss", .vma = 0x2200_0028, .lma = 0x0200_3578, .size = 0xb30, .kind = .zero_fill },
-    .{ .name = ".stack_canary", .vma = 0x2200_0b58, .lma = 0x0200_3578, .size = 0x20, .kind = .zero_fill },
+    .{ .name = ".data", .vma = 0x2200_0000, .lma = 0x0200_342c, .size = 0x28, .kind = .initialised },
+    .{ .name = ".bss", .vma = 0x2200_0028, .lma = 0x0200_3454, .size = 0xb30, .kind = .zero_fill },
+    .{ .name = ".stack_canary", .vma = 0x2200_0b58, .lma = 0x0200_3458, .size = 0x20, .kind = .zero_fill },
     .{ .name = ".noinit", .vma = 0x220f_ff00, .lma = 0x220f_ff00, .size = 0x5c, .kind = .no_init },
 };
 

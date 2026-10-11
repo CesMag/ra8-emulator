@@ -34,9 +34,9 @@ fn expectLine(name: []const u8, address: u32, line: u32) !void {
 }
 
 test "a frame resolves to its function's first line, as addr2line does" {
-    try expectLine("uart_irq_rxi_isr", 0x0200_0358, 125);
-    try expectLine("uart_irq_rx_cb", 0x0200_039C, 175);
-    try expectLine("main", 0x0200_057C, 298);
+    try expectLine("uart_irq_rxi_isr", 0x0200_0360, 125);
+    try expectLine("uart_irq_rx_cb", 0x0200_03A4, 175);
+    try expectLine("main", 0x0200_0584, 298);
 }
 
 test "opening a lined frame fills the source pane with that line current" {
@@ -45,7 +45,7 @@ test "opening a lined frame fills the source pane with that line current" {
     try std.testing.expect(opened.source != null);
     try std.testing.expectEqual(@as(?u32, null), opened.disasm);
     try std.testing.expectEqual(@as(u32, 175), opened.source.?.current);
-    try std.testing.expectEqual(@as(u32, 0x0200_039C), opened.source.?.pc);
+    try std.testing.expectEqual(@as(u32, 0x0200_03A4), opened.source.?.pc);
     try std.testing.expect(std.mem.endsWith(u8, opened.source.?.path(), "main.c"));
     try std.testing.expectEqualStrings("", opened.status());
 }

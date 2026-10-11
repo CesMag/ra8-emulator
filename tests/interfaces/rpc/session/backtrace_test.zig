@@ -12,8 +12,8 @@ const backtrace_wire = ra8.rpc.backtrace_wire;
 const handler = ra8.rpc.session.backtrace;
 
 const image_path = "tests/fixtures/uart/uart_irq_echo.elf";
-/// ra8_sci_init's first instruction (its symbol is 0x02001A71).
-const sci_init: u32 = 0x0200_1A70;
+/// ra8_sci_init's first instruction (its symbol is 0x02001975).
+const sci_init: u32 = 0x0200_1974;
 
 fn imageOf(context: *anyopaque, core: usize) ?ra8.session.symbols.Image {
     const harness: *ra8.session.harness.Harness = @ptrCast(@alignCast(context));
@@ -68,7 +68,7 @@ test "a stop inside ra8_sci_init walks out through its callers with lines" {
     try std.testing.expectEqualStrings("ra8_sci_init", top.name);
     try std.testing.expectEqual(@as(u32, 0), top.offset);
     try std.testing.expectEqualStrings("ra8_sci.c", top.file);
-    try std.testing.expectEqual(@as(u32, 411), top.line);
+    try std.testing.expectEqual(@as(u32, 253), top.line);
     for (walked.frames[0..walked.count]) |frame| {
         try std.testing.expect(frame.name.len != 0);
         try std.testing.expectEqual(@as(u8, 0), frame.interrupted);

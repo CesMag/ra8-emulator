@@ -19,9 +19,9 @@ fn used(map: region_map.Map, name: []const u8) u64 {
 
 test "per-region usage matches the sections objdump lists" {
     const map = try mapOf();
-    // .vectors 0x200 + .text 0x236c + .rodata 0xfba + .ARM.exidx 0x28, plus
+    // .vectors 0x200 + .text 0x22a0 + .rodata 0xf64 + .ARM.exidx 0x28, plus
     // the 0x28-byte stored copy of .data.
-    try std.testing.expectEqual(@as(u64, 0x3576), used(map, "MRAM"));
+    try std.testing.expectEqual(@as(u64, 0x3454), used(map, "MRAM"));
     try std.testing.expectEqual(@as(u64, 11 * 4), used(map, "OFS_CFG"));
     try std.testing.expectEqual(@as(u64, 7 * 4), used(map, "OFS_OTP"));
     // .data 0x28 + .bss 0xb30 + .stack_canary 0x20.
@@ -68,7 +68,7 @@ test "a section outside every region is reported, not dropped" {
     // now outside, and the stack has no region.
     const image = try elf.Image.init(image_bytes);
     const map = try region_map.build(image, region_map.ek_ra8d2[0..1]);
-    try std.testing.expectEqual(@as(u64, 0x3576), map.used[0]);
+    try std.testing.expectEqual(@as(u64, 0x3454), map.used[0]);
     // 11 OFS_CFG + 7 OFS_OTP + .data + .bss + .stack_canary + .noinit.
     try std.testing.expectEqual(@as(usize, 22), map.outside);
     try std.testing.expectEqual(@as(u64, 44 + 28 + 0xb78 + 0x5c), map.outside_bytes);
