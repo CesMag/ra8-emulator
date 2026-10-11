@@ -16,6 +16,7 @@ pub const status_strip = @import("ui/status_strip.zig");
 pub const speed_field = @import("speed_field.zig");
 pub const time = @import("time/time.zig");
 pub const time_bar = @import("ui/time_bar.zig");
+pub const theme_picker = @import("ui/theme_picker.zig");
 pub const colors = @import("ui/colors.zig");
 pub const board_pane = @import("ui/board_pane.zig");
 pub const board = @import("board/board.zig");

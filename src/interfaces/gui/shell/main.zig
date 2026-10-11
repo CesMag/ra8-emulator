@@ -224,8 +224,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     var shell = shell_loop.Shell.init(allocator, try pane_layout.twoCore(allocator));
     var render_buf: [64]u8 = undefined;
     shell.status.render = render_driver.status(&render_buf, render_driver.active, render_driver.gpu);
-    shell.theme = colors.of(args.theme);
-    shell.follow_os = args.theme == .system;
+    shell.themes.choose(args.theme);
     defer shell.deinit();
     shell.link = &link;
     shell.server = served(&session);

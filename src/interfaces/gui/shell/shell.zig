@@ -17,5 +17,6 @@ pub const registers = @import("registers.zig");
 pub const stack = @import("stack.zig");
 pub const run = @import("run.zig");
 pub const startup = @import("startup.zig");
+pub const theme = @import("theme.zig");
 pub const time = @import("time.zig");
 pub const titles = @import("titles.zig");

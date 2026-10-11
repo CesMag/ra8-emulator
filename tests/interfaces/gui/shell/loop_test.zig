@@ -129,17 +129,17 @@ test "a shell following the OS restyles live when the appearance changes" {
     defer window.deinit();
     var s = try shell();
     defer s.deinit();
-    s.follow_os = true;
+    s.themes.follow_os = true;
     window.os = .light;
     try std.testing.expect(try s.step(window.platform()));
-    try std.testing.expectEqual(light, s.theme);
+    try std.testing.expectEqual(light, s.themes.active);
     try std.testing.expectEqual(light.face, window.last.?.at(width / 4, 1));
     window.os = .dark;
     try std.testing.expect(try s.step(window.platform()));
-    try std.testing.expectEqual(light, s.theme);
+    try std.testing.expectEqual(light, s.themes.active);
     try window.feed(.appearance);
     try std.testing.expect(try s.step(window.platform()));
-    try std.testing.expectEqual(dark, s.theme);
+    try std.testing.expectEqual(dark, s.themes.active);
     try std.testing.expectEqual(dark.face, window.last.?.at(width / 4, 1));
 }
 
@@ -148,9 +148,9 @@ test "a shell following an OS with no answer paints light" {
     defer window.deinit();
     var s = try shell();
     defer s.deinit();
-    s.follow_os = true;
+    s.themes.follow_os = true;
     try std.testing.expect(try s.step(window.platform()));
-    try std.testing.expectEqual(&gui_app.colors.palettes.light, s.theme);
+    try std.testing.expectEqual(&gui_app.colors.palettes.light, s.themes.active);
 }
 
 test "a shell not following the OS keeps its theme" {
@@ -161,5 +161,96 @@ test "a shell not following the OS keeps its theme" {
     window.os = .light;
     try window.feed(.appearance);
     try std.testing.expect(try s.step(window.platform()));
-    try std.testing.expectEqual(dark, s.theme);
+    try std.testing.expectEqual(dark, s.themes.active);
+}
+
+const picker = gui_app.theme_picker;
+const foot = strip.area(width, height);
+
+/// A left click at (`x`, `y`): the press and the release.
+fn click(window: *Headless, x: i32, y: i32) !void {
+    try window.feed(.{ .button = .{ .button = 1, .down = true, .x = x, .y = y } });
+    try window.feed(.{ .button = .{ .button = 1, .down = false, .x = x, .y = y } });
+}
+
+fn clickIcon(window: *Headless) !void {
+    const at = picker.button(foot);
+    try click(window, at.x + @divFloor(at.w, 2), at.y + @divFloor(at.h, 2));
+}
+
+fn clickRow(window: *Headless, choice: gui_app.colors.Choice) !void {
+    for (picker.rows, 0..) |listed, index| if (listed == choice) {
+        const at = picker.row(foot, index);
+        try click(window, at.x + @divFloor(at.w, 2), at.y + @divFloor(at.h, 2));
+    };
+}
+
+test "the theme icon unfolds its popover, and a row in it repaints the window" {
+    const light = &gui_app.colors.palettes.light;
+    var window = Headless.init(std.testing.allocator, width, height);
+    defer window.deinit();
+    var s = try shell();
+    defer s.deinit();
+    try clickIcon(&window);
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expect(s.themes.open);
+    const dark_row = picker.row(foot, 1);
+    const light_row = picker.row(foot, 0);
+    try std.testing.expectEqual(dark.band, window.last.?.at(@intCast(dark_row.x + dark_row.w - 2), @intCast(dark_row.y + 1)));
+    try std.testing.expectEqual(dark.face, window.last.?.at(@intCast(light_row.x + light_row.w - 2), @intCast(light_row.y + 1)));
+    try clickRow(&window, .light);
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expect(!s.themes.open);
+    try std.testing.expectEqual(light, s.themes.active);
+    try std.testing.expectEqual(gui_app.colors.Choice.light, s.themes.choice());
+    try std.testing.expectEqual(light.face, window.last.?.at(width / 4, 1));
+    try std.testing.expectEqual(light.border, window.last.?.at(width - 1, height - strip.height));
+}
+
+test "picking System reads the OS before the frame it lands in is drawn" {
+    const light = &gui_app.colors.palettes.light;
+    var window = Headless.init(std.testing.allocator, width, height);
+    defer window.deinit();
+    var s = try shell();
+    defer s.deinit();
+    window.os = .dark;
+    try clickIcon(&window);
+    try clickRow(&window, .system);
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expect(s.themes.follow_os and !s.themes.open);
+    try std.testing.expectEqual(dark, s.themes.active);
+    try std.testing.expectEqual(dark.face, window.last.?.at(width / 4, 1));
+    window.os = .light;
+    try window.feed(.appearance);
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expectEqual(light, s.themes.active);
+    try std.testing.expectEqual(gui_app.colors.Choice.system, s.themes.choice());
+}
+
+test "a click off the open popover folds it and goes no further, and so does Escape" {
+    var window = Headless.init(std.testing.allocator, width, height);
+    defer window.deinit();
+    var s = try shell();
+    defer s.deinit();
+    const root = s.layout.root;
+    const before = s.layout.node(root).body.split.ratio;
+    var solved = try shell_frame.solve(&s.layout, std.testing.allocator, width, height);
+    defer solved.deinit(std.testing.allocator);
+    var gap: pane_layout.Rect = undefined;
+    for (solved.gutters.items) |found| if (found.split == root) {
+        gap = found.area;
+    };
+    try clickIcon(&window);
+    try window.feed(.{ .button = .{ .button = 1, .down = true, .x = gap.x + 1, .y = gap.y + 4 } });
+    try window.feed(.{ .pointer = .{ .x = 120, .y = gap.y + 4 } });
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expect(!s.themes.open);
+    try std.testing.expectEqual(@as(?pane_layout.Gutter, null), s.held);
+    try std.testing.expectEqual(before, s.layout.node(root).body.split.ratio);
+    try std.testing.expectEqual(dark, s.themes.active);
+    try clickIcon(&window);
+    try window.feed(.{ .key = .{ .code = 0x1B, .down = true } });
+    try std.testing.expect(try s.step(window.platform()));
+    try std.testing.expect(!s.themes.open);
+    try std.testing.expectEqual(dark, s.themes.active);
 }

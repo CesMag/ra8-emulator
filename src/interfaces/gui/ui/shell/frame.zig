@@ -1,7 +1,8 @@
 //! The shell frame (RA8EMU-764): the docked window chrome drawn from the
 //! pane layout (RA8EMU-754). Each leaf gets a title bar naming its pane and
 //! the core it is bound to, the splitters show as gutters, and the time bar
-//! (RA8EMU-807) and the status strip (RA8EMU-759) run along the bottom. What
+//! (RA8EMU-807) and the status strip (RA8EMU-759) run along the bottom, the
+//! strip ending in the theme picker (RA8EMU-1165) when the shell has one. What
 //! goes inside a leaf comes from a painter, so the window loop fills it and a
 //! test can leave it bare.
 const std = @import("std");
@@ -10,6 +11,7 @@ const font = @import("ra8_render").font;
 const pane_layout = @import("../pane_layout.zig");
 const status_strip = @import("../status_strip.zig");
 const time_bar = @import("../time_bar.zig");
+const theme_picker = @import("../theme_picker.zig");
 const colors = @import("../colors.zig");
 const Theme = colors.Theme;
 
@@ -37,6 +39,9 @@ pub const Shell = struct {
     /// The time bar's view, from src/interfaces/gui/shell/time.zig; a bare frame draws it
     /// with nothing lit.
     bar: time_bar.View = .{},
+    /// The theme picker at the strip's right end (RA8EMU-1165), from
+    /// src/interfaces/gui/shell/theme.zig; a bare frame has none.
+    themes: ?theme_picker.View = null,
     width: i32,
     height: i32,
     painter: ?Painter = null,
@@ -83,6 +88,11 @@ pub fn bodyOf(area: Rect) Rect {
     return .{ .x = area.x, .y = area.y + top, .w = area.w, .h = area.h - top };
 }
 
+/// The status strip's row, under a time bar drawn in `bar`.
+pub fn stripUnder(bar: Rect) Rect {
+    return .{ .x = bar.x, .y = bar.y + bar.h, .w = bar.w, .h = status_strip.height };
+}
+
 /// Lays the panes out for a window of `width` by `height` pixels.
 pub fn solve(layout: *const Layout, allocator: std.mem.Allocator, width: i32, height: i32) !Solved {
     return layout.solve(allocator, panesArea(width, height));
@@ -96,7 +106,9 @@ pub fn draw(list: *draw_list.DrawList, theme: *const Theme, shell: Shell) !void 
     }
     try time_bar.draw(list, theme, barArea(shell.width, shell.height), shell.bar);
     const strip = status_strip.area(shell.width, shell.height);
-    try status_strip.draw(list, theme, strip, &shell.strip);
+    const picker = shell.themes orelse return status_strip.draw(list, theme, strip, &shell.strip);
+    try status_strip.draw(list, theme, theme_picker.rest(strip), &shell.strip);
+    try theme_picker.draw(list, theme, strip, picker);
 }
 
 fn drawLeaf(list: *draw_list.DrawList, theme: *const Theme, pane: Pane, area: Rect, painter: ?Painter) !void {

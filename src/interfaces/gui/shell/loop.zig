@@ -38,7 +38,7 @@ const shell_memory = @import("memory.zig");
 const shell_time = @import("time.zig");
 const wall_clock = @import("../wall_clock.zig");
 const shell_stack = @import("stack.zig");
-const colors = @import("../ui/colors.zig");
+const shell_theme = @import("theme.zig");
 
 /// Most arrivals taken off the link in one frame, so a chatty session
 /// cannot starve the window.
@@ -61,13 +61,9 @@ pub const Shell = struct {
     status: status_bar.Status = .{},
     link: ?*session_link.Link = null,
     painter: ?shell_frame.Painter = null,
-    /// The palette every leaf, bar and strip paints with.
-    theme: *const colors.Theme = colors.of(.dark),
-    /// Repaint `theme` from the OS appearance (RA8EMU-962): read on the
-    /// first frame and again whenever the OS reports a change.
-    follow_os: bool = false,
-    /// The OS appearance has been read at least once.
-    styled: bool = false,
+    /// The palette in use, whether it follows the OS, and the picker on
+    /// the status strip that changes it (RA8EMU-1165).
+    themes: shell_theme.Themes = .{},
     console: ?*shell_console.Console = null,
     board: ?*shell_board.Board = null,
     /// The pointer on the board leaf: switch clicks and panel touches.
@@ -131,19 +127,19 @@ pub const Shell = struct {
         var solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         defer solved.deinit(self.allocator);
         self.bar = shell_frame.barArea(width, height);
-        if (!self.styled) self.restyle(window);
         while (window.poll()) |event| {
-            if (event == .appearance) self.restyle(window);
+            if (event == .appearance) self.themes.restyle(window.appearance());
             self.handle(event, &solved);
         }
         if (!self.open) return false;
+        if (!self.themes.styled) self.themes.restyle(window.appearance());
         try self.exchange();
         try self.paySlices();
         solved.deinit(self.allocator);
         solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         var list = draw_list.DrawList.init(self.allocator, size.width, size.height);
         defer list.deinit();
-        try shell_frame.draw(&list, self.theme, .{
+        try shell_frame.draw(&list, self.themes.active, .{
             .layout = &self.layout,
             .solved = &solved,
             .strip = status_capture.strip(&self.status, self.state()),
@@ -151,6 +147,7 @@ pub const Shell = struct {
             .width = width,
             .height = height,
             .painter = self.painter,
+            .themes = self.themes.view(),
         });
         if (try window.show(&list, font.atlas)) return true;
         const frame = try self.fitFrame(size);
@@ -159,20 +156,13 @@ pub const Shell = struct {
         return true;
     }
 
-    /// Pick the palette from the OS appearance when following it; an OS
-    /// with no answer gets Light.
-    fn restyle(self: *Shell, window: platform.Platform) void {
-        self.styled = true;
-        if (!self.follow_os) return;
-        self.theme = colors.resolve(.system, window.appearance() == .dark);
-    }
-
     /// Apply one input event against this frame's layout.
     pub fn handle(self: *Shell, event: platform.Event, solved: *const pane_layout.Solved) void {
         switch (event) {
             .quit => self.open = false,
             .button => |press| {
                 if (press.button != 1) return;
+                if (press.down and self.themes.press(shell_frame.stripUnder(self.bar), press.x, press.y)) return;
                 self.held = if (press.down) solved.hit(press.x, press.y) else null;
                 if (!press.down) return self.releaseBoard(press.x, press.y);
                 if (self.held != null) return;
@@ -199,6 +189,7 @@ pub const Shell = struct {
                 _ = console.wheelIn(&self.layout, solved, self.pointer_at.x, self.pointer_at.y, turn.dy);
             },
             .text, .key => {
+                if (self.themes.key(event)) return;
                 if (self.pageConsole(event, solved)) return;
                 if (self.time) |time| if (self.link) |link| {
                     if (time.handle(event, link)) return;
