@@ -71,6 +71,7 @@ test {
     _ = @import("interfaces/cli/history_test.zig");
     _ = @import("interfaces/cli/history_branch_cli_test.zig");
     _ = @import("interfaces/cli/history_maint_cli_test.zig");
+    _ = @import("interfaces/cli/history_replay_elf_cli_test.zig");
     _ = @import("interfaces/cli/session_ctl_test.zig");
     _ = @import("interfaces/cli/ctl/branch_test.zig");
     _ = @import("interfaces/cli/ctl/write_test.zig");
@@ -332,6 +333,7 @@ test {
     _ = @import("interfaces/rpc/served_setup_test.zig");
     _ = @import("interfaces/rpc/served_camera_test.zig");
     _ = @import("interfaces/rpc/served_usbip_test.zig");
+    _ = @import("interfaces/rpc/regression_replay_test.zig");
     _ = @import("interfaces/rpc/frame_pipeline_test.zig");
     _ = @import("interfaces/rpc/history_off_nodisk_test.zig");
     _ = @import("interfaces/rpc/session_list_parts_test.zig");

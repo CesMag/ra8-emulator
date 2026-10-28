@@ -8,14 +8,36 @@
 //! (state_memory.zig). Everything else, every core's registers and every
 //! board section, is hashed as written.
 const std = @import("std");
-const file = @import("ra8_snapshot").file;
-const fields = @import("ra8_snapshot").fields;
+const file = @import("ra8_board").snapshot.run.file;
+const fields = @import("ra8_board").snapshot.run.fields;
 const regs_mod = @import("ra8_chip").core.cpu.regs;
 const elf = @import("ra8_board").image.elf;
 const memory = @import("state_memory.zig");
 
 pub const Digest = [16]u8;
-pub const Error = file.Error || fields.Error || memory.Error;
+pub const Error = file.Error || fields.Error || memory.Error || error{WriteFailed};
+
+const Units = @import("../board/state.zig").Units;
+
+/// Room for a debug-units section of one or two cores.
+const debug_scratch: usize = 1 << 15;
+
+/// The debug-units section with each core's slot clock cleared. That clock
+/// counts the slots of the run command in flight, so it follows how the run
+/// was chunked into commands and not what the guest did; every other field
+/// is the debug unit's own state and stays.
+fn withoutRunBookkeeping(payload: []const u8, out: []u8) Error![]const u8 {
+    var cursor: fields.Cursor = .{ .bytes = payload };
+    var writer: std.Io.Writer = .fixed(out);
+    const cores = try fields.read(u8, &cursor);
+    try fields.write(&writer, cores);
+    for (0..cores) |_| {
+        var units = try fields.read(Units, &cursor);
+        units.count = .{};
+        try fields.write(&writer, units);
+    }
+    return writer.buffered();
+}
 
 fn isMemory(kind: file.Kind) bool {
     return kind == .memory or kind == .second_memory;
@@ -30,6 +52,9 @@ pub fn digest(stream: []const u8, image: elf.Image) Error!Digest {
         hasher.update(std.mem.asBytes(&std.mem.nativeToLittle(u32, @backingInt(section.kind))));
         if (isMemory(section.kind)) {
             memory.hash(&hasher, try memory.parse(section.payload), image);
+        } else if (section.kind == .debug_units) {
+            var scratch: [debug_scratch]u8 = undefined;
+            hasher.update(try withoutRunBookkeeping(section.payload, &scratch));
         } else {
             hasher.update(section.payload);
         }
@@ -109,6 +134,11 @@ pub fn first(expected: []const u8, expected_image: elf.Image, actual: []const u8
             const pb = try memory.parse(two.payload);
             if (memory.firstDifference(pa, expected_image, pb, actual_image)) |spot| return try finish(expected, actual, core, .{ .memory = spot });
             if (!std.mem.eql(u8, pa.tail, pb.tail)) return try finish(expected, actual, core, .{ .section = one.kind });
+        } else if (one.kind == .debug_units) {
+            var scratch: [2][debug_scratch]u8 = undefined;
+            const left = try withoutRunBookkeeping(one.payload, &scratch[0]);
+            const right = try withoutRunBookkeeping(two.payload, &scratch[1]);
+            if (!std.mem.eql(u8, left, right)) return try finish(expected, actual, core, .{ .section = one.kind });
         } else if (!std.mem.eql(u8, one.payload, two.payload)) {
             return try finish(expected, actual, core, .{ .section = one.kind });
         }

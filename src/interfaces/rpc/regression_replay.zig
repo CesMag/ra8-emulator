@@ -61,7 +61,8 @@ pub const Divergence = struct {
 };
 
 pub const Result = struct {
-    arena: std.heap.ArenaAllocator,
+    arena: *std.heap.ArenaAllocator,
+    gpa: std.mem.Allocator,
     verdict: Verdict,
     /// The recorded line's checkpoints, and how many matched in order.
     checkpoints: u32,
@@ -73,6 +74,7 @@ pub const Result = struct {
 
     pub fn deinit(self: *Result) void {
         self.arena.deinit();
+        self.gpa.destroy(self.arena);
     }
 };
 
@@ -94,7 +96,9 @@ const never: u32 = std.math.maxInt(u32);
 
 /// Replays the session `name` of `base` against the ELF at `rebuilt_path`.
 pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.Base, name: []const u8, rebuilt_path: []const u8, options: Options) !Result {
-    var arena = std.heap.ArenaAllocator.init(allocator);
+    const arena = try allocator.create(std.heap.ArenaAllocator);
+    arena.* = std.heap.ArenaAllocator.init(allocator);
+    errdefer allocator.destroy(arena);
     errdefer arena.deinit();
     const keep = arena.allocator();
     var dir = try base.dir.openDir(io, name, .{ .iterate = true, .follow_symlinks = false });
@@ -121,7 +125,8 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     session.setReplaying(true);
 
     var result: Result = .{
-        .arena = undefined,
+        .arena = arena,
+        .gpa = allocator,
         .verdict = .compatible,
         .checkpoints = @intCast(line.len),
         .matched = 0,
@@ -133,7 +138,6 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     for (line) |checkpoint| {
         if (try compareAt(allocator, keep, &served, store, images, checkpoint, &result)) break;
     }
-    result.arena = arena;
     return result;
 }
 
@@ -162,11 +166,13 @@ fn compareAt(allocator: std.mem.Allocator, keep: std.mem.Allocator, served: *ser
     const recorded = object_read.read(store, allocator, &name) catch return Error.ObjectMissing;
     defer allocator.free(recorded);
     const session = served.owner.session();
-    const stopped = try advance(served, checkpoint.position);
-    result.round = session.currentPosition().r;
     var stream: std.Io.Writer.Allocating = .init(allocator);
     defer stream.deinit();
-    try session.history.?.files.writeTo(&stream.writer);
+    const stopped = try advance(served, checkpoint.position, &stream);
+    result.round = session.currentPosition().r;
+    // The state is taken where the history took it, as the round opens;
+    // a machine that never got there, or is already there, is taken as it stands.
+    if (stream.written().len == 0) try session.history.?.files.writeTo(&stream.writer);
     const have = stream.written();
     if (stopped == null and std.mem.eql(u8, &(try state_digest.digest(recorded, images.original)), &(try state_digest.digest(have, images.rebuilt)))) {
         result.matched += 1;
@@ -197,10 +203,10 @@ fn symbolAt(keep: std.mem.Allocator, image: elf.Image, pc: u32) !?Symbol {
 
 /// Runs the replay machine to the round `target` names, or until it stops
 /// for another reason; null when it got there, else the stop's name.
-fn advance(served: *served_setup.Served, target: Position) !?[]const u8 {
+fn advance(served: *served_setup.Served, target: Position, stream: *std.Io.Writer.Allocating) !?[]const u8 {
     const session = served.owner.session();
     const rounds = session.live.checkpoints orelse return error.NoRounds;
-    var halt: HaltAt = .{ .session = session, .round = target.r };
+    var halt: HaltAt = .{ .session = session, .round = target.r, .stream = stream };
     rounds.stop = .{ .context = &halt, .roundFn = HaltAt.fire };
     defer rounds.stop = null;
     while (session.currentPosition().r < target.r) {
@@ -216,13 +222,17 @@ fn advance(served: *served_setup.Served, target: Position) !?[]const u8 {
     return null;
 }
 
-/// Halts the run as the target's round opens.
+/// Takes the machine's state as the target's round opens, the moment the
+/// history took its own checkpoint there, and halts the run.
 const HaltAt = struct {
     session: *session_lib.api.Session,
     round: u64,
+    stream: *std.Io.Writer.Allocating,
 
     fn fire(context: *anyopaque, at: Position) void {
         const self: *HaltAt = @ptrCast(@alignCast(context));
-        if (at.r >= self.round) self.session.live.machine.requestHalt();
+        if (at.r < self.round) return;
+        if (at.r == self.round) self.session.history.?.files.writeTo(&self.stream.writer) catch {};
+        self.session.live.machine.requestHalt();
     }
 };

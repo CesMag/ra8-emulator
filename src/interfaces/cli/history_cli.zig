@@ -14,6 +14,7 @@ const bind = struct {
 };
 const history_branch_cli = @import("history_branch_cli.zig");
 const history_maint_cli = @import("history_maint_cli.zig");
+const history_replay_elf_cli = @import("history_replay_elf_cli.zig");
 
 pub const usage =
     \\usage: ra8_emulator history --root DIR ls
@@ -24,6 +25,7 @@ pub const usage =
     \\       ra8_emulator history --root DIR reroot --confirm SESSION CHECKPOINT_ID
     \\       ra8_emulator history --root DIR branch ls [SESSION]
     \\       ra8_emulator history --root DIR branch rm [--confirm] SESSION BRANCH_ID
+    \\       ra8_emulator history --root DIR replay-elf SESSION --elf PATH [--json]
     \\       ls lists the root's entries with their state; du reports bytes,
     \\       all sessions or one; rm removes a session, --kept for a kept
     \\       one; prune sweeps each closed session's orphaned objects and
@@ -32,7 +34,10 @@ pub const usage =
     \\       or all sessions; branch rm removes a branch with --confirm;
     \\       thin drops checkpoints so none are more than ROUNDS apart
     \\       (default 4096) and reroot drops the history before a checkpoint;
-    \\       both then reclaim the dropped objects and compact the packs.
+    \\       both then reclaim the dropped objects and compact the packs;
+    \\       replay-elf runs the session's recorded inputs against the rebuilt
+    \\       ELF at PATH without writing the history, and exits 0 when every
+    \\       checkpoint matches and 3 at the first that does not.
     \\
 ;
 
@@ -41,7 +46,7 @@ pub const BranchSub = union(enum) {
     rm: struct { session: []const u8, branch_id: u32, confirm: bool },
 };
 
-pub const Op = enum { ls, du, rm, prune, branch, thin, reroot };
+pub const Op = enum { ls, du, rm, prune, branch, thin, reroot, @"replay-elf" };
 
 const Command = struct {
     op: Op,
@@ -52,6 +57,8 @@ const Command = struct {
     confirm: bool = false,
     gap: u64 = 4096,
     checkpoint: u32 = 0,
+    elf: ?[]const u8 = null,
+    json: bool = false,
 };
 
 /// The flags come in any order; words name the operation and its target.
@@ -61,9 +68,10 @@ pub fn parse(argv: []const []const u8) !Command {
     var kept = false;
     var confirm = false;
     var gap: ?u64 = null;
+    var elf: ?[]const u8 = null;
+    var json = false;
     var words_buf: [8][]const u8 = undefined;
     var words_len: usize = 0;
-
     var i: usize = 2;
     while (i < argv.len) : (i += 1) {
         const arg = argv[i];
@@ -72,16 +80,20 @@ pub fn parse(argv: []const []const u8) !Command {
             if (i >= argv.len or root.len != 0) return error.Usage;
             root = argv[i];
         } else if (std.mem.eql(u8, arg, "--kept")) {
-            if (kept) return error.Usage;
-            kept = true;
+            try once(&kept);
         } else if (std.mem.eql(u8, arg, "--gap")) {
             i += 1;
             if (i >= argv.len or gap != null) return error.Usage;
             gap = std.fmt.parseInt(u64, argv[i], 10) catch return error.Usage;
             if (gap.? == 0) return error.Usage;
+        } else if (std.mem.eql(u8, arg, "--elf")) {
+            if (i + 1 >= argv.len or elf != null) return error.Usage;
+            i += 1;
+            elf = argv[i];
+        } else if (std.mem.eql(u8, arg, "--json")) {
+            try once(&json);
         } else if (std.mem.eql(u8, arg, "--confirm")) {
-            if (confirm) return error.Usage;
-            confirm = true;
+            try once(&confirm);
         } else {
             if (words_len >= words_buf.len) return error.Usage;
             words_buf[words_len] = arg;
@@ -89,13 +101,13 @@ pub fn parse(argv: []const []const u8) !Command {
         }
     }
     if (root.len == 0 or words_len == 0) return error.Usage;
-
     const words = words_buf[0..words_len];
     const op = std.meta.stringToEnum(Op, words[0]) orelse return error.Usage;
+    if ((elf != null or json) and op != .@"replay-elf") return error.Usage;
     var command = Command{ .op = op, .root = root, .kept = kept };
 
     switch (op) {
-        .ls => {
+        .ls, .prune => {
             if (kept or confirm or words.len > 1) return error.Usage;
         },
         .du => {
@@ -106,13 +118,10 @@ pub fn parse(argv: []const []const u8) !Command {
             if (confirm or words.len != 2) return error.Usage;
             command.entry = words[1];
         },
-        .prune => {
-            if (kept or confirm or words.len > 1) return error.Usage;
-        },
         .thin => {
             if (kept or confirm or words.len != 2) return error.Usage;
             command.entry = words[1];
-            command.gap = gap orelse 4096;
+            command.gap = gap orelse command.gap;
         },
         .reroot => {
             if (kept or gap != null or words.len != 3) return error.Usage;
@@ -120,20 +129,34 @@ pub fn parse(argv: []const []const u8) !Command {
             command.checkpoint = std.fmt.parseInt(u32, words[2], 10) catch return error.Usage;
             command.confirm = confirm;
         },
+        .@"replay-elf" => {
+            if (kept or confirm or gap != null or words.len != 2) return error.Usage;
+            command.entry = words[1];
+            command.elf = elf orelse return error.Usage;
+            command.json = json;
+        },
         .branch => {
             if (kept or gap != null or words.len < 2) return error.Usage;
-            const sub = words[1];
-            if (std.mem.eql(u8, sub, "ls")) {
-                if (words.len > 3 or confirm) return error.Usage;
-                command.branch_sub = .{ .ls = if (words.len == 3) words[2] else null };
-            } else if (std.mem.eql(u8, sub, "rm")) {
-                if (words.len != 4) return error.Usage;
-                const b_id = std.fmt.parseInt(u32, words[3], 0) catch return error.Usage;
-                command.branch_sub = .{ .rm = .{ .session = words[2], .branch_id = b_id, .confirm = confirm } };
-            } else return error.Usage;
+            command.branch_sub = try branchSub(words, confirm);
         },
     }
     return command;
+}
+
+/// A flag that may be given once.
+fn once(seen: *bool) !void {
+    if (seen.*) return error.Usage;
+    seen.* = true;
+}
+
+fn branchSub(words: []const []const u8, confirm: bool) !BranchSub {
+    if (std.mem.eql(u8, words[1], "ls")) {
+        if (words.len > 3 or confirm) return error.Usage;
+        return .{ .ls = if (words.len == 3) words[2] else null };
+    }
+    if (!std.mem.eql(u8, words[1], "rm") or words.len != 4) return error.Usage;
+    const b_id = std.fmt.parseInt(u32, words[3], 0) catch return error.Usage;
+    return .{ .rm = .{ .session = words[2], .branch_id = b_id, .confirm = confirm } };
 }
 
 /// The root the flags name, in the role its own marker claims. The tools
@@ -179,6 +202,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         .prune => sweepClosed(allocator, &base, &stdout.interface),
         .thin => history_maint_cli.thin(allocator, &base, command.entry.?, false, command.gap, &stdout.interface),
         .reroot => history_maint_cli.reroot(allocator, &base, command.entry.?, false, command.checkpoint, command.confirm, &stdout.interface),
+        .@"replay-elf" => history_replay_elf_cli.run(allocator, io, &base, command.entry.?, command.elf.?, command.json, &stdout.interface),
         .branch => switch (command.branch_sub.?) {
             .ls => |session_name| history_branch_cli.listBranches(allocator, &base, session_name, &stdout.interface),
             .rm => |b_rm| history_branch_cli.removeBranch(allocator, &base, b_rm.session, b_rm.branch_id, b_rm.confirm, &stdout.interface),

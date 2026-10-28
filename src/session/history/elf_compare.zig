@@ -91,25 +91,38 @@ fn compareSegments(report: *Report, original: elf.Image, rebuilt: elf.Image) voi
     }
 }
 
+fn table(allocator: std.mem.Allocator, image: elf.Image) Error!std.StringHashMap(symbols.Named) {
+    var map = std.StringHashMap(symbols.Named).init(allocator);
+    errdefer map.deinit();
+    var walk = symbols.Walk.init(image);
+    while (walk.next()) |symbol| try map.put(symbol.name, symbol);
+    return map;
+}
+
+/// Symbols are matched by name, so a name the table repeats counts once.
 fn compareSymbols(allocator: std.mem.Allocator, report: *Report, original: elf.Image, rebuilt: elf.Image) Error!void {
-    var before = std.StringHashMap(symbols.Named).init(allocator);
+    var before = try table(allocator, original);
     defer before.deinit();
-    var walk = symbols.Walk.init(original);
-    while (walk.next()) |symbol| try before.put(symbol.name, symbol);
-    var seen: u32 = 0;
-    walk = symbols.Walk.init(rebuilt);
-    while (walk.next()) |symbol| {
-        const old = before.get(symbol.name) orelse {
+    var after = try table(allocator, rebuilt);
+    defer after.deinit();
+    var kept = after.iterator();
+    while (kept.next()) |entry| {
+        const old = before.get(entry.key_ptr.*) orelse {
             report.symbols_added += 1;
-            if (report.first_changed_symbol == null) report.first_changed_symbol = symbol.name;
             continue;
         };
-        seen += 1;
-        const moved = old.value != symbol.value;
-        const resized = old.size != symbol.size;
+        const moved = old.value != entry.value_ptr.value;
         report.symbols_moved += @intFromBool(moved);
-        report.symbols_resized += @intFromBool(resized and !moved);
-        if ((moved or resized) and report.first_changed_symbol == null) report.first_changed_symbol = symbol.name;
+        report.symbols_resized += @intFromBool(!moved and old.size != entry.value_ptr.size);
     }
-    report.symbols_removed = @intCast(before.count() -| seen);
+    var gone = before.keyIterator();
+    while (gone.next()) |name| report.symbols_removed += @intFromBool(!after.contains(name.*));
+    var walk = symbols.Walk.init(rebuilt);
+    while (walk.next()) |symbol| {
+        const old = before.get(symbol.name);
+        if (old == null or old.?.value != symbol.value or old.?.size != symbol.size) {
+            report.first_changed_symbol = symbol.name;
+            return;
+        }
+    }
 }
