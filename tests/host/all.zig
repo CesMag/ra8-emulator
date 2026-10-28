@@ -10,6 +10,7 @@ test {
     _ = @import("camera/image_file_test.zig");
     _ = @import("camera/video_file_test.zig");
     _ = @import("camera/pipe/input_test.zig");
+    _ = @import("camera/pipe_record_test.zig");
     _ = @import("camera/webcam/input_test.zig");
     _ = @import("camera/webcam/open_test.zig");
     _ = @import("camera/av/webcam_test.zig");

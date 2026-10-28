@@ -244,6 +244,10 @@ pub const Boundary = struct {
         /// landing is the observation of where it took effect.
         tap_landed = 9,
         button_landed = 10,
+        /// One frame the CEU captured from the camera source, at the
+        /// position the capture armed. Unlike a landing it is an input
+        /// replay re-feeds: the body is camera_frame.zig's record.
+        camera_frame = 11,
         _,
     };
     what: What,

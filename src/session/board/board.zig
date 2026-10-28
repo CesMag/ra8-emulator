@@ -8,6 +8,7 @@ pub const events = @import("events.zig");
 pub const faults = @import("faults/faults.zig");
 pub const leds = @import("leds.zig");
 pub const plug = @import("plug.zig");
+pub const recorded_camera = @import("recorded_camera.zig");
 pub const rtc = @import("rtc.zig");
 pub const schedule = @import("schedule.zig");
 pub const speed = @import("speed.zig");

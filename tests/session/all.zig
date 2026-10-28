@@ -25,6 +25,7 @@ test {
     _ = @import("history/trail_test.zig");
     _ = @import("history/trail_types_test.zig");
     _ = @import("history/recorder_test.zig");
+    _ = @import("history/camera_frame_test.zig");
     _ = @import("history/segment_recover_test.zig");
     _ = @import("history/replay_test.zig");
     _ = @import("twice_replay_test.zig");

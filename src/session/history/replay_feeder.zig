@@ -35,10 +35,22 @@ pub const freeEncodedAction = action_codec.free;
 /// Decodes an intervention record back into a Session Action.
 pub const decodeAction = action_codec.decode;
 
+/// One camera frame the line recorded: the `camera_frame` record's body,
+/// owned here, due at the position the capture armed.
+pub const RecordedFrame = struct {
+    position: Position,
+    seq: u32 = 0,
+    body: []u8,
+};
+
 pub const ReplayFeeder = struct {
     allocator: std.mem.Allocator,
     items: std.ArrayList(ScheduledIntervention),
     cursor: usize = 0,
+    /// The line's camera frames in recorded order; a replayed capture takes
+    /// the next one instead of reading the host source.
+    frames: std.ArrayList(RecordedFrame) = .empty,
+    frame_cursor: usize = 0,
 
     pub fn init(allocator: std.mem.Allocator) ReplayFeeder {
         return .{
@@ -59,6 +71,21 @@ pub const ReplayFeeder = struct {
         self.items.deinit(self.allocator);
         self.items = std.ArrayList(ScheduledIntervention).empty;
         self.cursor = 0;
+        for (self.frames.items) |frame| self.allocator.free(frame.body);
+        self.frames.deinit(self.allocator);
+        self.frames = .empty;
+        self.frame_cursor = 0;
+    }
+
+    /// The camera frame recorded for a capture at `pos`, or null when the
+    /// line holds none there. Taking it consumes it; a capture that finds
+    /// null is a determinism error, never a live read.
+    pub fn takeFrame(self: *ReplayFeeder, pos: Position) ?[]const u8 {
+        if (self.frame_cursor >= self.frames.items.len) return null;
+        const next = self.frames.items[self.frame_cursor];
+        if (branch_mod.scalarOrder(next.position, pos) != .eq) return null;
+        self.frame_cursor += 1;
+        return next.body;
     }
 
     pub fn loadFromLog(
@@ -75,6 +102,7 @@ pub const ReplayFeeder = struct {
         };
         _ = try replay_mod.replay(log_bytes, &ctx, visitRecord);
         std.mem.sort(ScheduledIntervention, self.items.items, {}, sortLess);
+        std.mem.sort(RecordedFrame, self.frames.items, {}, frameLess);
     }
 
     /// The next item due at `pos`: the first undelivered one whose
@@ -104,6 +132,11 @@ pub const ReplayFeeder = struct {
         self.cursor = 0;
         while (self.cursor < self.items.items.len) : (self.cursor += 1) {
             const ord = branch_mod.scalarOrder(self.items.items[self.cursor].position, pos);
+            if (ord == .gt or (ord == .eq and from == .at)) break;
+        }
+        self.frame_cursor = 0;
+        while (self.frame_cursor < self.frames.items.len) : (self.frame_cursor += 1) {
+            const ord = branch_mod.scalarOrder(self.frames.items[self.frame_cursor].position, pos);
             if (ord == .gt or (ord == .eq and from == .at)) break;
         }
     }
@@ -160,16 +193,16 @@ const ScanContext = struct {
     active_line: BranchId,
 };
 
+fn onLine(ctx: *ScanContext, raw_pos: Position) ?Position {
+    if (ctx.graph) |g| return g.canonicalize(ctx.active_line, raw_pos) catch null;
+    if (raw_pos.branch != ctx.active_line) return null;
+    return raw_pos;
+}
+
 fn visitRecord(ctx: *ScanContext, entry: replay_mod.Entry) anyerror!void {
     switch (entry) {
         .intervention => |hit| {
-            const raw_pos = hit.header.position;
-            const canon_pos = if (ctx.graph) |g|
-                g.canonicalize(ctx.active_line, raw_pos) catch return
-            else blk: {
-                if (raw_pos.branch != ctx.active_line) return;
-                break :blk raw_pos;
-            };
+            const canon_pos = onLine(ctx, hit.header.position) orelse return;
             // A kind this reader does not replay (an RPC mutation) is
             // kept in the log and skipped here; a known kind whose body
             // does not decode is a broken history, not a skip.
@@ -180,6 +213,13 @@ fn visitRecord(ctx: *ScanContext, entry: replay_mod.Entry) anyerror!void {
                 .seq = hit.header.seq,
                 .action = action,
             });
+        },
+        .boundary => |hit| {
+            if (hit.boundary.what != .camera_frame) return;
+            const canon_pos = onLine(ctx, hit.header.position) orelse return;
+            const body = try ctx.feeder.allocator.dupe(u8, hit.boundary.body);
+            errdefer ctx.feeder.allocator.free(body);
+            try ctx.feeder.frames.append(ctx.feeder.allocator, .{ .position = canon_pos, .seq = hit.header.seq, .body = body });
         },
         else => {},
     }
@@ -193,6 +233,14 @@ fn replayable(what: Intervention.What) bool {
 }
 
 fn sortLess(_: void, a: ScheduledIntervention, b: ScheduledIntervention) bool {
+    return switch (branch_mod.scalarOrder(a.position, b.position)) {
+        .lt => true,
+        .gt => false,
+        .eq => a.seq < b.seq,
+    };
+}
+
+fn frameLess(_: void, a: RecordedFrame, b: RecordedFrame) bool {
     return switch (branch_mod.scalarOrder(a.position, b.position)) {
         .lt => true,
         .gt => false,

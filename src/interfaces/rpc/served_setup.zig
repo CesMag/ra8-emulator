@@ -7,7 +7,7 @@
 //! session to install, so neither application carries a copy of that.
 const std = @import("std");
 const harness = @import("ra8_session").harness;
-const board_camera = @import("ra8_session").board.camera;
+const served_camera = @import("served_camera.zig");
 const board_rtc = @import("ra8_session").board.rtc;
 const session_plug = @import("ra8_session").board.plug;
 const cpu1_bringup = @import("ra8_session").cpu1.bringup;
@@ -21,8 +21,6 @@ const rtos_hook = @import("ra8_session").rtos.hook;
 const periph_list = @import("ra8_session").periph_list;
 const stack_samples = @import("ra8_session").stack.samples;
 const stack_profile = @import("ra8_session").stack.profile;
-const source_spec = @import("ra8_host").camera.source_spec;
-const source_open = @import("ra8_host").camera.source_open;
 const card_apps = @import("card_apps.zig");
 const txm_debug = @import("ra8_session").txm.debug;
 const proto = @import("session/rpc.zig");
@@ -174,8 +172,9 @@ pub const Served = struct {
         self.context.mapping = .{ .context = &self.owner, .mapFn = mapImage, .stackFn = stackOf, .imageFn = imageOf };
         self.context.clock = board_rtc.clock(self.owner.board());
         self.context.peripherals = .{ .context = &self.owner, .listFn = listPeriph };
-        self.context.camera = .{ .context = self, .setFn = setCamera };
-        self.owner.session().attachCamera(.{ .context = self, .changeFn = setCameraDirect });
+        self.context.camera = .{ .context = self, .setFn = served_camera.set };
+        self.owner.session().attachCamera(.{ .context = self, .changeFn = served_camera.setDirect });
+        try served_camera.attach(self);
         try served_history.attach(self, allocator);
         self.owner.session().attachNet(.{ .context = self, .closeFlowsFn = closeC6 });
         self.owner.session().attachConsole(.{ .context = self, .feedFn = feedConsoleDirect });
@@ -303,30 +302,6 @@ fn windowBytes(opts: HistoryOpts) !usize {
         else => return err,
     };
     return @intCast((try history_budget.partition(ram)).window);
-}
-
-/// set_camera_source: open the source `spec` names on the host and make it
-/// the board's camera source. A source that will not open changes nothing.
-fn setCamera(context: *anyopaque, spec: source_spec.Spec) anyerror!void {
-    const self: *Served = @ptrCast(@alignCast(context));
-    if (self.owner.session().fork_router != null) {
-        var buf: [256]u8 = undefined;
-        const text = if (spec.arg.len == 0)
-            @tagName(spec.kind)
-        else
-            try std.fmt.bufPrint(&buf, "{s}:{s}", .{ @tagName(spec.kind), spec.arg });
-        try self.owner.session().changeCamera(.cpu0, text);
-        return;
-    }
-    const input = try source_open.open(self.gpa, self.io, spec);
-    try board_camera.install(self.owner.board(), self.gpa, input);
-}
-
-fn setCameraDirect(context: *anyopaque, spec_text: []const u8) anyerror!void {
-    const self: *Served = @ptrCast(@alignCast(context));
-    const spec = try source_spec.parse(spec_text);
-    const input = try source_open.open(self.gpa, self.io, spec);
-    try board_camera.install(self.owner.board(), self.gpa, input);
 }
 
 fn closeC6(context: *anyopaque) void {
