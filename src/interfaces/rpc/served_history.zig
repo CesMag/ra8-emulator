@@ -51,6 +51,7 @@ pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator) !void {
     session.attachAsyncQueue(session_async.AsyncQueue.init(allocator, 0));
     self.owner.board().c6.wire.bridge.hold = .{ .context = session, .heldFn = hostHeld };
     try board_c6.attach(self.gpa, session, &self.owner.board().c6.wire.bridge);
+    errdefer board_c6.release(&self.owner.board().c6.wire.bridge);
     self.owner.board().console_input.hook = .{ .context = session, .feedFn = routeConsoleStdin, .heldFn = hostHeld };
 
     if (self.history) |b| {
