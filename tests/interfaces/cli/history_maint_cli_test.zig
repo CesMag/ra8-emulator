@@ -15,13 +15,21 @@ const short_image = "tests/fixtures/dfu/dfu_bootloader.elf";
 const long_image = "tests/fixtures/gpio/blink.elf";
 
 /// Records a kept session with many checkpoints and returns its root.
-fn record(gpa: std.mem.Allocator, root: []const u8, image: []const u8, runs: usize) !void {
+/// `per_run` caps each run's slots when given, so a busy image reaches
+/// its checkpoints without running the default budget every time.
+fn record(gpa: std.mem.Allocator, root: []const u8, image: []const u8, runs: usize, per_run: ?u64) !void {
     var served: ra8.rpc.served_setup.Served = undefined;
     try served.open(gpa, std.testing.io, image, null, .{ .root = root, .checkpoint_every = 1, .kept = true });
     defer served.deinit();
-    _ = try served.owner.session().run(.cpu0, .run);
-    for (1..runs) |_| _ = try served.owner.session().run(.cpu0, .cont);
+    const session = served.owner.session();
+    if (per_run) |cap| try session.setRunBudget(.cpu0, cap);
+    _ = try session.run(.cpu0, .run);
+    for (1..runs) |_| _ = try session.run(.cpu0, .cont);
 }
+
+/// Slots per run for the long recording: above the reverse window's live
+/// recording limit, and enough that each run passes a checkpoint.
+const long_run_slots: u64 = 40_000;
 
 const Session = struct {
     base: history.base.Base,
@@ -60,7 +68,7 @@ test "reroot refuses without confirmation and otherwise drops the history before
     defer temp.cleanup();
     const root = try temp.dir.realPathFileAlloc(std.testing.io, ".", gpa);
     defer gpa.free(root);
-    try record(gpa, root, short_image, 1);
+    try record(gpa, root, short_image, 1, null);
     var session = try Session.find(gpa, root);
     defer session.base.close();
     const before = try session.checkpoints(gpa);
@@ -83,7 +91,7 @@ test "thin drops checkpoints far from the newest and keeps the survivors' gap" {
     defer temp.cleanup();
     const root = try temp.dir.realPathFileAlloc(std.testing.io, ".", gpa);
     defer gpa.free(root);
-    try record(gpa, root, long_image, 40);
+    try record(gpa, root, long_image, 65, long_run_slots);
     var session = try Session.find(gpa, root);
     defer session.base.close();
     const before = try session.checkpoints(gpa);
