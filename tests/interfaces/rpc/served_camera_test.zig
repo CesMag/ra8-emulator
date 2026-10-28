@@ -112,3 +112,55 @@ test "a served history records the gradient and a picture, and replays the captu
     try std.testing.expectEqual(@as(u32, 0), tripwire.calls);
     try std.testing.expectEqualSlices(u8, &live, &replayed);
 }
+
+const FakeWall = struct {
+    now_ns: u64 = 0,
+    fn now(context: *anyopaque) u64 {
+        const self: *FakeWall = @ptrCast(@alignCast(context));
+        self.now_ns += 1_000_000;
+        return self.now_ns;
+    }
+    fn wall(self: *FakeWall) ra8.session.transport.Wall {
+        return .{ .context = self, .nowFn = now };
+    }
+};
+
+test "a replayed capture with nothing recorded stops the run and the stop reaches the transport, RPC and report" {
+    const gpa = std.testing.allocator;
+    var served: setup.Served = undefined;
+    try served.open(gpa, std.testing.io, image, null, .{});
+    defer served.deinit();
+    const session = served.owner.session();
+    const unit = &served.owner.board().capture;
+    const port = recorded_camera.from(unit.source).?;
+    _ = try session.run(.cpu0, .run);
+
+    // A replay of a capture the history has no frame for.
+    session.setReplaying(true);
+    defer session.setReplaying(false);
+    capture(unit);
+    try std.testing.expectEqual(@as(?anyerror, recorded_camera.Error.UnrecordedCapture), port.failed);
+
+    // The transport's next step ends on the failure, not on a finished step.
+    const plane = served.owner.transport();
+    var wall: FakeWall = .{};
+    const ticket = try plane.command(.{ .step = .{ .core = .cpu0, .count = 1, .dir = .fwd } });
+    const ended = try plane.finish(ticket, wall.wall(), null);
+    const failure = ended.stop.replay_failed;
+    try std.testing.expectEqual(ra8.session.stop_machine.ReplaySource.camera, failure.source);
+    try std.testing.expectEqual(@as(anyerror, recorded_camera.Error.UnrecordedCapture), failure.err);
+
+    // RPC: its own stop reason, with the source as the detail.
+    const wire = ra8.rpc.session.handlers.stopped(session, .cpu0, ended);
+    try std.testing.expectEqual(ra8.rpc.session.rpc.StopReason.replay_failed, wire.reason);
+    try std.testing.expectEqual(@as(u32, 1), wire.detail);
+
+    // CLI: the stop line names the source and the error.
+    var line: [128]u8 = undefined;
+    var out: std.Io.Writer = .fixed(&line);
+    try ra8.session.step_hook.report.prefix(&out, ended.stop, false);
+    try std.testing.expectEqualStrings("Replay failed: camera source, UnrecordedCapture, ", out.buffered());
+
+    // Reported once: the failure is not left to stop the next slice too.
+    try std.testing.expect(session.replay_failure == null);
+}

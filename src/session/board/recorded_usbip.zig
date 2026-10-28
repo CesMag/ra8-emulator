@@ -54,6 +54,7 @@ pub const RecordedUsbip = struct {
 
     fn note(self: *RecordedUsbip, err: anyerror) void {
         if (self.failed == null) self.failed = err;
+        if (self.replaying()) self.session.failReplay(.usbip, err);
     }
 
     fn poll(context: *anyopaque, device: *usbfs.Device, script: *const usbfs.host.Host) void {

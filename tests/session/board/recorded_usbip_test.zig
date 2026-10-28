@@ -246,6 +246,8 @@ test "a replay with no recording to read is an error, never a live read" {
     _ = run.go(s.h, 3);
     try std.testing.expectEqual(@as(?anyerror, recorded.Error.UnrecordedTraffic), recorded.from(&run.target).?.failed);
     try std.testing.expectEqual(@as(u32, 0), tripwire.polls);
+    // The session hears of it too, so the run stops on it.
+    try std.testing.expectEqual(ra8.session.stop_machine.ReplaySource.usbip, s.h.session.replay_failure.?.source);
 }
 
 test "traffic that arrives in the past waits in the queue and lands at the recorded end without a fork" {

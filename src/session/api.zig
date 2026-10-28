@@ -114,6 +114,8 @@ pub const Session = struct {
     /// machine's states are the past's, not new stops, so the history
     /// ring records nothing while it holds.
     replaying: bool = false,
+    /// The first replay determinism error, until a run slice reports it.
+    replay_failure: ?stop_machine.ReplayFailure = null,
     prefetch_pool: ?*@import("history/prefetch.zig").Prefetch = null,
     pub fn attachLoader(self: *Session, loader: Loader) void {
         self.loader = loader;
@@ -154,6 +156,8 @@ pub const Session = struct {
         self.root = r;
     }
     pub const setReplaying = session_fork.setReplaying;
+    pub const failReplay = session_fork.failReplay;
+    pub const outputMuted = session_fork.outputMuted;
     pub fn attachImageIdentity(self: *Session, core: Core, id: [16]u8) void {
         self.image_identity[@as(usize, @backingInt(core))] = id;
     }

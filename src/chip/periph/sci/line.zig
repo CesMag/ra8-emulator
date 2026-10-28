@@ -21,6 +21,14 @@ pub const Sink = struct {
     writeFn: *const fn (?*anyopaque, []const u8) anyerror!void,
 };
 
+/// Whether the host may hear the console right now. A line the host must
+/// not hear is still captured for the guest-visible run; only the sink is
+/// skipped.
+pub const Mute = struct {
+    context: *anyopaque,
+    mutedFn: *const fn (*anyopaque) bool,
+};
+
 /// The captured console line. The last finished line is kept as a slice, not a
 /// terminated buffer: nothing here crosses a C boundary.
 pub const Line = struct {
@@ -31,6 +39,7 @@ pub const Line = struct {
     lines: u32 = 0,
     sink: ?Sink = null,
     sink_failed: bool = false,
+    mute: ?Mute = null,
 
     pub fn setSink(self: *Line, sink: ?Sink) void {
         self.sink = sink;
@@ -50,6 +59,7 @@ pub const Line = struct {
             self.last_len = self.pending_len;
             self.pending_len = 0;
             self.lines += 1;
+            if (self.mute) |mute| if (mute.mutedFn(mute.context)) return;
             if (self.sink) |sink| sink.writeFn(sink.context, self.slice()) catch {
                 self.sink_failed = true;
             };

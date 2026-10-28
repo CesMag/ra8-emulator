@@ -18,46 +18,12 @@ pub const network_queue_limit: usize = 2;
 
 pub const Result = enum { unhandled, handled };
 pub const Hold = @import("hold.zig").Hold;
+pub const Landing = @import("hold.zig").Landing;
+const landing_mod = @import("landing.zig");
 
-const Key = struct {
-    src_ip: [4]u8,
-    dst_ip: [4]u8,
-    src_port: u16,
-    dst_port: u16,
-
-    fn eql(a: Key, b: Key) bool {
-        return a.src_port == b.src_port and a.dst_port == b.dst_port and
-            std.mem.eql(u8, &a.src_ip, &b.src_ip) and std.mem.eql(u8, &a.dst_ip, &b.dst_ip);
-    }
-};
-
-const TcpState = enum { empty, connecting, established, reset_pending };
-const Control = enum { none, syn_ack, ack, window_update, fin, reset };
-
-const TcpFlow = struct {
-    state: TcpState = .empty,
-    sock: Sock = .{},
-    key: Key = undefined,
-    route: eth.Route = undefined,
-    opening_syn: u32 = 0,
-    guest_next: u32 = 0,
-    server_next: u32 = 0,
-    guest_ack: u32 = 0,
-    receive_window: u16 = 0,
-    guest_fin: bool = false,
-    host_fin_sent: bool = false,
-    host_fin_acked: bool = false,
-    shutdown_pending: bool = false,
-    control: Control = .none,
-    pending: [eth.tcp_payload_max]u8 = undefined,
-    pending_len: usize = 0,
-    pending_at: usize = 0,
-
-    fn close(self: *TcpFlow) void {
-        self.sock.close();
-        self.* = .{};
-    }
-};
+const tcp_flow = @import("tcp_flow.zig");
+const Key = tcp_flow.Key;
+const TcpFlow = tcp_flow.TcpFlow;
 
 pub const Bridge = struct {
     tcp_flows: [tcp_capacity]TcpFlow = @splat(.{}),
@@ -72,6 +38,8 @@ pub const Bridge = struct {
     worker: ?worker.Worker = null,
     /// The application's hold on host traffic (hold.zig); none never holds.
     hold: ?Hold = null,
+    /// The application's record of host frames (hold.zig); none records nothing.
+    landing: ?Landing = null,
 
     pub fn deinit(self: *Bridge) void {
         self.closeFlows();
@@ -94,7 +62,9 @@ pub const Bridge = struct {
     /// Consumes supported station IPv4 traffic. Synthetic DHCP/ARP/ICMP run first.
     pub fn forward(self: *Bridge, queue: *Queue, ethernet: []const u8) Result {
         const ip = eth.ipv4(ethernet) orelse return .unhandled;
-        if (self.hold) |h| if (h.heldFn(h.context)) return .handled;
+        if (landing_mod.enter(self.landing, self.hold, queue, .forward)) return .handled;
+        const before = queue.len;
+        defer _ = landing_mod.report(self.landing, queue, before, .forward, .bytes);
         if (ip.protocol == eth.proto_udp) {
             const datagram = eth.udp(ethernet) orelse return .handled;
             if (datagram.dst_port == dns.port and std.mem.eql(u8, &ip.dst_ip, &dhcp.server_ip)) {
@@ -112,8 +82,11 @@ pub const Bridge = struct {
 
     /// Advances every live nonblocking socket without waiting.
     pub fn poll(self: *Bridge, queue: *Queue) void {
-        if (self.hold) |h| if (h.heldFn(h.context)) return;
+        if (landing_mod.enter(self.landing, self.hold, queue, .poll)) return;
+        const before = queue.len;
         self.dns_bridge.poll(&self.tape, queue, network_queue_limit);
+        const mark = landing_mod.report(self.landing, queue, before, .poll, .answer);
+        defer _ = landing_mod.report(self.landing, queue, mark, .poll, .bytes);
         for (0..tcp_capacity) |step| {
             if (queue.len >= network_queue_limit) break;
             const index = (self.tcp_cursor + step) % tcp_capacity;

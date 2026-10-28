@@ -42,5 +42,6 @@ test {
     _ = @import("eink_it8951/ghost_test.zig");
     _ = @import("eink_it8951/wire_test.zig");
     _ = @import("esp32c6_hosted/hosted_test.zig");
+    _ = @import("esp32c6_hosted/landing_test.zig");
     _ = @import("plug/all.zig");
 }

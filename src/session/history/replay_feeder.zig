@@ -10,6 +10,7 @@ const record_mod = @import("record.zig");
 const replay_mod = @import("replay.zig");
 const fork_router_mod = @import("fork_router.zig");
 const action_codec = @import("action_codec.zig");
+const c6_landing = @import("c6_landing.zig");
 
 pub const Action = fork_router_mod.Action;
 pub const Position = position_mod.Position;
@@ -55,6 +56,10 @@ pub const ReplayFeeder = struct {
     /// position reaches each record's own.
     traffic: std.ArrayList(RecordedFrame) = .empty,
     traffic_cursor: usize = 0,
+    /// The line's C6 frames in recorded order, each due at the bridge call
+    /// that landed it.
+    c6: std.ArrayList(RecordedFrame) = .empty,
+    c6_cursor: usize = 0,
 
     pub fn init(allocator: std.mem.Allocator) ReplayFeeder {
         return .{
@@ -83,6 +88,31 @@ pub const ReplayFeeder = struct {
         self.traffic.deinit(self.allocator);
         self.traffic = .empty;
         self.traffic_cursor = 0;
+        for (self.c6.items) |item| self.allocator.free(item.body);
+        self.c6.deinit(self.allocator);
+        self.c6 = .empty;
+        self.c6_cursor = 0;
+    }
+
+    /// The C6 frame recorded for the `ordinal`th call of `site` at `pos`,
+    /// or null when none is due. Taking it consumes it. A frame recorded
+    /// for a position already passed was missed: it is returned flagged, so
+    /// the caller can fail the replay rather than skip it.
+    pub fn takeLanding(self: *ReplayFeeder, pos: Position, site: u8, ordinal: u32) ?struct { body: []const u8, missed: bool } {
+        if (self.c6_cursor >= self.c6.items.len) return null;
+        const next = self.c6.items[self.c6_cursor];
+        switch (branch_mod.scalarOrder(next.position, pos)) {
+            .gt => return null,
+            .lt => {
+                self.c6_cursor += 1;
+                return .{ .body = next.body, .missed = true };
+            },
+            .eq => {},
+        }
+        const landing = c6_landing.decode(next.body) catch return null;
+        if (@backingInt(landing.site) != site or landing.ordinal != ordinal) return null;
+        self.c6_cursor += 1;
+        return .{ .body = next.body, .missed = false };
     }
 
     /// The next USB/IP record due at `pos`: the first one not yet taken
@@ -122,6 +152,7 @@ pub const ReplayFeeder = struct {
         std.mem.sort(ScheduledIntervention, self.items.items, {}, sortLess);
         std.mem.sort(RecordedFrame, self.frames.items, {}, frameLess);
         std.mem.sort(RecordedFrame, self.traffic.items, {}, frameLess);
+        std.mem.sort(RecordedFrame, self.c6.items, {}, frameLess);
     }
 
     /// The next item due at `pos`: the first undelivered one whose
@@ -161,6 +192,11 @@ pub const ReplayFeeder = struct {
         self.traffic_cursor = 0;
         while (self.traffic_cursor < self.traffic.items.len) : (self.traffic_cursor += 1) {
             const ord = branch_mod.scalarOrder(self.traffic.items[self.traffic_cursor].position, pos);
+            if (ord == .gt or (ord == .eq and from == .at)) break;
+        }
+        self.c6_cursor = 0;
+        while (self.c6_cursor < self.c6.items.len) : (self.c6_cursor += 1) {
+            const ord = branch_mod.scalarOrder(self.c6.items[self.c6_cursor].position, pos);
             if (ord == .gt or (ord == .eq and from == .at)) break;
         }
     }
@@ -242,6 +278,7 @@ fn visitRecord(ctx: *ScanContext, entry: replay_mod.Entry) anyerror!void {
             const list = switch (hit.boundary.what) {
                 .camera_frame => &ctx.feeder.frames,
                 .usbip_traffic => &ctx.feeder.traffic,
+                .c6_bytes, .c6_answer => &ctx.feeder.c6,
                 else => return,
             };
             const canon_pos = onLine(ctx, hit.header.position) orelse return;

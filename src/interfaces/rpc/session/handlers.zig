@@ -392,9 +392,7 @@ fn reason(stop: stop_machine.Stop) proto.StopReason {
 fn detail(stop: stop_machine.Stop) u32 {
     return switch (stop) {
         .watchpoint => |hit| hit.id,
-        inline else => |value| switch (@typeInfo(@TypeOf(value))) {
-            .int => @truncate(value),
-            else => 0,
-        },
+        .replay_failed => |failure| @backingInt(failure.source),
+        inline else => |value| if (@typeInfo(@TypeOf(value)) == .int) @truncate(value) else 0,
     };
 }

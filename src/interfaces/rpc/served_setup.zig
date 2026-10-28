@@ -9,6 +9,7 @@ const std = @import("std");
 const harness = @import("ra8_session").harness;
 const served_camera = @import("served_camera.zig");
 const served_usbip = @import("served_usbip.zig");
+const board_c6 = @import("ra8_session").board.recorded_c6;
 const board_rtc = @import("ra8_session").board.rtc;
 const session_plug = @import("ra8_session").board.plug;
 const cpu1_bringup = @import("ra8_session").cpu1.bringup;
@@ -270,6 +271,7 @@ pub const Served = struct {
             self.frames = null;
         }
         served_usbip.release(self);
+        board_c6.release(&self.owner.board().c6.wire.bridge);
         if (self.bridge) |*b| b.deinit();
         if (self.stacks) |stacks| {
             self.owner.unsampleStacks(stacks);

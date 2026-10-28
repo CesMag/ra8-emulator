@@ -43,6 +43,6 @@ pub fn dfsrFor(stop: stop_machine.Stop) u32 {
     return switch (stop) {
         .breakpoint, .unit_break => dcb.dfsr_bits.bkpt,
         .watchpoint, .unit_watch => dcb.dfsr_bits.dwttrap,
-        .stepped, .halt_requested, .history_start => dcb.dfsr_bits.halted,
+        .stepped, .halt_requested, .history_start, .replay_failed => dcb.dfsr_bits.halted,
     };
 }

@@ -18,6 +18,13 @@ pub const Event = struct {
 /// How the session is moving, as the last command set it.
 pub const Mode = enum { halted, running, step, step_over, step_out };
 
+/// Which recorded host source a replay could not serve.
+pub const ReplaySource = enum(u8) { camera = 1, usbip = 2, c6 = 3 };
+
+/// A determinism error a replay hit: the source that had nothing, or
+/// something other than what was recorded, for the machine, and why.
+pub const ReplayFailure = struct { source: ReplaySource, err: anyerror };
+
 /// Why the session stopped. Everything above this file reports one of these.
 pub const Stop = union(enum) {
     /// A single step, a step over or a step out finished.
@@ -38,6 +45,9 @@ pub const Stop = union(enum) {
     /// A backward run reached the beginning of the recorded history: no
     /// earlier canonical stop exists on this line (RA8EMU-1196).
     history_start,
+    /// A replay hit a determinism error in a recorded host source; the
+    /// machine past this point is not the recorded one.
+    replay_failed: ReplayFailure,
 };
 
 /// The point a step over or a step out is running to.

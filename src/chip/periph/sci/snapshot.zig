@@ -12,7 +12,7 @@ const fields = @import("ra8_snapshot").fields;
 pub const Error = file.Error || fields.Error || error{Missing};
 
 const channel_wiring = .{"device"};
-const line_wiring = .{"sink"};
+const line_wiring = .{ "sink", "mute" };
 
 pub fn save(board: anytype, writer: anytype) !void {
     var counter: std.Io.Writer.Discarding = .init(&.{});

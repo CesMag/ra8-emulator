@@ -10,6 +10,9 @@ pub fn attach(board: *Board, session: *api.Session) void {
     board.pins.observeEvents(session.event_sources.gpioTap(&board.pins, null));
     board.event_sink = session.event_sources.boardEventSink();
     board.serial.tap = session.event_sources.uartTap(null);
+    // What the machine prints to the host is silent while it replays.
+    board.serial.line.mute = .{ .context = session, .mutedFn = outputMuted };
+    session.event_sources.mute = .{ .context = session, .mutedFn = outputMuted };
     board.panel.event_hook = session.event_sources.einkHook();
     if (board.asks.attached_eink) |panel| panel.event_hook = session.event_sources.einkHook();
     board.display.event_hook = session.event_sources.glcdcHook();
@@ -19,4 +22,9 @@ pub fn attach(board: *Board, session: *api.Session) void {
 
 pub fn current(board: *Board) @import("ra8_board").event_sink.Observation {
     return boundary.observation(board);
+}
+
+fn outputMuted(context: *anyopaque) bool {
+    const session: *api.Session = @ptrCast(@alignCast(context));
+    return session.outputMuted();
 }

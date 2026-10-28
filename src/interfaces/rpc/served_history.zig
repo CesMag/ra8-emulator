@@ -25,6 +25,11 @@ const nav_marker = @import("session/nav_marker.zig");
 const served_rewind = @import("served_rewind.zig");
 const frame_tap = @import("ra8_session").history_frame_tap;
 const served_setup = @import("served_setup.zig");
+const board_c6 = @import("ra8_session").board.recorded_c6;
+
+/// The camera source a served session starts with; later changes are
+/// recorded as interventions, and the frames it captures as boundaries.
+const initial_camera = "gradient";
 
 /// Binds the recording session's lines: router, graph sink, image root,
 /// identities, new-history hook, bounded async queue, C6 hold, and console stdin.
@@ -33,6 +38,8 @@ pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator) !void {
     const session = self.owner.session();
     self.root = .{
         .snapshot_version = 1,
+        .camera = initial_camera,
+        .camera_hash = history_root.identity(initial_camera),
         .elf0 = .{
             .identity = history_root.identity(self.owner.image().bytes),
             .bytes = self.owner.image().bytes,
@@ -43,7 +50,8 @@ pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator) !void {
     session.attachNewHistory(.{ .context = self, .startFn = handleNewHistory });
     session.attachAsyncQueue(session_async.AsyncQueue.init(allocator, 0));
     self.owner.board().c6.wire.bridge.hold = .{ .context = session, .heldFn = hostHeld };
-    self.owner.board().console_input.hook = .{ .context = session, .feedFn = routeConsoleStdin };
+    try board_c6.attach(self.gpa, session, &self.owner.board().c6.wire.bridge);
+    self.owner.board().console_input.hook = .{ .context = session, .feedFn = routeConsoleStdin, .heldFn = hostHeld };
 
     if (self.history) |b| {
         session.attachForkRouter(&b.router);

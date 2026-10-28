@@ -9,6 +9,7 @@
 //! happens past the line's recorded end, which the line's own segment owns.
 const std = @import("std");
 const api = @import("api.zig");
+const stop_machine = @import("stop_machine.zig");
 const branch_mod = @import("history/branch.zig");
 const history_position = @import("history/position.zig");
 const replay_feeder = @import("history/replay_feeder.zig");
@@ -68,6 +69,18 @@ pub fn notePosition(self: *Session, pos: Position) void {
     const canon = graph.canonicalize(router.active_line, pos) catch return;
     const node = graph.nodes.getPtr(router.active_line) orelse return;
     if (branch_mod.scalarOrder(canon, node.recorded_end) == .gt) node.recorded_end = canon;
+}
+
+/// Notes the first determinism error a recorded host source hit while
+/// the machine replayed; the run slice that sees it stops with it.
+pub fn failReplay(self: *Session, source: stop_machine.ReplaySource, err: anyerror) void {
+    if (self.replay_failure == null) self.replay_failure = .{ .source = source, .err = err };
+}
+
+/// Whether host-facing output is muted: the machine is replaying, or stands
+/// in the recorded past and would replay if it ran.
+pub fn outputMuted(self: *const Session) bool {
+    return self.replaying or inPast(self);
 }
 
 pub fn setReplaying(self: *Session, replaying: bool) void {

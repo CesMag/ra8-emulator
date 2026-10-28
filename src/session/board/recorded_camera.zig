@@ -46,6 +46,7 @@ pub const RecordedCamera = struct {
 
     fn note(self: *RecordedCamera, err: anyerror) void {
         if (self.failed == null) self.failed = err;
+        if (self.replaying()) self.session.failReplay(.camera, err);
     }
 
     fn frame(context: *anyopaque, when: u64, shape: frame_source.Shape) void {

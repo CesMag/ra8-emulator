@@ -28,3 +28,35 @@ test "host input waiting on stdin reaches console SCI receive" {
     try std.testing.expectEqual(@as(u32, 'i'), unit.read(rdr, 4));
     try std.testing.expectEqual(@as(u32, 2), unit.console().received);
 }
+
+const Held = struct {
+    var on: bool = true;
+    var fed: u32 = 0;
+    var reads: u32 = 0;
+    fn held(_: *anyopaque) bool {
+        return on;
+    }
+    fn feed(_: *anyopaque, _: []const u8) void {
+        fed += 1;
+    }
+    fn read(_: usize, _: []u8) ?usize {
+        reads += 1;
+        return null;
+    }
+};
+
+test "while the host is held nothing is read from stdin and a due reply is retired, not typed" {
+    var unit = sci.Sci.init();
+    var token: u8 = 0;
+    var reader: input.Input = .{ .source = .{ .context = 0, .readFn = Held.read } };
+    reader.hook = .{ .context = &token, .feedFn = Held.feed, .heldFn = Held.held };
+    reader.reply.due = true;
+    Held.on = true;
+    reader.poll(&unit);
+    try std.testing.expectEqual(@as(u32, 0), Held.reads);
+    try std.testing.expectEqual(@as(u32, 0), Held.fed);
+    try std.testing.expect(!reader.reply.due and reader.reply.sent);
+    Held.on = false;
+    reader.poll(&unit);
+    try std.testing.expectEqual(@as(u32, 1), Held.reads);
+}

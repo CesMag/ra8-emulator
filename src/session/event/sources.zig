@@ -18,12 +18,16 @@ pub const Event = stream_mod.Event;
 const Stream = stream_mod.Stream;
 const Context = struct { sources: *Sources, core: ?Core };
 
+pub const Mute = struct { context: *anyopaque, mutedFn: *const fn (*anyopaque) bool };
+
 pub const Sources = struct {
     stream: ?*Stream = null,
     time_base: ?*const TimeBase = null,
     /// CPU0's lead on the board inside the chunk running now (RA8EMU-1120).
     chunk: ?*const chunk_clock.ChunkClock = null,
     issuer: ?*const registry.Issuer = null,
+    /// Whether the host may hear the machine's output now; none always may.
+    mute: ?Mute = null,
     uart_context: Context = undefined,
     gpio_context: Context = undefined,
     gpio_levels: [gpio.port_count]u16 = @splat(0),
@@ -107,6 +111,7 @@ pub const Sources = struct {
 
     fn uartSent(context: *anyopaque, channel: usize, byte: u8) void {
         const source: *Context = @ptrCast(@alignCast(context));
+        if (source.sources.mute) |mute| if (mute.mutedFn(mute.context)) return;
         source.sources.publish(.{ .core = source.sources.currentCore(source.core), .kind = .uart_byte, .payload = .{ .uart = .{ .channel = @intCast(channel), .byte = byte } } });
     }
 

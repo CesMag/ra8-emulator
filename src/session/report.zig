@@ -73,5 +73,6 @@ pub fn prefix(out: anytype, stop: stop_machine.Stop, temporary: bool) !void {
         .unit_break => |index| try out.print("Hardware breakpoint FP_COMP{d}, ", .{index}),
         .unit_watch => |index| try out.print("Hardware watchpoint DWT_COMP{d}, ", .{index}),
         .history_start => try out.print("History start, ", .{}),
+        .replay_failed => |failure| try out.print("Replay failed: {s} source, {s}, ", .{ @tagName(failure.source), @errorName(failure.err) }),
     }
 }

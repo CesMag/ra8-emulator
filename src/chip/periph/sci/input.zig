@@ -6,6 +6,9 @@ const ByteSource = @import("../byte_source.zig").ByteSource;
 pub const Hook = struct {
     context: *anyopaque,
     feedFn: *const fn (context: *anyopaque, bytes: []const u8) void,
+    /// True while the host must not be heard: a replay's keystrokes come
+    /// from its history. Null never holds.
+    heldFn: ?*const fn (context: *anyopaque) bool = null,
 };
 
 pub const Input = struct {
@@ -20,6 +23,15 @@ pub const Input = struct {
     /// Move bytes waiting on the host stream into SCI8's RX ring.
     /// The read never waits, which keeps the run loop in control of progress.
     pub fn poll(self: *Input, unit: *sci.Sci) void {
+        if (self.hook) |h| if (h.heldFn) |held| if (held(h.context)) {
+            // Stdin waits in the host's buffer; the reply the guest's prompt
+            // asked for is among the recorded keystrokes, not typed again.
+            if (self.reply.due) {
+                self.reply.due = false;
+                self.reply.sent = true;
+            }
+            return;
+        };
         if (self.reply.due) {
             self.reply.due = false;
             self.reply.sent = true;

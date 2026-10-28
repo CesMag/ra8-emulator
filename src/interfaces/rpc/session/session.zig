@@ -1,6 +1,7 @@
 //! session: the files of src/interfaces/rpc/session/.
 
 pub const advance = @import("advance.zig");
+pub const handlers = @import("handlers.zig");
 pub const seek = @import("seek.zig");
 pub const rcont = @import("rcont.zig");
 pub const camera = @import("camera.zig");

@@ -48,6 +48,12 @@ pub fn run(self: *Session, core: Core, command: api.Run) anyerror!api.Ended {
     // recorded end; the stop above is already published and captured, so
     // a delivery that fails reports on a run whose state is settled.
     _ = try async_traffic.drainIfNeeded(self);
+    // A recorded source that could not serve the replay stops the run: what
+    // the guest saw instead is not the recorded past.
+    if (self.replay_failure) |failure| {
+        self.replay_failure = null;
+        return .{ .stop = .{ .replay_failed = failure } };
+    }
     return ended;
 }
 

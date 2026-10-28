@@ -154,3 +154,124 @@ test "an LED lit before the session attached is not reported again until it chan
     try std.testing.expectEqual(@as(u8, 1), events[0].payload.led.index);
     try std.testing.expectEqual(false, events[0].payload.led.level);
 }
+
+/// Counts what reaches the host from the pieces a session mutes in a replay.
+const Heard = struct {
+    var console_lines: u32 = 0;
+    var sockets: u32 = 0;
+    var usbip_polls: u32 = 0;
+
+    fn reset() void {
+        console_lines = 0;
+        sockets = 0;
+        usbip_polls = 0;
+    }
+    fn line(_: ?*anyopaque, _: []const u8) anyerror!void {
+        console_lines += 1;
+    }
+    fn open(_: ra8.components.esp_hosted.host_net.Kind) anyerror!ra8.components.esp_hosted.host_net.Handle {
+        sockets += 1;
+        return error.Refused;
+    }
+    fn unused(_: ra8.components.esp_hosted.host_net.Handle) anyerror!void {}
+    fn connect(_: ra8.components.esp_hosted.host_net.Handle, _: ra8.components.esp_hosted.host_net.Address) anyerror!ra8.components.esp_hosted.host_net.Connect {
+        return .done;
+    }
+    fn writable(_: ra8.components.esp_hosted.host_net.Handle) anyerror!bool {
+        return true;
+    }
+    fn io(_: ra8.components.esp_hosted.host_net.Handle, _: []u8, _: ra8.components.esp_hosted.host_net.Receive) anyerror!usize {
+        return error.WouldBlock;
+    }
+    fn send(_: ra8.components.esp_hosted.host_net.Handle, bytes: []const u8) anyerror!usize {
+        return bytes.len;
+    }
+    fn close(_: ra8.components.esp_hosted.host_net.Handle) void {}
+    const net: ra8.components.esp_hosted.host_net.Net = .{
+        .open = open,
+        .connect = connect,
+        .writable = writable,
+        .finished = unused,
+        .send = send,
+        .recv = io,
+        .shutdownSend = unused,
+        .close = close,
+    };
+
+    fn poll(_: *anyopaque, _: *ra8.chip.periph.usbfs.Device, _: *const ra8.chip.periph.usbfs.host.Host) void {
+        usbip_polls += 1;
+    }
+    fn tap(_: *anyopaque, _: ?ra8.board.usb.traffic.Sink) void {}
+    fn feed(_: *anyopaque, _: *ra8.chip.periph.usbfs.Device, _: ra8.board.usb.traffic.Event) anyerror!void {}
+    fn pump(_: *anyopaque, _: *ra8.chip.periph.usbfs.Device) void {}
+    fn drop(_: *anyopaque) void {}
+};
+
+fn held(context: *anyopaque) bool {
+    const session: *api.Session = @ptrCast(@alignCast(context));
+    return session.outputMuted();
+}
+
+/// Everything the machine says to the host in one round: a console line, a
+/// connection out of the C6, and a poll of the USB/IP bridge.
+fn speak(board: *Board, bridge: *ra8.components.esp_hosted.net.Bridge, usb: *ra8.board.usb.Usb) void {
+    const hosted = ra8.components.esp_hosted;
+    const base = sci.win_base + sci.console_channel * sci.stride;
+    board.serial.write(base + sci.off_ccr0, 4, sci.ccr0.te);
+    for ("ok\n") |byte| board.serial.write(base + sci.off_tdr, 1, byte);
+    var queue: hosted.queue.Queue = .{};
+    var bytes: [hosted.frame.max_payload]u8 = undefined;
+    const len = hosted.eth.tcpFrame(&bytes, .{
+        .src_mac = hosted.station.mac,
+        .dst_mac = hosted.station.bssid,
+        .src_ip = hosted.dhcp.lease_ip,
+        .dst_ip = hosted.dhcp.server_ip,
+        .src_port = 40000,
+        .dst_port = 80,
+    }, 100, 0, hosted.eth.TcpFlag.syn, 1460, &.{}).?;
+    _ = bridge.forward(&queue, bytes[0..len]);
+    bridge.poll(&queue);
+    var device: ra8.chip.periph.usbfs.Device = .{};
+    const hook = usb.bridge.?;
+    hook.pollFn(hook.context, &device, &usb.script);
+}
+
+test "a replay mutes every host-facing output: console, uart events, C6 sockets and USB/IP" {
+    const hosted = ra8.components.esp_hosted;
+    var board = Board.init(std.testing.allocator);
+    defer board.deinit();
+    var session: api.Session = .{ .live = undefined };
+    ra8.session.board.events.attach(&board, &session);
+    const subscription = try session.subscribe();
+    board.serial.line.setSink(.{ .writeFn = Heard.line });
+    var bridge: hosted.net.Bridge = .{ .net = Heard.net };
+    bridge.hold = .{ .context = &session, .heldFn = held };
+    var dummy: u8 = 0;
+    var usb: ra8.board.usb.Usb = .{};
+    usb.bridge = .{ .context = &dummy, .pollFn = Heard.poll, .port = .{ .tapFn = Heard.tap, .feedFn = Heard.feed, .pumpFn = Heard.pump, .dropFn = Heard.drop } };
+    try ra8.session.board.recorded_usbip.attach(std.testing.allocator, &session, &usb);
+    defer ra8.session.board.recorded_usbip.release(&usb, &session);
+    Heard.reset();
+    var events: [16]api.Event = undefined;
+
+    // Live, every channel reaches the host.
+    speak(&board, &bridge, &usb);
+    const live = session.pollEvents(subscription, &events).?;
+    try std.testing.expectEqual(@as(u32, 1), Heard.console_lines);
+    try std.testing.expectEqual(@as(u32, 1), Heard.sockets);
+    try std.testing.expectEqual(@as(u32, 1), Heard.usbip_polls);
+    try std.testing.expect(live.count >= 3);
+
+    // Replaying, the same round writes nothing anywhere.
+    session.setReplaying(true);
+    defer session.setReplaying(false);
+    Heard.reset();
+    speak(&board, &bridge, &usb);
+    const replayed = session.pollEvents(subscription, &events).?;
+    try std.testing.expectEqual(@as(u32, 0), Heard.console_lines);
+    try std.testing.expectEqual(@as(u32, 0), Heard.sockets);
+    try std.testing.expectEqual(@as(u32, 0), Heard.usbip_polls);
+    for (events[0..replayed.count]) |event| try std.testing.expect(event.kind != .uart_byte);
+    // The guest still ran: the line it printed is captured for the run.
+    try std.testing.expectEqualStrings("ok", board.serial.line.slice());
+}
