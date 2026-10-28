@@ -24,11 +24,18 @@ pub fn attach(self: *served_setup.Served) !void {
 }
 
 /// Opens the source `spec` names and makes it the board's camera source.
-/// A source that will not open changes nothing.
+/// All or nothing: a source that will not open, or cannot be recorded,
+/// changes nothing. While the session replays or stands in the past the
+/// host is never touched: the recorded change installs a gradient behind
+/// the recorded port, which serves every frame from the history.
 pub fn install(self: *served_setup.Served, spec: source_spec.Spec) !void {
-    const input = try source_open.open(self.gpa, self.io, spec);
-    try board_camera.install(self.owner.board(), self.gpa, input);
-    try attach(self);
+    const session = self.owner.session();
+    const board = self.owner.board();
+    const input = if (session.outputMuted()) null else try source_open.open(self.gpa, self.io, spec);
+    var next = try board_camera.source(board, self.gpa, input);
+    errdefer next.close();
+    if (recording(self)) next = try recorded_camera.wrap(self.gpa, session, next, &board.wire.sensor.format);
+    board_camera.set(board, next);
 }
 
 /// set_camera_source: with a history on, the change goes through the fork

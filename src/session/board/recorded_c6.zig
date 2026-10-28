@@ -41,6 +41,8 @@ pub const RecordedC6 = struct {
     replayed: u64 = 0,
     /// Where the last call ran, and how many calls of each site ran there.
     last: ?Position = null,
+    /// The session's seek count at the last call.
+    seen_seeks: u32 = 0,
     counts: [2]u32 = .{ 0, 0 },
     /// The ordinal of the call in progress, for each site.
     call: [2]u32 = .{ 0, 0 },
@@ -57,7 +59,10 @@ pub const RecordedC6 = struct {
     fn enter(context: *anyopaque, site: hold.Site) void {
         const self: *RecordedC6 = @ptrCast(@alignCast(context));
         const now = self.session.currentPosition();
-        if (self.last == null or branch.scalarOrder(now, self.last.?) != .eq) {
+        // A seek lands the machine on a position `last` may already hold.
+        const moved = self.seen_seeks != self.session.async_traffic.seeks;
+        self.seen_seeks = self.session.async_traffic.seeks;
+        if (moved or self.last == null or branch.scalarOrder(now, self.last.?) != .eq) {
             self.last = now;
             self.counts = .{ 0, 0 };
         }

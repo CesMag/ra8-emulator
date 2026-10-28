@@ -27,6 +27,7 @@ test {
     _ = @import("history/recorder_test.zig");
     _ = @import("history/camera_frame_test.zig");
     _ = @import("history/elf_compare_test.zig");
+    _ = @import("history/state_memory_test.zig");
     _ = @import("history/c6_landing_test.zig");
     _ = @import("history/usbip_traffic_test.zig");
     _ = @import("history/segment_recover_test.zig");

@@ -297,7 +297,7 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     state.recording = null;
     state.window = null;
     state.persistent = null;
-    state.bytes = try options.host().readFileAlloc(io, options.elf_path, allocator, .limited(limits.max_elf_bytes));
+    state.bytes = if (options.elf_bytes) |bytes| try allocator.dupe(u8, bytes) else try options.host().readFileAlloc(io, options.elf_path, allocator, .limited(limits.max_elf_bytes));
     errdefer allocator.free(state.bytes);
     state.image = try elf.Image.init(state.bytes);
     state.board = Board.init(allocator);

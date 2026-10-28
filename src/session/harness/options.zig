@@ -7,6 +7,10 @@ const history_recorder = @import("../history/recorder.zig");
 
 pub const Options = struct {
     elf_path: []const u8,
+    /// The image's bytes when the caller already read them: the harness
+    /// copies these and does not open `elf_path`, so the run is of the
+    /// bytes the caller looked at.
+    elf_bytes: ?[]const u8 = null,
     device: part.Part = .ra8p1,
     input_script: ?[]const u8 = null,
     /// The persistent history's host side (RA8EMU-1196), as the application

@@ -204,6 +204,7 @@ const Heard = struct {
     fn tap(_: *anyopaque, _: ?ra8.board.usb.traffic.Sink) void {}
     fn feed(_: *anyopaque, _: *ra8.chip.periph.usbfs.Device, _: ra8.board.usb.traffic.Event) anyerror!void {}
     fn pump(_: *anyopaque, _: *ra8.chip.periph.usbfs.Device) void {}
+    fn restore(_: *anyopaque, _: ra8.board.usb.traffic.Event) anyerror!void {}
     fn drop(_: *anyopaque) void {}
 };
 
@@ -248,7 +249,7 @@ test "a replay mutes every host-facing output: console, uart events, C6 sockets 
     bridge.hold = .{ .context = &session, .heldFn = held };
     var dummy: u8 = 0;
     var usb: ra8.board.usb.Usb = .{};
-    usb.bridge = .{ .context = &dummy, .pollFn = Heard.poll, .port = .{ .tapFn = Heard.tap, .feedFn = Heard.feed, .pumpFn = Heard.pump, .dropFn = Heard.drop } };
+    usb.bridge = .{ .context = &dummy, .pollFn = Heard.poll, .port = .{ .tapFn = Heard.tap, .feedFn = Heard.feed, .pumpFn = Heard.pump, .restoreFn = Heard.restore, .dropFn = Heard.drop } };
     try ra8.session.board.recorded_usbip.attach(std.testing.allocator, &session, &usb);
     defer ra8.session.board.recorded_usbip.release(&usb, &session);
     Heard.reset();

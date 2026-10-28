@@ -1,11 +1,13 @@
-//! A save stream's memory section read as what the program did to it.
+//! A save stream's memory section as the bytes the two runs hold.
 //!
-//! The loader writes an image's segments into guest memory, so a rebuilt
-//! image differs from the recorded one in the code bytes themselves before
-//! a single instruction has run. Each byte is therefore read XOR the byte
-//! its own image loaded at that address (zero where the image loaded
-//! none): untouched code reads as zero in both runs, and anything the
-//! program wrote reads as a real difference.
+//! The loader writes an image's code and constants into guest memory, so a
+//! rebuilt image differs from the recorded one in those bytes before a
+//! single instruction has run. Those bytes, and only those, are left out:
+//! the read-only segments of either image, and the load-time copies of
+//! initialised data (a segment loaded at an address other than the one it
+//! runs at). Everything else is compared as it is held, so a variable's
+//! different initial value is a difference until the program writes it, and
+//! a value both runs wrote is not one.
 //!
 //! Section layout (src/board/snapshot/memory.zig), little-endian: a region
 //! count, then per region its base, length, page count and each page as an
@@ -69,27 +71,35 @@ pub fn parse(payload: []const u8) Error!Parsed {
     return out;
 }
 
-/// The byte `image` loads at `address`, zero where it loads none.
-pub fn loaded(image: elf.Image, address: u32) u8 {
-    var index: u16 = 0;
-    while (index < image.segmentCount()) : (index += 1) {
-        const segment = image.loadSegment(index) orelse continue;
-        if (address < segment.paddr) continue;
-        const at = address - segment.paddr;
-        if (at < segment.bytes.len) return segment.bytes[at];
-    }
-    return 0;
-}
+const pf_w: u32 = 2;
 
-fn covered(image: elf.Image, from: u32, len: u32) bool {
+/// Whether `image` loads read-only bytes at `address`: code and constants,
+/// or the flash copy a startup routine moves initialised data from.
+fn ownBytes(image: elf.Image, address: u32) bool {
     var index: u16 = 0;
     while (index < image.segmentCount()) : (index += 1) {
         const segment = image.loadSegment(index) orelse continue;
-        const end = @as(u64, segment.paddr) + segment.bytes.len;
-        if (segment.paddr < @as(u64, from) + len and end > from) return true;
+        if (address < segment.paddr or address - segment.paddr >= segment.bytes.len) continue;
+        if (segment.flags & pf_w == 0 or segment.paddr != segment.vaddr) return true;
     }
     return false;
 }
+
+/// The addresses two runs are not compared at: what either image loaded
+/// as its own read-only bytes.
+pub const Mask = struct {
+    a: elf.Image,
+    b: elf.Image,
+
+    pub fn skips(self: Mask, address: u32) bool {
+        return ownBytes(self.a, address) or ownBytes(self.b, address);
+    }
+
+    fn pageSkipped(self: Mask, from: u32, len: u32) bool {
+        for (0..len) |i| if (!self.skips(from +% @as(u32, @intCast(i)))) return false;
+        return true;
+    }
+};
 
 /// Walks a region's saved pages in offset order.
 pub const Pages = struct {
@@ -122,27 +132,21 @@ pub fn saved(region: Region, offset: u32) ?[]const u8 {
     return null;
 }
 
-/// One byte of a page as the program left it: the saved byte (zero when
-/// the page was left out) XOR what the image loaded there.
-pub fn effective(image: elf.Image, region: Region, offset: u32, in_page: ?[]const u8, i: usize) u8 {
-    const byte: u8 = if (in_page) |bytes| bytes[i] else 0;
-    return byte ^ loaded(image, region.base +% offset +% @as(u32, @intCast(i)));
+/// One byte of a page as held: the saved byte (zero when the page was left
+/// out), or zero where the mask skips the address.
+pub fn held(mask: Mask, region: Region, offset: u32, in_page: ?[]const u8, i: usize) u8 {
+    if (mask.skips(region.base +% offset +% @as(u32, @intCast(i)))) return 0;
+    return if (in_page) |bytes| bytes[i] else 0;
 }
 
-/// Whether the page at `offset` can hold anything but zeros once the image
-/// is taken out: it is saved, or the image loaded bytes into it.
-pub fn live(image: elf.Image, region: Region, offset: u32, in_page: ?[]const u8) bool {
-    return in_page != null or covered(image, region.base +% offset, @min(page, region.len - offset));
-}
-
-/// Where two memory sections first differ once each image is taken out,
-/// with the raw bytes either run holds there.
+/// Where two memory sections first differ, with the raw bytes either run
+/// holds there.
 pub const Spot = struct { address: u32, expected: u8, actual: u8 };
 
-/// The lowest address at which the sections differ, or null when they
-/// read the same. Regions are compared in section order; a region that
-/// is not in both sections is reported at its base.
-pub fn firstDifference(expected: Parsed, expected_image: elf.Image, actual: Parsed, actual_image: elf.Image) ?Spot {
+/// The lowest address at which the sections differ outside the mask, or
+/// null when they read the same. Regions are compared in section order; a
+/// region that is not in both sections is reported at its base.
+pub fn firstDifference(expected: Parsed, actual: Parsed, mask: Mask) ?Spot {
     const regions = @min(expected.len, actual.len);
     for (expected.list()[0..regions], actual.list()[0..regions]) |a, b| {
         if (a.base != b.base or a.len != b.len) return .{ .address = a.base, .expected = 0, .actual = 0 };
@@ -150,13 +154,12 @@ pub fn firstDifference(expected: Parsed, expected_image: elf.Image, actual: Pars
         while (offset < a.len) : (offset += page) {
             const in_a = saved(a, offset);
             const in_b = saved(b, offset);
-            if (!live(expected_image, a, offset, in_a) and !live(actual_image, b, offset, in_b)) continue;
+            if (in_a == null and in_b == null) continue;
             const size: usize = @min(page, a.len - offset);
             for (0..size) |i| {
-                if (effective(expected_image, a, offset, in_a, i) == effective(actual_image, b, offset, in_b, i)) continue;
-                const raw_a: u8 = if (in_a) |bytes| bytes[i] else 0;
-                const raw_b: u8 = if (in_b) |bytes| bytes[i] else 0;
-                return .{ .address = a.base +% offset +% @as(u32, @intCast(i)), .expected = raw_a, .actual = raw_b };
+                const x = held(mask, a, offset, in_a, i);
+                const y = held(mask, b, offset, in_b, i);
+                if (x != y) return .{ .address = a.base +% offset +% @as(u32, @intCast(i)), .expected = x, .actual = y };
             }
         }
     }
@@ -164,22 +167,22 @@ pub fn firstDifference(expected: Parsed, expected_image: elf.Image, actual: Pars
     return null;
 }
 
-/// Feeds the section into `hasher` as what the program did to it: each
-/// region's base and length, every page that can hold something, then the
-/// bytes after the regions.
-pub fn hash(hasher: *std.crypto.hash.Blake3, parsed: Parsed, image: elf.Image) void {
+/// Feeds the section into `hasher`: each region's base and length, every
+/// page that holds anything outside the mask, then the bytes after the
+/// regions. Two streams digest alike exactly when `firstDifference` finds
+/// nothing between them under the same mask.
+pub fn hash(hasher: *std.crypto.hash.Blake3, parsed: Parsed, mask: Mask) void {
     var scratch: [page]u8 = undefined;
     for (parsed.list()) |region| {
         hasher.update(std.mem.asBytes(&std.mem.nativeToLittle(u32, region.base)));
         hasher.update(std.mem.asBytes(&std.mem.nativeToLittle(u32, region.len)));
         var offset: u32 = 0;
         while (offset < region.len) : (offset += page) {
-            const in_page = saved(region, offset);
-            if (!live(image, region, offset, in_page)) continue;
+            const in_page = saved(region, offset) orelse continue;
             const size: usize = @min(page, region.len - offset);
             var any = false;
             for (scratch[0..size], 0..) |*out, i| {
-                out.* = effective(image, region, offset, in_page, i);
+                out.* = held(mask, region, offset, in_page, i);
                 any = any or out.* != 0;
             }
             if (!any) continue;

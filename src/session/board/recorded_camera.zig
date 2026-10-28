@@ -114,7 +114,11 @@ pub const RecordedCamera = struct {
     fn preview(context: *anyopaque) ?frame_source.Preview {
         const self: *RecordedCamera = @ptrCast(@alignCast(context));
         // The preview is the GUI's own look, off the engine thread, so it
-        // checks only the replay flag; the guest never sees it.
+        // checks only the replay flag: whether the cursor is in the past
+        // takes the history's graph, which only the engine thread may read.
+        // While the cursor is in the past the host source is still read
+        // for the preview alone; the guest never sees it and no frame is
+        // recorded from it.
         if (self.session.replaying) return null;
         return self.inner.preview();
     }

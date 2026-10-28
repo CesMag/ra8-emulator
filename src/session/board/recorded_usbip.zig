@@ -24,8 +24,7 @@ const usbip_traffic = @import("../history/usbip_traffic.zig");
 const async_traffic = @import("../history/async_traffic.zig");
 const api = @import("../api.zig");
 const line = @import("../line.zig");
-const branch = @import("../history/branch.zig");
-const Position = @import("../history/position.zig").Position;
+const replay_feeder = @import("../history/replay_feeder.zig");
 
 const traffic = usb.traffic;
 
@@ -45,8 +44,10 @@ pub const RecordedUsbip = struct {
     replayed: u64 = 0,
     /// Events waiting in the async queue for the run to reach the end.
     held: usize = 0,
-    /// Where the last replayed poll stood; a poll before it is a new replay.
-    last: ?Position = null,
+    /// The session's seek count when the replayed host was last rebuilt.
+    seen_seeks: u32 = 0,
+    /// The last poll ran in the past (or replaying).
+    was_past: bool = false,
 
     fn replaying(self: *const RecordedUsbip) bool {
         return self.session.replaying or line.inPast(self.session);
@@ -59,7 +60,10 @@ pub const RecordedUsbip = struct {
 
     fn poll(context: *anyopaque, device: *usbfs.Device, script: *const usbfs.host.Host) void {
         const self: *RecordedUsbip = @ptrCast(@alignCast(context));
-        if (self.replaying()) {
+        const past = self.replaying();
+        if (past != self.was_past) self.crossed(past) catch |err| self.note(err);
+        self.was_past = past;
+        if (past) {
             self.replay(device) catch |err| self.note(err);
             // Muted: replaying the machine reads nothing from the host.
             // Past the end a queue lets the bridge hold what arrives.
@@ -78,18 +82,48 @@ pub const RecordedUsbip = struct {
         return queue.isEmpty();
     }
 
+    /// The cursor went into the past or came back to the recorded end.
+    /// Going in, a host still connected is hung up: the device is about
+    /// to be put back, and the URBs the live bridge holds would run on a
+    /// machine they were never meant for. The host may reconnect, and one
+    /// that does is held until the end like any traffic that arrives in
+    /// the past. Coming back, the replayed host is gone: its URBs are
+    /// dropped so only the live bridge's drive the device from there.
+    fn crossed(self: *RecordedUsbip, past: bool) !void {
+        const port = self.inner.port.?;
+        if (past) {
+            port.dropFn(self.inner.context);
+            self.held = 0;
+            return;
+        }
+        try port.restoreFn(self.inner.context, .{ .kind = .disconnect });
+    }
+
+    /// Puts the replayed host back as the line left it before the cursor:
+    /// the traffic the feeder has already taken, read from the start.
+    fn rebuild(self: *RecordedUsbip, feeder: *const replay_feeder.ReplayFeeder) !void {
+        const port = self.inner.port.?;
+        try port.restoreFn(self.inner.context, .{ .kind = .disconnect });
+        for (feeder.traffic.items[0..feeder.traffic_cursor]) |item| {
+            try port.restoreFn(self.inner.context, try usbip_traffic.decode(item.body));
+        }
+    }
+
     fn replay(self: *RecordedUsbip, device: *usbfs.Device) !void {
         const port = self.inner.port.?;
         defer port.pumpFn(self.inner.context, device);
-        const now = self.session.currentPosition();
-        // A replay that starts over finds the replayed host gone.
-        if (self.last) |before| if (branch.scalarOrder(now, before) == .lt)
-            try port.feedFn(self.inner.context, device, .{ .kind = .disconnect });
-        self.last = now;
         const feeder = if (self.session.replay_feeder) |*f| f else return Error.UnrecordedTraffic;
+        // A seek put the machine somewhere else: so is the replayed host.
+        if (self.seen_seeks != self.session.async_traffic.seeks) {
+            self.seen_seeks = self.session.async_traffic.seeks;
+            try self.rebuild(feeder);
+        }
+        const now = self.session.currentPosition();
         while (feeder.takeTraffic(now)) |body| {
-            try port.feedFn(self.inner.context, device, try usbip_traffic.decode(body));
-            self.replayed += 1;
+            const event = try usbip_traffic.decode(body);
+            try port.feedFn(self.inner.context, device, event);
+            // A journal entry only restores state; the device is not fed it.
+            if (event.kind != .progress) self.replayed += 1;
         }
     }
 

@@ -164,3 +164,37 @@ test "a replayed capture with nothing recorded stops the run and the stop reache
     // Reported once: the failure is not left to stop the next slice too.
     try std.testing.expect(session.replay_failure == null);
 }
+
+test "a recorded camera change replays without opening its host source, and a live one that will not open changes nothing" {
+    const gpa = std.testing.allocator;
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+    const root = try temp.dir.realPathFileAlloc(std.testing.io, ".", gpa);
+    defer gpa.free(root);
+    // The recorded picture is gone by the time the change is replayed.
+    const spec = try std.fmt.allocPrint(gpa, "image:{s}/gone.ppm", .{root});
+    defer gpa.free(spec);
+
+    var served: setup.Served = undefined;
+    try served.open(gpa, std.testing.io, image, null, .{});
+    defer served.deinit();
+    const session = served.owner.session();
+    const unit = &served.owner.board().capture;
+    const hook = session.camera_hook.?;
+    const bare = unit.source.context;
+
+    // Live, a source that will not open leaves the recorded one in place.
+    try std.testing.expectError(error.FileNotFound, hook.changeFn(hook.context, spec));
+    try std.testing.expect(unit.source.context == bare);
+
+    // Replaying, the host is not asked: the recorded port stays, serving
+    // only what the history holds.
+    session.setReplaying(true);
+    defer session.setReplaying(false);
+    try hook.changeFn(hook.context, spec);
+    try std.testing.expect(unit.source.context != bare);
+    const port = recorded_camera.from(unit.source).?;
+    try std.testing.expect(!std.mem.eql(u8, "still image", unit.source.label));
+    capture(unit);
+    try std.testing.expectEqual(@as(?anyerror, recorded_camera.Error.UnrecordedCapture), port.failed);
+}

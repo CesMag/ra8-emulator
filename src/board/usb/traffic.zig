@@ -16,6 +16,39 @@ pub const Kind = enum(u8) {
     unlink = 3,
     /// The host hung up. No body.
     disconnect = 4,
+    /// An URB moved or finished; the body is a `Progress`. It is only a
+    /// journal entry: a replay never feeds it to the device, a restore
+    /// reads it to rebuild the URBs that were in flight.
+    progress = 5,
+};
+
+/// Where one URB stood after a poll's pump: the body of a `progress` event.
+pub const Progress = struct {
+    seqnum: u32,
+    moved: u32,
+    /// The control stage of an endpoint 0 URB, as its enum's number.
+    stage: u8,
+    /// The URB completed and left its slot.
+    done: bool,
+
+    pub const len: usize = 10;
+
+    pub fn encode(self: Progress, out: *[len]u8) void {
+        std.mem.writeInt(u32, out[0..4], self.seqnum, .little);
+        std.mem.writeInt(u32, out[4..8], self.moved, .little);
+        out[8] = self.stage;
+        out[9] = @intFromBool(self.done);
+    }
+
+    pub fn decode(bytes: []const u8) error{BadValue}!Progress {
+        if (bytes.len != len or bytes[9] > 1) return error.BadValue;
+        return .{
+            .seqnum = std.mem.readInt(u32, bytes[0..4], .little),
+            .moved = std.mem.readInt(u32, bytes[4..8], .little),
+            .stage = bytes[8],
+            .done = bytes[9] == 1,
+        };
+    }
 };
 
 /// The size of a submit's or an unlink's basic header.
@@ -51,6 +84,10 @@ pub const Port = struct {
     feedFn: *const fn (*anyopaque, *usbfs.Device, Event) anyerror!void,
     /// End a replayed poll: advance the replayed URBs one packet.
     pumpFn: *const fn (*anyopaque, *usbfs.Device) void,
+    /// Apply one recorded event to the replayed host's state alone, with
+    /// the device untouched: a restore rebuilds the URBs in flight at its
+    /// position by reading the line's traffic up to it.
+    restoreFn: *const fn (*anyopaque, Event) anyerror!void,
     /// Forget what was read but never delivered, and hang up.
     dropFn: *const fn (*anyopaque) void,
 };

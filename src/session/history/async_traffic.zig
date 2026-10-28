@@ -42,6 +42,9 @@ pub const AsyncTraffic = struct {
     c6_answer_hook: ?C6AnswerHook = null,
     usbip_hook: ?UsbipTrafficHook = null,
     camera_frame_hook: ?CameraFrameHook = null,
+    /// How many times a restored machine had its replay reloaded; a
+    /// recorded port that kept state of its own rebuilds it when it moves.
+    seeks: u32 = 0,
 };
 
 /// Returns whether the machine cursor is strictly before the active line's recorded end.

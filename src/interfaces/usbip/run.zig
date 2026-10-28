@@ -17,7 +17,7 @@ pub const Live = struct {
     replayer: replay.Replayer = .{},
 
     /// What the recorded port can ask of this bridge.
-    pub const port: traffic.Port = .{ .tapFn = tap, .feedFn = feed, .pumpFn = settle, .dropFn = drop };
+    pub const port: traffic.Port = .{ .tapFn = tap, .feedFn = feed, .pumpFn = settle, .restoreFn = restore, .dropFn = drop };
 
     fn tap(context: *anyopaque, sink: ?traffic.Sink) void {
         const self: *Live = @ptrCast(@alignCast(context));
@@ -27,6 +27,11 @@ pub const Live = struct {
     fn feed(context: *anyopaque, device: *usbfs.Device, event: traffic.Event) anyerror!void {
         const self: *Live = @ptrCast(@alignCast(context));
         try self.replayer.feed(device, event);
+    }
+
+    fn restore(context: *anyopaque, event: traffic.Event) anyerror!void {
+        const self: *Live = @ptrCast(@alignCast(context));
+        try self.replayer.restore(event);
     }
 
     fn settle(context: *anyopaque, device: *usbfs.Device) void {

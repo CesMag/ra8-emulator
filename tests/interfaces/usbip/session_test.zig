@@ -133,3 +133,46 @@ test "a URB longer than the session holds is refused after its payload is skippe
     try std.testing.expectEqual(@as(usize, 0), live.pending());
     try std.testing.expect(!try live.receive(&stream, &out.writer));
 }
+
+const Journal = struct {
+    var seen: [4]ra8.board.usb.traffic.Progress = undefined;
+    var count: usize = 0;
+    fn note(_: *anyopaque, event: ra8.board.usb.traffic.Event) void {
+        if (event.kind != .progress) return;
+        seen[count] = ra8.board.usb.traffic.Progress.decode(event.head) catch unreachable;
+        count += 1;
+    }
+};
+
+test "a pump journals the URB that finished and a restore puts a slot back as it stood" {
+    const live = try std.testing.allocator.create(session.Session);
+    defer std.testing.allocator.destroy(live);
+    var dummy: u8 = 0;
+    live.* = .{ .sink = .{ .context = &dummy, .noteFn = Journal.note, .holdFn = undefined } };
+    var device = usbfs.Device{};
+    open(&device, 1, 2, false);
+    var input: [wire.basic_len + 3]u8 = undefined;
+    input[0..wire.basic_len].* = submit(5, false, 2, 3);
+    @memcpy(input[wire.basic_len..], "abc");
+    var stream: std.Io.Reader = .fixed(&input);
+    var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
+    defer out.deinit();
+    Journal.count = 0;
+    try std.testing.expect(try live.receive(&stream, &out.writer));
+    _ = try live.pump(&device, &out.writer);
+    try std.testing.expectEqual(@as(usize, 1), Journal.count);
+    try std.testing.expectEqual(@as(u32, 5), Journal.seen[0].seqnum);
+    try std.testing.expect(Journal.seen[0].done);
+
+    // A copy that saw only the submit has the slot open until the journal closes it.
+    const copy = try std.testing.allocator.create(session.Session);
+    defer std.testing.allocator.destroy(copy);
+    copy.* = .{};
+    var again: std.Io.Reader = .fixed(&input);
+    try std.testing.expect(try copy.receive(&again, &out.writer));
+    try std.testing.expectEqual(@as(usize, 1), copy.pending());
+    try copy.restoreProgress(.{ .seqnum = 5, .moved = 3, .stage = 0, .done = false });
+    try std.testing.expectEqual(@as(usize, 1), copy.pending());
+    try copy.restoreProgress(Journal.seen[0]);
+    try std.testing.expectEqual(@as(usize, 0), copy.pending());
+}

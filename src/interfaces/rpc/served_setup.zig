@@ -67,6 +67,8 @@ pub const HistoryOpts = struct {
     reopen: ?[]const u8 = null,
     /// Frame tap captures per host second; zero captures every change.
     frame_hz: ?u32 = null,
+    /// The image's bytes, when the caller read them already.
+    elf_bytes: ?[]const u8 = null,
 };
 
 pub const Served = struct {
@@ -124,6 +126,7 @@ pub const Served = struct {
         }
         var owner = try harness.open(allocator, io, .{
             .elf_path = elf_path,
+            .elf_bytes = if (history_opts) |opts| opts.elf_bytes else null,
             .board_profile = board_profile,
             .history_storage = if (bind) |b| b.storage else if (ram) |r| r.storage else null,
             .history_objects = if (bind) |b| b.objects else if (ram) |r| r.object_space else null,

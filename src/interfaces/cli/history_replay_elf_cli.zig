@@ -52,7 +52,8 @@ pub fn writeText(out: *std.Io.Writer, session: []const u8, elf_path: []const u8,
     if (d.symbol) |s| try out.print(" in {s}+0x{x}", .{ s.name, s.offset });
     try out.writeAll("\n");
     if (d.stopped) |reason| return out.print("the rebuilt run stopped first: {s}\n", .{reason});
-    switch (d.place.?) {
+    const place = d.place orelse return out.writeAll("the state digests differ\n");
+    switch (place) {
         .register => |r| try out.print("first difference: register {s}, recorded 0x{x}, rebuilt 0x{x}\n", .{ r.name, r.expected, r.actual }),
         .memory => |m| try out.print("first difference: memory 0x{x}, recorded 0x{x:0>2}, rebuilt 0x{x:0>2}\n", .{ m.address, m.expected, m.actual }),
         .section => |kind| try out.print("first difference: {s} state\n", .{@tagName(kind)}),
@@ -89,7 +90,11 @@ fn writeDivergence(out: *std.Io.Writer, d: replay.Divergence) !void {
         try out.print("{{\"kind\":\"stopped\",\"reason\":\"{s}\"}}}}", .{reason});
         return;
     }
-    switch (d.place.?) {
+    const place = d.place orelse {
+        try out.writeAll("{\"kind\":\"digest\"}}");
+        return;
+    };
+    switch (place) {
         .register => |r| try out.print("{{\"kind\":\"register\",\"name\":\"{s}\",\"expected\":{d},\"actual\":{d}}}", .{ r.name, r.expected, r.actual }),
         .memory => |m| try out.print("{{\"kind\":\"memory\",\"address\":{d},\"expected\":{d},\"actual\":{d}}}", .{ m.address, m.expected, m.actual }),
         .section => |kind| try out.print("{{\"kind\":\"section\",\"name\":\"{s}\"}}", .{@tagName(kind)}),

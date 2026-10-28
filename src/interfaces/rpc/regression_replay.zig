@@ -27,6 +27,7 @@ const seek_engine = session_lib.history_seek_engine;
 const seek_facts = session_lib.history_seek_facts;
 const history_root = session_lib.history_root;
 const state_digest = session_lib.history_state_digest;
+const state_memory = session_lib.history_state_memory;
 const symbols = session_lib.symbols;
 const Position = session_lib.history_position.Position;
 
@@ -117,7 +118,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     const line = try rootLine(keep, found.checkpoints);
 
     var served: served_setup.Served = undefined;
-    try served.open(allocator, io, rebuilt_path, null, .{ .ram_budget = options.ram_budget, .checkpoint_every = never });
+    try served.open(allocator, io, rebuilt_path, null, .{ .ram_budget = options.ram_budget, .checkpoint_every = never, .elf_bytes = rebuilt });
     defer served.deinit();
     if (options.prepare) |hook| try hook.prepareFn(hook.context, &served, log);
     const session = served.owner.session();
@@ -141,7 +142,14 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     return result;
 }
 
-const Images = struct { original: elf.Image, rebuilt: elf.Image };
+const Images = struct {
+    original: elf.Image,
+    rebuilt: elf.Image,
+
+    fn mask(self: Images) state_memory.Mask {
+        return .{ .a = self.original, .b = self.rebuilt };
+    }
+};
 
 /// The checkpoints of the root line in position order.
 fn rootLine(keep: std.mem.Allocator, all: []const seek_engine.Checkpoint) ![]const seek_engine.Checkpoint {
@@ -174,12 +182,12 @@ fn compareAt(allocator: std.mem.Allocator, keep: std.mem.Allocator, served: *ser
     // a machine that never got there, or is already there, is taken as it stands.
     if (stream.written().len == 0) try session.history.?.files.writeTo(&stream.writer);
     const have = stream.written();
-    if (stopped == null and std.mem.eql(u8, &(try state_digest.digest(recorded, images.original)), &(try state_digest.digest(have, images.rebuilt)))) {
+    if (stopped == null and std.mem.eql(u8, &(try state_digest.digest(recorded, images.mask())), &(try state_digest.digest(have, images.mask())))) {
         result.matched += 1;
         return false;
     }
     result.verdict = .diverged;
-    const found = try state_digest.first(recorded, images.original, have, images.rebuilt);
+    const found = try state_digest.first(recorded, have, images.mask());
     const core: u8 = if (found) |f| f.core else 0;
     const pc_expected = if (found) |f| f.pc_expected else try state_digest.pcOf(recorded, 0);
     const pc_actual = if (found) |f| f.pc_actual else try state_digest.pcOf(have, 0);

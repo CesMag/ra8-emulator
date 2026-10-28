@@ -59,6 +59,7 @@ pub const history_async_traffic = @import("history/async_traffic.zig");
 pub const history_cross_seek = @import("history/cross_seek.zig");
 pub const history_elf_compare = @import("history/elf_compare.zig");
 pub const history_state_digest = @import("history/state_digest.zig");
+pub const history_state_memory = @import("history/state_memory.zig");
 pub const history_replay_feeder = @import("history/replay_feeder.zig");
 pub const history_camera_frame = @import("history/camera_frame.zig");
 pub const history_c6_landing = @import("history/c6_landing.zig");

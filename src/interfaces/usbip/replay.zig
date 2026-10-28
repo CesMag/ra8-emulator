@@ -20,20 +20,41 @@ pub const Replayer = struct {
     /// have sent is discarded.
     pub fn feed(self: *Replayer, device: *usbfs.Device, event: traffic.Event) !void {
         switch (event.kind) {
-            .import => {
-                self.urbs = .{};
-                self.connected = true;
-            },
-            .submit, .unlink => {
-                if (!self.connected) return error.NotImported;
-                try self.command(event);
-            },
+            .import, .submit, .unlink => try self.take(event),
             .disconnect => {
                 if (event.pumped) self.pump(device);
                 self.urbs = .{};
                 self.connected = false;
             },
+            // A journal entry: the replay moves its own URBs.
+            .progress => {},
         }
+    }
+
+    fn take(self: *Replayer, event: traffic.Event) !void {
+        if (event.kind == .import) {
+            self.urbs = .{};
+            self.connected = true;
+            return;
+        }
+        if (!self.connected) return error.NotImported;
+        try self.command(event);
+    }
+
+    /// Applies one recorded event to the state alone, with no device: the
+    /// URBs in flight at a restored position come back from the line's
+    /// traffic before it, a submit opening a slot and each progress entry
+    /// moving or closing it. Ends as an idle poll would have left it.
+    pub fn restore(self: *Replayer, event: traffic.Event) !void {
+        switch (event.kind) {
+            .import, .submit, .unlink => try self.take(event),
+            .disconnect => {
+                self.urbs = .{};
+                self.connected = false;
+            },
+            .progress => try self.urbs.restoreProgress(try traffic.Progress.decode(event.head)),
+        }
+        self.armed = self.connected;
     }
 
     /// Ends a poll: pumps when the host was there at its start.

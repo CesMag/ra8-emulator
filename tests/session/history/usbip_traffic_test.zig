@@ -82,3 +82,15 @@ test "a record that does not fit its kind is refused on both sides" {
     std.mem.writeInt(u32, forged[8..12], std.hash.crc.@"CRC-32/ISCSI".hash(forged[0..8]), .little);
     try std.testing.expectError(codec.Error.BadValue, codec.decode(&forged));
 }
+
+test "a progress entry round-trips and one of the wrong size is refused" {
+    var buf: std.Io.Writer.Allocating = .init(std.testing.allocator);
+    defer buf.deinit();
+    var head: [traffic.Progress.len]u8 = undefined;
+    const progress: traffic.Progress = .{ .seqnum = 7, .moved = 64, .stage = 2, .done = false };
+    progress.encode(&head);
+    const got = try codec.decode(try encoded(&buf, .{ .kind = .progress, .head = &head }));
+    try std.testing.expectEqual(progress, try traffic.Progress.decode(got.head));
+    try std.testing.expectError(error.BadValue, encoded(&buf, .{ .kind = .progress, .head = head[0..4] }));
+    try std.testing.expectError(error.BadValue, encoded(&buf, .{ .kind = .progress, .head = &head, .data = "x" }));
+}

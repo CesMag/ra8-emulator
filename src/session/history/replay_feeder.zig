@@ -238,6 +238,7 @@ pub fn loadSessionInterventions(session: *api.Session, log_bytes: []const u8, fr
     }
     try session.replay_feeder.?.loadFromLog(router.graph, router.active_line, log_bytes);
     session.replay_feeder.?.seekTo(session.currentPosition(), from);
+    session.async_traffic.seeks +%= 1;
 }
 
 /// Drops the session's feeder and everything it holds; the next replay

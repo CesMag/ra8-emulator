@@ -3,7 +3,8 @@
 //! bytes to the device with no socket.
 //!
 //! Layout, little-endian:
-//!   u8  kind     1 import, 2 submit, 3 unlink, 4 disconnect
+//!   u8  kind     1 import, 2 submit, 3 unlink, 4 disconnect,
+//!                 5 progress (an URB's journal entry)
 //!   u8  flags    bit 0: a disconnect that came after the poll's pump
 //!   u16 head_len the command's header (the busid of an import)
 //!   u32 data_len the OUT data a submit carries
@@ -54,7 +55,7 @@ pub fn decode(body: []const u8) Error!Event {
     if (body.len != fixed_len + @as(usize, head_len) + data_len + crc_len) return Error.Truncated;
     const covered = body[0 .. body.len - crc_len];
     if (Crc32c.hash(covered) != std.mem.readInt(u32, body[body.len - crc_len ..][0..4], .little)) return Error.BadCrc;
-    if (body[0] < @backingInt(traffic.Kind.import) or body[0] > @backingInt(traffic.Kind.disconnect)) return Error.BadValue;
+    if (body[0] < @backingInt(traffic.Kind.import) or body[0] > @backingInt(traffic.Kind.progress)) return Error.BadValue;
     if (body[1] & ~Flags.pumped != 0) return Error.BadValue;
     const event: Event = .{
         .kind = @fromBackingInt(@intCast(body[0])),
@@ -74,6 +75,7 @@ fn check(event: Event) error{BadValue}!void {
         .submit => event.head.len == traffic.header_len and event.data.len <= traffic.max_data,
         .unlink => event.head.len == traffic.header_len and event.data.len == 0,
         .disconnect => event.head.len == 0 and event.data.len == 0,
+        .progress => event.head.len == traffic.Progress.len and event.data.len == 0,
     };
     if (!ok) return error.BadValue;
 }

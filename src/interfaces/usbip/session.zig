@@ -8,6 +8,7 @@
 const std = @import("std");
 const wire = @import("wire.zig");
 const urb = @import("urb.zig");
+const control = @import("control.zig");
 const usbfs = @import("ra8_chip").periph.usbfs;
 const traffic = @import("ra8_board").usb.traffic;
 
@@ -51,7 +52,12 @@ pub const Session = struct {
             const length = @min(slot.transfer.submit.length, max_length);
             const out_data: []const u8 = if (in) &.{} else slot.data[0..length];
             const in_buf: []u8 = if (in) slot.data[0..length] else &.{};
-            const reply = slot.transfer.advance(device, out_data, in_buf) orelse continue;
+            const before = slot.transfer;
+            const reply = slot.transfer.advance(device, out_data, in_buf) orelse {
+                self.journal(slot.transfer, before, false);
+                continue;
+            };
+            self.journal(slot.transfer, before, true);
             try answer(writer, slot.transfer.submit.seqnum, reply, if (in) slot.data[0..reply.actual] else &.{});
             entry.* = null;
             finished += 1;
@@ -90,6 +96,31 @@ pub const Session = struct {
         var out: [wire.basic_len]u8 = undefined;
         wire.retUnlink(&out, request.seqnum, status);
         try writer.writeAll(&out);
+    }
+
+    /// Tells the sink where an URB stands when the pump moved it, so a
+    /// restore can put the replayed copy of the slot back as it was.
+    fn journal(self: *const Session, now: urb.Transfer, before: urb.Transfer, done: bool) void {
+        if (!done and now.moved == before.moved and now.stage == before.stage) return;
+        var head: [traffic.Progress.len]u8 = undefined;
+        const progress: traffic.Progress = .{ .seqnum = now.submit.seqnum, .moved = now.moved, .stage = @backingInt(now.stage), .done = done };
+        progress.encode(&head);
+        self.note(.progress, &head, &.{});
+    }
+
+    /// Puts the slot of `progress.seqnum` back where the journal left it.
+    pub fn restoreProgress(self: *Session, progress: traffic.Progress) !void {
+        for (&self.slots) |*entry| {
+            const slot = &(entry.* orelse continue);
+            if (slot.transfer.submit.seqnum != progress.seqnum) continue;
+            if (progress.done) {
+                entry.* = null;
+                return;
+            }
+            slot.transfer.moved = progress.moved;
+            slot.transfer.stage = std.enums.fromInt(control.Stage, progress.stage) orelse return error.BadValue;
+            return;
+        }
     }
 
     fn note(self: *const Session, kind: traffic.Kind, head: []const u8, data: []const u8) void {

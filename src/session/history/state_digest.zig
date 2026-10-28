@@ -4,14 +4,13 @@
 //! A checkpoint's object is the run's whole save stream, which names the
 //! image it ran and holds the image's own bytes in guest memory. Two builds
 //! that behave alike must still digest alike, so the image section is left
-//! out and memory is read as what the program did to it
+//! out and memory is compared without the images' own read-only bytes
 //! (state_memory.zig). Everything else, every core's registers and every
 //! board section, is hashed as written.
 const std = @import("std");
 const file = @import("ra8_board").snapshot.run.file;
 const fields = @import("ra8_board").snapshot.run.fields;
 const regs_mod = @import("ra8_chip").core.cpu.regs;
-const elf = @import("ra8_board").image.elf;
 const memory = @import("state_memory.zig");
 
 pub const Digest = [16]u8;
@@ -43,15 +42,16 @@ fn isMemory(kind: file.Kind) bool {
     return kind == .memory or kind == .second_memory;
 }
 
-/// Blake3-128 over the stream's sections but the image's.
-pub fn digest(stream: []const u8, image: elf.Image) Error!Digest {
+/// Blake3-128 over the stream's sections but the image's, memory read
+/// under `mask`: the same one for both runs being compared.
+pub fn digest(stream: []const u8, mask: memory.Mask) Error!Digest {
     var hasher = std.crypto.hash.Blake3.init(.{});
     var reader = try file.Reader.open(stream);
     while (try reader.next()) |section| {
         if (section.kind == .image) continue;
         hasher.update(std.mem.asBytes(&std.mem.nativeToLittle(u32, @backingInt(section.kind))));
         if (isMemory(section.kind)) {
-            memory.hash(&hasher, try memory.parse(section.payload), image);
+            memory.hash(&hasher, try memory.parse(section.payload), mask);
         } else if (section.kind == .debug_units) {
             var scratch: [debug_scratch]u8 = undefined;
             hasher.update(try withoutRunBookkeeping(section.payload, &scratch));
@@ -113,7 +113,7 @@ fn firstRegister(a: regs_mod.Regs, b: regs_mod.Regs) ?Place {
 /// The first place the two streams differ, or null when they digest alike.
 /// Sections are compared in stream order: a core's registers before the
 /// rest of its state, memory by address.
-pub fn first(expected: []const u8, expected_image: elf.Image, actual: []const u8, actual_image: elf.Image) Error!?Difference {
+pub fn first(expected: []const u8, actual: []const u8, mask: memory.Mask) Error!?Difference {
     var a = try file.Reader.open(expected);
     var b = try file.Reader.open(actual);
     var core: u8 = 0;
@@ -132,7 +132,7 @@ pub fn first(expected: []const u8, expected_image: elf.Image, actual: []const u8
         if (isMemory(one.kind)) {
             const pa = try memory.parse(one.payload);
             const pb = try memory.parse(two.payload);
-            if (memory.firstDifference(pa, expected_image, pb, actual_image)) |spot| return try finish(expected, actual, core, .{ .memory = spot });
+            if (memory.firstDifference(pa, pb, mask)) |spot| return try finish(expected, actual, core, .{ .memory = spot });
             if (!std.mem.eql(u8, pa.tail, pb.tail)) return try finish(expected, actual, core, .{ .section = one.kind });
         } else if (one.kind == .debug_units) {
             var scratch: [2][debug_scratch]u8 = undefined;
