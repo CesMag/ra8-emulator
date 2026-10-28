@@ -7,7 +7,10 @@
 //! initialised data (a segment loaded at an address other than the one it
 //! runs at). Everything else is compared as it is held, so a variable's
 //! different initial value is a difference until the program writes it, and
-//! a value both runs wrote is not one.
+//! a value both runs wrote is not one. The cost is that a real write to a
+//! masked address goes unseen: code or constants loaded into RAM and then
+//! written, flash programming, or an address one image reads as constant
+//! and the other as a variable.
 //!
 //! Section layout (src/board/snapshot/memory.zig), little-endian: a region
 //! count, then per region its base, length, page count and each page as an

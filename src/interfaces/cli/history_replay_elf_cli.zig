@@ -47,6 +47,7 @@ pub fn writeText(out: *std.Io.Writer, session: []const u8, elf_path: []const u8,
     if (e.first_changed_address) |address| try out.print("  first changed byte at 0x{x}\n", .{address});
     try out.print("  symbols {d} -> {d}: {d} added, {d} removed, {d} moved, {d} resized\n", .{ e.original.symbols, e.rebuilt.symbols, e.symbols_added, e.symbols_removed, e.symbols_moved, e.symbols_resized });
     try out.print("checkpoints: {d} of {d} match, last round {d}\n", .{ result.matched, result.checkpoints, result.round });
+    try out.writeAll("  (addresses either image loads as read-only, or as a load-time copy, are not compared: RAM-resident code and flash programming go unchecked)\n");
     const d = result.divergence orelse return out.writeAll("compatible\n");
     try out.print("diverged at checkpoint {d}, round {d} ({s} +{d}), core {d}, pc 0x{x} (recorded 0x{x})", .{ d.checkpoint, d.position.r, @tagName(d.position.phase), d.position.o, d.core, d.pc_actual, d.pc_expected });
     if (d.symbol) |s| try out.print(" in {s}+0x{x}", .{ s.name, s.offset });

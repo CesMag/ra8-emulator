@@ -10,6 +10,10 @@
 //! replayed capture with no frame recorded for it is a determinism error:
 //! the guest gets a blank frame, `failed` holds the error, and the host
 //! source is not read as a stand-in.
+//!
+//! A source set while the machine replayed is not opened then: the port
+//! keeps what it needs to open it (`Later`) and does so at the first
+//! capture the run makes live, once it is back at the recorded end.
 const std = @import("std");
 const frame_source = @import("ra8_chip").periph.frame_source;
 const hosted = @import("ra8_components").camera.hosted;
@@ -18,11 +22,24 @@ const camera_frame = @import("../history/camera_frame.zig");
 const api = @import("../api.zig");
 const line = @import("../line.zig");
 
+/// What the port wraps and what `Later` opens.
+pub const FrameSource = frame_source.FrameSource;
+
 pub const Error = error{
     /// A replayed capture found no frame recorded at its position.
     UnrecordedCapture,
     /// The recorded frame's geometry is not the one the CEU asked for.
     GeometryMismatch,
+};
+
+/// How to open the live source a replayed camera change named, held by the
+/// port until the run is live. `openFn` returns the source to serve from;
+/// the port owns it. `freeFn` releases `context` when the port closes; the
+/// source may borrow from it until then.
+pub const Later = struct {
+    context: *anyopaque,
+    openFn: *const fn (context: *anyopaque) anyerror!frame_source.FrameSource,
+    freeFn: *const fn (context: *anyopaque) void,
 };
 
 pub const RecordedCamera = struct {
@@ -39,6 +56,11 @@ pub const RecordedCamera = struct {
     /// How many frames were served from the history, for a caller that
     /// shows or checks that a replay read nothing from the host.
     replayed: u64 = 0,
+    /// The live source still to open, from a change made in replay.
+    later: ?Later = null,
+    /// The one attempt at opening it has been made. `later` stays until the
+    /// port closes: the opened source may borrow from it.
+    live_tried: bool = false,
 
     fn replaying(self: *const RecordedCamera) bool {
         return self.session.replaying or line.inPast(self.session);
@@ -51,6 +73,7 @@ pub const RecordedCamera = struct {
 
     fn frame(context: *anyopaque, when: u64, shape: frame_source.Shape) void {
         const self: *RecordedCamera = @ptrCast(@alignCast(context));
+        if (self.later != null and !self.live_tried and !self.replaying()) self.goLive();
         self.width = shape.width;
         self.pixels.clearRetainingCapacity();
         self.pixels.resize(self.gpa, @as(usize, shape.width) * shape.lines) catch |err| {
@@ -63,6 +86,17 @@ pub const RecordedCamera = struct {
         } else {
             self.capture(when, shape) catch |err| self.note(err);
         }
+    }
+
+    /// The run is live again: open the source the replayed change named.
+    /// One attempt; a failure is held in `failed` like any capture's, and
+    /// the stand-in keeps serving.
+    fn goLive(self: *RecordedCamera) void {
+        const later = self.later.?;
+        self.live_tried = true;
+        const opened = later.openFn(later.context) catch |err| return self.note(err);
+        self.inner.close();
+        self.inner = opened;
     }
 
     fn replay(self: *RecordedCamera, shape: frame_source.Shape) !void {
@@ -107,6 +141,7 @@ pub const RecordedCamera = struct {
     fn close(context: *anyopaque) void {
         const self: *RecordedCamera = @ptrCast(@alignCast(context));
         self.inner.close();
+        if (self.later) |later| later.freeFn(later.context);
         self.pixels.deinit(self.gpa);
         self.gpa.destroy(self);
     }

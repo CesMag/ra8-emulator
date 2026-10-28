@@ -198,3 +198,50 @@ test "a recorded camera change replays without opening its host source, and a li
     capture(unit);
     try std.testing.expectEqual(@as(?anyerror, recorded_camera.Error.UnrecordedCapture), port.failed);
 }
+
+test "a camera change replayed to the recorded end opens the user's source then, once, and a failure to open is held" {
+    const gpa = std.testing.allocator;
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+    const root = try temp.dir.realPathFileAlloc(std.testing.io, ".", gpa);
+    defer gpa.free(root);
+    const spec = try std.fmt.allocPrint(gpa, "image:{s}/still.ppm", .{root});
+    defer gpa.free(spec);
+
+    var served: setup.Served = undefined;
+    try served.open(gpa, std.testing.io, image, null, .{});
+    defer served.deinit();
+    const session = served.owner.session();
+    const unit = &served.owner.board().capture;
+    const hook = session.camera_hook.?;
+    const gradient_label = unit.source.label;
+
+    // Replaying the change: the file is not there, and nothing asks for it.
+    session.setReplaying(true);
+    try hook.changeFn(hook.context, spec);
+    const port = recorded_camera.from(unit.source).?;
+    try std.testing.expectEqualStrings(gradient_label, unit.source.label);
+    try std.testing.expect(port.later != null);
+    try std.testing.expect(!port.live_tried);
+
+    // The file is back and the run is live: the first capture opens it, once.
+    try temp.dir.writeFile(std.testing.io, .{ .sub_path = "still.ppm", .data = "P6\n2 1\n255\n" ++ "\x10\x20\x30\x40\x50\x60" });
+    session.setReplaying(false);
+    capture(unit);
+    try std.testing.expect(port.live_tried);
+    try std.testing.expectEqual(@as(?anyerror, null), port.failed);
+    try std.testing.expectEqualStrings("still image", unit.source.label);
+    try std.testing.expectEqualStrings("still image", port.inner.label);
+    capture(unit);
+    try std.testing.expectEqual(@as(?anyerror, null), port.failed);
+
+    // A source that is gone at the end is held, and the stand-in serves on.
+    try temp.dir.deleteFile(std.testing.io, "still.ppm");
+    session.setReplaying(true);
+    try hook.changeFn(hook.context, spec);
+    session.setReplaying(false);
+    const again = recorded_camera.from(unit.source).?;
+    capture(unit);
+    try std.testing.expectEqual(@as(?anyerror, error.FileNotFound), again.failed);
+    try std.testing.expect(!std.mem.eql(u8, "still image", again.inner.label));
+}

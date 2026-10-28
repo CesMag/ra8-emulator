@@ -92,6 +92,7 @@ test {
     _ = @import("session/board/recorded_camera_test.zig");
     _ = @import("session/board/recorded_c6_test.zig");
     _ = @import("session/board/recorded_usbip_test.zig");
+    _ = @import("session/board/recorded_usbip_hangup_test.zig");
     _ = @import("session/board_plug_list_test.zig");
     _ = @import("board/camera_install_test.zig");
     _ = @import("board/gauge_replug_test.zig");

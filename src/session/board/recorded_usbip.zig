@@ -17,6 +17,15 @@
 //! the run is back at the recorded end. A queue that overflows is cleared
 //! with the connection dropped, so the host sees a hang-up and nothing it
 //! sent is half-applied.
+//!
+//! The hang-up when the cursor goes into the past is part of the line: the
+//! live host was connected at the line's recorded end and the machine that
+//! continues from there has no host. A disconnect is recorded at that end,
+//! on that line, so a replay or restore past it drops the host there and
+//! never pumps the URBs the run left behind. It is written at the first
+//! poll that is not a replay (the run that carried the cursor back is one,
+//! and a replay records nothing); a fork in between abandons it, as the
+//! line it belongs to is no longer the one recording.
 const std = @import("std");
 const usb = @import("ra8_board").usb;
 const usbfs = @import("ra8_chip").periph.usbfs;
@@ -48,6 +57,12 @@ pub const RecordedUsbip = struct {
     seen_seeks: u32 = 0,
     /// The last poll ran in the past (or replaying).
     was_past: bool = false,
+    /// The live bridge has a host connected, as it has told the port.
+    live_connected: bool = false,
+    /// A hang-up not yet written to the history.
+    hangup: ?Hangup = null,
+
+    const Hangup = struct { line: u32, at: line.Position };
 
     fn replaying(self: *const RecordedUsbip) bool {
         return self.session.replaying or line.inPast(self.session);
@@ -60,6 +75,7 @@ pub const RecordedUsbip = struct {
 
     fn poll(context: *anyopaque, device: *usbfs.Device, script: *const usbfs.host.Host) void {
         const self: *RecordedUsbip = @ptrCast(@alignCast(context));
+        self.flush() catch |err| self.note(err);
         const past = self.replaying();
         if (past != self.was_past) self.crossed(past) catch |err| self.note(err);
         self.was_past = past;
@@ -72,6 +88,7 @@ pub const RecordedUsbip = struct {
             // The queue was cleared with the fork that left the past:
             // what the bridge holds was never recorded.
             self.inner.port.?.dropFn(self.inner.context);
+            self.live_connected = false;
             self.held = 0;
         }
         self.inner.pollFn(self.inner.context, device, script);
@@ -92,11 +109,48 @@ pub const RecordedUsbip = struct {
     fn crossed(self: *RecordedUsbip, past: bool) !void {
         const port = self.inner.port.?;
         if (past) {
+            if (self.live_connected) try self.hangUp();
             port.dropFn(self.inner.context);
-            self.held = 0;
+            self.live_connected = false;
+            // Events still queued stay counted; a queue a fork cleared left
+            // nothing to wait for.
+            if (self.queueEmpty()) self.held = 0;
             return;
         }
         try port.restoreFn(self.inner.context, .{ .kind = .disconnect });
+    }
+
+    /// Notes the disconnect the hang-up is: queued behind events still
+    /// waiting for the end, otherwise due at the line's recorded end.
+    fn hangUp(self: *RecordedUsbip) !void {
+        var body: std.Io.Writer.Allocating = .init(self.gpa);
+        defer body.deinit();
+        try usbip_traffic.encode(&body.writer, .{ .kind = .disconnect });
+        if (self.held > 0) {
+            const queue = &(self.session.async_traffic.queue orelse return);
+            if (try queue.push(.usbip, 0, body.written())) {
+                self.held += 1;
+            } else {
+                _ = queue.clear();
+                self.held = 0;
+            }
+            return;
+        }
+        const router = self.session.fork_router orelse return;
+        self.hangup = .{ .line = router.active_line, .at = router.recordedEnd() };
+    }
+
+    /// Writes a noted hang-up once the machine is not replaying.
+    fn flush(self: *RecordedUsbip) !void {
+        const hung = self.hangup orelse return;
+        if (self.session.replaying) return;
+        self.hangup = null;
+        const router = self.session.fork_router orelse return;
+        if (router.active_line != hung.line) return;
+        var body: std.Io.Writer.Allocating = .init(self.gpa);
+        defer body.deinit();
+        try usbip_traffic.encode(&body.writer, .{ .kind = .disconnect });
+        try self.recordAt(hung.at, body.written());
     }
 
     /// Puts the replayed host back as the line left it before the cursor:
@@ -138,6 +192,11 @@ pub const RecordedUsbip = struct {
     }
 
     fn hear(self: *RecordedUsbip, event: traffic.Event) !void {
+        switch (event.kind) {
+            .import => self.live_connected = true,
+            .disconnect => self.live_connected = false,
+            else => {},
+        }
         var body: std.Io.Writer.Allocating = .init(self.gpa);
         defer body.deinit();
         try usbip_traffic.encode(&body.writer, event);
@@ -151,12 +210,18 @@ pub const RecordedUsbip = struct {
         _ = queue.clear();
         self.held = 0;
         self.inner.port.?.dropFn(self.inner.context);
+        self.live_connected = false;
     }
 
     fn record(self: *RecordedUsbip, body: []const u8) !void {
+        try self.flush();
+        try self.recordAt(self.session.currentPosition(), body);
+    }
+
+    fn recordAt(self: *RecordedUsbip, at: line.Position, body: []const u8) !void {
         const history = self.session.history orelse return;
         if (history.recorder == null) return;
-        try history.recordLanding(self.session.currentPosition(), .usbip_traffic, body);
+        try history.recordLanding(at, .usbip_traffic, body);
     }
 
     /// The async queue let go of one held event: it lands now.
