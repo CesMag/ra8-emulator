@@ -234,3 +234,33 @@ pub fn inside(image: elf.Image, address: u32) ?Inside {
     }
     return best;
 }
+
+/// A symbol as the table names it.
+pub const Named = struct {
+    name: []const u8,
+    value: u32,
+    size: u32,
+    kind: u8,
+};
+
+/// Walks every named symbol of an image in table order; an image with no
+/// symbol table walks nothing.
+pub const Walk = struct {
+    found: ?Tables,
+    offset: usize = 0,
+
+    pub fn init(image: elf.Image) Walk {
+        return .{ .found = tables(image) };
+    }
+
+    pub fn next(self: *Walk) ?Named {
+        const tab = self.found orelse return null;
+        while (self.offset + @sizeOf(Symbol) <= tab.symbols.len) {
+            const entry: *align(1) const Symbol = std.mem.bytesAsValue(Symbol, tab.symbols[self.offset..][0..@sizeOf(Symbol)]);
+            self.offset += tab.entry_size;
+            const name = nameAt(tab.strings, entry.st_name) orelse continue;
+            return .{ .name = name, .value = entry.st_value, .size = entry.st_size, .kind = entry.st_info & 0xF };
+        }
+        return null;
+    }
+};
