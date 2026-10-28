@@ -21,6 +21,8 @@ pub const urb = @import("urb.zig");
 pub const control = @import("control.zig");
 /// The imported connection's SUBMIT/UNLINK traffic.
 pub const session = @import("session.zig");
+/// The host taken away: recorded commands fed back with replies muted.
+pub const replay = @import("replay.zig");
 /// The live bridge a run polls at each board boundary.
 pub const bridge = @import("bridge.zig");
 

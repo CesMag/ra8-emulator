@@ -101,3 +101,11 @@ test "--reopen names a kept session in the --history root and nothing else" {
     try std.testing.expect(parse(&.{ "ra8_emulator", "serve", "--reopen", id, "--stdio", "a.elf" }) == null);
     try std.testing.expect(parse(&.{ "ra8_emulator", "serve", "--history", "h", "--kept", "--reopen", id, "--stdio", "a.elf" }) == null);
 }
+
+test "--usbip takes a port, once" {
+    const asked = parse(&.{ "ra8_emulator", "serve", "--usbip", "3240", "--stdio", "a.elf" }).?;
+    try std.testing.expectEqual(@as(?u16, 3240), asked.usbip);
+    try std.testing.expect(parse(&.{ "ra8_emulator", "serve", "--stdio", "a.elf" }).?.usbip == null);
+    try std.testing.expect(parse(&.{ "ra8_emulator", "serve", "--usbip", "1", "--usbip", "2", "--stdio", "a.elf" }) == null);
+    try std.testing.expect(parse(&.{ "ra8_emulator", "serve", "--usbip", "x", "--stdio", "a.elf" }) == null);
+}

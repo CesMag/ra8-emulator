@@ -51,6 +51,10 @@ pub const ReplayFeeder = struct {
     /// the next one instead of reading the host source.
     frames: std.ArrayList(RecordedFrame) = .empty,
     frame_cursor: usize = 0,
+    /// The line's USB/IP traffic in recorded order, due at the poll whose
+    /// position reaches each record's own.
+    traffic: std.ArrayList(RecordedFrame) = .empty,
+    traffic_cursor: usize = 0,
 
     pub fn init(allocator: std.mem.Allocator) ReplayFeeder {
         return .{
@@ -75,6 +79,20 @@ pub const ReplayFeeder = struct {
         self.frames.deinit(self.allocator);
         self.frames = .empty;
         self.frame_cursor = 0;
+        for (self.traffic.items) |item| self.allocator.free(item.body);
+        self.traffic.deinit(self.allocator);
+        self.traffic = .empty;
+        self.traffic_cursor = 0;
+    }
+
+    /// The next USB/IP record due at `pos`: the first one not yet taken
+    /// whose position is at or before it. Taking it consumes it.
+    pub fn takeTraffic(self: *ReplayFeeder, pos: Position) ?[]const u8 {
+        if (self.traffic_cursor >= self.traffic.items.len) return null;
+        const next = self.traffic.items[self.traffic_cursor];
+        if (branch_mod.scalarOrder(next.position, pos) == .gt) return null;
+        self.traffic_cursor += 1;
+        return next.body;
     }
 
     /// The camera frame recorded for a capture at `pos`, or null when the
@@ -103,6 +121,7 @@ pub const ReplayFeeder = struct {
         _ = try replay_mod.replay(log_bytes, &ctx, visitRecord);
         std.mem.sort(ScheduledIntervention, self.items.items, {}, sortLess);
         std.mem.sort(RecordedFrame, self.frames.items, {}, frameLess);
+        std.mem.sort(RecordedFrame, self.traffic.items, {}, frameLess);
     }
 
     /// The next item due at `pos`: the first undelivered one whose
@@ -137,6 +156,11 @@ pub const ReplayFeeder = struct {
         self.frame_cursor = 0;
         while (self.frame_cursor < self.frames.items.len) : (self.frame_cursor += 1) {
             const ord = branch_mod.scalarOrder(self.frames.items[self.frame_cursor].position, pos);
+            if (ord == .gt or (ord == .eq and from == .at)) break;
+        }
+        self.traffic_cursor = 0;
+        while (self.traffic_cursor < self.traffic.items.len) : (self.traffic_cursor += 1) {
+            const ord = branch_mod.scalarOrder(self.traffic.items[self.traffic_cursor].position, pos);
             if (ord == .gt or (ord == .eq and from == .at)) break;
         }
     }
@@ -215,11 +239,15 @@ fn visitRecord(ctx: *ScanContext, entry: replay_mod.Entry) anyerror!void {
             });
         },
         .boundary => |hit| {
-            if (hit.boundary.what != .camera_frame) return;
+            const list = switch (hit.boundary.what) {
+                .camera_frame => &ctx.feeder.frames,
+                .usbip_traffic => &ctx.feeder.traffic,
+                else => return,
+            };
             const canon_pos = onLine(ctx, hit.header.position) orelse return;
             const body = try ctx.feeder.allocator.dupe(u8, hit.boundary.body);
             errdefer ctx.feeder.allocator.free(body);
-            try ctx.feeder.frames.append(ctx.feeder.allocator, .{ .position = canon_pos, .seq = hit.header.seq, .body = body });
+            try list.append(ctx.feeder.allocator, .{ .position = canon_pos, .seq = hit.header.seq, .body = body });
         },
         else => {},
     }

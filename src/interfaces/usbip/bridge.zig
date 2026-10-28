@@ -12,6 +12,7 @@ const listen = @import("listen.zig");
 const server = @import("server.zig");
 const session = @import("session.zig");
 const usbfs = @import("ra8_chip").periph.usbfs;
+const traffic = @import("ra8_board").usb.traffic;
 const sock_ready = @import("ra8_host").sock.ready;
 
 /// What one poll changed.
@@ -39,6 +40,9 @@ pub const Bridge = struct {
     listener: ?std.Io.net.Server = null,
     conn: ?Conn = null,
     given_up: bool = false,
+    /// The recorded port, when a session records this run: it hears every
+    /// command, and may tell the bridge to hold what it read.
+    sink: ?traffic.Sink = null,
 
     pub fn init(allocator: std.mem.Allocator, io: std.Io, wanted: u16) !Bridge {
         const live = try allocator.create(session.Session);
@@ -63,9 +67,24 @@ pub const Bridge = struct {
         return if (self.listener == null) null else &self.exports[0];
     }
 
+    /// Report to `sink` from now on; null stops.
+    pub fn tap(self: *Bridge, sink: ?traffic.Sink) void {
+        self.sink = sink;
+        self.live.sink = sink;
+    }
+
+    /// Hang up on the host and forget whatever it had in flight, without
+    /// telling the sink: the caller knows why.
+    pub fn drop(self: *Bridge) void {
+        const conn = &(self.conn orelse return);
+        conn.stream.close(self.io);
+        self.conn = null;
+        self.live.* = .{ .sink = self.sink };
+    }
+
     /// Advance whatever stage the bridge is in, without waiting.
     pub fn poll(self: *Bridge, device: *usbfs.Device, script: *const usbfs.host.Host) !Event {
-        if (self.conn) |*conn| return self.traffic(conn, device);
+        if (self.conn) |*conn| return self.serveHost(conn, device);
         if (self.listener) |*listener| return self.accept(listener);
         if (self.given_up) return .none;
         return self.offer(script);
@@ -85,10 +104,11 @@ pub const Bridge = struct {
         if (!readable(self.io, listener.socket.handle)) return .none;
         const conn = self.connect(try listener.accept(self.io));
         const imported = server.serve(&conn.reader.interface, &conn.writer.interface, &self.exports) catch null;
-        if (imported == null) {
-            _ = self.hangUp(conn);
+        const item = imported orelse {
+            _ = self.hangUp(conn, null);
             return .none;
-        }
+        };
+        self.note(.{ .kind = .import, .head = item.device.busid });
         return .attached;
     }
 
@@ -100,22 +120,36 @@ pub const Bridge = struct {
         return conn;
     }
 
-    fn traffic(self: *Bridge, conn: *Conn, device: *usbfs.Device) !Event {
+    fn serveHost(self: *Bridge, conn: *Conn, device: *usbfs.Device) !Event {
         const reader = &conn.reader.interface;
         const writer = &conn.writer.interface;
         while (reader.bufferedLen() > 0 or readable(self.io, conn.stream.socket.handle)) {
             const more = self.live.receive(reader, writer) catch false;
-            if (!more) return self.hangUp(conn);
+            if (!more) return self.hangUp(conn, false);
         }
-        _ = self.live.pump(device, writer) catch return self.hangUp(conn);
-        writer.flush() catch return self.hangUp(conn);
+        if (self.held()) return .none;
+        _ = self.live.pump(device, writer) catch return self.hangUp(conn, true);
+        writer.flush() catch return self.hangUp(conn, true);
         return .none;
     }
 
-    fn hangUp(self: *Bridge, conn: *Conn) Event {
+    fn held(self: *const Bridge) bool {
+        const sink = self.sink orelse return false;
+        return sink.holdFn(sink.context);
+    }
+
+    fn note(self: *const Bridge, event: traffic.Event) void {
+        const sink = self.sink orelse return;
+        sink.noteFn(sink.context, event);
+    }
+
+    /// `pumped` says whether the poll had advanced the URBs when the host
+    /// went; null for a connection that never imported.
+    fn hangUp(self: *Bridge, conn: *Conn, pumped: ?bool) Event {
+        if (pumped) |after| self.note(.{ .kind = .disconnect, .pumped = after });
         conn.stream.close(self.io);
         self.conn = null;
-        self.live.* = .{};
+        self.live.* = .{ .sink = self.sink };
         return .hung_up;
     }
 };

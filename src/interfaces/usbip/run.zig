@@ -7,10 +7,37 @@ const std = @import("std");
 const usb = @import("ra8_board").usb;
 const usbfs = @import("ra8_chip").periph.usbfs;
 const bridge = @import("bridge.zig");
+const replay = @import("replay.zig");
+const traffic = usb.traffic;
 
 pub const Live = struct {
     link: bridge.Bridge,
     stopped: bool = false,
+    /// What stands in for the host while a recording replays.
+    replayer: replay.Replayer = .{},
+
+    /// What the recorded port can ask of this bridge.
+    pub const port: traffic.Port = .{ .tapFn = tap, .feedFn = feed, .pumpFn = settle, .dropFn = drop };
+
+    fn tap(context: *anyopaque, sink: ?traffic.Sink) void {
+        const self: *Live = @ptrCast(@alignCast(context));
+        self.link.tap(sink);
+    }
+
+    fn feed(context: *anyopaque, device: *usbfs.Device, event: traffic.Event) anyerror!void {
+        const self: *Live = @ptrCast(@alignCast(context));
+        try self.replayer.feed(device, event);
+    }
+
+    fn settle(context: *anyopaque, device: *usbfs.Device) void {
+        const self: *Live = @ptrCast(@alignCast(context));
+        self.replayer.settle(device);
+    }
+
+    fn drop(context: *anyopaque) void {
+        const self: *Live = @ptrCast(@alignCast(context));
+        self.link.drop();
+    }
 
     fn poll(context: *anyopaque, device: *usbfs.Device, script: *const usbfs.host.Host) void {
         const self: *Live = @ptrCast(@alignCast(context));
@@ -32,7 +59,7 @@ pub fn install(target: *usb.Usb, allocator: std.mem.Allocator, io: std.Io, port:
     const wanted = port orelse return;
     const live = try allocator.create(Live);
     live.* = .{ .link = try bridge.Bridge.init(allocator, io, wanted) };
-    target.bridge = .{ .context = live, .pollFn = Live.poll };
+    target.bridge = .{ .context = live, .pollFn = Live.poll, .port = Live.port };
 }
 
 /// One line for each event that changed something a user would see.

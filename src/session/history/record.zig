@@ -248,6 +248,10 @@ pub const Boundary = struct {
         /// position the capture armed. Unlike a landing it is an input
         /// replay re-feeds: the body is camera_frame.zig's record.
         camera_frame = 11,
+        /// One piece of the host's USB/IP traffic at the boundary it
+        /// landed: an import, a URB, an unlink or a hang-up. An input
+        /// replay re-feeds; the body is usbip_traffic.zig's record.
+        usbip_traffic = 12,
         _,
     };
     what: What,

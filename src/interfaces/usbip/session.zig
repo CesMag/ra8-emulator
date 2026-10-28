@@ -9,6 +9,7 @@ const std = @import("std");
 const wire = @import("wire.zig");
 const urb = @import("urb.zig");
 const usbfs = @import("ra8_chip").periph.usbfs;
+const traffic = @import("ra8_board").usb.traffic;
 
 pub const slot_count = 8;
 /// The most data one URB moves here; cdc-acm asks for 1280 at most.
@@ -24,6 +25,8 @@ const Slot = struct {
 
 pub const Session = struct {
     slots: [slot_count]?Slot = @splat(null),
+    /// Told of each command taken whole, for the recorded port.
+    sink: ?traffic.Sink = null,
 
     /// Read one command. False on a clean hangup before its header.
     pub fn receive(self: *Session, reader: *std.Io.Reader, writer: *std.Io.Writer) !bool {
@@ -32,8 +35,8 @@ pub const Session = struct {
         if (got == 0) return false;
         if (got < header.len) return error.Short;
         switch (try wire.command(&header)) {
-            wire.cmd.submit => try self.submit(try wire.Submit.decode(&header), reader, writer),
-            wire.cmd.unlink => try self.unlink(try wire.Unlink.decode(&header), writer),
+            wire.cmd.submit => try self.submit(try wire.Submit.decode(&header), &header, reader, writer),
+            wire.cmd.unlink => try self.unlink(try wire.Unlink.decode(&header), &header, writer),
             else => return error.BadCommand,
         }
         return true;
@@ -63,7 +66,7 @@ pub const Session = struct {
         return count;
     }
 
-    fn submit(self: *Session, request: wire.Submit, reader: *std.Io.Reader, writer: *std.Io.Writer) !void {
+    fn submit(self: *Session, request: wire.Submit, head: []const u8, reader: *std.Io.Reader, writer: *std.Io.Writer) !void {
         const carried = request.outBytes();
         if (request.length > max_length) {
             try reader.discardAll(carried);
@@ -72,9 +75,11 @@ pub const Session = struct {
         const entry = self.free() orelse return error.Busy;
         entry.* = .{ .transfer = .{ .submit = request } };
         try reader.readSliceAll(entry.*.?.data[0..carried]);
+        self.note(.submit, head, entry.*.?.data[0..carried]);
     }
 
-    fn unlink(self: *Session, request: wire.Unlink, writer: *std.Io.Writer) !void {
+    fn unlink(self: *Session, request: wire.Unlink, head: []const u8, writer: *std.Io.Writer) !void {
+        self.note(.unlink, head, &.{});
         var status: i32 = 0;
         for (&self.slots) |*entry| {
             const slot = entry.* orelse continue;
@@ -85,6 +90,11 @@ pub const Session = struct {
         var out: [wire.basic_len]u8 = undefined;
         wire.retUnlink(&out, request.seqnum, status);
         try writer.writeAll(&out);
+    }
+
+    fn note(self: *const Session, kind: traffic.Kind, head: []const u8, data: []const u8) void {
+        const sink = self.sink orelse return;
+        sink.noteFn(sink.context, .{ .kind = kind, .head = head, .data = data });
     }
 
     fn free(self: *Session) ?*?Slot {

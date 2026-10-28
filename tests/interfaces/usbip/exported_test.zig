@@ -113,4 +113,5 @@ test {
     _ = @import("control_test.zig");
     _ = @import("session_test.zig");
     _ = @import("bridge_test.zig");
+    _ = @import("recorded_test.zig");
 }

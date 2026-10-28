@@ -8,6 +8,7 @@
 const std = @import("std");
 const harness = @import("ra8_session").harness;
 const served_camera = @import("served_camera.zig");
+const served_usbip = @import("served_usbip.zig");
 const board_rtc = @import("ra8_session").board.rtc;
 const session_plug = @import("ra8_session").board.plug;
 const cpu1_bringup = @import("ra8_session").cpu1.bringup;
@@ -183,6 +184,12 @@ pub const Served = struct {
         self.context.host_clock = .{ .context = self, .nowFn = hostClock };
     }
 
+    /// Records the USB/IP bridge the application has put on the board's USB
+    /// tick, when the session keeps a history.
+    pub fn attachUsbip(self: *Served) !void {
+        try served_usbip.attach(self);
+    }
+
     /// Sample CPU0's call stacks every `every` instructions and answer `folded`
     /// from them (RA8EMU-833), tagged with the ThreadX thread when the image has one.
     /// Name loaded ThreadX modules from their paired ELFs (RA8EMU-1141);
@@ -262,6 +269,7 @@ pub const Served = struct {
             p.deinit();
             self.frames = null;
         }
+        served_usbip.release(self);
         if (self.bridge) |*b| b.deinit();
         if (self.stacks) |stacks| {
             self.owner.unsampleStacks(stacks);

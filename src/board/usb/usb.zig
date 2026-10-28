@@ -15,6 +15,7 @@ const usb_echo_far = @import("ra8_components").usb.echo.far;
 const usb_loop_cable = @import("ra8_components").usb.loop_cable;
 const usb_stick = @import("ra8_components").usb.stick;
 pub const plug = @import("plug.zig");
+pub const traffic = @import("traffic.zig");
 
 pub const Due = Bounded(u16, 1);
 
@@ -27,6 +28,9 @@ pub const event = struct {
 pub const Hook = struct {
     context: *anyopaque,
     pollFn: *const fn (*anyopaque, *usbfs.Device, *const usbfs.host.Host) void,
+    /// What the recorded port needs from a bridge (row 24); null for a
+    /// hook that cannot be recorded.
+    port: ?traffic.Port = null,
 };
 
 pub const Usb = struct {

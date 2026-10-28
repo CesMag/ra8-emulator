@@ -13,6 +13,7 @@ const card_apps = @import("ra8_rpc").card_apps;
 const txm_debug = @import("ra8_session").txm.debug;
 const session_api = @import("ra8_session").api;
 const elf = @import("ra8_board").image.elf;
+const usbip_run = @import("ra8_usbip").exported.run;
 
 pub const usage =
     \\usage: ra8_emulator serve [--profile-folded] [--cpu1 CPU1.elf] --stdio <firmware.elf>
@@ -31,7 +32,7 @@ pub const usage =
 ;
 
 const Where = union(enum) { stdio, listen: listen.Spec };
-const Asked = struct { where: Where, elf: []const u8, folded: bool = false, cpu1: ?[]const u8 = null, sdhi: card_setup.Sdhi = .{}, allow_state_files: bool = false, history: ?[]const u8 = null, history_off: bool = false, checkpoint_every: u32 = 64, history_budget: ?u64 = null, ram_budget: ?u64 = null, kept: bool = false, reopen: ?[]const u8 = null, frame_hz: ?u32 = null };
+const Asked = struct { where: Where, elf: []const u8, folded: bool = false, cpu1: ?[]const u8 = null, sdhi: card_setup.Sdhi = .{}, allow_state_files: bool = false, history: ?[]const u8 = null, history_off: bool = false, checkpoint_every: u32 = 64, history_budget: ?u64 = null, ram_budget: ?u64 = null, kept: bool = false, reopen: ?[]const u8 = null, frame_hz: ?u32 = null, usbip: ?u16 = null };
 
 /// Samples taken one every this many instructions under --profile-folded.
 pub const fold_every: u32 = 1000;
@@ -49,6 +50,7 @@ pub fn parse(argv: []const []const u8) ?Asked {
     var kept = false;
     var reopen: ?[]const u8 = null;
     var frame_hz: ?u32 = null;
+    var usbip: ?u16 = null;
     var checkpoint_every: u32 = 64;
     var history_budget: ?u64 = null;
     var ram_budget: ?u64 = null;
@@ -77,6 +79,9 @@ pub fn parse(argv: []const []const u8) ?Asked {
         } else if (std.mem.eql(u8, argv[at], "--frame-hz") and frame_hz == null and valued) {
             at += 1;
             frame_hz = std.fmt.parseInt(u32, argv[at], 10) catch return null;
+        } else if (std.mem.eql(u8, argv[at], "--usbip") and usbip == null and valued) {
+            at += 1;
+            usbip = std.fmt.parseInt(u16, argv[at], 10) catch return null;
         } else if (std.mem.eql(u8, argv[at], "--reopen") and reopen == null and valued) {
             at += 1;
             reopen = argv[at];
@@ -92,14 +97,7 @@ pub fn parse(argv: []const []const u8) ?Asked {
             ram_budget = std.fmt.parseInt(u64, argv[at], 10) catch return null;
         } else break;
     }
-    // Drop the options; the transport then sits at index 2 as before.
-    var rest: [5][]const u8 = undefined;
-    const left = argv.len - at;
-    if (left > 3) return null;
-    rest[0] = argv[0];
-    rest[1] = argv[1];
-    @memcpy(rest[2..][0..left], argv[at..]);
-    var asked = parseWhere(rest[0 .. 2 + left]) orelse return null;
+    var asked = parseTail(argv, at) orelse return null;
     asked.folded = folded;
     asked.allow_state_files = allow_state;
     asked.history = history_root;
@@ -112,7 +110,20 @@ pub fn parse(argv: []const []const u8) ?Asked {
     asked.kept = kept;
     asked.reopen = reopen;
     asked.frame_hz = frame_hz;
+    asked.usbip = usbip;
     return if (consistent(asked)) asked else null;
+}
+
+/// The transport and image after the options: they are dropped, so the
+/// transport sits at index 2 as before.
+fn parseTail(argv: []const []const u8, at: usize) ?Asked {
+    var rest: [5][]const u8 = undefined;
+    const left = argv.len - at;
+    if (left > 3) return null;
+    rest[0] = argv[0];
+    rest[1] = argv[1];
+    @memcpy(rest[2..][0..left], argv[at..]);
+    return parseWhere(rest[0 .. 2 + left]);
 }
 
 /// Whether the history options make sense together.
@@ -155,6 +166,9 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         std.debug.print("{s}", .{usage});
         return 2;
     };
+    // Declared before the session so the bridge outlives the session's release of it.
+    var bridges = std.heap.ArenaAllocator.init(allocator);
+    defer bridges.deinit();
     var setup: served_setup.Served = undefined;
     const history_opts: ?served_setup.HistoryOpts = if (asked.history) |root|
         .{ .root = root, .checkpoint_every = asked.checkpoint_every, .budget = asked.history_budget, .kept = asked.kept, .reopen = asked.reopen, .frame_hz = asked.frame_hz }
@@ -167,6 +181,16 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         return 1;
     };
     defer setup.deinit();
+    if (asked.usbip) |port| {
+        usbip_run.install(&setup.owner.board().usb, bridges.allocator(), io, port) catch |err| {
+            std.debug.print("serve: cannot export the FS device: {s}\n", .{@errorName(err)});
+            return 1;
+        };
+        setup.attachUsbip() catch |err| {
+            std.debug.print("serve: cannot record the USB/IP bridge: {s}\n", .{@errorName(err)});
+            return 1;
+        };
+    }
     card_setup.prepareSdhi(setup.owner.board(), io, asked.sdhi) catch |err| {
         std.debug.print("serve: cannot fill the SD card: {s}\n", .{@errorName(err)});
         return 1;
