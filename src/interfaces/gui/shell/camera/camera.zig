@@ -182,7 +182,10 @@ pub const Camera = struct {
                 self.running = self.asked_kind;
                 self.status = .switched;
             },
-            .err => self.back(.refused),
+            .err => {
+                self.wants = if (file.takesFile(self.asked_kind)) self.asked_kind else null;
+                self.back(.refused);
+            },
         }
     }
 

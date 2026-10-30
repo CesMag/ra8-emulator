@@ -108,6 +108,30 @@ test "a new path for the running kind opens it again" {
     try std.testing.expectEqualStrings("dog.png", camera.args.image);
 }
 
+test "a refused file source accepts a corrected path and switches after success" {
+    var wire: Wire = .{};
+    try wire.open();
+    defer wire.close();
+    var camera: Camera = .{};
+    camera.args.image = "bad.png";
+    camera.panel.pick(.image);
+    camera.attach(&wire.link);
+    camera.observe(.{ .response = .{ .id = camera.asked.?, .result = .{ .err = @fromBackingInt(@intCast(0x0100)) } } });
+    try std.testing.expectEqual(shell_camera.Status.refused, camera.status);
+    try std.testing.expectEqual(Kind.gradient, camera.panel.active);
+    var file: CameraFile = .{};
+    try file.init();
+    try submit(&file, &camera, "ok.png");
+    try std.testing.expect(file.apply(&camera));
+    try std.testing.expectEqualStrings("ok.png", camera.args.image);
+    camera.attach(&wire.link);
+    try std.testing.expectEqual(Kind.image, camera.asked_kind);
+    camera.observe(.{ .response = .{ .id = camera.asked.?, .result = .{ .ok = "" } } });
+    try std.testing.expectEqual(shell_camera.Status.switched, camera.status);
+    try std.testing.expectEqual(Kind.image, camera.running);
+    try std.testing.expectEqual(Kind.image, camera.panel.active);
+}
+
 test "each file kind keeps its own path" {
     var camera: Camera = .{};
     var file: CameraFile = .{};
