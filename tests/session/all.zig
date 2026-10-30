@@ -64,6 +64,7 @@ test {
     _ = @import("history/shadow_oracle_test.zig");
     _ = @import("history/window_delta_test.zig");
     _ = @import("history/window_port_test.zig");
+    _ = @import("history/window_rig_test.zig");
     _ = @import("history/window_engine_test.zig");
     _ = @import("history/window_record_test.zig");
     _ = @import("history/window_rebuild_test.zig");

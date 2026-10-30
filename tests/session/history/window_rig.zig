@@ -1,4 +1,4 @@
-//! The machine the reverse-window tests drive: the display image with a
+//! The machine the reverse-window tests drive: a minimal boot image with a
 //! counting loop in SRAM (every iteration writes guest memory, and the
 //! board ticks every 64 cycles), a small external memory so a whole save
 //! stream is cheap, the joined trail armed on the machine store, and a
@@ -12,12 +12,15 @@ const port_mod = ra8.session.history_window_port;
 const engine = ra8.session.history_window_engine;
 const memmap = ra8.chip.core.memmap;
 
-pub const image_path = "tests/fixtures/display/ra8_ui.elf";
+// Only the vector table boots this machine; countFixture replaces execution
+// before any image instruction runs. Keep the image small: every full and
+// side save hashes its immutable ELF identity, even for a single-slot step.
+pub const image_path = "tests/fixtures/gpio/blink.elf";
 
 pub const profile =
     \\# Window test board, profile format version 1.
     \\version=1
-    \\ospi=size:16777216,width:8,clock_hz:166666667,latency_cycles:8,burst:incrementing16
+    \\ospi=size:1048576,width:8,clock_hz:166666667,latency_cycles:8,burst:incrementing16
     \\sdram=size:1048576,width:32,clock_hz:133000000,latency_cycles:3,burst:incrementing16
     \\memory_window_cycles=1000000
     \\panel=none
@@ -176,7 +179,7 @@ pub const Rig = struct {
     }
 };
 
-/// The display image's entry becomes `ldr r0,[r1]; adds r0,#1; str
+/// The boot image's entry becomes `ldr r0,[r1]; adds r0,#1; str
 /// r0,[r1]; b` back: every iteration writes guest memory and retires four
 /// instructions, and the board ticks every 64 cycles.
 pub fn countFixture(opened: *harness_mod.Harness) !void {
