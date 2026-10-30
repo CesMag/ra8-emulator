@@ -335,6 +335,7 @@ test {
     _ = @import("interfaces/rpc/served_camera_test.zig");
     _ = @import("interfaces/rpc/served_usbip_test.zig");
     _ = @import("interfaces/rpc/regression_replay_test.zig");
+    _ = @import("interfaces/rpc/regression_rig_test.zig");
     _ = @import("interfaces/rpc/history_validity_test.zig");
     _ = @import("interfaces/rpc/frame_pipeline_test.zig");
     _ = @import("interfaces/rpc/history_off_nodisk_test.zig");

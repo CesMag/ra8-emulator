@@ -11,6 +11,23 @@ pub const image = "tests/fixtures/gpio/blink.elf";
 pub const dual_image = "tests/fixtures/trustzone/cpu1_pingpong_ipc.elf";
 pub const dual_second = @embedFile("../../fixtures/trustzone/cpu1_pingpong_ipc_cpu1.elf");
 
+// Blink uses on-chip memory only. Keep unused external memory small while
+// retaining every configured byte in the unmodified snapshot/digest path.
+// Explicit profiles and actual dual-core fixtures retain their own geometry.
+pub const small_profile =
+    \\version=1
+    \\ospi=size:1048576,width:8,clock_hz:166666667,latency_cycles:8,burst:incrementing16
+    \\sdram=size:1048576,width:32,clock_hz:133000000,latency_cycles:3,burst:incrementing16
+    \\memory_window_cycles=1000000
+    \\led=P600,0x001F,LED1 BLUE
+    \\led=P303,0x07E0,LED2 GREEN
+    \\led=PA07,0xF800,LED3 RED
+    \\switch=P009,SW1
+    \\switch=P008,SW2
+    \\panel=ek_ra8d2
+    \\companion=c6@uart:sci2
+;
+
 /// The second byte of the literal that holds the counter's address, 0x22000100.
 const patched_at: usize = 0x135;
 
@@ -22,7 +39,7 @@ pub const Recorded = struct {
     base: history.base.Base,
 
     pub fn open(gpa: std.mem.Allocator, runs: usize) !*Recorded {
-        return openProfile(gpa, runs, null);
+        return openProfile(gpa, runs, small_profile);
     }
 
     pub fn openProfile(gpa: std.mem.Allocator, runs: usize, profile: ?[]const u8) !*Recorded {

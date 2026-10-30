@@ -81,7 +81,7 @@ test "checkpoint format and original image gates precede rebuilt image and host 
     const recorded = try rig.Recorded.open(gpa, 3);
     defer recorded.close(gpa);
     var served: ra8.rpc.served_setup.Served = undefined;
-    try served.open(gpa, std.testing.io, rig.image, null, null);
+    try served.open(gpa, std.testing.io, rig.image, rig.small_profile, null);
     defer served.deinit();
     var stream: std.Io.Writer.Allocating = .init(gpa);
     defer stream.deinit();
