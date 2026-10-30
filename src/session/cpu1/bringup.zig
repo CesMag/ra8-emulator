@@ -16,6 +16,8 @@ const watch_bus = @import("../watch/bus.zig");
 const rtos_hook = @import("../rtos/hook.zig");
 const rtos_publish = @import("../rtos/publish.zig");
 const Guest = @import("ra8_chip").core.cpu.memory.guest.Guest;
+const symbols = @import("../symbols.zig");
+const widget_tree = @import("../widget_tree.zig");
 
 /// Holds what CPU1 runs on; it stays put while the session has it.
 pub const Cpu1 = struct {
@@ -64,6 +66,7 @@ pub const Cpu1 = struct {
         @import("ra8_chip").core.scheduler.pairEvents(opened.primaryCpu(), cpu1);
         self.paired = opened.primaryCpu();
         const live = opened.session();
+        live.widget_tree_addresses[1] = symbols.addressOf(self.image.?, widget_tree.symbol);
         live.live.other = .{ .core = .{ .cpu = cpu1 }, .machine = &self.machine, .watch = &self.watching, .index = 1, .budget = live.live.budget };
         opened.attachCore(.cpu1, cpu1, self.pair.guest());
         opened.bindSecondDriver(&self.pair);
