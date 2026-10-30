@@ -142,6 +142,27 @@ test "a press in the camera leaf picks in its panel; one elsewhere does not" {
     try std.testing.expectEqual(gui_app.camera.panel.Kind.pipe, camera.panel.active);
 }
 
+test "reselecting the running source dismisses a refused file target without reopening" {
+    const gpa = std.testing.allocator;
+    var layout = try cameraLayout(gpa);
+    defer layout.deinit();
+    var solved = try frame.solve(&layout, gpa, 480, 320);
+    defer solved.deinit(gpa);
+    const at = shell_camera.layoutIn(try cameraBody(&layout, &solved));
+    for ([_]gui_app.camera.panel.Kind{ .video, .gradient }) |kind| {
+        var camera: Camera = .{};
+        camera.panel.active = kind;
+        camera.running = kind;
+        camera.wants = .image;
+        const button = at.source(kind);
+        try std.testing.expect(camera.clickIn(&layout, &solved, button.x + 1, button.y + 1));
+        try std.testing.expectEqual(@as(?gui_app.camera.panel.Kind, null), camera.wants);
+        try std.testing.expectEqual(@as(u32, 0), camera.panel.changes);
+        try std.testing.expectEqual(kind, camera.panel.active);
+        try std.testing.expectEqual(if (kind == .video) @as(?gui_app.camera.panel.Kind, .video) else null, shell_camera.file.target(&camera));
+    }
+}
+
 /// The leaf as ra8_gui starts it in `project` with `--camera-source webcam`.
 fn startOnWebcam(camera: *Camera, project: std.Io.Dir) void {
     camera.kept = .begin(std.testing.io, project, &camera.panel);

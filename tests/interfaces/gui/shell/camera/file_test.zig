@@ -132,6 +132,37 @@ test "a refused file source accepts a corrected path and switches after success"
     try std.testing.expectEqual(Kind.image, camera.panel.active);
 }
 
+test "a successful source retires the file kind from an earlier refusal" {
+    for ([_]Kind{ .video, .gradient }) |kind| {
+        var wire: Wire = .{};
+        try wire.open();
+        defer wire.close();
+        var camera: Camera = .{};
+        camera.running = .pipe;
+        camera.panel.active = .pipe;
+        camera.args.image = "bad.png";
+        camera.args.video = "old.y4m";
+        camera.panel.pick(.image);
+        camera.attach(&wire.link);
+        camera.observe(.{ .response = .{ .id = camera.asked.?, .result = .{ .err = @fromBackingInt(@intCast(0x0100)) } } });
+        try std.testing.expectEqual(@as(?Kind, .image), camera.wants);
+
+        camera.panel.pick(kind);
+        camera.attach(&wire.link);
+        camera.observe(.{ .response = .{ .id = camera.asked.?, .result = .{ .ok = "" } } });
+        try std.testing.expectEqual(shell_camera.Status.switched, camera.status);
+        try std.testing.expectEqual(kind, camera.running);
+        try std.testing.expectEqual(@as(?Kind, null), camera.wants);
+        var file: CameraFile = .{};
+        try file.init();
+        try submit(&file, &camera, "new.y4m");
+        try std.testing.expectEqual(kind == .video, file.apply(&camera));
+        try std.testing.expectEqualStrings("bad.png", camera.args.image);
+        try std.testing.expectEqualStrings(if (kind == .video) "new.y4m" else "old.y4m", camera.args.video);
+        try std.testing.expectEqual(kind, camera.panel.active);
+    }
+}
+
 test "each file kind keeps its own path" {
     var camera: Camera = .{};
     var file: CameraFile = .{};

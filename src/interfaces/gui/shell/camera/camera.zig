@@ -65,7 +65,7 @@ pub const Camera = struct {
     asked: ?u32 = null,
     asked_kind: Kind = .gradient,
     status: Status = .idle,
-    /// The kind last picked without a file, waiting for its path.
+    /// A file kind waiting for a missing or corrected path.
     wants: ?Kind = null,
 
     listings: Listings = .{},
@@ -180,6 +180,7 @@ pub const Camera = struct {
         switch (response.result) {
             .ok => {
                 self.running = self.asked_kind;
+                self.wants = null;
                 self.status = .switched;
             },
             .err => {
@@ -220,7 +221,11 @@ pub const Camera = struct {
             const body = shell_frame.bodyOf(placed.area);
             if (body.contains(x, y)) {
                 defer if (self.kept) |*kept| kept.follow(&self.panel);
-                if (camera_view.click(&self.panel, layoutIn(body), x, y)) return true;
+                const at = layoutIn(body);
+                if (camera_view.click(&self.panel, at, x, y)) {
+                    if (at.source(self.running).contains(x, y)) self.wants = null;
+                    return true;
+                }
                 const names = self.mediaNames();
                 const stack = camera_barrel.rows.stackFor(body, self.devices().len, names.len) orelse return false;
                 if (stack.device()) |row| if (camera_barrel.rows.hitDevices(row, self.devices(), x, y)) |d| {
