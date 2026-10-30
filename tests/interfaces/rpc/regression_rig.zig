@@ -8,6 +8,8 @@ const ra8 = @import("ra8");
 const history = ra8.host.history;
 
 pub const image = "tests/fixtures/gpio/blink.elf";
+pub const dual_image = "tests/fixtures/trustzone/cpu1_pingpong_ipc.elf";
+pub const dual_second = @embedFile("../../fixtures/trustzone/cpu1_pingpong_ipc_cpu1.elf");
 
 /// The second byte of the literal that holds the counter's address, 0x22000100.
 const patched_at: usize = 0x135;
@@ -24,6 +26,14 @@ pub const Recorded = struct {
     }
 
     pub fn openProfile(gpa: std.mem.Allocator, runs: usize, profile: ?[]const u8) !*Recorded {
+        return openImages(gpa, runs, profile, image, null);
+    }
+
+    pub fn openDual(gpa: std.mem.Allocator, runs: usize) !*Recorded {
+        return openImages(gpa, runs, null, dual_image, dual_second);
+    }
+
+    fn openImages(gpa: std.mem.Allocator, runs: usize, profile: ?[]const u8, first: []const u8, second: ?[]const u8) !*Recorded {
         const self = try gpa.create(Recorded);
         errdefer gpa.destroy(self);
         self.temp = std.testing.tmpDir(.{});
@@ -32,12 +42,20 @@ pub const Recorded = struct {
         errdefer gpa.free(self.root);
         {
             var served: ra8.rpc.served_setup.Served = undefined;
-            try served.open(gpa, std.testing.io, image, profile, .{ .root = self.root, .checkpoint_every = 1, .kept = true });
+            try served.openInitial(gpa, std.testing.io, first, profile, .{ .root = self.root, .checkpoint_every = 1, .kept = true }, if (second) |bytes| .{ .bytes = bytes } else null);
             defer served.deinit();
             const session = served.owner.session();
             try session.setRunBudget(.cpu0, 40_000);
             _ = try session.run(.cpu0, .run);
             for (1..runs) |_| _ = try session.run(.cpu0, .cont);
+            if (second != null) {
+                try std.testing.expect(served.owner.primaryCpu().slots > 0);
+                try std.testing.expect(served.second.?.cpu().slots > 0);
+                try std.testing.expect(served.owner.primaryCpu().retired > 0);
+                try std.testing.expect(served.second.?.cpu().retired > 0);
+                try std.testing.expect(session.persistent_recorder != null);
+                try std.testing.expect(!served.history.?.detached);
+            }
         }
         self.base = try history.base.Base.existing(gpa, std.testing.io, self.root, .cache);
         errdefer self.base.close();

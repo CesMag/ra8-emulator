@@ -20,6 +20,12 @@ pub fn open(driver: *Driver, allocator: std.mem.Allocator, io: std.Io, dir: std.
 pub fn openIdentified(driver: *Driver, allocator: std.mem.Allocator, io: std.Io, dir: std.Io.Dir, wiring: Wiring, path: []const u8, memory: Guest) ![16]u8 {
     const bytes = try dir.readFileAlloc(io, path, allocator, .limited(second_core.limits.image_bytes));
     defer allocator.free(bytes);
+    return openBytes(driver, wiring, bytes, memory);
+}
+
+/// Open CPU1 from caller-owned bytes, without host access. The driver
+/// consumes the loaded segments before returning and borrows no ELF bytes.
+pub fn openBytes(driver: *Driver, wiring: Wiring, bytes: []const u8, memory: Guest) ![16]u8 {
     const loaded = try loader.read(try elf.Image.init(bytes));
     try driver.open(wiring, loaded.image(), memory);
     return @import("ra8_board").snapshot.run.imageIdentity(bytes);

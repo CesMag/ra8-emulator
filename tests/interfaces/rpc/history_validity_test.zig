@@ -51,7 +51,6 @@ test "recorded validity and every unsupported configuration fail before image or
         .{ .value = changed(changed(r, "input_script", "script"), "input_hash", root.identity("script")), .err = error.UnsupportedRootInput },
         .{ .value = changed(changed(r, "camera", "webcam:0"), "camera_hash", root.identity("webcam:0")), .err = error.UnsupportedRootCamera },
         .{ .value = changed(r, "skip_flags", 1), .err = error.UnsupportedRootSkipFlags },
-        .{ .value = changed(r, "elf1", @as(?root.Image, r.elf0)), .err = error.SecondCoreRecorded },
     };
     for (cases) |case| {
         try recorded.writeRoot(case.value);
@@ -122,4 +121,45 @@ fn expectRejection(recorded: *const rig.Recorded, expected: anyerror) !void {
     try std.testing.expectError(expected, ra8.rpc.regression_replay.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), "missing-rebuilt.elf", .{ .prepare = .{ .context = &host, .prepareFn = Host.prepare } }));
     try std.testing.expect(!host.called);
     try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+}
+
+test "dual root CPU1 identity and version gates precede rebuilt and host access" {
+    const recorded = try rig.Recorded.openDual(gpa, 3);
+    defer recorded.close(gpa);
+    const bytes = try recorded.rootBytes(gpa);
+    defer gpa.free(bytes);
+    // The last 16 bytes identify CPU1. Corrupt the identity, not its ELF.
+    bytes[bytes.len - 1] ^= 1;
+    try recorded.writeFile("root.bin", bytes);
+    try expectRejection(recorded, error.ImageMismatch);
+    bytes[bytes.len - 1] ^= 1;
+    var r = try root.decode(bytes);
+    r.snapshot_version += 1;
+    try recorded.writeRoot(r);
+    try expectRejection(recorded, error.SnapshotVersionMismatch);
+    bytes[0] ^= 1;
+    try recorded.writeFile("root.bin", bytes);
+    try expectRejection(recorded, error.BadVersion);
+}
+
+test "dual checkpoint CPU1 identity and snapshot version precede rebuilt and host access" {
+    const recorded = try rig.Recorded.openDual(gpa, 3);
+    defer recorded.close(gpa);
+    var served: ra8.rpc.served_setup.Served = undefined;
+    try served.openInitial(gpa, std.testing.io, rig.dual_image, null, null, .{ .bytes = rig.dual_second });
+    defer served.deinit();
+    var stream: std.Io.Writer.Allocating = .init(gpa);
+    defer stream.deinit();
+    try served.owner.state.files.writeTo(&stream.writer);
+    const bytes = stream.written();
+    const image = (try ra8.snapshot.file.Reader.find(bytes, .image)).?;
+    // The final optional image hash is CPU1's, not CPU0's.
+    const last = @intFromPtr(image.payload.ptr) - @intFromPtr(bytes.ptr) + image.payload.len - 1;
+    bytes[last] ^= 1;
+    try recorded.checkpointLog(.{}, bytes);
+    try expectRejection(recorded, error.ImageMismatch);
+    bytes[last] ^= 1;
+    bytes[ra8.snapshot.file.magic.len] ^= 1;
+    try recorded.checkpointLog(.{}, bytes);
+    try expectRejection(recorded, error.BadVersion);
 }

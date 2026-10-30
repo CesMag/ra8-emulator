@@ -10,8 +10,8 @@
 //! session over the rebuilt image. This is not what loading a different
 //! image does; that starts a new history (session/new_history.zig).
 //!
-//! Only the history's root line is replayed, and a history that recorded
-//! a second core is refused: the replay machine is one core.
+//! Only the history's root line is replayed. CPU1, when recorded, runs
+//! offline from its original root bytes beside the rebuilt CPU0 image.
 const std = @import("std");
 const session_lib = @import("ra8_session");
 const history = @import("ra8_host").history;
@@ -33,8 +33,6 @@ const symbols = session_lib.symbols;
 const Position = session_lib.history_position.Position;
 
 pub const Error = validity.Error || error{
-    /// The history recorded a second core; the replay machine is one core.
-    SecondCoreRecorded,
     /// The session holds no root record to take its image from.
     NoRoot,
     /// A checkpoint the log names has no object to compare against.
@@ -116,7 +114,6 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     const store = history.storage.Store.from(&opened);
     const root_bytes = (try history.branches_file.readAlloc(io, dir, history.layout.files.root, keep)) orelse return Error.NoRoot;
     const root = try history_root.decode(root_bytes);
-    if (root.elf1 != null) return Error.SecondCoreRecorded;
     try validity.check(root);
     const log = try history_segments.readAll(keep, store);
     const found = try seek_facts.gather(allocator, log);
@@ -127,7 +124,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     const rebuilt = try std.Io.Dir.cwd().readFileAlloc(io, rebuilt_path, keep, .limited(history_root.max_elf));
 
     var served: served_setup.Served = undefined;
-    try served.open(allocator, io, rebuilt_path, root.board_profile, .{ .ram_budget = options.ram_budget, .checkpoint_every = never, .elf_bytes = rebuilt });
+    try served.openInitial(allocator, io, rebuilt_path, root.board_profile, .{ .ram_budget = options.ram_budget, .checkpoint_every = never, .elf_bytes = rebuilt }, if (root.elf1) |image| .{ .bytes = image.bytes } else null);
     defer served.deinit();
     if (options.prepare) |hook| try hook.prepareFn(hook.context, &served, log);
     const session = served.owner.session();
@@ -144,7 +141,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
         .elf = try elf_compare.compare(allocator, root.elf0.bytes, rebuilt),
         .divergence = null,
     };
-    const images = Images{ .original = try elf.Image.init(root.elf0.bytes), .rebuilt = served.owner.image() };
+    const images = Images{ .original = try elf.Image.init(root.elf0.bytes), .rebuilt = served.owner.image(), .second = if (served.second) |cpu1| cpu1.image else null };
     for (line) |checkpoint| {
         if (try compareAt(allocator, keep, &served, store, images, checkpoint, &result)) break;
     }
@@ -154,6 +151,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
 const Images = struct {
     original: elf.Image,
     rebuilt: elf.Image,
+    second: ?elf.Image,
 
     fn mask(self: Images) state_memory.Mask {
         return .{ .a = self.original, .b = self.rebuilt };
@@ -183,6 +181,9 @@ fn checkLine(gpa: std.mem.Allocator, io: std.Io, store: history.storage.Store, r
     // run. elf_bytes and profile text need no host files or live adapters.
     var validator = try session_lib.harness.open(gpa, io, .{ .elf_path = "", .elf_bytes = root.elf0.bytes, .board_profile = root.board_profile });
     defer validator.deinit();
+    var second: session_lib.cpu1.bringup.Cpu1 = .{};
+    if (root.elf1) |image| try second.openBytes(gpa, &validator, image.bytes);
+    defer if (root.elf1 != null) second.close(gpa);
     for (line) |c| {
         if (c.position.phase != .cpu0 or c.position.o != 0 or c.position.gap != .retired) return Error.UnsupportedCheckpointPosition;
         const bytes = try readCheckpoint(gpa, store, c);
@@ -235,7 +236,7 @@ fn compareAt(allocator: std.mem.Allocator, keep: std.mem.Allocator, served: *ser
         .pc_actual = pc_actual,
         .place = if (found) |f| f.place else null,
         .stopped = if (stopped) |tag| try keep.dupe(u8, tag) else null,
-        .symbol = try symbolAt(keep, images.rebuilt, pc_actual),
+        .symbol = if (core == 1) (if (images.second) |image| try symbolAt(keep, image, pc_actual) else null) else try symbolAt(keep, images.rebuilt, pc_actual),
     };
     return true;
 }

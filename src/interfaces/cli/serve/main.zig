@@ -176,7 +176,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         .{ .checkpoint_every = asked.checkpoint_every, .ram_budget = asked.ram_budget, .frame_hz = asked.frame_hz }
     else
         null;
-    setup.open(allocator, io, asked.elf, null, history_opts) catch |err| {
+    setup.openInitial(allocator, io, asked.elf, null, history_opts, if (asked.cpu1) |path| .{ .path = path } else null) catch |err| {
         std.debug.print("serve: cannot open {s}: {s}\n", .{ asked.elf, @errorName(err) });
         return 1;
     };
@@ -209,10 +209,6 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
     var armer = BreakArmer{ .session = setup.context.session };
     if (setup.context.modules) |table|
         table.armer = .{ .ctx = &armer, .arm = BreakArmer.arm, .drop = BreakArmer.drop };
-    if (asked.cpu1) |path| setup.openSecond(path) catch |err| {
-        std.debug.print("serve: cannot bring up CPU1 from {s}: {s}\n", .{ path, @errorName(err) });
-        return 1;
-    };
     if (asked.folded) setup.sampleStacks(fold_every) catch |err| {
         std.debug.print("serve: cannot sample stacks: {s}\n", .{@errorName(err)});
         return 1;

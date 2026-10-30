@@ -310,6 +310,7 @@ test {
     _ = @import("session/zig/undefined_sites_test.zig");
     _ = @import("session/zig/snapshot_test.zig");
     _ = @import("session/cpu1/image_test.zig");
+    _ = @import("session/cpu1/bringup_test.zig");
     _ = @import("session/run/clock_test.zig");
     _ = @import("interfaces/cli/report/undefined_test.zig");
     _ = @import("interfaces/cli/cli_test.zig");
@@ -361,6 +362,8 @@ test {
     _ = @import("interfaces/rpc/session/diff_test.zig");
     _ = @import("interfaces/rpc/session/diff_wire_test.zig");
     _ = @import("interfaces/rpc/served_cpu1_test.zig");
+    _ = @import("interfaces/rpc/served_second_test.zig");
+    _ = @import("interfaces/rpc/served_history_test.zig");
     _ = @import("interfaces/rpc/history_bind_test.zig");
     _ = @import("interfaces/rpc/history_bridge_test.zig");
     _ = @import("interfaces/rpc/served_fork_test.zig");

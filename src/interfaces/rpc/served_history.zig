@@ -13,7 +13,6 @@ const session_fork = @import("ra8_session").history_fork_router;
 const session_async = @import("ra8_session").history_async_queue;
 const session_async_traffic = @import("ra8_session").history_async_traffic;
 const history_root = @import("ra8_session").history_root;
-const cpu1_bringup = @import("ra8_session").cpu1.bringup;
 const session_nav = @import("ra8_session").history_nav_index;
 const session_feed = @import("ra8_session").history_nav_feed;
 const session_smooth_rewind = @import("ra8_session").smooth_rewind;
@@ -35,6 +34,7 @@ const initial_camera = "gradient";
 /// identities, new-history hook, bounded async queue, C6 hold, and console stdin.
 pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator, board_profile: ?[]const u8) !void {
     if (self.history == null and self.ram_history == null) return;
+    if (self.history) |b| if (b.reopened and b.root == null) return error.NoRoot;
     const session = self.owner.session();
     self.root = .{
         .snapshot_version = @import("history_validity.zig").snapshot_version,
@@ -50,8 +50,15 @@ pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator, board_pr
             .bytes = self.owner.image().bytes,
         },
     };
+    if (self.second) |cpu1| self.root.elf1 = .{ .identity = history_root.identity(cpu1.bytes), .bytes = cpu1.bytes };
+    if (self.history) |b| if (b.root) |existing| {
+        if (!std.mem.eql(u8, &existing.elf0.identity, &self.root.elf0.identity)) return error.ImageMismatch;
+        if ((existing.elf1 == null) != (self.root.elf1 == null)) return error.ImageMismatch;
+        if (existing.elf1) |image| if (!std.mem.eql(u8, &image.identity, &self.root.elf1.?.identity)) return error.ImageMismatch;
+    };
     session.attachRoot(&self.root);
     session.attachImageIdentity(.cpu0, self.root.elf0.identity);
+    if (self.root.elf1) |image| session.attachImageIdentity(.cpu1, image.identity);
     session.attachNewHistory(.{ .context = self, .startFn = handleNewHistory });
     session.attachAsyncQueue(session_async.AsyncQueue.init(allocator, 0));
     self.owner.board().c6.wire.bridge.hold = .{ .context = session, .heldFn = hostHeld };
@@ -129,7 +136,7 @@ pub fn attachNav(self: *served_setup.Served, allocator: std.mem.Allocator) !void
     const reopened = if (self.history) |b| b.reopened else false;
     // A reopened history already holds its first checkpoint.
     if (!reopened) {
-        if (self.owner.session().live.checkpoints) |cp| cp.checkpointNow() catch {};
+        if (self.owner.session().live.checkpoints) |cp| try cp.checkpointNow();
     }
 
     const cur = self.owner.session().currentPosition();
@@ -214,17 +221,6 @@ pub fn deinitNav(self: *served_setup.Served) void {
         self.gpa.destroy(nav);
         self.nav = null;
         self.owner.session().nav_index = null;
-    }
-}
-
-/// When CPU1 is brought up, updates root and identity for core 1.
-pub fn attachSecond(self: *served_setup.Served, cpu1: *cpu1_bringup.Cpu1) void {
-    if (cpu1.image) |img| {
-        self.root.elf1 = .{
-            .identity = history_root.identity(img.bytes),
-            .bytes = img.bytes,
-        };
-        self.owner.session().attachImageIdentity(.cpu1, self.root.elf1.?.identity);
     }
 }
 

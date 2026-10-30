@@ -36,10 +36,26 @@ pub const Cpu1 = struct {
     /// Bring CPU1 up from the ELF at `path` under `dir` beside `opened`,
     /// park it in the session and give the session back to CPU0.
     pub fn open(self: *Cpu1, allocator: std.mem.Allocator, io: std.Io, dir: std.Io.Dir, opened: *harness.Harness, path: []const u8) !void {
-        self.bytes = try dir.readFileAlloc(io, path, allocator, .limited(second_core.limits.image_bytes));
+        if (opened.session().root != null) return error.HistoryAlreadyRooted;
+        const bytes = try dir.readFileAlloc(io, path, allocator, .limited(second_core.limits.image_bytes));
+        defer allocator.free(bytes);
+        try self.openBytes(allocator, opened, bytes);
+    }
+
+    /// Initial CPU1 creation from offline bytes. Must precede a frozen root;
+    /// this loads initial state directly, without a reload intervention.
+    pub fn openBytes(self: *Cpu1, allocator: std.mem.Allocator, opened: *harness.Harness, bytes: []const u8) !void {
+        if (opened.session().root != null) return error.HistoryAlreadyRooted;
+        if (opened.session().live.other != null) return error.SecondCoreAlreadyOpen;
+        errdefer self.* = .{};
+        self.bytes = try allocator.dupe(u8, bytes);
         errdefer allocator.free(self.bytes);
-        try cpu1_image.open(&self.pair, allocator, io, dir, board_wiring.cpu1(opened.board()), path, opened.guest());
+        _ = try cpu1_image.openBytes(&self.pair, board_wiring.cpu1(opened.board()), self.bytes, opened.guest());
+        errdefer self.pair.close();
         self.image = try elf.Image.init(self.bytes);
+        // Allocate the loaded-image copy before publishing pointers into self.
+        const loaded = try allocator.dupe(u8, self.bytes);
+        opened.state.loading.loaded[1] = loaded;
         const cpu1 = &self.pair.core.cpu;
         self.driver = .{ .machine = &self.machine };
         self.watching = .{ .inner = cpu1.bus, .driver = &self.driver };
@@ -53,8 +69,6 @@ pub const Cpu1 = struct {
         opened.bindSecondDriver(&self.pair);
         opened.state.edge.pair = &self.pair;
         if (live.live.boundary) |*edge| edge.pair = &self.pair;
-        try live.load(.cpu1, self.bytes);
-        try live.switchTo(.cpu0);
     }
 
     pub fn cpu(self: *Cpu1) *cpu_mod.Cpu {

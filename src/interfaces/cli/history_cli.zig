@@ -38,7 +38,8 @@ pub const usage =
     \\       replay-elf runs the session's recorded inputs against the rebuilt
     \\       ELF at PATH without writing the history, and exits 0 when every
     \\       root-line checkpoint matches (at least one) and 3 at the first
-    \\       that does not. Dual-core histories are unsupported. Exit 1
+    \\       that does not. CPU1 runs offline from its recorded root bytes.
+    \\       Exit 1
     \\       reports invalid build/model/snapshot identity, unsupported root
     \\       configuration or no root checkpoints; only ELF identity is overridden.
     \\

@@ -39,6 +39,7 @@ const session_async = @import("ra8_session").history_async_queue;
 const session_async_traffic = @import("ra8_session").history_async_traffic;
 const history_root = @import("ra8_session").history_root;
 const served_history = @import("served_history.zig");
+const served_second = @import("served_second.zig");
 const history = @import("ra8_host").history;
 const history_marker_store = @import("history_marker_store.zig");
 const frame_pipeline = @import("frame_pipeline.zig");
@@ -70,6 +71,9 @@ pub const HistoryOpts = struct {
     /// The image's bytes, when the caller read them already.
     elf_bytes: ?[]const u8 = null,
 };
+
+/// Borrowed startup input; CPU1 copies bytes before openInitial returns.
+pub const SecondImage = served_second.Image;
 
 pub const Served = struct {
     owner: harness.Harness,
@@ -109,6 +113,11 @@ pub const Served = struct {
     /// Open `elf_path` and fill the context. The context points into
     /// `self`, so `self` stays put until `deinit`.
     pub fn open(self: *Served, allocator: std.mem.Allocator, io: std.Io, elf_path: []const u8, board_profile: ?[]const u8, history_opts: ?HistoryOpts) !void {
+        return self.openInitial(allocator, io, elf_path, board_profile, history_opts, null);
+    }
+
+    /// Both images are installed before the root and first checkpoint.
+    pub fn openInitial(self: *Served, allocator: std.mem.Allocator, io: std.Io, elf_path: []const u8, board_profile: ?[]const u8, history_opts: ?HistoryOpts, second_image: ?SecondImage) !void {
         // The history outlives the harness: the armed checkpoints write
         // through its shapes until the harness's teardown disarms, so on
         // an error the harness goes first and the history closes second.
@@ -136,9 +145,6 @@ pub const Served = struct {
         });
         errdefer owner.deinit();
         _ = owner.watchModules();
-        // A session that records history also keeps the reverse window: the
-        // host budget table's window share, planted at the loaded machine.
-        if (history_opts) |opts| try owner.openWindow(try windowBytes(opts));
         const Env = served.Server.Env;
         const rx = try allocator.alloc(u8, 2 * Env.max_frame);
         errdefer allocator.free(rx);
@@ -148,6 +154,11 @@ pub const Served = struct {
         errdefer allocator.free(scratch);
         self.* = .{ .owner = owner, .context = undefined, .rx = rx, .tx = tx, .gpa = allocator, .io = io, .history = bind, .ram_history = ram };
         self.context = .{ .session = self.owner.session(), .scratch = scratch, .state = self.owner.stateFiles(), .gpa = allocator };
+        if (second_image) |image| try served_second.open(self, image);
+        errdefer served_second.close(self);
+        // Seed the reverse window only after both initial images exist.
+        if (history_opts) |opts| try self.owner.openWindow(try windowBytes(opts));
+        if (self.second) |cpu1| if (self.owner.state.window) |window| window.attachSecond(&cpu1.cpu().slots);
         // The transport rides the context so run-control methods route through it (slice 14).
         self.context.transport = self.owner.transport();
         // The history bridge (RA8EMU-1196, slice 17): a session that
@@ -171,6 +182,10 @@ pub const Served = struct {
         };
         errdefer served_prefetch.detach(self);
         try served_prefetch.attach(self, if (history_opts) |o| o.ram_budget else null);
+        try self.attachContext(allocator, board_profile);
+    }
+
+    fn attachContext(self: *Served, allocator: std.mem.Allocator, board_profile: ?[]const u8) !void {
         self.context.wall = .{ .context = self, .nowFn = hostClock };
         self.context.listing = .{ .context = self.owner.plugs(), .listFn = listParts };
         self.context.board_profile = self.owner.boardProfile();
@@ -229,12 +244,7 @@ pub const Served = struct {
     /// Bring CPU1 up from the ELF at `path`, parked until a request runs
     /// it (RA8EMU-1147). Call once, after open and before sampleStacks.
     pub fn openSecond(self: *Served, path: []const u8) !void {
-        const cpu1 = try self.gpa.create(cpu1_bringup.Cpu1);
-        errdefer self.gpa.destroy(cpu1);
-        cpu1.* = .{};
-        try cpu1.open(self.gpa, self.io, std.Io.Dir.cwd(), &self.owner, path);
-        self.second = cpu1;
-        served_history.attachSecond(self, cpu1);
+        try served_second.open(self, .{ .path = path });
     }
 
     /// The host clock the lcd_dirty rate measures against (RA8EMU-822).

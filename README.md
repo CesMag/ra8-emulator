@@ -85,10 +85,19 @@ parser. It currently supports the served RA8P1 defaults: virtual RTC pace,
 default RTC start, idle skip, gradient initial camera, and no additional root
 memory/grid/attach/fault/input/vsync/loop-skip configuration. Other root
 settings are rejected before image loading or replay host preparation.
-Only single-core root-line checkpoints at round openings are compared.
-Dual-core and branch-line replay remain unsupported. ELF-loaded read-only
-bytes and load-time copies are masked in comparisons, so writes to those
+Single- and dual-core root-line checkpoints at round openings are compared.
+CPU0 uses the rebuilt ELF; CPU1 uses its recorded root bytes offline, with
+both image identities checked before rebuilt-image or host preparation.
+The normal scheduler preserves CPU1 reset hold and firmware release. Both
+cores' registers, private/shared memory and board state are compared;
+divergence PCs and symbols belong to the reported core. Branch-line replay
+and a rebuilt CPU1 image remain unsupported. CPU0 ELF-loaded read-only
+bytes and load-time copies are masked only in CPU0 memory, so writes to those
 addresses, including RAM code and flash programming, remain unchecked.
+CPU1 memory has no image exclusions. Served dual recordings must supply
+both images at creation (`serve --cpu1`, or `Served.openInitial`); attaching
+CPU1 after a history root is frozen fails with `HistoryAlreadyRooted`.
+Existing histories are never upgraded or rewritten to add CPU1.
 
 ## Library
 

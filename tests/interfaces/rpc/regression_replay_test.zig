@@ -102,3 +102,94 @@ test "one patched literal diverges at the memory it moved and leaves the history
     try std.testing.expectEqual(@as(u8, 0), spot.actual);
     try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
 }
+
+test "two executed cores replay twice from frozen bytes with the original tree unchanged" {
+    const gpa = std.testing.allocator;
+    const recorded = try rig.Recorded.openDual(gpa, 4);
+    defer recorded.close(gpa);
+    const bytes = try recorded.rootBytes(gpa);
+    defer gpa.free(bytes);
+    const root = try ra8.session.history_root.decode(bytes);
+    try std.testing.expectEqualSlices(u8, rig.dual_second, root.elf1.?.bytes);
+    try std.testing.expectEqualSlices(u8, &ra8.session.history_root.identity(rig.dual_second), &root.elf1.?.identity);
+    const before = try rig.hashTree(gpa, recorded.base.dir);
+    for (0..2) |_| {
+        var result = try replay.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), rig.dual_image, .{});
+        defer result.deinit();
+        try std.testing.expectEqual(replay.Verdict.compatible, result.verdict);
+        try std.testing.expect(result.checkpoints > 1);
+        try std.testing.expectEqual(result.checkpoints, result.matched);
+        try std.testing.expect(result.round > 0);
+        try std.testing.expect(result.divergence == null);
+        try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+    }
+}
+
+test "a rebuilt CPU0 reset loop diverges in an executed dual recording" {
+    const gpa = std.testing.allocator;
+    const recorded = try rig.Recorded.openDual(gpa, 4);
+    defer recorded.close(gpa);
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+    const bytes = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, rig.dual_image, gpa, .unlimited);
+    defer gpa.free(bytes);
+    const image = try ra8.board.image.elf.Image.init(bytes);
+    const reset = ra8.session.symbols.addressOf(image, "Reset_Handler").? & ~@as(u32, 1);
+    var patched = false;
+    for (0..image.segmentCount()) |i| {
+        const segment = image.loadSegment(@intCast(i)) orelse continue;
+        if (reset < segment.paddr or reset - segment.paddr + 2 > segment.bytes.len) continue;
+        const offset = @intFromPtr(segment.bytes.ptr) - @intFromPtr(bytes.ptr) + reset - segment.paddr;
+        // Thumb B .: a valid executable rebuild that never leaves reset.
+        @memcpy(bytes[offset..][0..2], &[_]u8{ 0xfe, 0xe7 });
+        patched = true;
+        break;
+    }
+    try std.testing.expect(patched);
+    try temp.dir.writeFile(std.testing.io, .{ .sub_path = "reset-loop.elf", .data = bytes });
+    const path = try temp.dir.realPathFileAlloc(std.testing.io, "reset-loop.elf", gpa);
+    defer gpa.free(path);
+    const before = try rig.hashTree(gpa, recorded.base.dir);
+    var result = try replay.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), path, .{});
+    defer result.deinit();
+    try std.testing.expectEqual(replay.Verdict.diverged, result.verdict);
+    try std.testing.expectEqual(@as(u32, 1), result.matched);
+    const d = result.divergence.?;
+    try std.testing.expectEqual(@as(u8, 0), d.core);
+    try std.testing.expectEqual(reset, d.pc_actual);
+    try std.testing.expectEqualStrings("Reset_Handler", d.symbol.?.name);
+    try std.testing.expectEqual(@as(u32, 0), d.symbol.?.offset);
+    try std.testing.expect(d.place != null);
+    try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+}
+
+const ChangeSecond = struct {
+    pc: u32 = 0,
+    fn prepare(context: *anyopaque, served: *ra8.rpc.served_setup.Served, _: []const u8) anyerror!void {
+        const self: *ChangeSecond = @ptrCast(@alignCast(context));
+        self.pc = served.second.?.cpu().regs.pc;
+        served.second.?.cpu().regs.low[3] ^= 0x42;
+    }
+};
+
+test "CPU1 state divergence reports its own PC and symbol without modifying history" {
+    const gpa = std.testing.allocator;
+    const recorded = try rig.Recorded.openDual(gpa, 3);
+    defer recorded.close(gpa);
+    const before = try rig.hashTree(gpa, recorded.base.dir);
+    var change: ChangeSecond = .{};
+    var result = try replay.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), rig.dual_image, .{ .prepare = .{ .context = &change, .prepareFn = ChangeSecond.prepare } });
+    defer result.deinit();
+    try std.testing.expectEqual(replay.Verdict.diverged, result.verdict);
+    const d = result.divergence.?;
+    try std.testing.expectEqual(@as(u32, 0), result.matched);
+    try std.testing.expectEqual(@as(u8, 1), d.core);
+    try std.testing.expectEqual(change.pc, d.pc_expected);
+    try std.testing.expectEqual(change.pc, d.pc_actual);
+    try std.testing.expectEqualStrings("r3", d.place.?.register.name);
+    const image = try ra8.board.image.elf.Image.init(rig.dual_second);
+    const symbol = ra8.session.symbols.inside(image, change.pc & ~@as(u32, 1)).?;
+    try std.testing.expectEqualStrings(symbol.name, d.symbol.?.name);
+    try std.testing.expectEqual(symbol.offset, d.symbol.?.offset);
+    try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+}

@@ -51,7 +51,7 @@ pub fn digest(stream: []const u8, mask: memory.Mask) Error!Digest {
         if (section.kind == .image) continue;
         hasher.update(std.mem.asBytes(&std.mem.nativeToLittle(u32, @backingInt(section.kind))));
         if (isMemory(section.kind)) {
-            memory.hash(&hasher, try memory.parse(section.payload), mask);
+            memory.hash(&hasher, try memory.parse(section.payload), mask.forCore(if (section.kind == .second_memory) 1 else 0));
         } else if (section.kind == .debug_units) {
             var scratch: [debug_scratch]u8 = undefined;
             hasher.update(try withoutRunBookkeeping(section.payload, &scratch));
@@ -124,6 +124,7 @@ pub fn first(expected: []const u8, actual: []const u8, mask: memory.Mask) Error!
         const one = x orelse return try finish(expected, actual, core, .{ .section = y.?.kind });
         const two = y orelse return try finish(expected, actual, core, .{ .section = one.kind });
         if (one.kind != two.kind) return try finish(expected, actual, core, .{ .section = one.kind });
+        core = if (one.kind == .second or one.kind == .second_memory) 1 else 0;
         if (one.kind == .cpu) {
             const ra = try registersOf(one);
             core = ra.core;
@@ -132,17 +133,33 @@ pub fn first(expected: []const u8, actual: []const u8, mask: memory.Mask) Error!
         if (isMemory(one.kind)) {
             const pa = try memory.parse(one.payload);
             const pb = try memory.parse(two.payload);
-            if (memory.firstDifference(pa, pb, mask)) |spot| return try finish(expected, actual, core, .{ .memory = spot });
+            if (memory.firstDifference(pa, pb, mask.forCore(core))) |spot| return try finish(expected, actual, core, .{ .memory = spot });
             if (!std.mem.eql(u8, pa.tail, pb.tail)) return try finish(expected, actual, core, .{ .section = one.kind });
         } else if (one.kind == .debug_units) {
             var scratch: [2][debug_scratch]u8 = undefined;
             const left = try withoutRunBookkeeping(one.payload, &scratch[0]);
             const right = try withoutRunBookkeeping(two.payload, &scratch[1]);
-            if (!std.mem.eql(u8, left, right)) return try finish(expected, actual, core, .{ .section = one.kind });
+            if (!std.mem.eql(u8, left, right)) return try finish(expected, actual, try debugCore(left, right), .{ .section = one.kind });
         } else if (!std.mem.eql(u8, one.payload, two.payload)) {
             return try finish(expected, actual, core, .{ .section = one.kind });
         }
     }
+}
+
+/// Attribute a normalized debug section to the first differing core.
+fn debugCore(left: []const u8, right: []const u8) Error!u8 {
+    var a: fields.Cursor = .{ .bytes = left };
+    var b: fields.Cursor = .{ .bytes = right };
+    const count = try fields.read(u8, &a);
+    if (count != try fields.read(u8, &b)) return 0;
+    for (0..count) |index| {
+        const start_a = a.at;
+        const start_b = b.at;
+        _ = try fields.read(Units, &a);
+        _ = try fields.read(Units, &b);
+        if (!std.mem.eql(u8, left[start_a..a.at], right[start_b..b.at])) return @intCast(index);
+    }
+    return 0;
 }
 
 fn nextSection(reader: *file.Reader) Error!?file.Section {

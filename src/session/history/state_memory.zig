@@ -91,11 +91,18 @@ fn ownBytes(image: elf.Image, address: u32) bool {
 /// The addresses two runs are not compared at: what either image loaded
 /// as its own read-only bytes.
 pub const Mask = struct {
-    a: elf.Image,
-    b: elf.Image,
+    a: ?elf.Image,
+    b: ?elf.Image,
+
+    /// Only CPU0 is rebuilt. CPU1's original bytes compare without any
+    /// exclusions, including private addresses covered by CPU0's image.
+    pub fn forCore(self: Mask, core: u8) Mask {
+        return if (core == 0) self else .{ .a = null, .b = null };
+    }
 
     pub fn skips(self: Mask, address: u32) bool {
-        return ownBytes(self.a, address) or ownBytes(self.b, address);
+        return (if (self.a) |image| ownBytes(image, address) else false) or
+            (if (self.b) |image| ownBytes(image, address) else false);
     }
 
     fn pageSkipped(self: Mask, from: u32, len: u32) bool {
