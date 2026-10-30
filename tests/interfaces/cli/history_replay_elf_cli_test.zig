@@ -82,3 +82,29 @@ test "a missing ELF is an error and not a verdict" {
     try std.testing.expectError(error.FileNotFound, err);
     try std.testing.expectEqual(@as(usize, 0), sink.written().len);
 }
+
+test "invalid root and empty comparison exit 1 and never emit a verdict" {
+    const root = @import("ra8").session.history_root;
+    const recorded = try rig.Recorded.open(gpa, 3);
+    defer recorded.close(gpa);
+    const bytes = try recorded.rootBytes(gpa);
+    defer gpa.free(bytes);
+    var value = try root.decode(bytes);
+    value.emulator_commit = @splat(0);
+    try recorded.writeRoot(value);
+    const before = try rig.hashTree(gpa, recorded.base.dir);
+    var sink: std.Io.Writer.Allocating = .init(gpa);
+    defer sink.deinit();
+    try std.testing.expectError(error.UnknownBuildIdentity, replay_cli.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), "missing-rebuilt.elf", true, &sink.writer));
+    try std.testing.expectEqual(@as(usize, 0), sink.written().len);
+    try std.testing.expectEqual(@as(u8, 1), try history_cli.run(gpa, std.testing.io, &.{ "ra8_emulator", "history", "--root", recorded.root, "replay-elf", recorded.sessionName(), "--elf", "missing-rebuilt.elf" }));
+    try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+
+    try recorded.writeRoot(try root.decode(bytes));
+    try recorded.writeFile("log/events-0", "");
+    const empty_before = try rig.hashTree(gpa, recorded.base.dir);
+    try std.testing.expectError(error.NoRootCheckpoints, replay_cli.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), rig.image, false, &sink.writer));
+    try std.testing.expectEqual(@as(usize, 0), sink.written().len);
+    try std.testing.expectEqual(@as(u8, 1), try history_cli.run(gpa, std.testing.io, &.{ "ra8_emulator", "history", "--root", recorded.root, "replay-elf", recorded.sessionName(), "--elf", rig.image, "--json" }));
+    try std.testing.expectEqualSlices(u8, &empty_before, &(try rig.hashTree(gpa, recorded.base.dir)));
+}

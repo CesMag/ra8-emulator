@@ -44,6 +44,9 @@ pub const commit_len: usize = 20;
 /// are consumed, so a corrupt length can never make a decoder allocate or
 /// walk past the record.
 pub const max_text: usize = 256;
+/// Full board-profile text, using the existing profile grammar and u16
+/// length on the wire. Older records remain decodable without rewriting.
+pub const max_profile: usize = 4096;
 pub const max_blob: usize = 64 * 1024;
 pub const max_input: usize = 1024 * 1024;
 pub const max_elf: usize = 16 * 1024 * 1024;
@@ -117,7 +120,7 @@ fn checkedLen(comptime W: usize, len: usize) Error!void {
 pub fn check(root: *const Root) Error!void {
     try checkedLen(max_text, root.model_version.len);
     try checkedLen(max_text, root.part.len);
-    try checkedLen(max_text, root.board_profile.len);
+    try checkedLen(max_profile, root.board_profile.len);
     try checkedLen(max_blob, root.memory_config.len);
     try checkedLen(max_blob, root.grid.len);
     try checkedLen(max_blob, root.attaches.len);
@@ -214,7 +217,7 @@ pub fn decode(bytes: []const u8) Error!Root {
     @memcpy(&root.emulator_commit, try c.take(commit_len));
     root.model_version = try readText(&c);
     root.part = try readText(&c);
-    root.board_profile = try readText(&c);
+    root.board_profile = try c.take(try c.length(u16, max_profile));
     root.memory_config = try readBlob(&c, max_blob);
     root.grid = try readBlob(&c, max_blob);
     root.idle_skip = try flag(&c);

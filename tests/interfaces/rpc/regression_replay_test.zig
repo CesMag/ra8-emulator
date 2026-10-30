@@ -8,6 +8,51 @@ const rig = @import("regression_rig.zig");
 
 const replay = ra8.rpc.regression_replay;
 
+test "a non-default recorded board profile is applied to the replay" {
+    const gpa = std.testing.allocator;
+    const profile = "version=1\nmemory_window_cycles=17\n";
+    const recorded = try rig.Recorded.openProfile(gpa, 3, profile);
+    defer recorded.close(gpa);
+    const bytes = try recorded.rootBytes(gpa);
+    defer gpa.free(bytes);
+    const root = try ra8.session.history_root.decode(bytes);
+    try std.testing.expectEqualStrings(profile, root.board_profile);
+    try std.testing.expectEqual(ra8.snapshot.file.version, root.snapshot_version);
+    try std.testing.expect(!std.mem.allEqual(u8, &root.emulator_commit, 0));
+    try std.testing.expectEqual(@as(usize, 64), root.model_version.len);
+    try std.testing.expectEqualStrings("ra8p1", root.part);
+    try std.testing.expectEqual(ra8.session.history_root.Pace.virtual, root.pace);
+    const before = try rig.hashTree(gpa, recorded.base.dir);
+    var result = try replay.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), rig.image, .{});
+    defer result.deinit();
+    try std.testing.expectEqual(replay.Verdict.compatible, result.verdict);
+    try std.testing.expectEqual(@as(u32, 3), result.checkpoints);
+    try std.testing.expectEqual(@as(u32, 3), result.matched);
+    try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+}
+
+test "an empty root line refuses a vacuous compatible verdict without changing history" {
+    const gpa = std.testing.allocator;
+    const recorded = try rig.Recorded.open(gpa, 3);
+    defer recorded.close(gpa);
+    var dir = try recorded.base.dir.openDir(std.testing.io, recorded.sessionName(), .{});
+    defer dir.close(std.testing.io);
+    try dir.writeFile(std.testing.io, .{ .sub_path = "log/events-0", .data = "" });
+    const before = try rig.hashTree(gpa, recorded.base.dir);
+    try std.testing.expectError(error.NoRootCheckpoints, replay.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), rig.image, .{}));
+    try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+}
+
+test "checkpoints only on another branch cannot make the root comparison compatible" {
+    const gpa = std.testing.allocator;
+    const recorded = try rig.Recorded.open(gpa, 3);
+    defer recorded.close(gpa);
+    try recorded.checkpointLog(.{ .branch = 1 }, null);
+    const before = try rig.hashTree(gpa, recorded.base.dir);
+    try std.testing.expectError(error.NoRootCheckpoints, replay.run(gpa, std.testing.io, &recorded.base, recorded.sessionName(), "missing-rebuilt.elf", .{}));
+    try std.testing.expectEqualSlices(u8, &before, &(try rig.hashTree(gpa, recorded.base.dir)));
+}
+
 test "the recorded image replays compatible and leaves the history untouched" {
     const gpa = std.testing.allocator;
     const recorded = try rig.Recorded.open(gpa, 3);

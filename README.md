@@ -68,6 +68,28 @@ Linux) picks another image in the OS's own file dialog, and it opens halted
 the same way. `serve` and `ctl` run a
 session in one process and drive it from another, locally or over TCP.
 
+## Rebuilt-ELF replay
+
+`ra8_emulator history --root DIR replay-elf SESSION --elf REBUILT.elf [--json]`
+opens the history read-only. Exit 0 requires at least one matching root-line
+checkpoint, exit 3 reports the first divergence, and exit 1 reports an error
+such as `NoRootCheckpoints`, `BuildMismatch`, `ModelMismatch`, or an
+`UnsupportedRoot...` configuration. Only the ELF identity is overridden.
+The recorded Git commit, source/compiler/dependency-manifest fingerprint,
+snapshot version and original snapshot image identity must remain valid.
+Historical roots with zero commit or placeholder metadata remain decodable,
+but cannot authorize this comparison and are never rewritten.
+
+Replay applies the recorded board-profile text through the existing profile
+parser. It currently supports the served RA8P1 defaults: virtual RTC pace,
+default RTC start, idle skip, gradient initial camera, and no additional root
+memory/grid/attach/fault/input/vsync/loop-skip configuration. Other root
+settings are rejected before image loading or replay host preparation.
+Only single-core root-line checkpoints at round openings are compared.
+Dual-core and branch-line replay remain unsupported. ELF-loaded read-only
+bytes and load-time copies are masked in comparisons, so writes to those
+addresses, including RAM code and flash programming, remain unchecked.
+
 ## Library
 
 Zig packages can depend on this repository and import its `ra8` module:

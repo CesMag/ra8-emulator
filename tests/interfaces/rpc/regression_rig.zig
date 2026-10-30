@@ -20,6 +20,10 @@ pub const Recorded = struct {
     base: history.base.Base,
 
     pub fn open(gpa: std.mem.Allocator, runs: usize) !*Recorded {
+        return openProfile(gpa, runs, null);
+    }
+
+    pub fn openProfile(gpa: std.mem.Allocator, runs: usize, profile: ?[]const u8) !*Recorded {
         const self = try gpa.create(Recorded);
         errdefer gpa.destroy(self);
         self.temp = std.testing.tmpDir(.{});
@@ -28,7 +32,7 @@ pub const Recorded = struct {
         errdefer gpa.free(self.root);
         {
             var served: ra8.rpc.served_setup.Served = undefined;
-            try served.open(gpa, std.testing.io, image, null, .{ .root = self.root, .checkpoint_every = 1, .kept = true });
+            try served.open(gpa, std.testing.io, image, profile, .{ .root = self.root, .checkpoint_every = 1, .kept = true });
             defer served.deinit();
             const session = served.owner.session();
             try session.setRunBudget(.cpu0, 40_000);
@@ -56,6 +60,45 @@ pub const Recorded = struct {
 
     pub fn sessionName(self: *const Recorded) []const u8 {
         return self.name[0..self.len];
+    }
+
+    pub fn rootBytes(self: *const Recorded, gpa: std.mem.Allocator) ![]u8 {
+        const dir = try self.base.dir.openDir(std.testing.io, self.sessionName(), .{});
+        defer dir.close(std.testing.io);
+        return dir.readFileAlloc(std.testing.io, "root.bin", gpa, .unlimited);
+    }
+
+    pub fn writeRoot(self: *const Recorded, value: ra8.session.history_root.Root) !void {
+        var out: std.Io.Writer.Allocating = .init(std.testing.allocator);
+        defer out.deinit();
+        try ra8.session.history_root.encode(&value, &out.writer);
+        try self.writeFile("root.bin", out.written());
+    }
+
+    pub fn writeFile(self: *const Recorded, path: []const u8, bytes: []const u8) !void {
+        const dir = try self.base.dir.openDir(std.testing.io, self.sessionName(), .{});
+        defer dir.close(std.testing.io);
+        try dir.writeFile(std.testing.io, .{ .sub_path = path, .data = bytes });
+    }
+
+    /// A single checkpoint record for rejection tests, with no live source.
+    pub fn checkpointLog(self: *const Recorded, at: ra8.session.history_position.Position, snapshot: ?[]const u8) !void {
+        var object: [16]u8 = @splat(0);
+        if (snapshot) |bytes| {
+            var hash: [32]u8 = undefined;
+            std.crypto.hash.sha2.Sha256.hash(bytes, &hash, .{});
+            object = hash[0..16].*;
+            var name: [40]u8 = undefined;
+            const hex = std.fmt.bytesToHex(object, .lower);
+            try self.writeFile(try std.fmt.bufPrint(&name, "objects/{s}", .{hex}), bytes);
+        }
+        var payload: std.Io.Writer.Allocating = .init(std.testing.allocator);
+        defer payload.deinit();
+        try ra8.session.history_record.encodeCheckpoint(&payload.writer, .{ .position = at, .seq = 0 }, .{ .id = 0, .object = object });
+        var log: std.Io.Writer.Allocating = .init(std.testing.allocator);
+        defer log.deinit();
+        try ra8.session.history_format.encode(&log.writer, @backingInt(ra8.session.history_record.Kind.checkpoint), payload.written());
+        try self.writeFile("log/events-0", log.written());
     }
 };
 

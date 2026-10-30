@@ -33,11 +33,16 @@ const initial_camera = "gradient";
 
 /// Binds the recording session's lines: router, graph sink, image root,
 /// identities, new-history hook, bounded async queue, C6 hold, and console stdin.
-pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator) !void {
+pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator, board_profile: ?[]const u8) !void {
     if (self.history == null and self.ram_history == null) return;
     const session = self.owner.session();
     self.root = .{
-        .snapshot_version = 1,
+        .snapshot_version = @import("history_validity.zig").snapshot_version,
+        .emulator_commit = @import("history_validity.zig").commit,
+        .model_version = @import("history_validity.zig").model,
+        .part = @tagName(self.owner.board().part),
+        .board_profile = board_profile orelse @import("ra8_board").profile.ek_ra8d2,
+        .pace = .virtual,
         .camera = initial_camera,
         .camera_hash = history_root.identity(initial_camera),
         .elf0 = .{
@@ -59,7 +64,7 @@ pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator) !void {
         session.attachGraphSink(b.graph_sink);
         if (b.root == null) {
             b.root = self.root;
-            saveRoot(self.io, b.session.dir, allocator, &self.root) catch {};
+            try saveRoot(self.io, b.session.dir, allocator, &self.root);
         }
     } else {
         const graph = try allocator.create(session_branch.BranchGraph);

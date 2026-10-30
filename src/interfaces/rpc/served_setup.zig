@@ -180,7 +180,7 @@ pub const Served = struct {
         self.context.camera = .{ .context = self, .setFn = served_camera.set };
         self.owner.session().attachCamera(.{ .context = self, .changeFn = served_camera.setDirect });
         try served_camera.attach(self);
-        try served_history.attach(self, allocator);
+        try served_history.attach(self, allocator, board_profile);
         self.owner.session().attachNet(.{ .context = self, .closeFlowsFn = closeC6 });
         self.owner.session().attachConsole(.{ .context = self, .feedFn = feedConsoleDirect });
         self.context.trace_on = .{ .context = self, .onFn = traceOn };

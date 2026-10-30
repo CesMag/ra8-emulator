@@ -193,6 +193,7 @@ fn libraries(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
     // drives the remote protocol through ra8_gdb. A library edge, never a
     // CLI import: the GUI still never sees the CLI.
     rpc.addImport("ra8_gdb", gdb);
+    rpc.addOptions("history_build", @import("tools/history_build.zig").options(b));
     const usbip = library(b, target, optimize, "ra8_usbip", "src/interfaces/usbip/root.zig", &.{
         .{ .name = "ra8_board", .module = board },
         .{ .name = "ra8_chip", .module = chip },

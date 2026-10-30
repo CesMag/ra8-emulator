@@ -37,7 +37,10 @@ pub const usage =
     \\       both then reclaim the dropped objects and compact the packs;
     \\       replay-elf runs the session's recorded inputs against the rebuilt
     \\       ELF at PATH without writing the history, and exits 0 when every
-    \\       checkpoint matches and 3 at the first that does not.
+    \\       root-line checkpoint matches (at least one) and 3 at the first
+    \\       that does not. Dual-core histories are unsupported. Exit 1
+    \\       reports invalid build/model/snapshot identity, unsupported root
+    \\       configuration or no root checkpoints; only ELF identity is overridden.
     \\
 ;
 

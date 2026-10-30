@@ -18,6 +18,7 @@ const history = @import("ra8_host").history;
 const served_setup = @import("served_setup.zig");
 const history_segments = @import("history_segments.zig");
 const object_read = @import("object_read.zig");
+const validity = @import("history_validity.zig");
 const transport = session_lib.transport;
 
 const elf = @import("ra8_board").image.elf;
@@ -31,13 +32,18 @@ const state_memory = session_lib.history_state_memory;
 const symbols = session_lib.symbols;
 const Position = session_lib.history_position.Position;
 
-pub const Error = error{
+pub const Error = validity.Error || error{
     /// The history recorded a second core; the replay machine is one core.
     SecondCoreRecorded,
     /// The session holds no root record to take its image from.
     NoRoot,
     /// A checkpoint the log names has no object to compare against.
     ObjectMissing,
+    /// No state comparison is possible on the supported root line.
+    NoRootCheckpoints,
+    UnsupportedCheckpointPosition,
+    CheckpointObjectMismatch,
+    CheckpointPositionMismatch,
 };
 
 pub const Verdict = enum { compatible, diverged };
@@ -111,14 +117,17 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     const root_bytes = (try history.branches_file.readAlloc(io, dir, history.layout.files.root, keep)) orelse return Error.NoRoot;
     const root = try history_root.decode(root_bytes);
     if (root.elf1 != null) return Error.SecondCoreRecorded;
+    try validity.check(root);
     const log = try history_segments.readAll(keep, store);
-    const rebuilt = try std.Io.Dir.cwd().readFileAlloc(io, rebuilt_path, keep, .limited(history_root.max_elf));
     const found = try seek_facts.gather(allocator, log);
     defer allocator.free(found.checkpoints);
     const line = try rootLine(keep, found.checkpoints);
+    if (line.len == 0) return Error.NoRootCheckpoints;
+    try checkLine(allocator, io, store, root, line);
+    const rebuilt = try std.Io.Dir.cwd().readFileAlloc(io, rebuilt_path, keep, .limited(history_root.max_elf));
 
     var served: served_setup.Served = undefined;
-    try served.open(allocator, io, rebuilt_path, null, .{ .ram_budget = options.ram_budget, .checkpoint_every = never, .elf_bytes = rebuilt });
+    try served.open(allocator, io, rebuilt_path, root.board_profile, .{ .ram_budget = options.ram_budget, .checkpoint_every = never, .elf_bytes = rebuilt });
     defer served.deinit();
     if (options.prepare) |hook| try hook.prepareFn(hook.context, &served, log);
     const session = served.owner.session();
@@ -166,12 +175,39 @@ fn before(_: void, a: seek_engine.Checkpoint, b: seek_engine.Checkpoint) bool {
     return order == .lt or (order == .eq and a.id < b.id);
 }
 
+/// Validate all comparison points before the rebuilt image or a host hook
+/// is opened. The round-only driver supports round-opening checkpoints.
+fn checkLine(gpa: std.mem.Allocator, io: std.Io, store: history.storage.Store, root: history_root.Root, line: []const seek_engine.Checkpoint) !void {
+    // The existing snapshot owner validates every section and attachment.
+    // Restore only this disposable original-image machine, never the rebuilt
+    // run. elf_bytes and profile text need no host files or live adapters.
+    var validator = try session_lib.harness.open(gpa, io, .{ .elf_path = "", .elf_bytes = root.elf0.bytes, .board_profile = root.board_profile });
+    defer validator.deinit();
+    for (line) |c| {
+        if (c.position.phase != .cpu0 or c.position.o != 0 or c.position.gap != .retired) return Error.UnsupportedCheckpointPosition;
+        const bytes = try readCheckpoint(gpa, store, c);
+        defer gpa.free(bytes);
+        try validator.session().history.?.files.readFrom(bytes);
+        if (Position.order(validator.grid().at, c.position) != .eq) return Error.CheckpointPositionMismatch;
+    }
+}
+
+fn readCheckpoint(gpa: std.mem.Allocator, store: history.storage.Store, checkpoint: seek_engine.Checkpoint) ![]u8 {
+    var name: [32]u8 = undefined;
+    transport.objectName(checkpoint.object, &name);
+    const bytes = object_read.read(store, gpa, &name) catch |err| return if (err == error.FileNotFound) Error.ObjectMissing else err;
+    errdefer gpa.free(bytes);
+    // Recorder.pin uses SHA-256/128 for legacy whole-snapshot objects.
+    var hash: [32]u8 = undefined;
+    std.crypto.hash.sha2.Sha256.hash(bytes, &hash, .{});
+    if (!std.mem.eql(u8, hash[0..16], &checkpoint.object)) return Error.CheckpointObjectMismatch;
+    return bytes;
+}
+
 /// Brings the replay machine to one checkpoint and compares it. True when
 /// the run is over: it diverged here, and `result` says how.
 fn compareAt(allocator: std.mem.Allocator, keep: std.mem.Allocator, served: *served_setup.Served, store: history.storage.Store, images: Images, checkpoint: seek_engine.Checkpoint, result: *Result) !bool {
-    var name: [32]u8 = undefined;
-    transport.objectName(checkpoint.object, &name);
-    const recorded = object_read.read(store, allocator, &name) catch return Error.ObjectMissing;
+    const recorded = try readCheckpoint(allocator, store, checkpoint);
     defer allocator.free(recorded);
     const session = served.owner.session();
     var stream: std.Io.Writer.Allocating = .init(allocator);

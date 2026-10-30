@@ -68,6 +68,18 @@ test "a full root record round trips through its layout" {
     try std.testing.expectEqual(want.elf1.?.identity, got.elf1.?.identity);
 }
 
+test "a full board profile uses its own cap without relaxing text caps" {
+    var r = sample();
+    r.board_profile = ra8.board.profile.ek_ra8d2;
+    try std.testing.expect(r.board_profile.len > root.max_text);
+    const bytes = try encoded(r);
+    defer std.testing.allocator.free(bytes);
+    try std.testing.expectEqualStrings(r.board_profile, (try root.decode(bytes)).board_profile);
+    const too_long: [root.max_profile + 1]u8 = @splat('x');
+    r.board_profile = &too_long;
+    try std.testing.expectError(error.TooLarge, encoded(r));
+}
+
 test "encodedLen matches the bytes encode writes" {
     for ([_]root.Root{ sample(), .{ .snapshot_version = 13, .elf0 = .{ .identity = root.identity(elf0), .bytes = elf0 } } }) |r| {
         const bytes = try encoded(r);
