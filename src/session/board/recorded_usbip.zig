@@ -24,8 +24,8 @@
 //! on that line, so a replay or restore past it drops the host there and
 //! never pumps the URBs the run left behind. It is written at the first
 //! poll that is not a replay (the run that carried the cursor back is one,
-//! and a replay records nothing); a fork in between abandons it, as the
-//! line it belongs to is no longer the one recording.
+//! and a replay records nothing). A fork in between records its own
+//! disconnect at the fork point, before its live run continues.
 const std = @import("std");
 const usb = @import("ra8_board").usb;
 const usbfs = @import("ra8_chip").periph.usbfs;
@@ -62,7 +62,7 @@ pub const RecordedUsbip = struct {
     /// A hang-up not yet written to the history.
     hangup: ?Hangup = null,
 
-    const Hangup = struct { line: u32, at: line.Position };
+    const Hangup = struct { line: u32, at: line.Position, first_new_branch: u32, recorded: bool = false };
 
     fn replaying(self: *const RecordedUsbip) bool {
         return self.session.replaying or line.inPast(self.session);
@@ -137,7 +137,8 @@ pub const RecordedUsbip = struct {
             return;
         }
         const router = self.session.fork_router orelse return;
-        self.hangup = .{ .line = router.active_line, .at = router.recordedEnd() };
+        const graph = router.graph orelse return;
+        self.hangup = .{ .line = router.active_line, .at = router.recordedEnd(), .first_new_branch = graph.next_branch_id };
     }
 
     /// Writes a noted hang-up once the machine is not replaying: at the old
@@ -146,17 +147,42 @@ pub const RecordedUsbip = struct {
     /// never had the host either. A switch to an unrelated line writes
     /// nothing; that line's own run did not hang up.
     fn flush(self: *RecordedUsbip) !void {
-        const hung = self.hangup orelse return;
+        const hung = if (self.hangup) |*pending| pending else return;
         if (self.session.replaying) return;
-        self.hangup = null;
         const router = self.session.fork_router orelse return;
-        if (router.active_line == hung.line) return self.writeDisconnect(hung.at);
-        const graph = router.graph orelse return;
-        const node = graph.get(router.active_line) orelse return;
-        if (node.parent != hung.line) return;
-        var at = node.fork_at;
-        at.branch = router.active_line;
-        try self.writeDisconnect(at);
+        if (router.active_line == hung.line) {
+            if (!hung.recorded) {
+                try self.writeDisconnect(hung.at);
+                hung.recorded = true;
+            }
+            // A poll while still in the past can precede a fork. The
+            // parent's disconnect lies beyond that fork's prefix.
+            if (!line.inPast(self.session)) self.hangup = null;
+            return;
+        }
+        if (router.graph) |graph| {
+            if (graph.get(router.active_line)) |node| {
+                if (node.id >= hung.first_new_branch) {
+                    // A fork in an ancestor prefix is parented by that
+                    // prefix's owner, rather than by the old active leaf.
+                    // Existing branches must retain their recorded past.
+                    var origin = node;
+                    while (origin.parent >= hung.first_new_branch) {
+                        origin = graph.get(origin.parent) orelse return error.NoSuchBranch;
+                    }
+                    var inherited = origin.fork_at;
+                    inherited.branch = origin.parent;
+                    _ = graph.canonicalize(hung.line, inherited) catch {
+                        self.hangup = null;
+                        return;
+                    };
+                    var at = node.fork_at;
+                    at.branch = router.active_line;
+                    try self.writeDisconnect(at);
+                }
+            }
+        }
+        self.hangup = null;
     }
 
     fn writeDisconnect(self: *RecordedUsbip, at: line.Position) !void {
