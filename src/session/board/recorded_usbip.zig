@@ -140,17 +140,30 @@ pub const RecordedUsbip = struct {
         self.hangup = .{ .line = router.active_line, .at = router.recordedEnd() };
     }
 
-    /// Writes a noted hang-up once the machine is not replaying.
+    /// Writes a noted hang-up once the machine is not replaying: at the old
+    /// recorded end on the line that was live, or, when a fork from that
+    /// line came first, at the fork's own start, since the fork's live run
+    /// never had the host either. A switch to an unrelated line writes
+    /// nothing; that line's own run did not hang up.
     fn flush(self: *RecordedUsbip) !void {
         const hung = self.hangup orelse return;
         if (self.session.replaying) return;
         self.hangup = null;
         const router = self.session.fork_router orelse return;
-        if (router.active_line != hung.line) return;
+        if (router.active_line == hung.line) return self.writeDisconnect(hung.at);
+        const graph = router.graph orelse return;
+        const node = graph.get(router.active_line) orelse return;
+        if (node.parent != hung.line) return;
+        var at = node.fork_at;
+        at.branch = router.active_line;
+        try self.writeDisconnect(at);
+    }
+
+    fn writeDisconnect(self: *RecordedUsbip, at: line.Position) !void {
         var body: std.Io.Writer.Allocating = .init(self.gpa);
         defer body.deinit();
         try usbip_traffic.encode(&body.writer, .{ .kind = .disconnect });
-        try self.recordAt(hung.at, body.written());
+        try self.recordAt(at, body.written());
     }
 
     /// Puts the replayed host back as the line left it before the cursor:
