@@ -28,6 +28,10 @@ pub const C6AnswerHook = struct {
 pub const UsbipTrafficHook = struct {
     context: *anyopaque,
     deliverFn: *const fn (context: *anyopaque, data: []const u8) anyerror!void,
+    /// Stage the disconnected host in the new branch's transaction.
+    recordForkFn: ?*const fn (context: *anyopaque, at: @import("position.zig").Position) anyerror!void = null,
+    /// Drop the old host only once the fork and its intervention succeed.
+    forkedFn: ?*const fn (context: *anyopaque) void = null,
 };
 
 pub const CameraFrameHook = struct {

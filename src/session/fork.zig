@@ -144,8 +144,9 @@ pub fn executeFork(self: *Session, reason: ForkReason, fork_pos: Position, actio
             .{ .id = undo.new_id, .parent = canon.branch, .fork_at = at, .reason = reason },
         );
         try recordActionIntervention(self, at, action);
-        try rec.commit(now_ns);
     }
+    if (self.async_traffic.usbip_hook) |hook| if (hook.recordForkFn) |record| try record(hook.context, at);
+    if (self.persistent_recorder) |rec| try rec.commit(now_ns);
     router.switchActiveLine(undo.new_id);
     line.stampLine(self);
     window_fork.noteFork(self, undo.new_id);
@@ -156,6 +157,7 @@ pub fn executeFork(self: *Session, reason: ForkReason, fork_pos: Position, actio
     if (self.persistent_recorder == null) try recordActionIntervention(self, at, action);
     if (self.net_hook) |hook| hook.closeFlowsFn(hook.context);
     _ = async_traffic.clearOnFork(self);
+    if (self.async_traffic.usbip_hook) |hook| if (hook.forkedFn) |forked| forked(hook.context);
     replay_feeder.release(self);
 }
 

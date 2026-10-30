@@ -16,7 +16,7 @@ const Setup = rig.Setup;
 
 /// Leaves the fork live after its disconnected host's pending transfer
 /// would have reached the device, and returns that device state.
-const ForkCase = enum { immediate, polled, ancestor };
+const ForkCase = enum { immediate, polled, ancestor, repeated, repeated_earlier };
 
 fn recordFork(s: *Setup, which: ForkCase) !u64 {
     var host: Host = .{};
@@ -62,7 +62,30 @@ fn recordFork(s: *Setup, which: ForkCase) !u64 {
     try std.testing.expectEqual(@as(usize, 0), host.replayer.urbs.pending());
     try std.testing.expectEqual(@as(?anyerror, null), recorded.from(&live.target).?.failed);
     try s.h.recorder.commit(2);
+    if (which == .repeated or which == .repeated_earlier) try forkAgain(s, &live, &host, which == .repeated_earlier);
     return digest(&live.device);
+}
+
+fn forkAgain(s: *Setup, live: *Run, host: *Host, earlier: bool) !void {
+    try std.testing.expect(!host.connected);
+    s.h.graph.nodes.getPtr(s.h.router.active_line).?.recorded_end.r = 14;
+    const log = try gpa.dupe(u8, s.h.mock_storage.bytes.items);
+    defer gpa.free(log);
+    live.device = .{};
+    openOut(&live.device);
+    s.h.grid_state.at.r = 0;
+    try feeder.loadSessionInterventions(&s.h.session, log, .at);
+    s.h.session.setReplaying(true);
+    const round: u32 = if (earlier) 5 else 6;
+    for (1..round + 1) |n| live.poll(s.h, @intCast(n));
+    s.h.session.setReplaying(false);
+    try s.h.session.consoleInput(.cpu0, "second fork");
+    try std.testing.expectEqual(@as(u32, 2), s.h.router.active_line);
+    live.poll(s.h, round);
+    for (round + 1..15) |n| live.poll(s.h, @intCast(n));
+    try std.testing.expect(!host.replayer.connected);
+    try std.testing.expectEqual(@as(usize, 0), host.replayer.urbs.pending());
+    try s.h.recorder.commit(3);
 }
 
 test "a fork after rewinding records its own disconnect before an abandoned URB can run" {
@@ -75,6 +98,51 @@ test "polling in the past before a fork preserves the child's disconnect" {
 
 test "a fork in an ancestor prefix disconnects even when its parent is not the old leaf" {
     try checkFork(.ancestor);
+}
+
+test "repeated rewind and fork without a live reconnect still disconnects the new line" {
+    try checkFork(.repeated);
+}
+
+test "a second fork before the first fork inherits no abandoned host" {
+    try checkFork(.repeated_earlier);
+}
+
+fn refuseFork(_: *anyopaque, _: ra8.session.history_position.Position) anyerror!void {
+    return error.DiskFull;
+}
+
+test "a refused USB/IP fork record leaves the original host and branch intact" {
+    const s = try Setup.open();
+    defer s.close();
+    var host: Host = .{};
+    var live: Run = .{};
+    host.install(&live.target);
+    try recorded.attach(gpa, &s.h.session, &live.target);
+    defer recorded.release(&live.target, &s.h.session);
+    openOut(&live.device);
+    for (1..7) |n| live.poll(s.h, @intCast(n));
+    try std.testing.expect(host.connected);
+    const pending = host.urbs.pending();
+    try std.testing.expect(pending > 0);
+    s.h.graph.nodes.getPtr(0).?.recorded_end.r = 8;
+    try s.h.recorder.commit(1);
+    const before = s.h.mock_storage.bytes.items.len;
+    s.h.router.first_fork_confirmed = true;
+    const hook = s.h.session.async_traffic.usbip_hook.?;
+    s.h.session.async_traffic.usbip_hook.?.recordForkFn = refuseFork;
+    try std.testing.expectError(error.DiskFull, s.h.session.consoleInput(.cpu0, "refused"));
+    try std.testing.expectEqual(@as(u32, 0), s.h.router.active_line);
+    try std.testing.expectEqual(@as(u32, 1), s.h.graph.nodes.count());
+    try std.testing.expectEqual(before, s.h.mock_storage.bytes.items.len);
+    try std.testing.expect(host.connected);
+    try std.testing.expectEqual(pending, host.urbs.pending());
+    try std.testing.expectEqual(@as(?anyerror, null), recorded.from(&live.target).?.failed);
+    s.h.session.async_traffic.usbip_hook = hook;
+    try s.h.session.consoleInput(.cpu0, "accepted");
+    try std.testing.expect(s.h.router.active_line != 0);
+    try std.testing.expect(!host.connected);
+    try std.testing.expectEqual(@as(usize, 0), host.urbs.pending());
 }
 
 test "switching to an existing child leaves its recorded past unchanged" {

@@ -62,7 +62,7 @@ pub const RecordedUsbip = struct {
     /// A hang-up not yet written to the history.
     hangup: ?Hangup = null,
 
-    const Hangup = struct { line: u32, at: line.Position, first_new_branch: u32, recorded: bool = false };
+    const Hangup = struct { line: u32, at: line.Position };
 
     fn replaying(self: *const RecordedUsbip) bool {
         return self.session.replaying or line.inPast(self.session);
@@ -137,51 +137,31 @@ pub const RecordedUsbip = struct {
             return;
         }
         const router = self.session.fork_router orelse return;
-        const graph = router.graph orelse return;
-        self.hangup = .{ .line = router.active_line, .at = router.recordedEnd(), .first_new_branch = graph.next_branch_id };
+        self.hangup = .{ .line = router.active_line, .at = router.recordedEnd() };
     }
 
-    /// Writes a noted hang-up once the machine is not replaying: at the old
-    /// recorded end on the line that was live, or, when a fork from that
-    /// line came first, at the fork's own start, since the fork's live run
-    /// never had the host either. A switch to an unrelated line writes
-    /// nothing; that line's own run did not hang up.
+    /// Writes the live host's hang-up at the old line's recorded end.
+    /// Forks stage their own disconnect through the fork transaction.
     fn flush(self: *RecordedUsbip) !void {
-        const hung = if (self.hangup) |*pending| pending else return;
+        const hung = self.hangup orelse return;
         if (self.session.replaying) return;
         const router = self.session.fork_router orelse return;
-        if (router.active_line == hung.line) {
-            if (!hung.recorded) {
-                try self.writeDisconnect(hung.at);
-                hung.recorded = true;
-            }
-            // A poll while still in the past can precede a fork. The
-            // parent's disconnect lies beyond that fork's prefix.
-            if (!line.inPast(self.session)) self.hangup = null;
-            return;
-        }
-        if (router.graph) |graph| {
-            if (graph.get(router.active_line)) |node| {
-                if (node.id >= hung.first_new_branch) {
-                    // A fork in an ancestor prefix is parented by that
-                    // prefix's owner, rather than by the old active leaf.
-                    // Existing branches must retain their recorded past.
-                    var origin = node;
-                    while (origin.parent >= hung.first_new_branch) {
-                        origin = graph.get(origin.parent) orelse return error.NoSuchBranch;
-                    }
-                    var inherited = origin.fork_at;
-                    inherited.branch = origin.parent;
-                    _ = graph.canonicalize(hung.line, inherited) catch {
-                        self.hangup = null;
-                        return;
-                    };
-                    var at = node.fork_at;
-                    at.branch = router.active_line;
-                    try self.writeDisconnect(at);
-                }
-            }
-        }
+        if (router.active_line == hung.line) try self.writeDisconnect(hung.at);
+        self.hangup = null;
+    }
+
+    fn recordFork(context: *anyopaque, at: line.Position) anyerror!void {
+        const self: *RecordedUsbip = @ptrCast(@alignCast(context));
+        try self.writeDisconnect(at);
+    }
+
+    fn forked(context: *anyopaque) void {
+        const self: *RecordedUsbip = @ptrCast(@alignCast(context));
+        const port = self.inner.port.?;
+        port.dropFn(self.inner.context);
+        port.restoreFn(self.inner.context, .{ .kind = .disconnect }) catch |err| self.note(err);
+        self.live_connected = false;
+        self.held = 0;
         self.hangup = null;
     }
 
@@ -281,7 +261,12 @@ pub fn attach(gpa: std.mem.Allocator, session: *api.Session, target: *usb.Usb) !
     const self = try gpa.create(RecordedUsbip);
     self.* = .{ .gpa = gpa, .session = session, .inner = inner };
     target.bridge = .{ .context = self, .pollFn = RecordedUsbip.poll };
-    session.async_traffic.usbip_hook = .{ .context = self, .deliverFn = RecordedUsbip.landed };
+    session.async_traffic.usbip_hook = .{
+        .context = self,
+        .deliverFn = RecordedUsbip.landed,
+        .recordForkFn = RecordedUsbip.recordFork,
+        .forkedFn = RecordedUsbip.forked,
+    };
     port.tapFn(inner.context, .{ .context = self, .noteFn = RecordedUsbip.heard, .holdFn = RecordedUsbip.hold });
 }
 
