@@ -11,6 +11,7 @@
 //! A mismatch refuses visibly with the exact slot position, never continuing.
 const std = @import("std");
 const slot_mod = @import("window_slot.zig");
+const fields = @import("ra8_board").snapshot.run.fields;
 
 pub const Position = slot_mod.Position;
 pub const Core = slot_mod.Core;
@@ -51,11 +52,14 @@ pub const RedoError = error{
 
 /// Computes the Blake3-128 post-state digest over core register state plus touched sections.
 pub fn computeDigest(arch: *const ArchState, micro_bytes: []const u8) Digest {
-    var hasher = std.crypto.hash.Blake3.init(.{});
-    hasher.update(std.mem.asBytes(arch));
-    hasher.update(micro_bytes);
+    // Struct padding and inactive optional payloads are not guest state.
+    var buffer: [256]u8 = undefined;
+    var hashing = std.Io.Writer.Hashing(std.crypto.hash.Blake3).init(&buffer);
+    fields.write(&hashing.writer, arch.*) catch unreachable;
+    hashing.writer.writeAll(micro_bytes) catch unreachable;
+    hashing.writer.flush() catch unreachable;
     var full: [32]u8 = undefined;
-    hasher.final(&full);
+    hashing.hasher.final(&full);
     return full[0..16].*;
 }
 

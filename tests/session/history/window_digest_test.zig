@@ -13,6 +13,54 @@ const digest_mod = ra8.session.history_window_digest;
 const micro_mod = ra8.session.history_micro_checkpoint;
 const file = ra8.snapshot.file;
 
+fn poisonPadding(arch: *ArchState, byte: u8) usize {
+    var occupied: [@sizeOf(ArchState)]bool = @splat(false);
+    const info = @typeInfo(ArchState).@"struct";
+    inline for (info.field_names, info.field_types) |name, T| {
+        const start = @offsetOf(ArchState, name);
+        @memset(occupied[start..][0..@sizeOf(T)], true);
+    }
+    var count: usize = 0;
+    for (occupied, 0..) |used, at| {
+        if (used) continue;
+        std.mem.asBytes(arch)[at] = byte;
+        count += 1;
+    }
+    return count;
+}
+
+test "equal architectural fields hash equally despite different struct padding" {
+    var a: ArchState = .{};
+    var b: ArchState = .{};
+    try testing.expect(poisonPadding(&a, 0x11) > 0);
+    try testing.expect(poisonPadding(&b, 0xee) > 0);
+    try testing.expectEqualDeep(a, b);
+    try testing.expect(!std.mem.eql(u8, std.mem.asBytes(&a), std.mem.asBytes(&b)));
+    try testing.expectEqual(digest_mod.computeDigest(&a, "mmio"), digest_mod.computeDigest(&b, "mmio"));
+}
+
+test "canonical digest retains optional tags floating point banks counters and events" {
+    const initial: ArchState = .{};
+    const expected = digest_mod.computeDigest(&initial, "mmio");
+    var changed = initial;
+    changed.exclusive = 0;
+    try testing.expect(!std.mem.eql(u8, &expected, &digest_mod.computeDigest(&changed, "mmio")));
+    changed = initial;
+    changed.event = true;
+    try testing.expect(!std.mem.eql(u8, &expected, &digest_mod.computeDigest(&changed, "mmio")));
+    changed = initial;
+    changed.fp.bank.s[31] = 1;
+    try testing.expect(!std.mem.eql(u8, &expected, &digest_mod.computeDigest(&changed, "mmio")));
+    changed = initial;
+    changed.banked.other.control = 1;
+    try testing.expect(!std.mem.eql(u8, &expected, &digest_mod.computeDigest(&changed, "mmio")));
+    inline for (.{ "slots", "retired", "sync_entries" }) |name| {
+        changed = initial;
+        @field(changed, name) = 1;
+        try testing.expect(!std.mem.eql(u8, &expected, &digest_mod.computeDigest(&changed, "mmio")));
+    }
+}
+
 const MockBoard = struct {
     mmio_val: u32 = 0x1111,
 
