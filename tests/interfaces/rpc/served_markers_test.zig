@@ -8,6 +8,7 @@ const setup = ra8.rpc.served_setup;
 const nav_marker = ra8.rpc.session.nav_marker;
 const transport = ra8.session.transport;
 const history = ra8.host.history;
+const rig = @import("regression_rig.zig");
 
 const image = "tests/fixtures/dfu/dfu_bootloader.elf";
 const steps = 300;
@@ -66,7 +67,7 @@ test "a late marker is indexed by replay, cached, and served again after a reope
     var landed: ra8.session.history_position.Position = undefined;
     {
         var served: setup.Served = undefined;
-        try served.open(gpa, std.testing.io, image, null, .{ .root = root, .checkpoint_every = 16, .kept = true });
+        try served.open(gpa, std.testing.io, image, rig.small_profile, .{ .root = root, .checkpoint_every = 16, .kept = true });
         defer served.deinit();
         id = served.history.?.session.id;
         const address = try loopAddress(&served);
@@ -88,7 +89,7 @@ test "a late marker is indexed by replay, cached, and served again after a reope
     }
 
     var again: setup.Served = undefined;
-    try again.open(gpa, std.testing.io, image, null, .{ .root = root, .checkpoint_every = 16, .reopen = &id });
+    try again.open(gpa, std.testing.io, image, rig.small_profile, .{ .root = root, .checkpoint_every = 16, .reopen = &id });
     defer again.deinit();
     // The cache is back before anything runs.
     try std.testing.expectEqual(@as(usize, @intCast(arrivals)), again.nav.?.markerArrivalCount("loop"));
@@ -109,7 +110,7 @@ test "a marker indexed over a shorter log is armed again once the history grew" 
     defer gpa.free(root);
 
     var served: setup.Served = undefined;
-    try served.open(gpa, std.testing.io, image, null, .{ .root = root, .checkpoint_every = 16, .kept = true });
+    try served.open(gpa, std.testing.io, image, rig.small_profile, .{ .root = root, .checkpoint_every = 16, .kept = true });
     defer served.deinit();
     var place_buf: [16]u8 = undefined;
     const address = try loopAddress(&served);
@@ -137,4 +138,59 @@ test "a marker indexed over a shorter log is armed again once the history grew" 
         if (std.mem.eql(u8, m.name, "loop")) try std.testing.expectEqual(armed_end, m.end.?);
     }
     try std.testing.expectEqual(@as(usize, 1), nav.markerArrivalCount("boot"));
+}
+
+test "the DFU marker prefix preserves the default board's execution with smaller external memory" {
+    const gpa = std.testing.allocator;
+    var reference = try ra8.session.harness.open(gpa, std.testing.io, .{ .elf_path = image, .history_frames = 2 });
+    defer reference.deinit();
+    var reduced = try ra8.session.harness.open(gpa, std.testing.io, .{ .elf_path = image, .board_profile = rig.small_profile, .history_frames = 2 });
+    defer reduced.deinit();
+    // The equivalence guard compares guest execution, not legacy capture cost.
+    // The two marker scenarios above still capture all 300 actual stops.
+    reference.session().history = null;
+    reduced.session().history = null;
+    const store = &reduced.state.cpu0.store.?;
+    const loaded = try ra8.board.image.load.read(reduced.state.image);
+    try std.testing.expect(loaded.count > 0);
+    for (loaded.maps.items()) |range| try std.testing.expect(store.span(range.base, range.size()) != null);
+    for (loaded.segments[0..loaded.count]) |segment| {
+        try std.testing.expectEqualSlices(u8, segment.bytes, store.span(segment.paddr, segment.bytes.len).?);
+    }
+    for (0..steps) |_| {
+        try std.testing.expectEqual(ra8.session.api.Ended{ .stop = .stepped }, try reference.session().run(.cpu0, .step));
+        try std.testing.expectEqual(ra8.session.api.Ended{ .stop = .stepped }, try reduced.session().run(.cpu0, .step));
+        try expectCpuTrace(&reference, &reduced);
+        try std.testing.expectEqualDeep(reference.state.edge.saved, reduced.state.edge.saved);
+        try std.testing.expectEqual(reference.board().time.base.now(), reduced.board().time.base.now());
+        try std.testing.expectEqual(try reference.session().now(), try reduced.session().now());
+    }
+    const memmap = ra8.chip.core.memmap;
+    const original = &reference.state.cpu0.store.?;
+    for (memmap.ram) |entry| {
+        if (entry.base == memmap.sdram_base or entry.base == memmap.ns_sdram_base) continue;
+        try std.testing.expectEqualSlices(u8, original.region(entry.base).?, store.region(entry.base).?);
+    }
+    for (original.extra.windows) |held| if (held) |window| {
+        try std.testing.expectEqualSlices(u8, window.bytes, store.extra.span(window.base, window.bytes.len).?);
+    };
+    for ([_]u32{ memmap.scb.cfsr, memmap.scb.hfsr }) |address| {
+        try std.testing.expectEqual(@as(u32, 0), try reference.guest().readWord(address));
+        try std.testing.expectEqual(@as(u32, 0), try reduced.guest().readWord(address));
+    }
+    std.debug.print("DFU prefix: steps={d} retired={d} slots={d} pc=0x{x} CFSR=0 HFSR=0\n", .{ steps, reduced.primaryCpu().retired, reduced.primaryCpu().slots, reduced.primaryCpu().regs.pc });
+}
+
+fn expectCpuTrace(reference: *ra8.session.harness.Harness, reduced: *ra8.session.harness.Harness) !void {
+    const a = reference.primaryCpu();
+    const b = reduced.primaryCpu();
+    try std.testing.expectEqualDeep(a.regs, b.regs);
+    try std.testing.expectEqualDeep(a.banked, b.banked);
+    try std.testing.expectEqualDeep(a.fp, b.fp);
+    try std.testing.expectEqualDeep(a.active, b.active);
+    try std.testing.expectEqualDeep(a.waiting, b.waiting);
+    try std.testing.expectEqual(a.event, b.event);
+    try std.testing.expectEqual(a.retired, b.retired);
+    try std.testing.expectEqual(a.slots, b.slots);
+    try std.testing.expectEqual(a.sync_entries, b.sync_entries);
 }
