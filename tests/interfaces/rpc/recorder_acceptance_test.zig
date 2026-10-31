@@ -128,7 +128,11 @@ test "acceptance: a reopened history cuts a torn tail before it appends" {
     var id: history.name.Id = undefined;
     var whole: u64 = 0;
     {
-        const bind = try bind_mod.Bind.open(gpa, std.testing.io, root, .{ .kept = true });
+        // Reopen admission requires a real frozen root and its initial media.
+        var opened: ra8.rpc.served_setup.Served = undefined;
+        try opened.open(gpa, std.testing.io, "tests/fixtures/gpio/blink.elf", @import("regression_rig.zig").small_profile, .{ .root = root, .kept = true });
+        defer opened.deinit();
+        const bind = opened.history.?;
         id = bind.session.id;
         var rec = try recorder_mod.Recorder.init(gpa, bind.storage, .{});
         defer rec.deinit();
@@ -140,7 +144,6 @@ test "acceptance: a reopened history cuts a torn tail before it appends" {
         try rec.commit(2);
         // The crash: the last commit landed in part.
         try bind.storage.truncate(bind.storage.context, try bind.logLength() - 3);
-        _ = try bind.close();
     }
     const again = try bind_mod.Bind.open(gpa, std.testing.io, root, .{ .reopen = id });
     defer _ = again.close() catch {};
