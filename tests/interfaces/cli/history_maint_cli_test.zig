@@ -10,16 +10,18 @@ const maint = cli_app.history_maint_cli;
 const history_cli = cli_app.history_cli;
 const history = ra8.host.history;
 const seek_facts = ra8.session.history_seek_facts;
+const rig = @import("../rpc/regression_rig.zig");
 
 const short_image = "tests/fixtures/dfu/dfu_bootloader.elf";
-const long_image = "tests/fixtures/gpio/blink.elf";
+const long_image = rig.image;
 
 /// Records a kept session with many checkpoints and returns its root.
 /// `per_run` caps each run's slots when given, so a busy image reaches
 /// its checkpoints without running the default budget every time.
 fn record(gpa: std.mem.Allocator, root: []const u8, image: []const u8, runs: usize, per_run: ?u64) !void {
     var served: ra8.rpc.served_setup.Served = undefined;
-    try served.open(gpa, std.testing.io, image, null, .{ .root = root, .checkpoint_every = 1, .kept = true });
+    const profile: ?[]const u8 = if (std.mem.eql(u8, image, long_image)) rig.small_profile else null;
+    try served.open(gpa, std.testing.io, image, profile, .{ .root = root, .checkpoint_every = 1, .kept = true });
     defer served.deinit();
     const session = served.owner.session();
     if (per_run) |cap| try session.setRunBudget(.cpu0, cap);
