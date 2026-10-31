@@ -6,6 +6,32 @@ const file = ra8.snapshot.file;
 const memory = ra8.board.snapshot.memory;
 const memmap = ra8.chip.core.memmap;
 
+test "zero page detection covers unaligned input, tails and every nonzero position" {
+    var backing: [memory.page + 33]u8 = @splat(0);
+    for (0..32) |offset| {
+        for (0..101) |which| {
+            const len: usize = switch (which) {
+                0...95 => which,
+                96 => 127,
+                97 => 128,
+                98 => memory.page - 1,
+                99 => memory.page,
+                else => memory.page + 1,
+            };
+            const bytes = backing[offset..][0..len];
+            try std.testing.expect(memory.zero(bytes));
+            for (0..len) |at| {
+                bytes[at] = @as(u8, 1) << @intCast(at % 8);
+                try std.testing.expect(!memory.zero(bytes));
+                bytes[at] = 0;
+            }
+            @memset(bytes, 0xff);
+            try std.testing.expectEqual(len == 0, memory.zero(bytes));
+            @memset(bytes, 0);
+        }
+    }
+}
+
 const window_base: u32 = 0x9000_0000;
 
 fn put(store: *memory.Store, address: u32, text: []const u8) void {

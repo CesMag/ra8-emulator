@@ -275,8 +275,14 @@ fn liveCount(bytes: []const u8) u32 {
     return count;
 }
 
-fn zero(bytes: []const u8) bool {
-    return std.mem.allEqual(u8, bytes, 0);
+/// Tests every byte, including unaligned input and a partial final block.
+pub fn zero(bytes: []const u8) bool {
+    var at: usize = 0;
+    while (bytes.len - at >= 32) : (at += 32) {
+        const block: @Vector(32, u8) = bytes[at..][0..32].*;
+        if (@reduce(.Or, block) != 0) return false;
+    }
+    return std.mem.allEqual(u8, bytes[at..], 0);
 }
 
 fn int(payload: []const u8, at: *usize) Error!u32 {
