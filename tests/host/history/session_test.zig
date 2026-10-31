@@ -2,6 +2,22 @@ const std = @import("std");
 const history = @import("ra8").host.history;
 const fixture = @import("root_test.zig");
 
+test "an unsettled reopen holds the lease and leaves recovery to admission" {
+    var f = try fixture.Fixture.init();
+    defer f.deinit();
+    var session = try f.create('8');
+    const id = session.id;
+    try session.keep();
+    try session.dir.writeFile(fixture.io, .{ .sub_path = history.layout.files.renaming, .data = "unsettled metadata" });
+    fixture.Fixture.abandon(&session);
+    session = try history.session.Session.reopenUnsettled(&f.cache, id);
+    defer fixture.Fixture.abandon(&session);
+    try session.dir.access(fixture.io, history.layout.files.renaming, .{});
+    try std.testing.expectEqual(history.lock.State.held, history.lock.probe(fixture.io, f.cache.dir, &id));
+    try std.testing.expectError(error.BadMetadata, history.rename.settle(fixture.io, session.dir));
+    try session.dir.access(fixture.io, history.layout.files.renaming, .{});
+}
+
 test "host lifecycle publishes a locked session and clean exit leaves zero session bytes" {
     var f = try fixture.Fixture.init();
     defer f.deinit();

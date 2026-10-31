@@ -6,6 +6,32 @@ const fixture = @import("root_test.zig");
 const io = fixture.io;
 const note = history.layout.files.renaming;
 
+test "reading a pending rename owns its names and leaves intent and bytes unchanged" {
+    var f = try fixture.Fixture.init();
+    defer f.deinit();
+    var session = try f.create('9');
+    defer fixture.Fixture.abandon(&session);
+    const index = try session.dir.openDir(io, "index", .{});
+    defer index.close(io);
+    try index.writeFile(io, .{ .sub_path = "a", .data = "pending" });
+    const directory: history.move.file.State = .{ .device_major = 0, .device_minor = 0, .inode = 1, .links = 1, .kind = .directory };
+    const source: history.move.file.State = .{ .device_major = 0, .device_minor = 0, .inode = 2, .links = 1, .kind = .file };
+    const encoded = try std.json.Stringify.valueAlloc(std.testing.allocator, history.rename.Note{ .version = 1, .space = .index, .from = "a", .to = "b", .top = directory, .area = directory, .source = source }, .{});
+    defer std.testing.allocator.free(encoded);
+    try session.dir.writeFile(io, .{ .sub_path = note, .data = encoded });
+    const before = try session.dir.readFileAlloc(io, note, std.testing.allocator, .unlimited);
+    defer std.testing.allocator.free(before);
+    var pending = (try history.rename.pending(io, session.dir)).?;
+    defer pending.deinit();
+    try std.testing.expectEqualStrings("a", pending.parsed.value.from);
+    try std.testing.expectEqualStrings("b", pending.parsed.value.to);
+    const after = try session.dir.readFileAlloc(io, note, std.testing.allocator, .unlimited);
+    defer std.testing.allocator.free(after);
+    try std.testing.expectEqualSlices(u8, before, after);
+    try index.access(io, "a", .{});
+    try std.testing.expectError(error.FileNotFound, index.access(io, "b", .{}));
+}
+
 test "host lifecycle linked rename moves the bytes, refuses a taken name and leaves no note" {
     if (builtin.os.tag != .linux) return error.SkipZigTest;
     var f = try fixture.Fixture.init();

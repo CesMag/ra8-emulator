@@ -9,6 +9,7 @@ const std = @import("std");
 const harness = @import("ra8_session").harness;
 const served_camera = @import("served_camera.zig");
 const served_usbip = @import("served_usbip.zig");
+const served_initial = @import("served_initial.zig");
 const board_c6 = @import("ra8_session").board.recorded_c6;
 const board_rtc = @import("ra8_session").board.rtc;
 const session_plug = @import("ra8_session").board.plug;
@@ -118,6 +119,8 @@ pub const Served = struct {
 
     /// Both images are installed before the root and first checkpoint.
     pub fn openInitial(self: *Served, allocator: std.mem.Allocator, io: std.Io, elf_path: []const u8, board_profile: ?[]const u8, history_opts: ?HistoryOpts, second_image: ?SecondImage) !void {
+        var initial = served_initial.Images.init(allocator, io, elf_path, if (history_opts) |opts| opts.elf_bytes else null, second_image);
+        defer initial.deinit();
         // The history outlives the harness: the armed checkpoints write
         // through its shapes until the harness's teardown disarms, so on
         // an error the harness goes first and the history closes second.
@@ -128,15 +131,16 @@ pub const Served = struct {
         if (history_opts) |opts| {
             if (opts.root) |root| {
                 const id = if (opts.reopen) |text| try history.name.id(text) else null;
-                bind = try history_bind.Bind.open(allocator, io, root, .{ .cap = opts.budget, .kept = opts.kept, .reopen = id });
+                bind = try history_bind.Bind.open(allocator, io, root, .{ .cap = opts.budget, .kept = opts.kept, .reopen = id, .board_profile = board_profile, .images = &initial });
             } else {
                 ram = try history_ram.RamHistory.open(allocator, try history_resources.ramBudget(opts.ram_budget));
             }
         }
+        const profile = if (bind) |b| if (b.reopened) b.root.?.board_profile else board_profile else board_profile;
         var owner = try harness.open(allocator, io, .{
             .elf_path = elf_path,
-            .elf_bytes = if (history_opts) |opts| opts.elf_bytes else null,
-            .board_profile = board_profile,
+            .elf_bytes = initial.firstBytes(),
+            .board_profile = profile,
             .history_storage = if (bind) |b| b.storage else if (ram) |r| r.storage else null,
             .history_objects = if (bind) |b| b.objects else if (ram) |r| r.object_space else null,
             .history_disk = if (bind) |b| b.disk else if (ram) |r| r.budget else null,
@@ -154,7 +158,7 @@ pub const Served = struct {
         errdefer allocator.free(scratch);
         self.* = .{ .owner = owner, .context = undefined, .rx = rx, .tx = tx, .gpa = allocator, .io = io, .history = bind, .ram_history = ram };
         self.context = .{ .session = self.owner.session(), .scratch = scratch, .state = self.owner.stateFiles(), .gpa = allocator };
-        if (second_image) |image| try served_second.open(self, image);
+        if (initial.second) |image| try served_second.open(self, image);
         errdefer served_second.close(self);
         // Seed the reverse window only after both initial images exist.
         if (history_opts) |opts| try self.owner.openWindow(try windowBytes(opts));
@@ -182,7 +186,7 @@ pub const Served = struct {
         };
         errdefer served_prefetch.detach(self);
         try served_prefetch.attach(self, if (history_opts) |o| o.ram_budget else null);
-        try self.attachContext(allocator, board_profile);
+        try self.attachContext(allocator, profile);
     }
 
     fn attachContext(self: *Served, allocator: std.mem.Allocator, board_profile: ?[]const u8) !void {

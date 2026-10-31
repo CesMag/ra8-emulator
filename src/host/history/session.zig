@@ -73,6 +73,16 @@ pub const Session = struct {
     /// Take over a session that is in `base` and that nothing holds, as a
     /// kept one is after its owner has gone. `Locked` when it is live.
     pub fn reopen(base: *const Base, id: name.Id) !Session {
+        return reopenWithSettlement(base, id, true);
+    }
+
+    /// Hold the lease without settling metadata. The caller must admit the
+    /// recorded root and images before invoking rename recovery.
+    pub fn reopenUnsettled(base: *const Base, id: name.Id) !Session {
+        return reopenWithSettlement(base, id, false);
+    }
+
+    fn reopenWithSettlement(base: *const Base, id: name.Id, settle: bool) !Session {
         if (!name.isId(&id)) return error.BadName;
         const io = base.io;
         var gate = try base.gate(.shared);
@@ -86,7 +96,7 @@ pub const Session = struct {
         _ = try owner.read(io, dir, &buffer);
         const held = (try lock.take(io, base.dir, &id)) orelse return error.Locked;
         errdefer held.close(io);
-        try rename_file.settle(io, dir);
+        if (settle) try rename_file.settle(io, dir);
         return .{ .base = base, .id = id, .dir = dir, .lock = held, .kept = present(io, dir, layout.files.kept) };
     }
 

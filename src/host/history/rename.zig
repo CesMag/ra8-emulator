@@ -6,6 +6,14 @@ pub const limits = struct {
     pub const note = 4096;
 };
 pub const Note = struct { version: u32, space: h.layout.Space, from: []const u8, to: []const u8, top: file.State, area: file.State, source: file.State };
+pub const Pending = struct {
+    parsed: std.json.Parsed(Note),
+    inode: std.Io.File.INode,
+
+    pub fn deinit(self: *Pending) void {
+        self.parsed.deinit();
+    }
+};
 
 pub fn begin(io: std.Io, top: std.Io.Dir, dir: std.Io.Dir, space: h.layout.Space, from: []const u8, to: []const u8) !void {
     _ = try h.paths.leaf(space, from);
@@ -39,9 +47,10 @@ pub fn linkedProbed(io: std.Io, top: std.Io.Dir, dir: std.Io.Dir, space: h.layou
     };
     try erase(io, top, inode);
 }
-pub fn settle(io: std.Io, top: std.Io.Dir) !void {
+/// Inspect an intent without settling it. The returned text is owned.
+pub fn pending(io: std.Io, top: std.Io.Dir) !?Pending {
     const held = h.metadata.open(io, top, h.layout.files.renaming, .read_only) catch |err| switch (err) {
-        error.FileNotFound => return,
+        error.FileNotFound => return null,
         else => return err,
     };
     defer held.close(io);
@@ -50,9 +59,14 @@ pub fn settle(io: std.Io, top: std.Io.Dir) !void {
     var bytes: [limits.note]u8 = undefined;
     const count = try held.readPositionalAll(io, bytes[0..@intCast(stat.size)], 0);
     if (count != stat.size) return error.BadMetadata;
-    const parsed = std.json.parseFromSlice(Note, std.heap.page_allocator, bytes[0..count], .{}) catch return error.BadMetadata;
-    defer parsed.deinit();
-    const note = parsed.value;
+    const parsed = std.json.parseFromSlice(Note, std.heap.page_allocator, bytes[0..count], .{ .allocate = .alloc_always }) catch return error.BadMetadata;
+    return .{ .parsed = parsed, .inode = stat.inode };
+}
+
+pub fn settle(io: std.Io, top: std.Io.Dir) !void {
+    var held = (try pending(io, top)) orelse return;
+    defer held.deinit();
+    const note = held.parsed.value;
     if (note.version != 1 or note.source.kind != .file or note.source.links != 1) return error.BadMetadata;
     _ = try h.paths.leaf(note.space, note.from);
     _ = try h.paths.leaf(note.space, note.to);
@@ -78,7 +92,7 @@ pub fn settle(io: std.Io, top: std.Io.Dir) !void {
         const new = target orelse return error.IdentityConflict;
         if (!note.source.same(new) or new.links != 1) return error.IdentityConflict;
     }
-    try erase(io, top, stat.inode);
+    try erase(io, top, held.inode);
 }
 fn erase(io: std.Io, top: std.Io.Dir, inode: std.Io.File.INode) !void {
     const stat = try top.statFile(io, h.layout.files.renaming, .{ .follow_symlinks = false });

@@ -59,6 +59,8 @@ pub const Bind = struct {
     router: session_fork.ForkRouter = undefined,
     graph_sink: session_fork_types.GraphSink = undefined,
     root: ?history_root.Root = null,
+    /// Owns every slice borrowed by a decoded root until the bind closes.
+    root_bytes: ?[]u8 = null,
     /// Set when the session stopped recording into this history (a
     /// different image loaded): close leaves its branches.bin as it was,
     /// since the in-memory graph then describes the new program.
@@ -77,19 +79,32 @@ pub const Bind = struct {
         /// log, objects and caches are served again, and recording
         /// continues past the line's recorded end.
         reopen: ?history.name.Id = null,
+        board_profile: ?[]const u8 = null,
+        images: ?*@import("served_initial.zig").Images = null,
     };
 
     pub fn open(allocator: std.mem.Allocator, io: std.Io, path: []const u8, opts: Options) !*Bind {
         const bind = try allocator.create(Bind);
         errdefer allocator.destroy(bind);
         bind.* = .{ .gpa = allocator, .base = undefined, .session = undefined, .log = undefined, .sink = undefined, .storage = undefined, .objects = undefined };
-        bind.base = try history.base.Base.openConfigured(allocator, io, path, .cache, .{});
+        bind.base = if (opts.reopen != null)
+            try history.base.Base.existingConfigured(allocator, io, path, .cache, .{ .recover = false })
+        else
+            try history.base.Base.openConfigured(allocator, io, path, .cache, .{});
         errdefer bind.base.close();
         bind.session = if (opts.reopen) |id|
-            try history.session.Session.reopen(&bind.base, id)
+            try history.session.Session.reopenUnsettled(&bind.base, id)
         else
             try history.session.Session.create(&bind.base, .{});
-        errdefer _ = bind.session.close(null, .move) catch {};
+        errdefer if (opts.reopen != null) {
+            bind.session.dir.close(io);
+            bind.session.lock.close(io);
+        } else {
+            _ = bind.session.close(null, .move) catch {};
+        };
+        errdefer if (bind.root_bytes) |bytes| allocator.free(bytes);
+        try bind.readRoot(opts);
+        if (opts.reopen != null) try history.rename.settle(io, bind.session.dir);
         if (opts.kept) {
             try bind.session.keep();
         }
@@ -113,12 +128,6 @@ pub const Bind = struct {
         bind.router = session_fork.ForkRouter.init(allocator, &bind.graph);
         errdefer bind.router.deinit();
         bind.graph_sink = .{ .context = bind, .writeFn = &writeBranchesBin };
-        if (history.branches_file.readAlloc(io, bind.session.dir, history.layout.files.root, allocator)) |bytes_opt| {
-            if (bytes_opt) |bytes| {
-                defer allocator.free(bytes);
-                bind.root = history_root.decode(bytes) catch null;
-            }
-        } else |_| {}
         const store = history.storage.Store.from(&bind.session);
         bind.reopened = opts.reopen != null;
         bind.log = try store.vtable.open(store.context, .log, log_leaf, if (bind.reopened) .update else .create);
@@ -171,12 +180,26 @@ pub const Bind = struct {
         self.graph.deinit();
         defer {
             self.base.close();
+            if (self.root_bytes) |bytes| gpa.free(bytes);
             gpa.destroy(self.sink);
             gpa.destroy(self);
         }
         const outcome = try self.session.close(null, .move);
         try saved;
         return outcome;
+    }
+
+    fn readRoot(self: *Bind, opts: Options) !void {
+        if (opts.reopen != null) try @import("served_initial.zig").checkRootRename(self.base.io, self.session.dir);
+        self.root_bytes = try history.branches_file.readAlloc(self.base.io, self.session.dir, history.layout.files.root, self.gpa);
+        if (self.root_bytes) |bytes| self.root = history_root.decode(bytes) catch null;
+        if (opts.reopen == null) return;
+        const root = self.root orelse return error.NoRoot;
+        try @import("history_validity.zig").check(root);
+        if (opts.board_profile) |profile| {
+            if (!std.mem.eql(u8, profile, root.board_profile)) return error.BoardProfileMismatch;
+        }
+        if (opts.images) |images| try images.check(root);
     }
 
     fn saveGraph(self: *Bind) anyerror!void {
