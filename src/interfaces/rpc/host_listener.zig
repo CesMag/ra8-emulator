@@ -251,12 +251,7 @@ pub const Listener = struct {
         std.Io.Dir.cwd().deleteFile(self.io, self.discovery_path) catch {};
         if (self.socket_path) |path| std.Io.Dir.cwd().deleteFile(self.io, path) catch {};
         if (self.focus_path) |path| std.Io.Dir.cwd().deleteFile(self.io, path) catch {};
-        self.dropClient();
-        for (self.gdb.items) |session| {
-            session.deinit();
-            self.gpa.free(session.elf);
-            self.gpa.destroy(session);
-        }
+        self.releaseSession();
         self.gdb.deinit(self.gpa);
         if (self.focus_server) |*server| server.deinit(self.io);
         self.server.deinit(self.io);
@@ -264,6 +259,17 @@ pub const Listener = struct {
         if (self.socket_path) |path| self.gpa.free(path);
         if (self.focus_path) |path| self.gpa.free(path);
         self.gpa.free(self.dir);
+    }
+
+    /// Drop every borrowed session hook before its owner is replaced.
+    pub fn releaseSession(self: *Listener) void {
+        self.dropClient();
+        for (self.gdb.items) |session| {
+            session.deinit();
+            self.gpa.free(session.elf);
+            self.gpa.destroy(session);
+        }
+        self.gdb.clearRetainingCapacity();
     }
 
     fn acceptClient(self: *Listener, context: *served.Context) !void {

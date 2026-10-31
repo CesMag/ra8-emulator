@@ -86,6 +86,7 @@ test "a block past capacity or out of order is BadValue and nothing changes" {
     // (out of order), then past the card's end.
     const first = std.mem.indexOf(u8, bad, &[_]u8{ 2, 0, 0, 0 } ++ @as([4]u8, @splat(0x3C))).?;
     std.mem.writeInt(u32, bad[first..][0..4], 9, .little);
+    try std.testing.expectError(error.BadValue, sd.validate(bad));
     try std.testing.expectError(error.BadValue, sd.load(&fresh, bad));
     std.mem.writeInt(u32, bad[first..][0..4], 0xFFFF_FFF0, .little);
     try std.testing.expectError(error.BadValue, sd.load(&fresh, bad));
@@ -97,6 +98,7 @@ test "a missing section or a cut payload leaves both cards untouched" {
     var list = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer list.deinit();
     try file.writeHeader(&list.writer);
+    try std.testing.expectError(error.Missing, sd.validate(list.written()));
     var fresh = Stand.init();
     defer fresh.deinit();
     fresh.card.reads = 9;

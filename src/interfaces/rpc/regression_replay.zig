@@ -121,10 +121,11 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, base: *const history.base.B
     const line = try rootLine(keep, found.checkpoints);
     if (line.len == 0) return Error.NoRootCheckpoints;
     try checkLine(allocator, io, store, root, line);
+    const media = if (root.media) |id| try @import("served_media.zig").read(keep, store, id) else null;
     const rebuilt = try std.Io.Dir.cwd().readFileAlloc(io, rebuilt_path, keep, .limited(history_root.max_elf));
 
     var served: served_setup.Served = undefined;
-    try served.openInitial(allocator, io, rebuilt_path, root.board_profile, .{ .ram_budget = options.ram_budget, .checkpoint_every = never, .elf_bytes = rebuilt }, if (root.elf1) |image| .{ .bytes = image.bytes } else null);
+    try served.openInputs(allocator, io, rebuilt_path, root.board_profile, .{ .ram_budget = options.ram_budget, .checkpoint_every = never, .elf_bytes = rebuilt }, if (root.elf1) |image| .{ .bytes = image.bytes } else null, .{ .media = media });
     defer served.deinit();
     if (options.prepare) |hook| try hook.prepareFn(hook.context, &served, log);
     const session = served.owner.session();

@@ -55,21 +55,24 @@ pub const Rebuild = struct {
 
     /// Reopens the session with `profile`, the pick's composed text.
     pub fn apply(self: *Rebuild, profile: []const u8) !void {
+        var replacement: local_session.LocalSession = undefined;
+        try replacement.openRecordingApps(self.allocator, self.io, self.image, profile, if (self.pick.store) |s| s.dir else null, self.apps);
         // The session is reopened with the worker's thread stopped, and
         // answers again once everything points at the new one.
         self.worker.stop();
         self.link.close();
+        if (self.hosted.*) |*held| held.listener.releaseSession();
         self.session.deinit();
-        try self.session.openRecording(self.allocator, self.io, self.image, profile, if (self.pick.store) |s| s.dir else null);
-        self.session.setup.stageApps(self.io, self.allocator, self.apps) catch |err| {
-            std.debug.print("ra8_gui: cannot stage the apps: {s}\n", .{@errorName(err)});
-        };
+        self.session.* = replacement;
         // The session rides the worker's native mailbox (RA8EMU-1196):
         // rebind rebuilt the Native in place, so the link reopens onto it.
         self.worker.rebind();
         self.link.openNative(&self.worker.native);
         if (self.shell.breaks) |breaks| breaks.reset();
-        if (self.hosted.*) |*held| held.announce(self.image, self.session.setup.owner.session());
+        if (self.hosted.*) |*held| {
+            held.rebind(&self.session.setup.context);
+            held.announce(self.image, self.session.setup.owner.session());
+        }
         const chosen = self.pick.chosen;
         const stem = if (chosen.board_len > 0) chosen.board() else board_profiles.default_board;
         self.shell.status.setMachine(stem, chosen.panel());

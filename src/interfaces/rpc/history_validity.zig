@@ -27,6 +27,7 @@ pub const Error = error{
     UnsupportedRootCamera,
     UnsupportedRootSkipFlags,
     MissingRootProfile,
+    MissingInitialMedia,
 };
 
 /// No legacy exception: the old producer wrote snapshot=1, zero commit
@@ -52,4 +53,5 @@ pub fn check(r: root.Root) !void {
     if (r.input_script.len != 0) return Error.UnsupportedRootInput;
     if (!std.mem.eql(u8, r.camera, "gradient")) return Error.UnsupportedRootCamera;
     if (r.skip_flags != 0) return Error.UnsupportedRootSkipFlags;
+    if (r.media == null) return Error.MissingInitialMedia;
 }

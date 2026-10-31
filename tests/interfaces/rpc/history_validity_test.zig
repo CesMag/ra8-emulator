@@ -50,6 +50,7 @@ test "recorded validity and every unsupported configuration fail before image or
         .{ .value = changed(r, "faults", "snapshot faults"), .err = error.UnsupportedRootFaults },
         .{ .value = changed(changed(r, "input_script", "script"), "input_hash", root.identity("script")), .err = error.UnsupportedRootInput },
         .{ .value = changed(changed(r, "camera", "webcam:0"), "camera_hash", root.identity("webcam:0")), .err = error.UnsupportedRootCamera },
+        .{ .value = changed(r, "media", @as(?[16]u8, null)), .err = error.MissingInitialMedia },
         .{ .value = changed(r, "skip_flags", 1), .err = error.UnsupportedRootSkipFlags },
     };
     for (cases) |case| {
@@ -128,11 +129,14 @@ test "dual root CPU1 identity and version gates precede rebuilt and host access"
     defer recorded.close(gpa);
     const bytes = try recorded.rootBytes(gpa);
     defer gpa.free(bytes);
-    // The last 16 bytes identify CPU1. Corrupt the identity, not its ELF.
-    bytes[bytes.len - 1] ^= 1;
+    const decoded = try root.decode(bytes);
+    const image = decoded.elf1.?.bytes;
+    const identity_at = @intFromPtr(image.ptr) - @intFromPtr(bytes.ptr) + image.len;
+    // CPU1's identity follows its ELF; root media may follow that identity.
+    bytes[identity_at] ^= 1;
     try recorded.writeFile("root.bin", bytes);
     try expectRejection(recorded, error.ImageMismatch);
-    bytes[bytes.len - 1] ^= 1;
+    bytes[identity_at] ^= 1;
     var r = try root.decode(bytes);
     r.snapshot_version += 1;
     try recorded.writeRoot(r);

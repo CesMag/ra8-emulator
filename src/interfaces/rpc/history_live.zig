@@ -16,6 +16,17 @@ pub const Collect = history.prune.Collect;
 /// checkpoint without a manifest (a history from before they were kept)
 /// names nothing more.
 pub fn addManifestObjects(store: history.storage.Store, allocator: std.mem.Allocator, names: *std.StringHashMap(void)) !void {
+    // Immutable startup media belongs to the root, even when checkpoint zero
+    // has been thinned or the retained line starts later.
+    const root_bytes = @import("object_read.zig").readTopRoot(store, allocator) catch |err| switch (err) {
+        error.FileNotFound => null,
+        else => return err,
+    };
+    if (root_bytes) |bytes| {
+        defer allocator.free(bytes);
+        const root = try @import("ra8_session").history_root.decode(bytes);
+        if (root.media) |id| try addObject(allocator, names, .{ .bytes = id });
+    }
     var held: std.ArrayList([]const u8) = .empty;
     defer held.deinit(allocator);
     var keys = names.keyIterator();

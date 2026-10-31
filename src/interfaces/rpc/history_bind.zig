@@ -30,10 +30,8 @@ pub fn segmentName(buf: []u8, branch: u32, seg: u32) ![]const u8 {
     return std.fmt.bufPrint(buf, "events-{d}-{d}", .{ branch, seg });
 }
 
-/// The run's first log segment. Segments number upward when the store
-/// grows one; a bind opens segment zero.
+/// The first log segment; later segments number upward.
 const log_leaf = "events-0";
-
 pub const Bind = struct {
     gpa: std.mem.Allocator,
     base: history.base.Base,
@@ -61,6 +59,7 @@ pub const Bind = struct {
     root: ?history_root.Root = null,
     /// Owns every slice borrowed by a decoded root until the bind closes.
     root_bytes: ?[]u8 = null,
+    media_bytes: ?[]u8 = null,
     /// Set when the session stopped recording into this history (a
     /// different image loaded): close leaves its branches.bin as it was,
     /// since the in-memory graph then describes the new program.
@@ -102,6 +101,7 @@ pub const Bind = struct {
         } else {
             _ = bind.session.close(null, .move) catch {};
         };
+        errdefer if (bind.media_bytes) |bytes| allocator.free(bytes);
         errdefer if (bind.root_bytes) |bytes| allocator.free(bytes);
         try bind.readRoot(opts);
         if (opts.reopen != null) try history.rename.settle(io, bind.session.dir);
@@ -181,6 +181,7 @@ pub const Bind = struct {
         defer {
             self.base.close();
             if (self.root_bytes) |bytes| gpa.free(bytes);
+            if (self.media_bytes) |bytes| gpa.free(bytes);
             gpa.destroy(self.sink);
             gpa.destroy(self);
         }
@@ -200,6 +201,7 @@ pub const Bind = struct {
             if (!std.mem.eql(u8, profile, root.board_profile)) return error.BoardProfileMismatch;
         }
         if (opts.images) |images| try images.check(root);
+        if (root.media) |id| self.media_bytes = try @import("served_media.zig").read(self.gpa, history.storage.Store.from(&self.session), id);
     }
 
     fn saveGraph(self: *Bind) anyerror!void {

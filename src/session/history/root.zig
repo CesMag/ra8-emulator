@@ -31,7 +31,7 @@ const std = @import("std");
 /// the record: the root has no per-field lengths that would let a reader
 /// skip what it does not understand, so any other version would decode
 /// into a different shape silently.
-pub const version: u32 = 1;
+pub const version: u32 = 2;
 
 pub const Error = error{ BadVersion, Truncated, BadValue, TooLarge, ImageMismatch };
 
@@ -108,6 +108,8 @@ pub const Root = struct {
     skip_flags: u32 = 0,
     elf0: Image,
     elf1: ?Image = null,
+    /// Content address of the initial SD snapshot object. Version 1 has none.
+    media: ?[16]u8 = null,
 };
 
 fn checkedLen(comptime W: usize, len: usize) Error!void {
@@ -198,6 +200,8 @@ fn writeAll(root: *const Root, w: *std.Io.Writer) (std.Io.Writer.Error || Error)
         try writeBlob(w, elf.bytes);
         try w.writeAll(&elf.identity);
     }
+    try w.writeByte(@intFromBool(root.media != null));
+    if (root.media) |id| try w.writeAll(&id);
 }
 
 fn writeText(w: *std.Io.Writer, value: []const u8) std.Io.Writer.Error!void {
@@ -212,7 +216,8 @@ fn writeBlob(w: *std.Io.Writer, bytes: []const u8) std.Io.Writer.Error!void {
 
 pub fn decode(bytes: []const u8) Error!Root {
     var c: Cursor = .{ .bytes = bytes };
-    if (try c.int(u32) != version) return Error.BadVersion;
+    const v = try c.int(u32);
+    if (v != 1 and v != version) return Error.BadVersion;
     var root: Root = .{ .snapshot_version = try c.int(u32), .elf0 = undefined };
     @memcpy(&root.emulator_commit, try c.take(commit_len));
     root.model_version = try readText(&c);
@@ -251,6 +256,7 @@ pub fn decode(bytes: []const u8) Error!Root {
     const elf1_present = try flag(&c);
     root.elf0 = try readImage(&c);
     root.elf1 = if (elf1_present) try readImage(&c) else null;
+    if (v >= 2 and try flag(&c)) root.media = (try c.take(16))[0..16].*;
     if (c.at != bytes.len) return Error.BadValue;
     try check(&root);
     return root;

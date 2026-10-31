@@ -12,6 +12,11 @@ const fields = @import("ra8_snapshot").fields;
 const blocks = @import("ra8_snapshot").blocks;
 const cards = @import("ra8_components").sd_card.snapshot;
 const host = @import("ra8_chip").periph.sdhi.snapshot;
+const Spi = @import("ra8_components").sd_card.Card;
+const Bus = @import("ra8_components").sd_card.bus_card.Card;
+const Controller = @import("ra8_chip").periph.sdhi.Sdhi;
+
+const Prepared = struct { spi: cards.Staged(Spi), controller: Controller, bus: cards.Staged(Bus) };
 
 pub const Error = file.Error || fields.Error || error{ Missing, OutOfMemory };
 
@@ -32,16 +37,28 @@ fn body(writer: anytype, board: anytype) !void {
 /// section read cleanly, every index is inside its buffer and both block
 /// maps are built.
 pub fn load(board: anytype, bytes: []const u8) Error!void {
+    var staged = try prepare(board, bytes);
+    var spi_map = try staged.spi.build();
+    errdefer blocks.free(&spi_map);
+    const bus_map = try staged.bus.build();
+    staged.spi.install(&board.sd, spi_map);
+    board.card = staged.controller;
+    staged.bus.install(&board.host_card, bus_map);
+}
+
+/// Parse every card, controller field and block index without changing state
+/// or allocating block maps. Startup admission uses the same parser as load.
+pub fn validate(bytes: []const u8) Error!void {
+    const blank = .{ .sd = Spi.init(std.heap.page_allocator), .card = Controller.init(), .host_card = Bus.init(std.heap.page_allocator) };
+    _ = try prepare(&blank, bytes);
+}
+
+fn prepare(board: anytype, bytes: []const u8) Error!Prepared {
     const section = try file.Reader.find(bytes, .sd) orelse return Error.Missing;
     var cursor: fields.Cursor = .{ .bytes = section.payload };
-    var spi = try cards.readSpi(&cursor, &board.sd);
+    const spi = try cards.readSpi(&cursor, &board.sd);
     const controller = try host.read(&cursor, &board.card);
-    var bus = try cards.readBus(&cursor, &board.host_card);
+    const bus = try cards.readBus(&cursor, &board.host_card);
     if (!cursor.done() or !cards.spiFits(&spi.card) or !host.fits(&controller)) return Error.BadValue;
-    var spi_map = try spi.build();
-    errdefer blocks.free(&spi_map);
-    const bus_map = try bus.build();
-    spi.install(&board.sd, spi_map);
-    board.card = controller;
-    bus.install(&board.host_card, bus_map);
+    return .{ .spi = spi, .controller = controller, .bus = bus };
 }

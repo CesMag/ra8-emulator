@@ -60,3 +60,19 @@ pub const Images = struct {
         }
     }
 };
+
+/// Reopen uses only the frozen root; host paths are never consulted again.
+pub fn media(self: anytype, startup: @import("served_setup.zig").Startup) !void {
+    const codec = @import("served_media.zig");
+    if (self.history) |bind| if (bind.reopened) {
+        if (bind.media_bytes) |bytes| try codec.load(self.owner.board(), bytes);
+        if (self.owner.session().persistent_recorder) |recorder| recorder.root_bytes = bind.media_bytes.?.len;
+        self.media = bind.root.?.media;
+        return;
+    };
+    if (startup.media) |bytes| {
+        try codec.load(self.owner.board(), bytes);
+    } else try @import("served_card.zig").stage(self, startup.card);
+    const recorder = self.owner.session().persistent_recorder orelse return;
+    self.media = try codec.save(self.gpa, self.owner.board(), recorder);
+}

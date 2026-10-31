@@ -51,6 +51,10 @@ pub const Recorded = struct {
     }
 
     fn openImages(gpa: std.mem.Allocator, runs: usize, profile: ?[]const u8, first: []const u8, second: ?[]const u8) !*Recorded {
+        return openStartup(gpa, runs, profile, first, second, .{});
+    }
+
+    pub fn openStartup(gpa: std.mem.Allocator, runs: usize, profile: ?[]const u8, first: []const u8, second: ?[]const u8, startup: ra8.rpc.served_setup.Startup) !*Recorded {
         const self = try gpa.create(Recorded);
         errdefer gpa.destroy(self);
         self.temp = std.testing.tmpDir(.{});
@@ -59,7 +63,7 @@ pub const Recorded = struct {
         errdefer gpa.free(self.root);
         {
             var served: ra8.rpc.served_setup.Served = undefined;
-            try served.openInitial(gpa, std.testing.io, first, profile, .{ .root = self.root, .checkpoint_every = 1, .kept = true }, if (second) |bytes| .{ .bytes = bytes } else null);
+            try served.openInputs(gpa, std.testing.io, first, profile, .{ .root = self.root, .checkpoint_every = 1, .kept = true }, if (second) |bytes| .{ .bytes = bytes } else null, startup);
             defer served.deinit();
             const session = served.owner.session();
             try session.setRunBudget(.cpu0, 40_000);

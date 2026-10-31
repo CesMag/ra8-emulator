@@ -176,7 +176,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         .{ .checkpoint_every = asked.checkpoint_every, .ram_budget = asked.ram_budget, .frame_hz = asked.frame_hz }
     else
         null;
-    setup.openInitial(allocator, io, asked.elf, null, history_opts, if (asked.cpu1) |path| .{ .path = path } else null) catch |err| {
+    setup.openInputs(allocator, io, asked.elf, null, history_opts, if (asked.cpu1) |path| .{ .path = path } else null, .{ .card = asked.sdhi }) catch |err| {
         std.debug.print("serve: cannot open {s}: {s}\n", .{ asked.elf, @errorName(err) });
         return 1;
     };
@@ -191,21 +191,6 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
             return 1;
         };
     }
-    card_setup.prepareSdhi(setup.owner.board(), io, asked.sdhi) catch |err| {
-        std.debug.print("serve: cannot fill the SD card: {s}\n", .{@errorName(err)});
-        return 1;
-    };
-    var staged: [card_apps.max_apps]card_apps.Staged = undefined;
-    const apps = card_apps.paired(io, allocator, asked.sdhi.appPaths(), &staged) catch |err| {
-        std.debug.print("serve: cannot read a module ELF: {s}\n", .{@errorName(err)});
-        return 1;
-    };
-    defer card_apps.unload(allocator, apps);
-    var pairs: [card_apps.max_apps]txm_debug.Pair = undefined;
-    setup.pairModules(card_apps.pairs(apps, &pairs) catch |err| {
-        std.debug.print("serve: a module ELF is not an ELF: {s}\n", .{@errorName(err)});
-        return 1;
-    });
     var armer = BreakArmer{ .session = setup.context.session };
     if (setup.context.modules) |table|
         table.armer = .{ .ctx = &armer, .arm = BreakArmer.arm, .drop = BreakArmer.drop };

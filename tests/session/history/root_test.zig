@@ -135,7 +135,7 @@ test "encode refuses a length outside its cap and unknown skip bits" {
 test "an unknown version is refused" {
     var bytes = try encoded(sample());
     defer std.testing.allocator.free(bytes);
-    bytes[0] = 2;
+    bytes[0] = root.version + 1;
     try std.testing.expectError(error.BadVersion, root.decode(bytes));
 }
 
@@ -228,4 +228,18 @@ test "an empty elf image is refused" {
     var r2 = sample();
     r2.elf1 = .{ .identity = root.identity(""), .bytes = "" };
     try std.testing.expectError(error.BadValue, encoded(r2));
+}
+
+test "version one roots remain decodable without an initial media reference" {
+    var r = sample();
+    r.media = null;
+    const bytes = try encoded(r);
+    defer std.testing.allocator.free(bytes);
+    std.mem.writeInt(u32, bytes[0..4], 1, .little);
+    const old = try root.decode(bytes[0 .. bytes.len - 1]);
+    try std.testing.expect(old.media == null);
+    r.media = @splat(0x71);
+    const current = try encoded(r);
+    defer std.testing.allocator.free(current);
+    try std.testing.expectEqual(r.media, (try root.decode(current)).media);
 }

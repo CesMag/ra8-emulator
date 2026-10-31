@@ -25,6 +25,11 @@ pub const Hosted = struct {
     /// whichever thread answers the listener.
     raise: std.atomic.Value(bool) = .init(false),
 
+    pub fn rebind(self: *Hosted, context: *served_server.Context) void {
+        self.context = context;
+        context.transport_async = true;
+    }
+
     /// List the one session and its gdb port in the discovery file.
     pub fn announce(self: *Hosted, elf: []const u8, live: ?*session_api.Session) void {
         _ = self.listener.addGdb(elf, live) catch return;

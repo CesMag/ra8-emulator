@@ -40,9 +40,8 @@ pub const Boot = struct {
     /// Brings the session up on `image` and serves it to the shell. The
     /// drive loop loads the image once the session greets.
     pub fn start(self: *Boot, image: first_image.Image) !void {
-        try self.session.openRecording(self.allocator, self.io, image.path, null, self.store.dir);
+        try self.session.openRecordingApps(self.allocator, self.io, image.path, null, self.store.dir, self.apps);
         errdefer self.session.deinit();
-        try self.session.setup.stageApps(self.io, self.allocator, self.apps);
         // The local session rides the worker's native mailbox (RA8EMU-1196)
         // in both modes: the thread serves it only when someone is using the
         // window, and the shell's own thread drains it between frames

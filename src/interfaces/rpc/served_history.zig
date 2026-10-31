@@ -37,6 +37,7 @@ pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator, board_pr
     if (self.history) |b| if (b.reopened and b.root == null) return error.NoRoot;
     const session = self.owner.session();
     self.root = .{
+        .media = self.media,
         .snapshot_version = @import("history_validity.zig").snapshot_version,
         .emulator_commit = @import("history_validity.zig").commit,
         .model_version = @import("history_validity.zig").model,

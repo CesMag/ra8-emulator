@@ -117,6 +117,7 @@ pub const Recorder = struct {
     /// Bytes the object space holds for this segment's checkpoints, part
     /// of what the budget counts as used.
     object_bytes: u64 = 0,
+    root_bytes: u64 = 0,
     /// The pressure the last disk check answered with; the application
     /// reads it to warn at 80 percent before the stop at 100.
     last_pressure: budget.Pressure = .normal,
@@ -190,6 +191,15 @@ pub const Recorder = struct {
     /// boundary.
     pub fn recordIntervention(self: *Recorder, header: record.Header, intervention: record.Intervention) anyerror!void {
         try self.stage(@backingInt(record.Kind.intervention), header, intervention.what, intervention.body);
+    }
+
+    /// Immutable root objects share the checkpoint budget and durability gate.
+    pub fn putRootObject(self: *Recorder, name: []const u8, bytes: []const u8) anyerror!void {
+        const objects = self.objects orelse return Error.NoObjects;
+        if (self.disk) |watch| _ = try self.checkDisk(watch, self.usedBytes(), bytes.len);
+        try objects.put(objects.context, name, bytes);
+        try objects.sync(objects.context);
+        self.root_bytes += bytes.len;
     }
 
     /// Pins one checkpoint: writes the saved machine's bytes into the
@@ -267,7 +277,7 @@ pub const Recorder = struct {
         if (self.replaying or self.stopped) return;
         const objects = self.objects orelse return Error.NoObjects;
         if (self.disk) |watch| {
-            _ = try self.checkDisk(watch, self.history_bytes + self.object_bytes, bytes.len);
+            _ = try self.checkDisk(watch, self.usedBytes(), bytes.len);
         }
         var digest: [32]u8 = undefined;
         std.crypto.hash.sha2.Sha256.hash(bytes, &digest, .{});
@@ -300,6 +310,10 @@ pub const Recorder = struct {
     /// relief, once, then one re-check whose answer stands. The relief
     /// crosses as a callback the same way the free-space read does,
     /// because session never touches the host.
+    fn usedBytes(self: *const Recorder) u64 {
+        return self.history_bytes + self.object_bytes + self.root_bytes;
+    }
+
     fn checkDisk(self: *Recorder, watch: Budget, used: u64, additional: u64) anyerror!budget.Pressure {
         const free = try watch.free(watch.context);
         if (budget.checkCommit(used, additional, watch.cap, free, watch.floor)) |answer| {
@@ -360,7 +374,7 @@ pub const Recorder = struct {
         if (self.stopped) return;
         if (self.disk) |watch| {
             if (self.log.pending_bytes > 0) {
-                _ = try self.checkDisk(watch, self.history_bytes + self.object_bytes, self.log.pending_bytes);
+                _ = try self.checkDisk(watch, self.usedBytes(), self.log.pending_bytes);
             }
         }
         try self.log.commit(now_ns);

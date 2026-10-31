@@ -83,6 +83,7 @@ test {
     _ = @import("interfaces/gui/shell/first_image_test.zig");
     _ = @import("interfaces/gui/shell/boot_test.zig");
     _ = @import("interfaces/gui/local_session_test.zig");
+    _ = @import("interfaces/gui/shell/rebuild_test.zig");
     _ = @import("interfaces/gui/session_worker_test.zig");
     _ = @import("interfaces/gui/local_native_test.zig");
     _ = @import("interfaces/gui/local_native_link_test.zig");
@@ -319,6 +320,7 @@ test {
     _ = @import("interfaces/cli/usb_disk_option_test.zig");
     _ = @import("interfaces/rpc/card_apps_test.zig");
     _ = @import("interfaces/rpc/served_apps_test.zig");
+    _ = @import("interfaces/rpc/served_media_test.zig");
     _ = @import("interfaces/usbip/wire_test.zig");
     _ = @import("interfaces/usbip/exported_test.zig");
     _ = @import("interfaces/cli/debug_front_test.zig");
