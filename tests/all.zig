@@ -91,6 +91,7 @@ test {
     _ = @import("session/board/camera_test.zig");
     _ = @import("session/board/recorded_camera_test.zig");
     _ = @import("session/board/recorded_c6_test.zig");
+    _ = @import("session/board/recorded_c6_dns_test.zig");
     _ = @import("session/board/recorded_usbip_test.zig");
     _ = @import("session/board/recorded_usbip_hangup_test.zig");
     _ = @import("session/board_plug_list_test.zig");
