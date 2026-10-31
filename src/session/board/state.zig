@@ -205,10 +205,10 @@ pub const Files = struct {
 
     pub fn identity(self: *const Files) run_file.Identity {
         var hashes: run_file.Identity = @splat(null);
-        if (self.image) |image| hashes[0] = run_file.imageIdentity(image);
         if (self.images) |images| for (images.*, 0..) |held, index| {
             if (held) |image| hashes[index] = run_file.imageIdentity(image);
         };
+        if (hashes[0] == null and self.image != null) hashes[0] = run_file.imageIdentity(self.image.?);
         return hashes;
     }
 
