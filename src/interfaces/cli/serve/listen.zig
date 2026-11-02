@@ -1,5 +1,6 @@
 //! `serve --listen unix:PATH|tcp:[HOST]:PORT` (RA8EMU-736): bind, then
-//! serve one client at a time until SIGINT or SIGTERM. An empty host or
+//! serve one client at a time until SIGINT, SIGTERM, SIGHUP or SIGQUIT (a
+//! closed terminal or a supervisor stop ends it like the others). An empty host or
 //! `localhost` binds 127.0.0.1; any other host must be an IP literal. The
 //! bound address goes to stderr, and a Unix socket path is removed on exit.
 const std = @import("std");
@@ -66,7 +67,8 @@ fn ready(io: std.Io, fd: std.posix.fd_t) !bool {
     return (try sock_ready.wait(io, fd, accept_wait_ms)).any();
 }
 
-/// SIGINT and SIGTERM end the serve cleanly at the next idle check. Windows
+/// SIGINT, SIGTERM, SIGHUP and SIGQUIT end the serve cleanly at the next idle
+/// check, so the exit is 0 and a Unix socket path is removed. Windows
 /// has no POSIX signals, so Ctrl+C, Ctrl+Break and console close do it there.
 fn catchStops() void {
     if (builtin.os.tag == .windows) {
@@ -80,6 +82,8 @@ fn catchStops() void {
     };
     std.posix.sigaction(std.posix.SIG.TERM, &action, null);
     std.posix.sigaction(std.posix.SIG.INT, &action, null);
+    std.posix.sigaction(std.posix.SIG.HUP, &action, null);
+    std.posix.sigaction(std.posix.SIG.QUIT, &action, null);
 }
 
 fn onStop(_: std.posix.SIG) callconv(.c) void {

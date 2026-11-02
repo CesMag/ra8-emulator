@@ -50,8 +50,9 @@ fn listen(spec: []const u8, line: []u8) !serve_peer.Listening {
     }
 }
 
-fn stop(child: *std.process.Child) !void {
-    if (!on_windows) return std.posix.kill(child.id.?, .TERM);
+/// Stop serve: `signal` on POSIX; Windows has only the console Ctrl+Break event.
+fn stop(child: *std.process.Child, signal: std.posix.SIG) !void {
+    if (!on_windows) return std.posix.kill(child.id.?, signal);
     const pid = win32.GetProcessId(child.id.?);
     try std.testing.expect(pid != 0);
     _ = win32.FreeConsole();
@@ -65,11 +66,16 @@ fn stop(child: *std.process.Child) !void {
 
 /// Drive one session over `connection`, hang up, then stop serve with SIGTERM.
 fn session(gpa: std.mem.Allocator, child: *std.process.Child, connection: *Connection) !void {
+    return sessionStoppedBy(gpa, child, connection, .TERM);
+}
+
+/// Drive one session over `connection`, hang up, then stop serve with `signal`.
+fn sessionStoppedBy(gpa: std.mem.Allocator, child: *std.process.Child, connection: *Connection, signal: std.posix.SIG) !void {
     const peer = try serve_peer.Peer.init(gpa, connection.transport());
     defer peer.deinit();
     try peer.drive();
     connection.close();
-    try stop(child);
+    try stop(child, signal);
     try std.testing.expectEqual(Term{ .exited = 0 }, try child.wait(std.testing.io));
 }
 
@@ -101,6 +107,40 @@ test "serve --listen unix:PATH serves a client and removes the path on SIGTERM" 
     var connection = try Connection.unix(std.testing.io, path);
     try session(gpa, &started.child, &connection);
     try std.testing.expectError(error.FileNotFound, std.Io.Dir.cwd().access(std.testing.io, path, .{}));
+}
+
+test "serve --listen unix:PATH exits 0 and removes the path on SIGHUP and SIGQUIT" {
+    if (on_windows) return error.SkipZigTest; // POSIX signals do not exist on Windows
+    const gpa = std.testing.allocator;
+    for ([_]std.posix.SIG{ .HUP, .QUIT }) |signal| {
+        var tmp = std.testing.tmpDir(.{});
+        defer tmp.cleanup();
+        const path = try serve_peer.socketPath(gpa, &tmp.sub_path, "serve.sock");
+        defer gpa.free(path);
+        defer std.Io.Dir.cwd().deleteFile(std.testing.io, path) catch {};
+        const spec = try std.fmt.allocPrint(gpa, "unix:{s}", .{path});
+        defer gpa.free(spec);
+        var line: [256]u8 = undefined;
+        var started = try listen(spec, &line);
+        errdefer started.child.kill(std.testing.io);
+        var connection = try Connection.unix(std.testing.io, path);
+        try sessionStoppedBy(gpa, &started.child, &connection, signal);
+        try std.testing.expectError(error.FileNotFound, std.Io.Dir.cwd().access(std.testing.io, path, .{}));
+    }
+}
+
+test "serve --listen tcp::0 exits 0 on SIGHUP and SIGQUIT" {
+    if (on_windows) return error.SkipZigTest; // POSIX signals do not exist on Windows
+    const gpa = std.testing.allocator;
+    for ([_]std.posix.SIG{ .HUP, .QUIT }) |signal| {
+        var line: [128]u8 = undefined;
+        var started = try listen("tcp::0", &line);
+        errdefer started.child.kill(std.testing.io);
+        const colon = std.mem.lastIndexOfScalar(u8, started.bound, ':').?;
+        const port = try std.fmt.parseInt(u16, started.bound[colon + 1 ..], 10);
+        var connection = try Connection.tcp(std.testing.io, try std.Io.net.IpAddress.parse("127.0.0.1", port));
+        try sessionStoppedBy(gpa, &started.child, &connection, signal);
+    }
 }
 
 test "serve --listen with a bad spec prints its usage and exits 2" {
