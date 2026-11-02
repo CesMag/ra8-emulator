@@ -51,6 +51,92 @@ fn restore(bytes: []const u8) !memory.Store {
     return store;
 }
 
+// Independent format oracle: builds page records before their region header,
+// rather than sharing the production sizing/counting pass or zero helper.
+fn legacyRegion(base: u32, bytes: []const u8, writer: *std.Io.Writer) !void {
+    var pages = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer pages.deinit();
+    var count: u32 = 0;
+    var offset: usize = 0;
+    while (offset < bytes.len) : (offset += memory.page) {
+        const chunk = bytes[offset..@min(offset + memory.page, bytes.len)];
+        if (std.mem.allEqual(u8, chunk, 0)) continue;
+        try pages.writer.writeInt(u32, @intCast(offset), .little);
+        try pages.writer.writeAll(chunk);
+        count += 1;
+    }
+    try writer.writeInt(u32, base, .little);
+    try writer.writeInt(u32, @intCast(bytes.len), .little);
+    try writer.writeInt(u32, count, .little);
+    try writer.writeAll(pages.written());
+}
+
+fn expectLegacyEncoding(store: *const memory.Store, kind: file.Kind) !void {
+    var payload = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer payload.deinit();
+    var count: u32 = @intFromBool(store.owns_port);
+    for (store.owned) |owned| count += @intFromBool(owned);
+    for (store.extra.windows) |held| count += @intFromBool(held != null);
+    try payload.writer.writeInt(u32, count, .little);
+    for (memmap.ram, 0..) |entry, index| {
+        if (store.owned[index]) try legacyRegion(entry.base, store.pages[index].?, &payload.writer);
+    }
+    if (store.owns_port) try legacyRegion(memmap.sdram_base, store.region(memmap.sdram_base).?, &payload.writer);
+    for (store.extra.windows) |held| {
+        if (held) |window| try legacyRegion(window.base, window.bytes, &payload.writer);
+    }
+    const state: memory.FabricState = if (ra8.board.external.backing.fabricOf(store)) |fabric| fabric.state() else null;
+    try ra8.snapshot.fields.write(&payload.writer, state);
+    var expected = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer expected.deinit();
+    try file.writeSectionHeader(&expected.writer, kind, payload.written().len);
+    try expected.writer.writeAll(payload.written());
+    var actual = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer actual.deinit();
+    try memory.saveAs(store, kind, &actual.writer);
+    try std.testing.expectEqualSlices(u8, expected.written(), actual.written());
+}
+
+test "saved memory bytes match the legacy format across sparse owned and borrowed regions" {
+    var first = try memory.Store.init(null);
+    defer first.deinit();
+    try first.map(window_base, memory.page + 17);
+    try first.map(window_base + 0x10000, 1);
+    for (memmap.ram, 0..) |entry, index| {
+        if (!first.owned[index]) continue;
+        put(&first, entry.base, "first");
+        const bytes = first.pages[index].?;
+        bytes[bytes.len - 1] = 0xa5;
+    }
+    put(&first, window_base + memory.page + 16, "x");
+    try expectLegacyEncoding(&first, .memory);
+    // A later save recomputes counts, including a now-zero first page and
+    // a newly nonzero, one-byte window; no count survives between calls.
+    @memset(first.pages[0].?[0..memory.page], 0);
+    put(&first, window_base + 0x10000, "y");
+    try expectLegacyEncoding(&first, .memory);
+    var second = try memory.Store.init(&first);
+    defer second.deinit();
+    put(&second, memmap.mram_base + memory.page, "private");
+    try expectLegacyEncoding(&second, .second_memory);
+}
+
+test "saved memory bytes match the legacy format with external SDRAM and fabric state" {
+    var config = ra8.board.external.memory.Config{};
+    config.ospi.size = 1024 * 1024;
+    config.sdram.size = 1024 * 1024;
+    var flash = ra8.components.nor_flash.Flash.init(std.testing.allocator);
+    defer flash.deinit();
+    var store = try memory.Store.init(null);
+    defer store.deinit();
+    var external: ra8.board.external.backing.Backing = undefined;
+    const layout = try fabricStore(config, &flash, &external, &store);
+    defer external.deinit();
+    put(&store, memmap.sdram_base + config.sdram.size - 1, "x");
+    external.fabric.note(.dmac, layout.locate(memmap.sdram_base + 64, 4).?, .write, 4);
+    try expectLegacyEncoding(&store, .memory);
+}
+
 test "every region and a mapped window come back byte-identical" {
     var first = try memory.Store.init(null);
     defer first.deinit();

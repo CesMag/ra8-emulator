@@ -30,16 +30,17 @@ pub fn save(store: *const Store, writer: anytype) !void {
 }
 
 pub fn saveAs(store: *const Store, kind: file.Kind, writer: anytype) !void {
-    try file.writeSectionHeader(writer, kind, payloadLen(store));
+    var live: LiveCounts = undefined;
+    try file.writeSectionHeader(writer, kind, payloadLen(store, &live));
     try writer.writeInt(u32, regionCount(store), .little);
     for (memmap.ram, 0..) |entry, index| {
         if (!store.owned[index]) continue;
-        try saveRegion(entry.base, store.pages[index].?, writer);
+        try saveRegion(entry.base, store.pages[index].?, live[index], writer);
     }
-    if (store.owns_port) try saveRegion(memmap.sdram_base, store.region(memmap.sdram_base).?, writer);
-    for (store.extra.windows) |held| {
+    if (store.owns_port) try saveRegion(memmap.sdram_base, store.region(memmap.sdram_base).?, live[memmap.ram.len], writer);
+    for (store.extra.windows, 0..) |held, index| {
         const window = held orelse continue;
-        try saveRegion(window.base, window.bytes, writer);
+        try saveRegion(window.base, window.bytes, live[memmap.ram.len + 1 + index], writer);
     }
     const state: ?external.State = if (external_backing.fabricOf(store)) |fabric| fabric.state() else null;
     try fields.write(writer, state);
@@ -197,10 +198,10 @@ fn fixedBacking(store: *const Store, base: u32) ?[]u8 {
     return null;
 }
 
-fn saveRegion(base: u32, bytes: []const u8, writer: anytype) !void {
+fn saveRegion(base: u32, bytes: []const u8, live: u32, writer: anytype) !void {
     try writer.writeInt(u32, base, .little);
     try writer.writeInt(u32, @intCast(bytes.len), .little);
-    try writer.writeInt(u32, liveCount(bytes), .little);
+    try writer.writeInt(u32, live, .little);
     var offset: usize = 0;
     while (offset < bytes.len) : (offset += page) {
         const chunk = bytes[offset..@min(offset + page, bytes.len)];
@@ -228,14 +229,16 @@ fn backing(store: *Store, base: u32, len: u32) Error![]u8 {
     return (store.extra.locate(base, len) orelse return Error.Unbacked).bytes;
 }
 
-fn payloadLen(store: *const Store) u64 {
+const LiveCounts = [memmap.ram.len + 1 + @as(Store, .{}).extra.windows.len]u32;
+
+fn payloadLen(store: *const Store, live: *LiveCounts) u64 {
     var len: u64 = 4;
     for (memmap.ram, 0..) |_, index| {
-        if (store.owned[index]) len += regionLen(store.pages[index].?);
+        if (store.owned[index]) len += regionLen(store.pages[index].?, &live[index]);
     }
-    if (store.owns_port) len += regionLen(store.region(memmap.sdram_base).?);
-    for (store.extra.windows) |held| {
-        if (held) |window| len += regionLen(window.bytes);
+    if (store.owns_port) len += regionLen(store.region(memmap.sdram_base).?, &live[memmap.ram.len]);
+    for (store.extra.windows, 0..) |held, index| {
+        if (held) |window| len += regionLen(window.bytes, &live[memmap.ram.len + 1 + index]);
     }
     len += stateLen(store);
     return len;
@@ -248,12 +251,16 @@ fn stateLen(store: *const Store) u64 {
     return counter.fullCount();
 }
 
-fn regionLen(bytes: []const u8) u64 {
+fn regionLen(bytes: []const u8, live: *u32) u64 {
     var len: u64 = 12;
+    live.* = 0;
     var offset: usize = 0;
     while (offset < bytes.len) : (offset += page) {
         const chunk = bytes[offset..@min(offset + page, bytes.len)];
-        if (!zero(chunk)) len += 4 + chunk.len;
+        if (!zero(chunk)) {
+            len += 4 + chunk.len;
+            live.* += 1;
+        }
     }
     return len;
 }
@@ -263,15 +270,6 @@ fn regionCount(store: *const Store) u32 {
     for (store.owned) |mine| count += @intFromBool(mine);
     count += @intFromBool(store.owns_port);
     for (store.extra.windows) |held| count += @intFromBool(held != null);
-    return count;
-}
-
-fn liveCount(bytes: []const u8) u32 {
-    var count: u32 = 0;
-    var offset: usize = 0;
-    while (offset < bytes.len) : (offset += page) {
-        count += @intFromBool(!zero(bytes[offset..@min(offset + page, bytes.len)]));
-    }
     return count;
 }
 
