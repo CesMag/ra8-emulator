@@ -89,7 +89,7 @@ pub const Bind = struct {
         bind.base = if (opts.reopen != null)
             try history.base.Base.existingConfigured(allocator, io, path, .cache, .{ .recover = false })
         else
-            try history.base.Base.openConfigured(allocator, io, path, .cache, .{});
+            try @import("history_startup.zig").openFresh(allocator, io, path);
         errdefer bind.base.close();
         bind.session = if (opts.reopen) |id|
             try history.session.Session.reopenUnsettled(&bind.base, id)
