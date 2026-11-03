@@ -32,6 +32,7 @@ pub fn advance(context: *handlers.Context, args: proto.Advance) Outcome {
     const target = std.math.add(u64, from, args.ns) catch return .{ .err = .bad_args };
     if (context.transport) |plane| {
         const wall = context.wall orelse return refuse(error.NoWall);
+        _ = budgetOf(session, which) catch |err| return refuse(err);
         const ticket = plane.command(.{ .advance = .{ .core = which, .ns = args.ns } }) catch |err| return refuse(err);
         const ended = plane.finish(ticket, wall, null) catch |err| return refuse(err);
         return reply(context, args.core, from, ended);
@@ -48,6 +49,7 @@ pub fn advance(context: *handlers.Context, args: proto.Advance) Outcome {
 /// The reply both paths end with: the stop the run ended in and the time it reached.
 fn reply(context: *handlers.Context, core: proto.Core, from: u64, ended: api.Ended) Outcome {
     const session = context.session;
+    if (session.persistent_recorder) |rec| rec.force() catch |err| return refuse(err);
     const stop = handlers.stopped(session, core, ended);
     context.pending = stop;
     const to = session.now() catch |err| return refuse(err);

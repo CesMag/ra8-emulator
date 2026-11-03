@@ -134,7 +134,7 @@ pub const Host = struct {
     /// Answer at most one frame, then send the UART bytes, the LCD dirty
     /// rectangles, the session events, the RTOS events and the stop event it
     /// produced, in that order.
-    pub fn poll(self: *Host, tx: []u8) rpc.Error!rpc.Step {
+    pub fn poll(self: *Host, tx: []u8) anyerror!rpc.Step {
         const step = try self.server.poll(tx);
         const context = self.server.context;
         try pumpFeeds(context, &self.server, tx);
@@ -168,10 +168,11 @@ pub fn pumpFeeds(context: *Context, server: anytype, tx: []u8) !void {
 /// newer command preempted it.
 pub fn pumpTransport(context: *Context, server: anytype, tx: []u8) !void {
     const plane = context.transport orelse return;
-    const wall = context.wall orelse return;
+    if (context.session.persistent_recorder) |rec| try rec.maybeCommit(rec.now());
     if (plane.job == null and context.advance_ticket == null) return;
+    const wall = context.wall orelse return;
     const now = wall.nowFn(wall.context);
-    const pumped = plane.pump(wall, now + pump_slice_ns) catch return;
+    const pumped = try plane.pump(wall, now + pump_slice_ns);
     const subscriber = context.wants(.cpu0, .transport) or context.wants(.cpu1, .transport);
     if (pumped.finished == null and pumped.report.epoch != context.transport_epoch and subscriber) {
         context.transport_epoch = pumped.report.epoch;

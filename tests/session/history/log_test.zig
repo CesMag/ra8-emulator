@@ -164,3 +164,18 @@ test "a whole frame that lies or rots is hard, wherever it sits" {
     tail[bytes.len - 1] ^= 0x01;
     try std.testing.expectError(error.BadCrc, log_mod.scan(tail, &seen, Visitor.visit));
 }
+
+test "deadline subtraction handles backward samples and near overflow" {
+    var sink: Sink = undefined;
+    sink.init();
+    var log: log_mod.Log = .{ .writer = &sink.interface };
+    log.pending_bytes = 1;
+    const top = std.math.maxInt(u64);
+    log.observe(top - 100);
+    try std.testing.expectEqual(.no, log.shouldCommit(top));
+    try std.testing.expectEqual(.no, log.shouldCommit(top - 101));
+    log.observe(0);
+    try std.testing.expectEqual(top - 100, log.last_commit_ns);
+    log.policy.max_delay_ns = 100;
+    try std.testing.expectEqual(.time, log.shouldCommit(top));
+}

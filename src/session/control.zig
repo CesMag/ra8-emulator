@@ -5,6 +5,7 @@ const stop_machine = @import("stop_machine.zig");
 const itm = @import("ra8_chip").periph.itm;
 
 pub fn rewind(session: *api.Session, core: api.Core, back: u32) anyerror!void {
+    if (session.persistent_recorder) |rec| try rec.force();
     try session.select(core);
     const h = session.history orelse return api.Error.NoHistory;
     try h.restore(back);
@@ -16,6 +17,7 @@ pub fn stepBack(session: *api.Session, core: api.Core) anyerror!void {
 }
 
 pub fn interrupt(session: *api.Session, core: api.Core) anyerror!stop_machine.Stop {
+    if (session.persistent_recorder) |rec| try rec.force();
     try session.select(core);
     const stop = session.live.machine.interrupt();
     session.publish(.{ .core = core, .kind = .stopped, .ended = .{ .stop = stop } });
@@ -23,6 +25,7 @@ pub fn interrupt(session: *api.Session, core: api.Core) anyerror!stop_machine.St
 }
 
 pub fn pause(session: *api.Session, core: api.Core) anyerror!void {
+    if (session.persistent_recorder) |rec| try rec.force();
     try session.select(core);
     if (session.smooth_rewind) |smooth| {
         if (smooth.status == .playing_backward) {

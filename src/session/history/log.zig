@@ -14,6 +14,11 @@
 const std = @import("std");
 const format = @import("format.zig");
 
+pub const Clock = struct {
+    context: *anyopaque,
+    nowFn: *const fn (*anyopaque) u64,
+};
+
 pub const CommitPolicy = struct {
     /// Flush when this much time has passed since the last commit, on
     /// the caller's monotonic clock.
@@ -39,7 +44,7 @@ pub const Log = struct {
     /// What a commit right now would be answering for.
     pub fn shouldCommit(self: *const Log, now_ns: u64) Decision {
         if (self.pending_bytes >= self.policy.max_bytes) return .bytes;
-        if (self.have_time and now_ns >= self.last_commit_ns + self.policy.max_delay_ns) return .time;
+        if (self.have_time and now_ns >= self.last_commit_ns and now_ns - self.last_commit_ns >= self.policy.max_delay_ns) return .time;
         return .no;
     }
 
@@ -53,9 +58,13 @@ pub const Log = struct {
     /// the caller's clock.
     pub fn commit(self: *Log, now_ns: u64) std.Io.Writer.Error!void {
         try self.writer.flush();
+        self.acknowledge(now_ns);
+    }
+
+    /// Called only after the complete batch is durable.
+    pub fn acknowledge(self: *Log, now_ns: u64) void {
         self.pending_bytes = 0;
-        self.last_commit_ns = now_ns;
-        self.have_time = true;
+        self.observe(now_ns);
     }
 
     /// Commits at the first of the two thresholds, on the caller's clock.
@@ -66,7 +75,7 @@ pub const Log = struct {
 
     /// Hands the log its first time sample without committing.
     pub fn observe(self: *Log, now_ns: u64) void {
-        self.last_commit_ns = now_ns;
+        self.last_commit_ns = if (self.have_time) @max(self.last_commit_ns, now_ns) else now_ns;
         self.have_time = true;
     }
 };

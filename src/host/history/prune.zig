@@ -1,9 +1,9 @@
 //! The host's share of the history budget's relief order: the orphans
 //! step reclaims the object files no committed record names. The frames
 //! step belongs to the ephemeral frame store and the checkpoint-thinning
-//! step to the session's checkpoint controller. The prune runs on a root
-//! no session holds open, so a staged checkpoint whose object is already
-//! on disk is never mistaken for an orphan.
+//! step to the session's checkpoint controller. A live session supplies
+//! extra references for object writes its next committed batch will name.
+//! Without those references, pruning requires a quiescent session.
 
 const std = @import("std");
 const storage = @import("storage.zig");
@@ -21,6 +21,19 @@ pub const Referrer = struct {
     /// referenced set even when `collect` missed one, and the relief
     /// report counts them. Null for a history without pictures.
     pictures: ?*const Collect = null,
+    /// Runtime objects not yet named by a committed log. The application
+    /// owns the context; collected keys follow the same allocation contract.
+    extra: ?Extra = null,
+
+    pub const Extra = struct {
+        context: *anyopaque,
+        collect: *const fn (*anyopaque, std.mem.Allocator, *std.StringHashMap(void)) anyerror!void,
+    };
+
+    pub fn collectAll(self: Referrer, store: storage.Store, allocator: std.mem.Allocator, names: *std.StringHashMap(void)) !void {
+        try self.collect(store, allocator, names);
+        if (self.extra) |extra| try extra.collect(extra.context, allocator, names);
+    }
 };
 
 pub const Collect = fn (store: storage.Store, allocator: std.mem.Allocator, names: *std.StringHashMap(void)) anyerror!void;
@@ -44,7 +57,7 @@ pub const Report = struct {
 pub fn orphans(store: storage.Store, allocator: std.mem.Allocator, referrer: Referrer) !Report {
     var names = std.StringHashMap(void).init(allocator);
     defer freeNames(allocator, &names);
-    try referrer.collect(store, allocator, &names);
+    try referrer.collectAll(store, allocator, &names);
     if (referrer.pictures) |pictures| try pictures(store, allocator, &names);
 
     var sweep = Sweep{ .store = store, .names = &names };

@@ -52,6 +52,7 @@ pub fn serve(io: std.Io, spec: Spec, context: *served.Context, buffers: loop.Buf
         .tcp => std.debug.print("serve: listening on tcp:{f}\n", .{server.socket.address}),
     }
     while (!loop.stopping.load(.acquire)) {
+        if (context.session.persistent_recorder) |rec| try rec.maybeCommit(rec.now());
         if (!try ready(io, server.socket.handle)) continue;
         const client = try server.accept(io);
         var connection: Connection = .{ .stream = client, .io = io };

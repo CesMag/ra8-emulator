@@ -54,6 +54,7 @@ pub const Bridge = struct {
     /// grid (the log proves the rest; the cursor is the run's own).
     pub fn facts(context: *anyopaque) anyerror!seek_engine.Facts {
         const self: *Bridge = @ptrCast(@alignCast(context));
+        if (self.session.persistent_recorder) |rec| try rec.force();
         if (self.facts_scratch) |old| self.gpa.free(old.checkpoints);
         self.facts_scratch = null;
         for (self.touched_scratch.items) |t| {
@@ -184,7 +185,7 @@ pub const Bridge = struct {
         const self: *Bridge = @ptrCast(@alignCast(context));
         // Interventions stage between commits; a replay needs every one
         // the line holds, so the staged ones commit before the read.
-        if (self.session.persistent_recorder) |rec| try rec.commit(0);
+        if (self.session.persistent_recorder) |rec| try rec.force();
         if (self.ram) |r| return r.log_bytes.items;
         const d = self.disk orelse return error.NoHistory;
         const bytes = try history_segments.readAll(self.gpa, history.storage.Store.from(&d.session));

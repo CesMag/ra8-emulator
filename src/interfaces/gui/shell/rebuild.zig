@@ -60,6 +60,14 @@ pub const Rebuild = struct {
         // The session is reopened with the worker's thread stopped, and
         // answers again once everything points at the new one.
         self.worker.stop();
+        self.session.setup.flushHistory() catch |err| {
+            replacement.deinit();
+            self.link.close();
+            self.worker.rebind();
+            self.link.openNative(&self.worker.native);
+            if (self.shell.worker != null) try self.worker.start();
+            return err;
+        };
         self.link.close();
         if (self.hosted.*) |*held| held.listener.releaseSession();
         self.session.deinit();

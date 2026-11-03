@@ -369,6 +369,8 @@ test {
     _ = @import("interfaces/rpc/served_history_test.zig");
     _ = @import("interfaces/rpc/served_initial_test.zig");
     _ = @import("interfaces/rpc/history_bind_test.zig");
+    _ = @import("interfaces/rpc/history_pending_test.zig");
+    _ = @import("interfaces/rpc/history_commit_test.zig");
     _ = @import("interfaces/rpc/history_startup_test.zig");
     _ = @import("interfaces/rpc/history_bridge_test.zig");
     _ = @import("interfaces/rpc/served_fork_test.zig");

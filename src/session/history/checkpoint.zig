@@ -94,9 +94,12 @@ pub const Checkpoint = struct {
         const extra = try self.stagePair(header, bytes);
         self.next_id += 1;
         self.last_size = bytes.len + extra;
-        // The record commits at once: object-before-log's record half, so
-        // a crash never leaves a durable object without its naming record.
-        try self.recorder.commit(0);
+        // CP0 is durable before open returns. Later complete pairs share
+        // a batch on the caller clock; clockless embedders stay conservative.
+        if (self.next_id == 1 or self.recorder.clock == null)
+            try self.recorder.force()
+        else
+            try self.recorder.maybeCommit(self.recorder.now());
     }
 
     /// Stages the picture (when bound) and then the checkpoint's record;

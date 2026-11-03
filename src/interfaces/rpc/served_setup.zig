@@ -202,6 +202,7 @@ pub const Served = struct {
 
     fn attachContext(self: *Served, allocator: std.mem.Allocator, board_profile: ?[]const u8) !void {
         self.context.wall = .{ .context = self, .nowFn = hostClock };
+        if (self.owner.session().persistent_recorder) |rec| rec.bindClock(.{ .context = self, .nowFn = hostClock });
         self.context.listing = .{ .context = self.owner.plugs(), .listFn = listParts };
         self.context.board_profile = self.owner.boardProfile();
         self.context.mapping = .{ .context = &self.owner, .mapFn = mapImage, .stackFn = stackOf, .imageFn = imageOf };
@@ -290,6 +291,7 @@ pub const Served = struct {
     pub fn frameCache(self: *Served) ?*frame_cache.FrameCache {
         return if (self.frames) |f| &f.cache else null;
     }
+    pub const flushHistory = served_history.flush;
     pub fn deinit(self: *Served) void {
         served_prefetch.detach(self);
         served_history.deinitNav(self);

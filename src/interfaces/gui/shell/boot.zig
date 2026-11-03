@@ -64,6 +64,13 @@ pub const Boot = struct {
         return .{ .context = self, .startFn = startPicked };
     }
 
+    /// Stop the worker before flushing, and surface a failed orderly close.
+    pub fn flushHistory(self: *Boot) !void {
+        if (self.image == null) return;
+        if (self.apart) self.worker.stop();
+        try self.session.setup.flushHistory();
+    }
+
     /// Closes the link and ends the session, when one was started.
     pub fn deinit(self: *Boot) void {
         if (self.image == null) return;

@@ -94,3 +94,33 @@ test "a successful rebuild rebinds the hosted context and retires old GDB sessio
     _ = try rig.session.setup.owner.session().run(.cpu0, .step);
     try std.testing.expect(rig.session.setup.owner.primaryCpu().slots > 0);
 }
+
+test "a failed old-history flush leaves a GUI rebuild on its original session" {
+    const gpa = std.testing.allocator;
+    const io = std.testing.io;
+    const Sink = @import("../../../session/history/commit_sink.zig").Sink;
+    var sink: Sink = .{};
+    defer sink.bytes.deinit(gpa);
+    var rec = try ra8.session.history_recorder.Recorder.init(gpa, sink.storage(), .{});
+    defer rec.deinit();
+    var rig: @import("../local_rig.zig").Rig = undefined;
+    const image = "tests/fixtures/fpu/fp_basic.elf";
+    try rig.open(image);
+    defer rig.deinit();
+    const original = rig.session.setup;
+    original.owner.session().persistent_recorder = &rec;
+    defer original.owner.session().persistent_recorder = null;
+    try rec.recordBoundary(.{ .position = .{}, .seq = 0 }, .{ .what = .c6_bytes, .body = "pending" });
+    var shell: gui.shell.loop.Shell = .init(gpa, try gui.pane_layout.twoCore(gpa));
+    defer shell.deinit();
+    var hosted: ?gui.shell.hosted.Hosted = null;
+    var pick: gui.shell.board_pick.Pick = .{ .allocator = gpa };
+    var rebuild: gui.shell.rebuild.Rebuild = .{ .allocator = gpa, .io = io, .image = image, .apps = &.{}, .session = &rig.session, .shell = &shell, .hosted = &hosted, .link = &rig.link, .worker = &rig.worker, .pick = &pick };
+    sink.fail_flush = true;
+    try std.testing.expectError(error.FlushFailed, rebuild.apply(ra8.board.profile.ek_ra8d2));
+    try std.testing.expectEqual(original, rig.session.setup);
+    try std.testing.expect(rec.pendingBytes() > 0);
+    try original.flushHistory();
+    _ = try original.owner.session().run(.cpu0, .step);
+    try std.testing.expect(original.owner.primaryCpu().slots > 0);
+}

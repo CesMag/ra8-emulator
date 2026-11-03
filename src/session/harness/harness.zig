@@ -270,6 +270,7 @@ pub const Harness = struct {
 
     pub fn deinit(self: *Harness) void {
         const state = self.state;
+        if (state.persistent) |held| held.recorder.force() catch {};
         if (state.window) |held| held.destroy();
         state.display.deinit();
         state.plugs.deinit();

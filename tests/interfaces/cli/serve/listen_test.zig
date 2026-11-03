@@ -143,6 +143,58 @@ test "serve --listen tcp::0 exits 0 on SIGHUP and SIGQUIT" {
     }
 }
 
+fn logSize(root: std.Io.Dir) !u64 {
+    var dir = try root.openDir(std.testing.io, "history", .{ .iterate = true });
+    defer dir.close(std.testing.io);
+    var entries = dir.iterate();
+    while (try entries.next(std.testing.io)) |entry| {
+        if (entry.kind != .directory) continue;
+        var path: [128]u8 = undefined;
+        const name = try std.fmt.bufPrint(&path, "{s}/log/events-0", .{entry.name});
+        return (try dir.statFile(std.testing.io, name, .{})).size;
+    }
+    return error.NoHistorySession;
+}
+
+test "idle listener commits staged console input after its last client disconnects" {
+    if (on_windows) return error.SkipZigTest;
+    const gpa = std.testing.allocator;
+    const io = std.testing.io;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const base = try tmp.dir.realPathFileAlloc(io, ".", gpa);
+    defer gpa.free(base);
+    const root = try std.fs.path.join(gpa, &.{ base, "history" });
+    defer gpa.free(root);
+    const path = try serve_peer.socketPath(gpa, &tmp.sub_path, "idle.sock");
+    defer gpa.free(path);
+    const spec = try std.fmt.allocPrint(gpa, "unix:{s}", .{path});
+    defer gpa.free(spec);
+    var line: [256]u8 = undefined;
+    var started = try serve_peer.listenArgs(&.{ test_paths.emulator, "serve", "--history", root, "--kept", "--listen", spec, "tests/fixtures/gpio/blink.elf" }, &line);
+    errdefer started.child.kill(io);
+    var connection = try Connection.unix(io, path);
+    var connected = true;
+    defer if (connected) connection.close();
+    const peer = try serve_peer.Peer.init(gpa, connection.transport());
+    defer peer.deinit();
+    const proto = ra8.rpc.session.rpc;
+    try peer.client.greet(peer.tx);
+    _ = try peer.next();
+    _ = try peer.call(proto.Ack, proto.CoreOnly, .pause, .{ .core = .cpu0 });
+    const before = try logSize(tmp.dir);
+    _ = try peer.call(proto.Ack, ra8.rpc.session.intervene.ConsoleInput, .console_input, .{ .core = .cpu0, .bytes = "idle input" });
+    connection.close();
+    connected = false;
+    const end = std.Io.Timestamp.now(io, .awake).toMilliseconds() + 5000;
+    while (try logSize(tmp.dir) == before) {
+        if (std.Io.Timestamp.now(io, .awake).toMilliseconds() >= end) return error.HistoryDeadlineMissed;
+        try io.sleep(.fromMilliseconds(10), .awake);
+    }
+    try stop(&started.child, .TERM);
+    try std.testing.expectEqual(Term{ .exited = 0 }, try started.child.wait(io));
+}
+
 test "serve --listen with a bad spec prints its usage and exits 2" {
     const specs = [_][]const u8{ "tcp:nope", "tcp:host.example:1", "udp::1", "unix:" };
     for (specs) |spec| {

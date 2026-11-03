@@ -119,6 +119,8 @@ pub const Transport = struct {
     job: ?Job = null,
     /// The newest job that finished, so a late `finish` still answers.
     done: ?Finished = null,
+    /// A settled job whose final history flush must succeed before delivery.
+    pending_finish: ?Finished = null,
     /// The bound history bridge (unit 17), when the application serves
     /// one. Null keeps a seek refused.
     history: ?Bridge = null,
@@ -134,6 +136,7 @@ pub const Transport = struct {
         self.cancelled = false;
         switch (cmd) {
             .pause => {
+                if (self.session.persistent_recorder) |rec| try rec.force();
                 self.cancel();
                 self.epoch += 1;
                 return self.issue();
@@ -199,8 +202,16 @@ pub const Transport = struct {
     /// Drive the queued job in slices bounded by the wall until `until_ns`,
     /// a stop, or the job's own end. Never sleeps.
     pub fn pump(self: *Transport, wall: Wall, until_ns: u64) !Pumped {
-        var finished: ?Finished = null;
-        if (self.job) |*job| finished = try self.drive(job, wall, until_ns);
+        if (self.session.persistent_recorder) |rec| try rec.maybeCommit(rec.now());
+        var finished = self.pending_finish;
+        if (finished == null) if (self.job) |*job| {
+            finished = try self.drive(job, wall, until_ns);
+            self.pending_finish = finished;
+        };
+        if (self.session.persistent_recorder) |rec| {
+            if (finished != null) try rec.force() else try rec.maybeCommit(rec.now());
+        }
+        self.pending_finish = null;
         return .{ .report = self.report(), .finished = finished, .drain = self.drainNeeded() };
     }
 
@@ -229,7 +240,13 @@ pub const Transport = struct {
     pub fn finish(self: *Transport, ticket: Ticket, wall: Wall, poll: ?Poll) !api.Ended {
         while (true) {
             if (self.done) |done| {
-                if (done.ticket == ticket) return done.ended;
+                if (done.ticket == ticket) {
+                    if (self.session.persistent_recorder) |rec| try rec.force();
+                    if (self.pending_finish) |pending| if (pending.ticket == ticket) {
+                        self.pending_finish = null;
+                    };
+                    return done.ended;
+                }
             }
             if (self.job == null or self.job.?.ticket != ticket) return Error.Cancelled;
             const start = wall.nowFn(wall.context);

@@ -56,9 +56,13 @@ fn addObject(allocator: std.mem.Allocator, names: *std.StringHashMap(void), obje
 /// Compacts `packs` against every object the committed log's manifests
 /// reach, on every line.
 pub fn compactPacks(store: history.storage.Store, allocator: std.mem.Allocator, packs: *pack_store.PackStore, collect: *const history.prune.Collect) !pack_store.Report {
+    return compactPacksWithReferrer(store, allocator, packs, .{ .collect = collect });
+}
+
+pub fn compactPacksWithReferrer(store: history.storage.Store, allocator: std.mem.Allocator, packs: *pack_store.PackStore, referrer: history.prune.Referrer) !pack_store.Report {
     var names = std.StringHashMap(void).init(allocator);
     defer freeNames(allocator, &names);
-    try collect(store, allocator, &names);
+    try referrer.collectAll(store, allocator, &names);
     var live = session_compaction.LiveSet.init(allocator);
     defer live.deinit();
     var keys = names.keyIterator();

@@ -8,6 +8,7 @@ const branch_mod = ra8.session.history_branch;
 const fork_router_mod = ra8.session.history_fork_router;
 const root_mod = ra8.session.history_root;
 const recorder_mod = ra8.session.history_recorder;
+const Sink = @import("history/commit_sink.zig").Sink;
 const new_history = ra8.session.new_history;
 
 const root_image = "ROOT-IMAGE-ELF0";
@@ -109,7 +110,10 @@ test "the history's own image keeps its lines and goes through the router" {
 test "without a new-history hook a recording session stops recording rather than mixing programs" {
     const rig = try Rig.create(std.testing.allocator);
     defer rig.destroy();
-    var recorder: recorder_mod.Recorder = undefined;
+    var sink: Sink = .{};
+    defer sink.bytes.deinit(std.testing.allocator);
+    var recorder = try recorder_mod.Recorder.init(std.testing.allocator, sink.storage(), .{});
+    defer recorder.deinit();
     rig.session.persistent_recorder = &recorder;
 
     try rig.session.load(.cpu0, other_image);
@@ -123,6 +127,31 @@ test "a session with no history never treats an image as different" {
         .live = .{ .core = undefined, .machine = undefined, .index = 0, .boundary = null, .budget = 1000 },
     };
     try std.testing.expect(!new_history.differs(&session, .cpu0, other_image));
+}
+
+test "image replacement flushes old events first and preserves the image on flush failure" {
+    const rig = try Rig.create(std.testing.allocator);
+    defer rig.destroy();
+    var sink: Sink = .{ .fail_flush = true };
+    defer sink.bytes.deinit(std.testing.allocator);
+    var recorder = try recorder_mod.Recorder.init(std.testing.allocator, sink.storage(), .{});
+    defer recorder.deinit();
+    rig.session.persistent_recorder = &recorder;
+    try recorder.recordIntervention(.{ .position = rig.grid.at, .seq = 0 }, .{ .what = .tap, .body = "old event" });
+
+    try std.testing.expectError(error.FlushFailed, rig.session.load(.cpu0, other_image));
+    try std.testing.expect(rig.loaded == null);
+    try std.testing.expect(rig.session.root != null);
+    try std.testing.expect(rig.session.persistent_recorder == &recorder);
+    try std.testing.expect(recorder.pendingBytes() > 0);
+    try std.testing.expectEqual(@as(usize, 0), sink.bytes.items.len);
+
+    try rig.session.load(.cpu0, other_image);
+    try std.testing.expectEqualStrings(other_image, rig.loaded.?);
+    try std.testing.expectEqual(@as(usize, 0), recorder.pendingBytes());
+    try std.testing.expect(sink.bytes.items.len > 0);
+    try std.testing.expectEqual(@as(usize, 2), sink.flushes);
+    try std.testing.expect(recorder.stopped);
 }
 
 test "a load that fails leaves the old image's lines and identity as they were" {
@@ -145,8 +174,10 @@ test "a load that fails leaves the old image's lines and identity as they were" 
 test "a session that stops recording leaves the old history's branches.bin alone" {
     const rig = try Rig.create(std.testing.allocator);
     defer rig.destroy();
-    var recorder: recorder_mod.Recorder = undefined;
-    recorder.stopped = false;
+    var sink: Sink = .{};
+    defer sink.bytes.deinit(std.testing.allocator);
+    var recorder = try recorder_mod.Recorder.init(std.testing.allocator, sink.storage(), .{});
+    defer recorder.deinit();
     rig.session.persistent_recorder = &recorder;
     rig.session.attachGraphSink(.{ .context = rig, .writeFn = Rig.write });
 

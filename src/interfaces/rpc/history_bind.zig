@@ -20,9 +20,7 @@ const history_segments = @import("history_segments.zig");
 const object_read = @import("object_read.zig");
 const pack_store = @import("pack_store.zig");
 const history_live = @import("history_live.zig");
-const session_compaction = @import("ra8_session").history_compaction;
-const session_manifest = @import("ra8_session").history_manifest;
-const session_object_id = @import("ra8_session").history_object_id;
+const history_pending = @import("history_pending.zig");
 
 /// Formats the segment leaf name for a given branch and segment index.
 pub fn segmentName(buf: []u8, branch: u32, seg: u32) ![]const u8 {
@@ -34,6 +32,7 @@ pub fn segmentName(buf: []u8, branch: u32, seg: u32) ![]const u8 {
 const log_leaf = "events-0";
 pub const Bind = struct {
     gpa: std.mem.Allocator,
+    pending: history_pending.Pending,
     base: history.base.Base,
     session: history.session.Session,
     log: history.storage.ByteFile,
@@ -85,7 +84,8 @@ pub const Bind = struct {
     pub fn open(allocator: std.mem.Allocator, io: std.Io, path: []const u8, opts: Options) !*Bind {
         const bind = try allocator.create(Bind);
         errdefer allocator.destroy(bind);
-        bind.* = .{ .gpa = allocator, .base = undefined, .session = undefined, .log = undefined, .sink = undefined, .storage = undefined, .objects = undefined };
+        bind.* = .{ .gpa = allocator, .pending = .init(allocator), .base = undefined, .session = undefined, .log = undefined, .sink = undefined, .storage = undefined, .objects = undefined };
+        errdefer bind.pending.deinit();
         bind.base = if (opts.reopen != null)
             try history.base.Base.existingConfigured(allocator, io, path, .cache, .{ .recover = false })
         else
@@ -105,9 +105,7 @@ pub const Bind = struct {
         errdefer if (bind.root_bytes) |bytes| allocator.free(bytes);
         try bind.readRoot(opts);
         if (opts.reopen != null) try history.rename.settle(io, bind.session.dir);
-        if (opts.kept) {
-            try bind.session.keep();
-        }
+        if (opts.kept) try bind.session.keep();
         var candidates = try history.branches_file.readCandidates(io, bind.session.dir, allocator);
         defer candidates.deinit(allocator);
         // A reopened log may end in a commit a crash cut short: it is cut
@@ -134,7 +132,8 @@ pub const Bind = struct {
         errdefer bind.log.vtable.close(bind.log.context);
         bind.sink = try allocator.create(LogSink);
         errdefer allocator.destroy(bind.sink);
-        bind.sink.* = .{ .bind = bind, .byte = bind.log };
+        bind.sink.* = .{ .bind = bind, .byte = bind.log, .prepared = .init(allocator) };
+        errdefer bind.sink.prepared.deinit();
         bind.storage = .{
             .context = bind.sink,
             .append = &appendLog,
@@ -144,7 +143,7 @@ pub const Bind = struct {
         };
         bind.packs = try pack_store.PackStore.open(allocator, &bind.session);
         errdefer bind.packs.close();
-        bind.objects = .{ .context = bind, .put = &putObject, .sync = &syncObjects, .putPacked = &putPacked };
+        bind.objects = .{ .context = bind, .put = &history_pending.putObject, .sync = &syncObjects, .putPacked = &history_pending.putPacked };
         // The budget: one read at open sizes the share this history
         // takes, and every check reads the volume fresh.
         const volume = try history.resources.volume(allocator, io, bind.base.dir);
@@ -154,7 +153,7 @@ pub const Bind = struct {
             history.budget.disk(volume.total, 1);
         const watch = try allocator.create(VolumeWatch);
         errdefer allocator.destroy(watch);
-        watch.* = .{ .gpa = allocator, .io = io, .dir = bind.base.dir, .store = store };
+        watch.* = .{ .gpa = allocator, .io = io, .dir = bind.base.dir, .store = store, .pending = &bind.pending };
         bind.watch = watch;
         watch.packs = bind.packs;
         bind.disk = .{ .context = watch, .free = &freeVolume, .cap = shares.session, .floor = shares.free_floor, .relief = &relieveVolume };
@@ -168,6 +167,8 @@ pub const Bind = struct {
     pub fn close(self: *Bind) !history.session.Outcome {
         const gpa = self.gpa;
         self.packs.close();
+        self.pending.deinit();
+        self.sink.prepared.deinit();
         self.log.vtable.close(self.log.context);
         self.disk = null;
         if (self.watch) |watch| gpa.destroy(watch);
@@ -219,26 +220,22 @@ pub const Bind = struct {
 const LogSink = struct {
     bind: *Bind,
     byte: history.storage.ByteFile,
+    prepared: history_pending.Pending,
+    unsafe_from: ?u64 = null,
 };
 
 /// Reads the volume fresh for every budget check; the history root's
 /// directory is the handle the read goes through. The store rides along
 /// for the relief the budget's refusal path runs.
-const VolumeWatch = struct { gpa: std.mem.Allocator, io: std.Io, dir: std.Io.Dir, store: history.storage.Store, packs: ?*pack_store.PackStore = null };
+const VolumeWatch = struct { gpa: std.mem.Allocator, io: std.Io, dir: std.Io.Dir, store: history.storage.Store, pending: *history_pending.Pending, packs: ?*pack_store.PackStore = null };
 
-/// The relief a refused commit or checkpoint runs before the refusal
-/// stands: the frames step only. The frames space holds pure
-/// delete-on-close cache, so the sweep is safe while the session is
-/// open. The orphan sweep needs a root no session holds open (a staged
-/// checkpoint's object is on disk before its log record is), so it
-/// stays a quiescent prune rather than live relief.
+/// Pending object writes stay live until the log's durable flush acknowledges them.
 fn relieveVolume(context: *anyopaque) anyerror!void {
     const watch: *VolumeWatch = @ptrCast(@alignCast(context));
-    _ = try history.prune.relief(watch.store, watch.gpa, prune_referrer);
-    // The pack step: sealed packs that are mostly dead are rewritten. The
-    // objects of a checkpoint still being taken wait unsealed, so they are
-    // never mistaken for dead ones.
-    if (watch.packs) |packs| _ = try history_live.compactPacks(watch.store, watch.gpa, packs, &collectReferenced);
+    var referrer = prune_referrer;
+    referrer.extra = .{ .context = watch.pending, .collect = &history_pending.Pending.collect };
+    _ = try history.prune.relief(watch.store, watch.gpa, referrer);
+    if (watch.packs) |packs| _ = try history_live.compactPacksWithReferrer(watch.store, watch.gpa, packs, referrer);
 }
 
 fn freeVolume(context: *anyopaque) anyerror!u64 {
@@ -257,19 +254,32 @@ fn writeBranchesBin(context: *anyopaque, encoded: []const u8) anyerror!void {
 }
 
 fn appendLog(context: *anyopaque, bytes: []const u8) anyerror!void {
-    const byte = sinkOf(context).byte;
-    const end = try byte.vtable.length(byte.context);
-    try byte.vtable.write(byte.context, end, bytes);
+    const sink = sinkOf(context);
+    errdefer sink.prepared.clear();
+    const end = try sink.byte.vtable.length(sink.byte.context);
+    if (sink.unsafe_from == null) {
+        if (!sink.prepared.prepare(history.storage.Store.from(&sink.bind.session), bytes)) sink.unsafe_from = end;
+    }
+    sink.byte.vtable.write(sink.byte.context, end, bytes) catch |err| {
+        sink.unsafe_from = @min(sink.unsafe_from orelse end, end);
+        return err;
+    };
 }
 
 fn flushLog(context: *anyopaque) anyerror!void {
-    const byte = sinkOf(context).byte;
-    try byte.vtable.sync(byte.context);
+    const sink = sinkOf(context);
+    try sink.byte.vtable.sync(sink.byte.context);
+    sink.bind.pending.acknowledge(&sink.prepared);
+    sink.prepared.clear();
 }
 
 fn truncateLog(context: *anyopaque, len: u64) anyerror!void {
-    const byte = sinkOf(context).byte;
-    try byte.vtable.truncate(byte.context, len);
+    const sink = sinkOf(context);
+    sink.prepared.clear();
+    try sink.byte.vtable.truncate(sink.byte.context, len);
+    if (sink.unsafe_from) |at| if (len <= at) {
+        sink.unsafe_from = null;
+    };
 }
 
 /// Moves appends to segment `seg` of `branch`: the current segment is
@@ -278,6 +288,7 @@ fn truncateLog(context: *anyopaque, len: u64) anyerror!void {
 /// not. Answers the bytes the target already holds.
 fn switchSegmentLog(context: *anyopaque, branch: u32, seg: u32) anyerror!u64 {
     const sink = sinkOf(context);
+    sink.prepared.clear();
     const bind = sink.bind;
     var buf: [64]u8 = undefined;
     const leaf = try segmentName(&buf, branch, seg);
@@ -292,6 +303,8 @@ fn switchSegmentLog(context: *anyopaque, branch: u32, seg: u32) anyerror!u64 {
     sink.byte.vtable.close(sink.byte.context);
     sink.byte = new_byte;
     bind.log = new_byte;
+    // Certify old bytes once here, keeping normal flushes batch-local.
+    sink.unsafe_from = if (history_pending.validSegment(bind.gpa, new_byte, length)) null else 0;
     return length;
 }
 
@@ -299,29 +312,10 @@ fn bindOf(context: *anyopaque) *Bind {
     return @ptrCast(@alignCast(context));
 }
 
-/// Store the bytes under the recorder's name. Names are content
-/// addresses, so a repeat put of the same bytes is already durable.
-fn putObject(context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void {
-    const bind = bindOf(context);
-    const store = history.storage.Store.from(&bind.session);
-    var file = store.vtable.open(store.context, .objects, name, .create) catch |err| switch (err) {
-        error.PathAlreadyExists => return,
-        else => return err,
-    };
-    defer file.vtable.close(file.context);
-    try file.vtable.write(file.context, 0, bytes);
-    try file.vtable.sync(file.context);
-}
-
 /// Every loose object synced its own file; the pack store's waiting
 /// objects reach disk here, pack before index.
 fn syncObjects(context: *anyopaque) anyerror!void {
     try bindOf(context).packs.seal();
-}
-
-/// A content-addressed page or blob joins the pack being built.
-fn putPacked(context: *anyopaque, id: [16]u8, bytes: []const u8) anyerror!void {
-    try bindOf(context).packs.put(.{ .bytes = id }, bytes);
 }
 
 /// The host prune's referrer: names every object the committed log

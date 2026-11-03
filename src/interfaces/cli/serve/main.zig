@@ -218,5 +218,9 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, argv: []const []const u8) !
         std.debug.print("serve: {s}\n", .{@errorName(err)});
         return 1;
     };
+    setup.flushHistory() catch |err| {
+        std.debug.print("serve: cannot flush history: {s}\n", .{@errorName(err)});
+        return 1;
+    };
     return 0;
 }

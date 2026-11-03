@@ -297,8 +297,9 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     try driveAndSave(io, &shell, window, &boot, args.frames, &layout_store, &recent_store, recent_list);
 }
 
-fn driveAndSave(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, boot: *const shell_boot.Boot, frames: ?u32, layout_store: *const shell_layout.Store, recent_store: *const shell_recents.Store, recent_list: shell_recents.List) !void {
+fn driveAndSave(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, boot: *shell_boot.Boot, frames: ?u32, layout_store: *const shell_layout.Store, recent_store: *const shell_recents.Store, recent_list: shell_recents.List) !void {
     try drive(io, shell, window, &boot.image, frames);
+    try boot.flushHistory();
     layout_store.save(&shell.layout);
     recent_store.save(recent_list);
 }

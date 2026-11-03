@@ -30,6 +30,11 @@ const board_c6 = @import("ra8_session").board.recorded_c6;
 /// recorded as interventions, and the frames it captures as boundaries.
 const initial_camera = "gradient";
 
+/// A fallible flush before a successful shutdown or session replacement.
+pub fn flush(self: *served_setup.Served) !void {
+    if (self.owner.session().persistent_recorder) |rec| try rec.force();
+}
+
 /// Binds the recording session's lines: router, graph sink, image root,
 /// identities, new-history hook, bounded async queue, C6 hold, and console stdin.
 pub fn attach(self: *served_setup.Served, allocator: std.mem.Allocator, board_profile: ?[]const u8) !void {

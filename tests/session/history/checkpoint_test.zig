@@ -265,3 +265,48 @@ test "a replayed or stopped history takes no checkpoint, object or count" {
     try std.testing.expectEqual(@as(u32, 2), cp.next_id);
     try std.testing.expectEqual(@as(usize, 2), objects.items.items.len);
 }
+
+const FakeClock = struct {
+    ns: u64 = 0,
+    fn now(context: *anyopaque) u64 {
+        return @as(*FakeClock, @ptrCast(@alignCast(context))).ns;
+    }
+};
+
+test "caller clock groups complete checkpoints after durable CP0" {
+    const gpa = std.testing.allocator;
+    var sink: Sink = .{ .gpa = gpa };
+    defer sink.deinit();
+    var objects: Objects = .{ .gpa = gpa };
+    defer objects.deinit();
+    var rec = try recorder_mod.Recorder.init(gpa, sink.storage(), .{});
+    defer rec.deinit();
+    var clock = FakeClock{};
+    // The same test compiles on the old production source for a red control.
+    if (@hasField(recorder_mod.Recorder, "clock")) rec.clock = .{ .context = &clock, .nowFn = FakeClock.now };
+    rec.observe(0);
+    rec.objects = objects.objects();
+    var saved: scheduler.State = .{};
+    var cp = controller(&rec, &saved, &objects, 1);
+    try cp.checkpointNow();
+    try std.testing.expectEqual(@as(usize, 1), sink.flushes);
+    clock.ns = 249 * std.time.ns_per_ms;
+    try cp.fire(1);
+    try cp.fire(2);
+    try std.testing.expectEqual(@as(usize, 1), sink.flushes);
+    try std.testing.expect(rec.pendingBytes() > 0);
+    try std.testing.expectEqual(@as(usize, 3), objects.syncs);
+    clock.ns = 250 * std.time.ns_per_ms;
+    try cp.fire(3);
+    try std.testing.expectEqual(@as(usize, 2), sink.flushes);
+    try std.testing.expectEqual(@as(usize, 0), rec.pendingBytes());
+    const recovered = try logScan(sink.bytes.items);
+    try std.testing.expectEqual(@as(usize, 4), recovered);
+}
+
+fn logScan(bytes: []const u8) !usize {
+    const Ignore = struct {
+        fn visit(_: void, _: ra8.session.history_log.Boundary) void {}
+    };
+    return (try ra8.session.history_log.scan(bytes, {}, Ignore.visit)).frames;
+}

@@ -1,21 +1,6 @@
-//! The persistent history's recorder: the spine that turns a session's
-//! boundary landings into event-log frames on the application's storage.
-//!
-//! Session stays std-only: the recorder never opens a file itself. The
-//! application fills a Storage with the three host operations the spine
-//! needs (append, flush, truncate) and bridges it to the history's log
-//! space (src/host/history). Frames are staged through log.zig's group
-//! commit on the caller's clock, and a commit releases the staged bytes
-//! to the storage as one append plus one flush, so the storage is never
-//! told about a frame in part. Object-before-log durability is the
-//! checkpoint's job and arrives with the checkpoint work: this spine
-//! records boundary and intervention frames, whose payload lives in the
-//! log itself.
-//!
-//! A reopened segment recovers through log.zig's scan: the whole frames
-//! stay, a torn final tail is truncated away through the storage, and a
-//! whole frame that fails its length or CRC refuses the reopen.
+//! Persistent event staging and object-before-log durability.
 const std = @import("std");
+const commit_batch = @import("commit_batch.zig");
 const format = @import("format.zig");
 const log_mod = @import("log.zig");
 const record = @import("record.zig");
@@ -121,6 +106,10 @@ pub const Recorder = struct {
     /// The pressure the last disk check answered with; the application
     /// reads it to warn at 80 percent before the stop at 100.
     last_pressure: budget.Pressure = .normal,
+    /// Optional caller clock, borrowed for the recorder lifetime.
+    clock: ?log_mod.Clock = null,
+    /// A failed append/flush must be truncated before any retry appends.
+    batch: commit_batch.Batch = .{},
 
     pub fn init(gpa: std.mem.Allocator, storage: Storage, policy: log_mod.CommitPolicy) Error!Recorder {
         const staging = try gpa.create(std.Io.Writer.Allocating);
@@ -345,16 +334,9 @@ pub const Recorder = struct {
     /// Commits at the first of the policy's two thresholds, on the
     /// caller's clock.
     pub fn maybeCommit(self: *Recorder, now_ns: u64) anyerror!void {
+        if (!self.log.have_time) self.observe(now_ns);
         if (self.log.shouldCommit(now_ns) == .no) return;
         try self.commit(now_ns);
-    }
-
-    /// Puts the storage back at the committed length after a commit's
-    /// append or flush failed: none of the batch's bytes counted as
-    /// committed, and a full device can stop the write in part. A
-    /// failure here is the reopen's own recovery to catch.
-    fn rollbackBatch(self: *Recorder) void {
-        self.storage.truncate(self.storage.context, self.committed_bytes) catch {};
     }
 
     /// Hands the log its first time sample without committing.
@@ -362,35 +344,34 @@ pub const Recorder = struct {
         self.log.observe(now_ns);
     }
 
-    /// Releases every staged byte to the storage as one append plus one
-    /// flush, and restarts both thresholds on the caller's clock. With a
-    /// disk budget filled, a commit whose bytes the volume or the share
-    /// cannot take refuses with error.HistoryFull first, and its bytes
-    /// stay staged for a later retry. A commit whose append or flush the
-    /// storage cannot finish leaves the storage at the committed length
-    /// and its bytes staged the same way: a full device can stop the
-    /// write in part, and the retry must never land on top of it.
+    pub fn bindClock(self: *Recorder, clock: log_mod.Clock) void {
+        self.clock = clock;
+        self.observe(self.now());
+    }
+
+    pub fn now(self: *const Recorder) u64 {
+        return if (self.clock) |clock| clock.nowFn(clock.context) else self.log.last_commit_ns;
+    }
+
+    /// Flush at a visibility/lifecycle boundary using the caller clock.
+    pub fn force(self: *Recorder) anyerror!void {
+        try self.commit(self.now());
+    }
+
+    /// Preserve staging and thresholds until append and durable flush succeed.
     pub fn commit(self: *Recorder, now_ns: u64) anyerror!void {
-        if (self.stopped) return;
-        if (self.disk) |watch| {
-            if (self.log.pending_bytes > 0) {
-                _ = try self.checkDisk(watch, self.usedBytes(), self.log.pending_bytes);
-            }
-        }
-        try self.log.commit(now_ns);
+        if (self.stopped or self.replaying) return;
         const bytes = self.staging.writer.buffered();
+        if (self.disk) |watch| {
+            if (self.log.pending_bytes > 0)
+                _ = try self.checkDisk(watch, self.usedBytes(), self.log.pending_bytes);
+        }
         if (bytes.len == 0) return;
-        self.storage.append(self.storage.context, bytes) catch |err| {
-            self.rollbackBatch();
-            return err;
-        };
-        self.storage.flush(self.storage.context) catch |err| {
-            self.rollbackBatch();
-            return err;
-        };
+        try self.batch.write(self.storage, self.committed_bytes, bytes);
         self.committed_bytes += bytes.len;
         self.history_bytes += bytes.len;
         self.staging.writer.end = 0;
+        self.log.acknowledge(now_ns);
     }
 
     /// Bytes staged but not yet in the storage's hands.

@@ -74,9 +74,13 @@ pub const Listening = struct { child: std.process.Child, bound: []const u8 };
 /// Start `serve --listen spec` on the fixture and read its bound address
 /// off stderr into `line`.
 pub fn listen(spec: []const u8, line: []u8) !Listening {
+    return listenArgs(&.{ test_paths.emulator, "serve", "--listen", spec, image_path }, line);
+}
+
+pub fn listenArgs(argv: []const []const u8, line: []u8) !Listening {
     const io = std.testing.io;
     var child = try std.process.spawn(io, .{
-        .argv = &.{ test_paths.emulator, "serve", "--listen", spec, image_path },
+        .argv = argv,
         .stdin = .ignore,
         .stdout = .ignore,
         .stderr = .pipe,

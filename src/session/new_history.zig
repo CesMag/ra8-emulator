@@ -45,6 +45,7 @@ pub fn start(self: *Session, core: Core, image: []const u8) anyerror!void {
         fresh = try branch_mod.BranchGraph.init(graph.allocator);
     };
     errdefer if (fresh) |*graph| graph.deinit();
+    if (self.persistent_recorder) |rec| try rec.force();
     try apply.applyAction(self, .{ .load = .{ .core = core, .image = image } });
     resetLines(self, &fresh);
     self.root = null;
