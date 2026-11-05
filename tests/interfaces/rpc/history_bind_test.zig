@@ -7,6 +7,27 @@ const history = ra8.host.history;
 
 const bind_mod = ra8.rpc.history_bind;
 
+test "existing partial canonical object refuses reuse and preserves original bytes" {
+    const gpa = std.testing.allocator;
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+    const root = try temp.dir.realPathFileAlloc(std.testing.io, ".", gpa);
+    defer gpa.free(root);
+    const bind = try bind_mod.Bind.open(gpa, std.testing.io, root, .{});
+    defer _ = bind.close() catch {};
+    const store = history.storage.Store.from(&bind.session);
+    const file = try store.vtable.open(store.context, .objects, "partial", .create);
+    defer file.vtable.close(file.context);
+    try file.vtable.write(file.context, 0, "pa");
+    try file.vtable.sync(file.context);
+    try std.testing.expectError(error.ObjectConflict, bind.objects.put(bind.objects.context, .data, "partial", "partial object complete bytes"));
+    try std.testing.expectEqual(@as(u64, 2), try file.vtable.length(file.context));
+    var kept: [2]u8 = undefined;
+    try std.testing.expectEqual(@as(usize, 2), try file.vtable.read(file.context, 0, &kept));
+    try std.testing.expectEqualStrings("pa", &kept);
+    try std.testing.expect(bind.pending.names.contains("partial"));
+}
+
 test "an explicit cap sizes the bind's budget and scales its pieces" {
     const gpa = std.testing.allocator;
     var temp = std.testing.tmpDir(.{});
@@ -47,8 +68,8 @@ test "the bind appends the log, puts objects and deletes its session on close" {
     try bind.storage.truncate(bind.storage.context, 5);
     try bind.storage.append(bind.storage.context, "!");
     try std.testing.expectEqual(@as(u64, 6), try bind.logLength());
-    try bind.objects.put(bind.objects.context, "0123456789abcdef", "object bytes");
-    try bind.objects.put(bind.objects.context, "0123456789abcdef", "object bytes");
+    try bind.objects.put(bind.objects.context, .data, "0123456789abcdef", "object bytes");
+    try bind.objects.put(bind.objects.context, .data, "0123456789abcdef", "object bytes");
     const store = history.storage.Store.from(&bind.session);
     const log = try store.vtable.open(store.context, .log, "events-0", .read);
     var log_bytes: [6]u8 = undefined;
@@ -140,7 +161,7 @@ test "relief through the bind's referrer drops orphans and keeps checkpoint pict
         .picture = .{ .context = &context, .lastScanFn = Pictures.scan },
     };
     try cp.fire(2);
-    try bind.objects.put(bind.objects.context, "ffffffffffffffffffffffffffffffff", "stray");
+    try bind.objects.put(bind.objects.context, .data, "ffffffffffffffffffffffffffffffff", "stray");
 
     try std.testing.expect(bind_mod.prune_referrer.pictures != null);
     const store = history.storage.Store.from(&bind.session);

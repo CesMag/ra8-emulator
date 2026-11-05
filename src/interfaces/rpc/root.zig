@@ -29,6 +29,7 @@ pub const history_live = @import("history_live.zig");
 pub const history_maint = @import("history_maint.zig");
 pub const history_segments = @import("history_segments.zig");
 pub const history_ram = @import("history_ram.zig");
+pub const object_reuse = @import("object_reuse.zig");
 pub const session = @import("session/session.zig");
 pub const backtrace_wire = @import("backtrace_wire.zig");
 pub const locals_wire = @import("locals_wire.zig");

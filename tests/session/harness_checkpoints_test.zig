@@ -13,7 +13,7 @@ const Stub = struct {
     fn append(_: *anyopaque, _: []const u8) anyerror!void {}
     fn flush(_: *anyopaque) anyerror!void {}
     fn truncate(_: *anyopaque, _: u64) anyerror!void {}
-    fn put(_: *anyopaque, _: []const u8, _: []const u8) anyerror!void {}
+    fn put(_: *anyopaque, _: ra8.session.history_recorder.Objects.Kind, _: []const u8, _: []const u8) anyerror!void {}
     fn sync(_: *anyopaque) anyerror!void {}
     fn tick(_: *anyopaque, _: u32) anyerror!void {}
     fn free(_: *anyopaque) anyerror!u64 {

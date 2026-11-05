@@ -211,7 +211,7 @@ const Both = struct {
         self.log_bytes.shrinkRetainingCapacity(@intCast(len));
     }
 
-    fn put(context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void {
+    fn put(context: *anyopaque, _: @import("ra8").session.history_recorder.Objects.Kind, name: []const u8, bytes: []const u8) anyerror!void {
         const self: *Both = @ptrCast(@alignCast(context));
         try self.order.append(self.gpa, 'o');
         @memcpy(self.name[0..name.len], name);

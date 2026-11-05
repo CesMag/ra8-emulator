@@ -8,6 +8,8 @@ const log = @import("ra8_session").history_log;
 const format = @import("ra8_session").history_format;
 const record = @import("ra8_session").history_record;
 const history_live = @import("history_live.zig");
+const object_reuse = @import("object_reuse.zig");
+const ObjectKind = @import("ra8_session").history_recorder.Objects.Kind;
 
 pub const Pending = struct {
     names: std.StringHashMap(void),
@@ -141,12 +143,12 @@ fn add(gpa: std.mem.Allocator, names: *std.StringHashMap(void), name: []const u8
     try names.put(key, {});
 }
 
-pub fn putObject(context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void {
+pub fn putObject(context: *anyopaque, kind: ObjectKind, name: []const u8, bytes: []const u8) anyerror!void {
     const bind: *Bind = @ptrCast(@alignCast(context));
     try bind.pending.protect(name);
     const store = history.storage.Store.from(&bind.session);
     var file = store.vtable.open(store.context, .objects, name, .create) catch |err| switch (err) {
-        error.PathAlreadyExists => return,
+        error.PathAlreadyExists => return object_reuse.existing(bind.gpa, store, name, kind, bytes),
         else => return err,
     };
     defer file.vtable.close(file.context);

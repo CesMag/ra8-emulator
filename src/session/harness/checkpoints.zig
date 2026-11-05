@@ -138,7 +138,7 @@ const SinkContext = struct {
             for (id.bytes, 0..) |byte, i| {
                 _ = std.fmt.bufPrint(name[i * 2 ..][0..2], "{x:0>2}", .{byte}) catch unreachable;
             }
-            try objs.put(objs.context, &name, bytes);
+            try objs.put(objs.context, .data, &name, bytes);
         }
     }
 };

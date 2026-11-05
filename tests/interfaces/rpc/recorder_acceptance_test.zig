@@ -196,7 +196,7 @@ test "acceptance: a closed session leaves the root's catalog empty" {
     defer base_root.close();
     const bind = try bind_mod.Bind.open(gpa, std.testing.io, root, .{});
     try bind.storage.append(bind.storage.context, "recorded bytes");
-    try bind.objects.put(bind.objects.context, "0123456789abcdef", "object bytes");
+    try bind.objects.put(bind.objects.context, .data, "0123456789abcdef", "object bytes");
     var entries = try history.catalog.Iterator.init(&base_root);
     const entry = (try entries.next()).?;
     const held = try history.catalog.du(&base_root, entry.name);

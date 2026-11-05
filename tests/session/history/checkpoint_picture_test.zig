@@ -44,7 +44,7 @@ const Objects = struct {
     /// Failure injection: the put with this 1-based number fails.
     fail_put: ?usize = null,
 
-    fn put(context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void {
+    fn put(context: *anyopaque, _: @import("ra8").session.history_recorder.Objects.Kind, name: []const u8, bytes: []const u8) anyerror!void {
         const self: *Objects = @ptrCast(@alignCast(context));
         self.puts += 1;
         if (self.fail_put == self.puts) return error.NoSpaceLeft;

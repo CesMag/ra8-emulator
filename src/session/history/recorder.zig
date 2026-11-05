@@ -42,8 +42,9 @@ pub const Error = error{ OutOfMemory, WriteFailed, NoObjects } || format.Error;
 /// before its record can become visible in the log, so a reader never
 /// follows a record to an object the storage does not hold.
 pub const Objects = struct {
+    pub const Kind = @import("object_reuse.zig").Kind;
     context: *anyopaque,
-    put: *const fn (context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void,
+    put: *const fn (context: *anyopaque, kind: Kind, name: []const u8, bytes: []const u8) anyerror!void,
     sync: *const fn (context: *anyopaque) anyerror!void,
     /// Stores a content-addressed page or blob object (named by its 128-bit
     /// identity) where the application keeps such objects; `sync` makes it
@@ -186,7 +187,7 @@ pub const Recorder = struct {
     pub fn putRootObject(self: *Recorder, name: []const u8, bytes: []const u8) anyerror!void {
         const objects = self.objects orelse return Error.NoObjects;
         if (self.disk) |watch| _ = try self.checkDisk(watch, self.usedBytes(), bytes.len);
-        try objects.put(objects.context, name, bytes);
+        try objects.put(objects.context, .data, name, bytes);
         try objects.sync(objects.context);
         self.root_bytes += bytes.len;
     }
@@ -274,17 +275,17 @@ pub const Recorder = struct {
         for (digest[0..16], 0..) |byte, i| {
             _ = std.fmt.bufPrint(name[i * 2 ..][0..2], "{x:0>2}", .{byte}) catch unreachable;
         }
-        try objects.put(objects.context, &name, bytes);
+        try objects.put(objects.context, .data, &name, bytes);
         if (touched) |t| {
             var touched_buf: std.Io.Writer.Allocating = try .initCapacity(self.gpa, 256);
             defer touched_buf.deinit();
             try t.encode(&touched_buf.writer);
             const t_name = touched_pages.objectName(digest[0..16].*);
-            try objects.put(objects.context, &t_name, touched_buf.writer.buffered());
+            try objects.put(objects.context, .touched, &t_name, touched_buf.writer.buffered());
         }
         if (manifest_bytes) |m| {
             const m_name = manifest_mod.objectName(digest[0..16].*);
-            try objects.put(objects.context, &m_name, m);
+            try objects.put(objects.context, .manifest, &m_name, m);
         }
         try objects.sync(objects.context);
         var staging: std.Io.Writer.Allocating = try .initCapacity(self.gpa, 64);

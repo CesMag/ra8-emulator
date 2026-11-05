@@ -183,7 +183,7 @@ const Wire = struct {
         _ = context;
         _ = len;
     }
-    fn put(context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void {
+    fn put(context: *anyopaque, _: @import("ra8").session.history_recorder.Objects.Kind, name: []const u8, bytes: []const u8) anyerror!void {
         const self: *Wire = @ptrCast(@alignCast(context));
         const st = self.mem.store();
         const file = st.vtable.open(st.context, .objects, name, .create) catch |err| switch (err) {

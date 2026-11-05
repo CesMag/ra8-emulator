@@ -86,7 +86,7 @@ fn exercise(bind: *Bind) !void {
     rec.observe(0);
     rec.objects = bind.objects;
     // Objects may already be sealed before a checkpoint has staged any record.
-    try bind.objects.put(bind.objects.context, "prestage", "before records");
+    try bind.objects.put(bind.objects.context, .data, "prestage", "before records");
     try bind.objects.putPacked.?(bind.objects.context, pageId().bytes, "pending page");
     try bind.objects.putPacked.?(bind.objects.context, orphanId().bytes, "orphan page");
     try bind.objects.sync(bind.objects.context);
@@ -172,10 +172,10 @@ const Capture = struct {
         try writer.writeAll("machine");
     }
 
-    fn put(context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void {
+    fn put(context: *anyopaque, kind: recorder.Objects.Kind, name: []const u8, bytes: []const u8) anyerror!void {
         const self: *Capture = @ptrCast(@alignCast(context));
         if (self.fail and std.mem.eql(u8, bytes, "machine")) return error.InjectedCheckpoint;
-        try self.bind.objects.put(self.bind.objects.context, name, bytes);
+        try self.bind.objects.put(self.bind.objects.context, kind, name, bytes);
     }
 
     fn sync(context: *anyopaque) anyerror!void {
@@ -274,7 +274,7 @@ test "batch acknowledgment succeeds with all prior log reads and listing forbidd
     std.crypto.hash.sha2.Sha256.hash("old machine", &digest, .{});
     var old_name: [32]u8 = undefined;
     (ObjectId{ .bytes = digest[0..16].* }).formatHex(&old_name);
-    try bind.objects.put(bind.objects.context, &old_name, "old machine");
+    try bind.objects.put(bind.objects.context, .data, &old_name, "old machine");
     var rec = try recorder.Recorder.init(gpa, bind.storage, .{});
     defer rec.deinit();
     rec.observe(1);

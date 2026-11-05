@@ -30,7 +30,7 @@ test "the RAM history keeps objects under their names" {
     const gpa = std.testing.allocator;
     const ram = try ram_mod.RamHistory.open(gpa, 4096);
     defer ram.deinit();
-    try ram.object_space.put(ram.object_space.context, "0123456789abcdef0123456789abcdef", "checkpoint bytes");
+    try ram.object_space.put(ram.object_space.context, .data, "0123456789abcdef0123456789abcdef", "checkpoint bytes");
     try ram.object_space.sync(ram.object_space.context);
     try std.testing.expectEqualStrings("checkpoint bytes", ram.get("0123456789abcdef0123456789abcdef").?);
     try std.testing.expect(ram.get("ffffffffffffffffffffffffffffffff") == null);
@@ -43,4 +43,16 @@ test "the share's remainder never dips below zero" {
     defer ram.deinit();
     try ram.storage.append(ram.storage.context, "way more than eight");
     try std.testing.expectEqual(@as(u64, 0), try ram.budget.free(ram.budget.context));
+}
+
+test "RAM object reuse retains first bytes without duplicate allocation or collision acceptance" {
+    const ram = try ram_mod.RamHistory.open(std.testing.allocator, 4096);
+    defer ram.deinit();
+    const name = "0123456789abcdef0123456789abcdef";
+    try ram.object_space.put(ram.object_space.context, .data, name, "original");
+    try ram.object_space.put(ram.object_space.context, .data, name, "original");
+    try std.testing.expectEqual(@as(u64, 8), ram.used());
+    try std.testing.expectError(error.ObjectConflict, ram.object_space.put(ram.object_space.context, .data, name, "Original"));
+    try std.testing.expectEqualStrings("original", ram.get(name).?);
+    try std.testing.expectEqual(@as(u64, 8), ram.used());
 }

@@ -41,7 +41,7 @@ pub const Objects = struct {
 
     const Named = struct { name: [32]u8, bytes: []u8 };
 
-    pub fn put(context: *anyopaque, name: []const u8, bytes: []const u8) anyerror!void {
+    pub fn put(context: *anyopaque, _: @import("ra8").session.history_recorder.Objects.Kind, name: []const u8, bytes: []const u8) anyerror!void {
         const self: *Objects = @ptrCast(@alignCast(context));
         var slot: Named = .{ .name = undefined, .bytes = try self.gpa.dupe(u8, bytes) };
         @memcpy(&slot.name, name);

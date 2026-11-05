@@ -97,6 +97,7 @@ pub const history_late_marker = @import("history/late_marker.zig");
 pub const smooth_rewind = @import("smooth_rewind.zig");
 pub const history_object_id = @import("history/object_id.zig");
 pub const history_manifest = @import("history/manifest.zig");
+pub const history_object_reuse = @import("history/object_reuse.zig");
 pub const history_pack = @import("history/pack.zig");
 pub const history_pack_index = @import("history/pack_index.zig");
 pub const history_incremental_restore = @import("history/incremental_restore.zig");

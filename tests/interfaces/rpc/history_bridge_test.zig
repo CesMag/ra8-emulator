@@ -59,7 +59,7 @@ test "loadTouchedRecords attaches decoded touched records from ram history" {
 
     const obj_id: [16]u8 = @splat(0x34);
     const t_name = touched_pages.objectName(obj_id);
-    try ram.object_space.put(ram.object_space.context, &t_name, encoded_bytes);
+    try ram.object_space.put(ram.object_space.context, .touched, &t_name, encoded_bytes);
 
     var bridge: bridge_mod.Bridge = .{
         .gpa = gpa,
@@ -100,7 +100,7 @@ test "loadTouchedRecords cleans up on allocation failure" {
 
     const obj_id: [16]u8 = @splat(0x56);
     const t_name = touched_pages.objectName(obj_id);
-    try ram.object_space.put(ram.object_space.context, &t_name, encoded_bytes);
+    try ram.object_space.put(ram.object_space.context, .touched, &t_name, encoded_bytes);
 
     for ([_]usize{ 12, 13 }) |fail_idx| {
         var failing = std.testing.FailingAllocator.init(gpa, .{ .fail_index = fail_idx });
