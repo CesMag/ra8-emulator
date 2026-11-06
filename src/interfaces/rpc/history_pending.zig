@@ -146,14 +146,7 @@ fn add(gpa: std.mem.Allocator, names: *std.StringHashMap(void), name: []const u8
 pub fn putObject(context: *anyopaque, kind: ObjectKind, name: []const u8, bytes: []const u8) anyerror!void {
     const bind: *Bind = @ptrCast(@alignCast(context));
     try bind.pending.protect(name);
-    const store = history.storage.Store.from(&bind.session);
-    var file = store.vtable.open(store.context, .objects, name, .create) catch |err| switch (err) {
-        error.PathAlreadyExists => return object_reuse.existing(bind.gpa, store, name, kind, bytes),
-        else => return err,
-    };
-    defer file.vtable.close(file.context);
-    try file.vtable.write(file.context, 0, bytes);
-    try file.vtable.sync(file.context);
+    return object_reuse.putSession(bind.gpa, &bind.session, name, kind, bytes);
 }
 
 pub fn putPacked(context: *anyopaque, id: [16]u8, bytes: []const u8) anyerror!void {

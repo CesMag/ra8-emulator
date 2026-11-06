@@ -66,13 +66,45 @@ pub fn pending(io: std.Io, top: std.Io.Dir) !?Pending {
 pub fn settle(io: std.Io, top: std.Io.Dir) !void {
     var held = (try pending(io, top)) orelse return;
     defer held.deinit();
+    const state = try inspect(io, top, held.parsed.value);
+    defer state.dir.close(io);
     const note = held.parsed.value;
+    if (state.source and state.target) try file.finish(state.dir, note.from, state.dir, note.to);
+    try erase(io, top, held.inode);
+}
+
+/// Pin only the extant recovery inputs of one validated intent. The caller
+/// holds the lifecycle gate until its object sweep finishes. Settlement on
+/// retry/reopen clears the intent; any leftover source then becomes garbage.
+pub fn protect(io: std.Io, top: std.Io.Dir, allocator: std.mem.Allocator, names: *std.StringHashMap(void)) !void {
+    var held = (try pending(io, top)) orelse return;
+    defer held.deinit();
+    const note = held.parsed.value;
+    const state = try inspect(io, top, note);
+    defer state.dir.close(io);
+    if (note.space != .objects) return;
+    if (state.source) try pin(allocator, names, note.from);
+    if (state.target) try pin(allocator, names, note.to);
+}
+
+fn pin(allocator: std.mem.Allocator, names: *std.StringHashMap(void), text: []const u8) !void {
+    if (names.contains(text)) return;
+    const key = try allocator.dupe(u8, text);
+    errdefer allocator.free(key);
+    try names.put(key, {});
+}
+
+const Inspected = struct { dir: std.Io.Dir, source: bool, target: bool };
+
+/// Inspection has no namespace effects. Both settlement and sweeping must
+/// refuse the same incomplete, replaced or wrongly linked recovery inputs.
+fn inspect(io: std.Io, top: std.Io.Dir, note: Note) !Inspected {
     if (note.version != 1 or note.source.kind != .file or note.source.links != 1) return error.BadMetadata;
     _ = try h.paths.leaf(note.space, note.from);
     _ = try h.paths.leaf(note.space, note.to);
     if (!note.top.same(try file.here(top))) return error.IdentityConflict;
     var dir = try top.openDir(io, if (note.space == .top) "." else @tagName(note.space), .{ .iterate = true, .follow_symlinks = false });
-    defer dir.close(io);
+    errdefer dir.close(io);
     if (!note.area.same(try file.here(dir))) return error.IdentityConflict;
     const source = file.state(dir, note.from) catch |err| switch (err) {
         error.FileNotFound => null,
@@ -86,13 +118,13 @@ pub fn settle(io: std.Io, top: std.Io.Dir) !void {
         if (!note.source.same(old)) return error.IdentityConflict;
         if (target) |new| {
             if (!note.source.same(new)) return error.IdentityConflict;
-            try file.finish(dir, note.from, dir, note.to);
+            if (old.links != 2 or new.links != 2) return error.UnexpectedLinkCount;
         } else if (old.links != 1) return error.UnexpectedLinkCount;
     } else {
         const new = target orelse return error.IdentityConflict;
         if (!note.source.same(new) or new.links != 1) return error.IdentityConflict;
     }
-    try erase(io, top, held.inode);
+    return .{ .dir = dir, .source = source != null, .target = target != null };
 }
 fn erase(io: std.Io, top: std.Io.Dir, inode: std.Io.File.INode) !void {
     const stat = try top.statFile(io, h.layout.files.renaming, .{ .follow_symlinks = false });

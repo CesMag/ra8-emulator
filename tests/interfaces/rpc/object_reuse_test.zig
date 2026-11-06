@@ -102,3 +102,172 @@ test "existing-file IO failures propagate and close once including failed sync r
     try std.testing.expectEqual(@as(usize, 1), short.closes);
     try std.testing.expectEqual(@as(usize, 0), short.syncs);
 }
+
+const StageStore = @import("object_stage_fixture.zig").StageStore;
+
+fn makeManifest(id: u32, round: u64) ![]u8 {
+    const manifest = ra8.session.history_manifest;
+    const position: ra8.session.history_position.Position = .{ .r = round };
+    var pages = [_]manifest.PageRef{.{ .space = .cpu0_sram, .page_index = 0, .object = .compute("page") }};
+    const value: manifest.Manifest = .{
+        .position = position,
+        .checkpoint_id = id,
+        .pages = &pages,
+        .blobs = &.{},
+        .root_hash = manifest.computeMerkleRoot(position, id, null, &pages, &.{}),
+    };
+    var out: std.Io.Writer.Allocating = try .initCapacity(gpa, 256);
+    defer out.deinit();
+    try manifest.encode(&value, &out.writer);
+    return gpa.dupe(u8, out.written());
+}
+
+fn makeTouched(since: u32, words: []const u64) ![]u8 {
+    const touched = ra8.session.history_touched_pages;
+    var value: touched.Touched = .{ .allocator = gpa, .since = since, .masks = @splat(&.{}) };
+    value.masks[0] = @constCast(words);
+    var out: std.Io.Writer.Allocating = try .initCapacity(gpa, 256);
+    defer out.deinit();
+    try value.encode(&out.writer);
+    return gpa.dupe(u8, out.written());
+}
+
+test "atomic put stages and syncs temp before rename and retries cleanly after write sync or rename failure" {
+    var stage: StageStore = .{};
+    defer stage.deinit();
+    stage.write_limit = 2;
+    try std.testing.expectError(error.InjectedWrite, reuse.putWith(gpa, stage.store(), "target", .data, "complete", .{ .dir_sync = stage.dirSync() }));
+    try std.testing.expect(!stage.final_live);
+    try std.testing.expect(!stage.temp_live);
+    try std.testing.expectEqual(@as(usize, 0), stage.open_handles);
+    try std.testing.expectEqual(@as(usize, 0), stage.renames);
+
+    stage.write_limit = null;
+    stage.fail_sync_temp = true;
+    try std.testing.expectError(error.InjectedSync, reuse.putWith(gpa, stage.store(), "target", .data, "complete", .{ .dir_sync = stage.dirSync() }));
+    try std.testing.expect(!stage.final_live);
+    try std.testing.expect(!stage.temp_live);
+    try std.testing.expectEqual(@as(usize, 0), stage.renames);
+
+    stage.fail_sync_temp = false;
+    stage.fail_rename = error.InjectedRename;
+    try std.testing.expectError(error.InjectedRename, reuse.putWith(gpa, stage.store(), "target", .data, "complete", .{ .dir_sync = stage.dirSync() }));
+    try std.testing.expect(!stage.final_live);
+    try std.testing.expect(!stage.temp_live);
+    try std.testing.expectEqual(@as(usize, 1), stage.renames);
+
+    stage.fail_rename = null;
+    stage.fail_dir_sync = true;
+    try std.testing.expectError(error.InjectedDirSync, reuse.putWith(gpa, stage.store(), "target", .data, "complete", .{ .dir_sync = stage.dirSync() }));
+    try std.testing.expect(stage.final_live);
+    try std.testing.expectEqualStrings("complete", stage.finalSlice());
+    try std.testing.expect(!stage.temp_live);
+
+    stage.fail_dir_sync = false;
+    try reuse.putWith(gpa, stage.store(), "target", .data, "complete", .{ .dir_sync = stage.dirSync() });
+    try std.testing.expectEqualStrings("complete", stage.finalSlice());
+    try std.testing.expectEqual(@as(usize, 2), stage.final_syncs);
+    try std.testing.expectEqual(@as(usize, 2), stage.dir_syncs);
+}
+
+test "rename collision preserves first valid data manifest and touched aliases and rejects conflicts while removing owned temp" {
+    var stage: StageStore = .{};
+    defer stage.deinit();
+    const m1 = try makeManifest(1, 4);
+    defer gpa.free(m1);
+    const m2 = try makeManifest(2, 4);
+    defer gpa.free(m2);
+    const m_bad = try makeManifest(3, 5);
+    defer gpa.free(m_bad);
+    try stage.seedFinal("manifest-obj", m1);
+    try reuse.putWith(gpa, stage.store(), "manifest-obj", .manifest, m2, .{ .dir_sync = stage.dirSync() });
+    try std.testing.expectEqualSlices(u8, m1, stage.finalSlice());
+    try std.testing.expect(!stage.temp_live);
+    try std.testing.expectError(error.ObjectConflict, reuse.putWith(gpa, stage.store(), "manifest-obj", .manifest, m_bad, .{ .dir_sync = stage.dirSync() }));
+    try std.testing.expectEqualSlices(u8, m1, stage.finalSlice());
+    try std.testing.expect(!stage.temp_live);
+
+    const t1 = try makeTouched(0, &.{1});
+    defer gpa.free(t1);
+    const t2 = try makeTouched(1, &.{0});
+    defer gpa.free(t2);
+    const t_bad = try makeTouched(0, &.{0});
+    defer gpa.free(t_bad);
+    try stage.seedFinal("touched-obj", t1);
+    try reuse.putWith(gpa, stage.store(), "touched-obj", .touched, t2, .{ .dir_sync = stage.dirSync() });
+    try std.testing.expectEqualSlices(u8, t1, stage.finalSlice());
+    try std.testing.expect(!stage.temp_live);
+    try std.testing.expectError(error.ObjectConflict, reuse.putWith(gpa, stage.store(), "touched-obj", .touched, t_bad, .{ .dir_sync = stage.dirSync() }));
+    try std.testing.expectEqualSlices(u8, t1, stage.finalSlice());
+    try std.testing.expect(!stage.temp_live);
+}
+
+test "temp collision never touches foreign temp and cleanup failure propagates with boundary sizes" {
+    var stage: StageStore = .{ .foreign_name = "object-put-00000000000000000000000000000001" };
+    defer stage.deinit();
+    const SeqGen = struct {
+        step: usize = 0,
+        exhaust: bool = false,
+        fn next(ctx: *anyopaque, buf: *[ra8.host.history.name.limits.component]u8) ![]const u8 {
+            const self: *@This() = @ptrCast(@alignCast(ctx));
+            defer self.step += 1;
+            if (self.exhaust or self.step == 0) {
+                return std.fmt.bufPrint(buf, "object-put-00000000000000000000000000000001", .{});
+            }
+            return std.fmt.bufPrint(buf, "object-put-00000000000000000000000000000002", .{});
+        }
+    };
+    var gen: SeqGen = .{};
+    const max_leaf: [ra8.host.history.name.limits.component]u8 = @splat('a');
+    var large: [8193]u8 = @splat(0x5a);
+    try reuse.putWith(gpa, stage.store(), &max_leaf, .data, &large, .{ .temp_gen = .{ .context = &gen, .next = SeqGen.next } });
+    try std.testing.expect(!stage.foreign_removed);
+    try std.testing.expectEqualSlices(u8, &large, stage.finalSlice());
+
+    try reuse.put(gpa, stage.store(), "empty-obj", .data, "");
+    try std.testing.expectEqualStrings("", stage.finalSlice());
+
+    var exhausted: SeqGen = .{ .exhaust = true };
+    try std.testing.expectError(error.PathAlreadyExists, reuse.putWith(gpa, stage.store(), "never", .data, "x", .{ .temp_gen = .{ .context = &exhausted, .next = SeqGen.next } }));
+    try std.testing.expect(!stage.foreign_removed);
+
+    stage.fail_rename = error.InjectedRename;
+    stage.fail_remove = error.InjectedCleanup;
+    try std.testing.expectError(error.InjectedCleanup, reuse.put(gpa, stage.store(), "cleanup-err", .data, "x"));
+    try std.testing.expect(stage.temp_live);
+    try std.testing.expectEqual(@as(usize, 0), stage.open_handles);
+}
+
+test "every partial write prefix leaves no canonical object and leaks no handles" {
+    const bytes = "complete payload";
+    for (0..bytes.len + 1) |prefix_len| {
+        var stage: StageStore = .{ .write_limit = prefix_len };
+        defer stage.deinit();
+        try std.testing.expectError(error.InjectedWrite, reuse.put(gpa, stage.store(), "target", .data, bytes));
+        try std.testing.expect(!stage.final_live);
+        try std.testing.expect(!stage.temp_live);
+        try std.testing.expectEqual(@as(usize, 0), stage.open_handles);
+        try std.testing.expectEqual(@as(usize, 0), stage.renames);
+        stage.write_limit = null;
+        try reuse.put(gpa, stage.store(), "target", .data, bytes);
+        try std.testing.expectEqualStrings(bytes, stage.finalSlice());
+        try std.testing.expect(stage.final_reads > 0);
+        try std.testing.expectEqual(@as(usize, 1), stage.final_syncs);
+        try std.testing.expectEqual(@as(usize, 0), stage.open_handles);
+    }
+}
+
+test "post-publication final flush failure is returned before the directory barrier and retries" {
+    var stage: StageStore = .{ .fail_sync_final = true };
+    defer stage.deinit();
+    try std.testing.expectError(error.InjectedFinalSync, reuse.put(gpa, stage.store(), "target", .data, "complete"));
+    try std.testing.expect(stage.final_live);
+    try std.testing.expect(!stage.temp_live);
+    try std.testing.expect(stage.final_reads > 0);
+    try std.testing.expectEqual(@as(usize, 0), stage.dir_syncs);
+    try std.testing.expectEqual(@as(usize, 0), stage.open_handles);
+    stage.fail_sync_final = false;
+    try reuse.putWith(gpa, stage.store(), "target", .data, "complete", .{ .dir_sync = stage.dirSync() });
+    try std.testing.expectEqualStrings("complete", stage.finalSlice());
+    try std.testing.expectEqual(@as(usize, 1), stage.dir_syncs);
+}

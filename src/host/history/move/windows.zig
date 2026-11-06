@@ -9,6 +9,44 @@ const metadata = @import("../metadata.zig");
 const layout = @import("../layout.zig");
 
 extern "kernel32" fn GetProcessTimes(w.HANDLE, *w.FILETIME, *w.FILETIME, *w.FILETIME, *w.FILETIME) callconv(.winapi) w.BOOL;
+extern "kernel32" fn MoveFileExW([*:0]const u16, [*:0]const u16, u32) callconv(.winapi) w.BOOL;
+pub const flags = struct {
+    pub const write_through: u32 = 0x8;
+};
+
+/// Same-directory no-replace publication with MOVEFILE_WRITE_THROUGH.
+/// Microsoft documents completion on disk before return. No copy fallback or
+/// replacement is permitted. The caller holds the lifecycle namespace gate.
+pub fn publish(allocator: std.mem.Allocator, io: std.Io, dir: std.Io.Dir, from: []const u8, to: []const u8) !void {
+    _ = try @import("../name.zig").component(from);
+    _ = try @import("../name.zig").component(to);
+    var buffer: [std.fs.max_path_bytes]u8 = undefined;
+    const base = buffer[0..try dir.realPath(io, &buffer)];
+    const source = try fullPath(allocator, base, from);
+    defer allocator.free(source);
+    const target = try fullPath(allocator, base, to);
+    defer allocator.free(target);
+    if (MoveFileExW(source, target, flags.write_through).toBool()) return;
+    return switch (w.GetLastError()) {
+        .FILE_EXISTS, .ALREADY_EXISTS => error.PathAlreadyExists,
+        .FILE_NOT_FOUND, .PATH_NOT_FOUND => error.FileNotFound,
+        .DISK_FULL, .HANDLE_DISK_FULL => error.NoSpaceLeft,
+        .NOT_SAME_DEVICE => error.CrossDevice,
+        .ACCESS_DENIED => error.AccessDenied,
+        .SHARING_VIOLATION => error.FileBusy,
+        .WRITE_PROTECT => error.ReadOnlyFileSystem,
+        else => error.Unexpected,
+    };
+}
+
+fn fullPath(allocator: std.mem.Allocator, base: []const u8, leaf: []const u8) ![:0]u16 {
+    const extended = std.mem.startsWith(u8, base, "\\\\?\\");
+    const unc = !extended and std.mem.startsWith(u8, base, "\\\\");
+    const prefix = if (extended) "" else if (unc) "\\\\?\\UNC\\" else "\\\\?\\";
+    const path = try std.fmt.allocPrint(allocator, "{s}{s}\\{s}", .{ prefix, if (unc) base[2..] else base, leaf });
+    defer allocator.free(path);
+    return std.unicode.wtf8ToWtf16LeAllocZ(allocator, path);
+}
 
 pub fn leafPath(allocator: std.mem.Allocator, path: []const u8) ![]u8 {
     return wire.windowsPath(allocator, path);

@@ -61,7 +61,11 @@ pub fn orphans(store: storage.Store, allocator: std.mem.Allocator, referrer: Ref
     if (referrer.pictures) |pictures| try pictures(store, allocator, &names);
 
     var sweep = Sweep{ .store = store, .names = &names };
-    try store.vtable.list(store.context, .objects, .{ .context = &sweep, .visit = &Sweep.visit });
+    const visitor: storage.Visitor = .{ .context = &sweep, .visit = &Sweep.visit };
+    if (store.vtable.sweep) |guarded|
+        try guarded(store.context, allocator, &names, visitor)
+    else
+        try store.vtable.list(store.context, .objects, visitor);
     return .{ .orphans = sweep.count, .orphan_bytes = sweep.bytes };
 }
 

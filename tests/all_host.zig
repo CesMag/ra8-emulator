@@ -24,6 +24,7 @@ test {
     _ = @import("host/history/metadata_test.zig");
     _ = @import("host/history/move/root_test.zig");
     _ = @import("host/history/move/move_test.zig");
+    _ = @import("host/history/move/windows_test.zig");
     _ = @import("host/history/move/file_test.zig");
     _ = @import("host/history/move/tree_test.zig");
     _ = @import("host/history/move/probe_test.zig");
