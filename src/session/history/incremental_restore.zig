@@ -129,13 +129,17 @@ pub fn capture(
 
 /// Applies an incremental restore diff to the machine. Only differing pages are
 /// copied into memory, and non-paged state blobs are committed.
+///
+/// Fully transactional: all page and blob references are validated and run_state
+/// is prepared before committing any live memory mutations. Any refusal leaves
+/// the machine and accessor bytes completely untouched.
 pub fn applyDiff(
     files: *Files,
     diff_manifest: manifest_mod.ManifestDiff,
     objects: ObjectStore,
     accessor: ?SpaceAccessor,
 ) Error!void {
-    // 1. Copy only differing 4 KiB memory pages
+    // 1. Validate all memory page references before modifying state
     for (diff_manifest.pages) |p_ref| {
         const space_slice = getSpaceSlice(files, p_ref.space, accessor) orelse return Error.BadSpace;
         const offset = @as(usize, p_ref.page_index) * page_size;
@@ -143,17 +147,41 @@ pub fn applyDiff(
 
         const page_bytes = objects.get(objects.context, p_ref.object) orelse return Error.MissingObject;
         if (page_bytes.len != page_size) return Error.RestoreFailed;
-
-        @memcpy(space_slice[offset .. offset + page_size], page_bytes);
     }
-    files.store.notifyCodeRanges();
-    if (files.pair) |pair| if (pair.store) |s| s.notifyCodeRanges();
 
-    // 2. Commit differing non-paged state blobs
+    // 2. Validate all blob references before modifying state
+    var run_state_bytes: ?[]const u8 = null;
     for (diff_manifest.blobs) |b_ref| {
         if (b_ref.space == .run_state) {
+            if (run_state_bytes != null) return Error.RestoreFailed;
             const snap_bytes = objects.get(objects.context, b_ref.object) orelse return Error.MissingObject;
-            files.readParts(snap_bytes, .{ .memory = false }) catch return Error.RestoreFailed;
+            if (snap_bytes.len != b_ref.size) return Error.RestoreFailed;
+            run_state_bytes = snap_bytes;
+        } else {
+            return Error.BadSpace;
         }
+    }
+
+    // 3. Stage and commit run_state blob first.
+    // readParts performs internal staging and validation before committing non-memory state.
+    // If readParts fails, files is untouched and no memory pages have been copied.
+    if (run_state_bytes) |snap_bytes| {
+        files.readParts(snap_bytes, .{ .memory = false }) catch |err| switch (err) {
+            error.OutOfMemory => return Error.OutOfMemory,
+            else => return Error.RestoreFailed,
+        };
+    }
+
+    // 4. Commit differing 4 KiB memory pages.
+    // All pages, offsets, and objects were pre-validated in step 1, so memory copying is safe.
+    for (diff_manifest.pages) |p_ref| {
+        const space_slice = getSpaceSlice(files, p_ref.space, accessor).?;
+        const offset = @as(usize, p_ref.page_index) * page_size;
+        const page_bytes = objects.get(objects.context, p_ref.object).?;
+        @memcpy(space_slice[offset .. offset + page_size], page_bytes);
+    }
+    if (diff_manifest.pages.len > 0) {
+        files.store.notifyCodeRanges();
+        if (files.pair) |pair| if (pair.store) |s| s.notifyCodeRanges();
     }
 }

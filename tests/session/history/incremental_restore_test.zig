@@ -212,3 +212,137 @@ test "SpaceAccessor resolves NOR, SD, e-ink and Store.extra without BadSpace" {
     try std.testing.expectEqualSlices(u8, &new_nor_page, &test_acc.nor_buf);
     try std.testing.expectEqualSlices(u8, &new_sd_page, &test_acc.sd_buf);
 }
+
+fn expectRefusal(
+    live: *Rig,
+    snap_before: []const u8,
+    diff: manifest_mod.ManifestDiff,
+    store: incremental_restore.ObjectStore,
+    accessor: ?incremental_restore.SpaceAccessor,
+    expected_err: incremental_restore.Error,
+) !void {
+    try std.testing.expectError(expected_err, incremental_restore.applyDiff(&live.files, diff, store, accessor));
+    var snap_after = try live.save();
+    defer snap_after.deinit();
+    try std.testing.expectEqualSlices(u8, snap_before, snap_after.written());
+}
+
+test "Incremental restore late page failure preserves entire state and continuation" {
+    const allocator = std.testing.allocator;
+    var mem_store = MemoryObjectStore.init(allocator);
+    defer mem_store.deinit();
+    const obj_store = mem_store.store();
+
+    const live = try Rig.create();
+    defer live.destroy();
+    try populated(live);
+    const ref = try Rig.create();
+    defer ref.destroy();
+    try populated(ref);
+
+    var snap_before = try live.save();
+    defer snap_before.deinit();
+
+    var valid_page: [4096]u8 = @splat(0x55);
+    valid_page[0] = 0xef;
+    const valid_id = ObjectId.compute(&valid_page);
+    try obj_store.put(obj_store.context, valid_id, &valid_page);
+
+    var short_page: [256]u8 = @splat(0x77);
+    const short_id = ObjectId.compute(&short_page);
+    try obj_store.put(obj_store.context, short_id, &short_page);
+
+    var test_acc = TestAccessor{};
+    const accessor = incremental_restore.SpaceAccessor{ .context = &test_acc, .getSliceFn = &TestAccessor.getSlice };
+    const nor_initial = test_acc.nor_buf;
+
+    // Case 1: missing object
+    var p1 = [_]manifest_mod.PageRef{ .{ .space = .cpu0_sram, .page_index = 0, .object = valid_id }, .{ .space = .cpu0_sram, .page_index = 1, .object = ObjectId.compute("missing") } };
+    try expectRefusal(live, snap_before.written(), .{ .pages = &p1, .blobs = &.{} }, obj_store, accessor, error.MissingObject);
+    try std.testing.expectEqualSlices(u8, &nor_initial, &test_acc.nor_buf);
+
+    // Case 2: BadSpace
+    var p2 = [_]manifest_mod.PageRef{ .{ .space = .cpu0_sram, .page_index = 0, .object = valid_id }, .{ .space = .nor_flash, .page_index = 0, .object = valid_id } };
+    try expectRefusal(live, snap_before.written(), .{ .pages = &p2, .blobs = &.{} }, obj_store, null, error.BadSpace);
+
+    // Case 3: OffsetOutOfBounds
+    var p3 = [_]manifest_mod.PageRef{ .{ .space = .cpu0_sram, .page_index = 0, .object = valid_id }, .{ .space = .cpu0_sram, .page_index = 99999, .object = valid_id } };
+    try expectRefusal(live, snap_before.written(), .{ .pages = &p3, .blobs = &.{} }, obj_store, accessor, error.OffsetOutOfBounds);
+
+    // Case 4: RestoreFailed (short bytes)
+    var p4 = [_]manifest_mod.PageRef{ .{ .space = .cpu0_sram, .page_index = 0, .object = valid_id }, .{ .space = .cpu0_sram, .page_index = 1, .object = short_id } };
+    try expectRefusal(live, snap_before.written(), .{ .pages = &p4, .blobs = &.{} }, obj_store, accessor, error.RestoreFailed);
+
+    // Continuation oracle
+    try live.store.write(.none, at, &.{ 0x12, 0x34 });
+    try ref.store.write(.none, at, &.{ 0x12, 0x34 });
+    live.cpu.slots += 10;
+    ref.cpu.slots += 10;
+    var s_live = try live.save();
+    defer s_live.deinit();
+    var s_ref = try ref.save();
+    defer s_ref.deinit();
+    try std.testing.expectEqualSlices(u8, s_ref.written(), s_live.written());
+}
+
+test "Incremental restore late run_state failure preserves entire state and continuation" {
+    const allocator = std.testing.allocator;
+    var mem_store = MemoryObjectStore.init(allocator);
+    defer mem_store.deinit();
+    const obj_store = mem_store.store();
+
+    const live = try Rig.create();
+    defer live.destroy();
+    try populated(live);
+    const ref = try Rig.create();
+    defer ref.destroy();
+    try populated(ref);
+
+    var snap_before = try live.save();
+    defer snap_before.deinit();
+
+    var valid_page: [4096]u8 = @splat(0x66);
+    const valid_id = ObjectId.compute(&valid_page);
+    try obj_store.put(obj_store.context, valid_id, &valid_page);
+    var pages = [_]manifest_mod.PageRef{.{ .space = .cpu0_sram, .page_index = 0, .object = valid_id }};
+
+    // Case 5: missing run_state blob
+    var b1 = [_]manifest_mod.BlobRef{.{ .space = .run_state, .size = 128, .object = ObjectId.compute("missing_blob") }};
+    try expectRefusal(live, snap_before.written(), .{ .pages = &pages, .blobs = &b1 }, obj_store, null, error.MissingObject);
+
+    // Case 6: mismatched blob size
+    var b_short: [64]u8 = @splat(0x33);
+    const b_short_id = ObjectId.compute(&b_short);
+    try obj_store.put(obj_store.context, b_short_id, &b_short);
+    var b2 = [_]manifest_mod.BlobRef{.{ .space = .run_state, .size = 128, .object = b_short_id }};
+    try expectRefusal(live, snap_before.written(), .{ .pages = &pages, .blobs = &b2 }, obj_store, null, error.RestoreFailed);
+
+    // Case 7: malformed run_state payload
+    var b_corrupt: [64]u8 = @splat(0xff);
+    const b_corrupt_id = ObjectId.compute(&b_corrupt);
+    try obj_store.put(obj_store.context, b_corrupt_id, &b_corrupt);
+    var b3 = [_]manifest_mod.BlobRef{.{ .space = .run_state, .size = 64, .object = b_corrupt_id }};
+    try expectRefusal(live, snap_before.written(), .{ .pages = &pages, .blobs = &b3 }, obj_store, null, error.RestoreFailed);
+
+    // Case 8: allocation failure on live board
+    const pos = scheduler.Position{ .branch = 1, .r = 30, .phase = .cpu0, .o = 0, .gap = .retired };
+    var m_ref = try incremental_restore.capture(allocator, &ref.files, pos, 3, null, obj_store, null);
+    defer m_ref.deinit(allocator);
+
+    var failing = std.testing.FailingAllocator.init(std.testing.allocator, .{ .fail_index = 0 });
+    live.board.nor.allocator = failing.allocator();
+    defer {
+        live.board.nor.allocator = std.testing.allocator;
+    }
+    try expectRefusal(live, snap_before.written(), .{ .pages = &pages, .blobs = m_ref.blobs }, obj_store, null, error.OutOfMemory);
+    live.board.nor.allocator = std.testing.allocator;
+
+    // Continuation oracle
+    try live.store.write(.none, at, &.{ 0x77, 0x88 });
+    try ref.store.write(.none, at, &.{ 0x77, 0x88 });
+    var s_live = try live.save();
+    defer s_live.deinit();
+    var s_ref = try ref.save();
+    defer s_ref.deinit();
+    try std.testing.expectEqualSlices(u8, s_ref.written(), s_live.written());
+}
