@@ -144,9 +144,9 @@ test "a kept session's exit moves it whole and every recorded byte survives exac
     var expected: Listing = .{};
     defer expected.deinit();
     for (session_listing.names.items) |path| {
-        if (std.mem.endsWith(u8, path, "/incomplete")) {
+        if (std.mem.eql(u8, std.fs.path.basename(path), history.layout.files.incomplete)) {
             const cut = std.mem.lastIndexOfScalar(u8, path, std.fs.path.sep).?;
-            try expected.names.append(allocator, try std.fmt.allocPrint(allocator, "{s}/kept", .{path[0..cut]}));
+            try expected.names.append(allocator, try std.fmt.allocPrint(allocator, "{s}{c}{s}", .{ path[0..cut], std.fs.path.sep, history.layout.files.kept }));
             continue;
         }
         try expected.names.append(allocator, try allocator.dupe(u8, path));

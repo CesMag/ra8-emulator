@@ -51,6 +51,7 @@ test {
     _ = @import("host/history/rename_test.zig");
     _ = @import("host/history/resources_test.zig");
     _ = @import("host/history/runtime_test.zig");
+    _ = @import("host/history/scratch_test.zig");
     _ = @import("host/history/session_test.zig");
     _ = @import("host/history/storage_test.zig");
     _ = @import("host/history/sweep_test.zig");
