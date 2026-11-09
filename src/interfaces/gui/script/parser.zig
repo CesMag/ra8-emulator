@@ -46,6 +46,15 @@ pub fn parse(allocator: std.mem.Allocator, text: []const u8) ParseError!Script {
     return script;
 }
 
+pub const TimeKeyword = enum {
+    frame,
+    virtual,
+    emulated,
+    board,
+    wall,
+    real,
+};
+
 fn parseLine(allocator: std.mem.Allocator, line: []const u8) ParseError!Item {
     var tokens = std.mem.tokenizeAny(u8, line, " \t");
     const first = tokens.next() orelse return error.InvalidSyntax;
@@ -57,21 +66,28 @@ fn parseLine(allocator: std.mem.Allocator, line: []const u8) ParseError!Item {
     }
 
     const time_tok = tokens.next() orelse return error.BadTiming;
-    const at = if (std.mem.eql(u8, time_tok, "frame")) blk: {
-        const frame_tok = tokens.next() orelse return error.BadTiming;
-        const frame = std.fmt.parseInt(u32, frame_tok, 10) catch return error.BadTiming;
-        break :blk TimeSpec{ .frame = frame };
-    } else blk: {
-        const ns = parseTime(time_tok) catch return error.BadTiming;
-        break :blk TimeSpec{ .time_ns = ns };
-    };
+    const at: TimeSpec = if (std.meta.stringToEnum(TimeKeyword, time_tok)) |kw| switch (kw) {
+        .frame => blk: {
+            const frame_tok = tokens.next() orelse return error.BadTiming;
+            const frame = std.fmt.parseInt(u32, frame_tok, 10) catch return error.BadTiming;
+            break :blk .{ .frame = frame };
+        },
+        .virtual, .emulated, .board => blk: {
+            const dur_tok = tokens.next() orelse return error.BadTiming;
+            break :blk .{ .virtual_ns = try parseTime(dur_tok) };
+        },
+        .wall, .real => blk: {
+            const dur_tok = tokens.next() orelse return error.BadTiming;
+            break :blk .{ .wall_ns = try parseTime(dur_tok) };
+        },
+    } else .{ .time_ns = try parseTime(time_tok) };
 
     const action_tok = tokens.next() orelse return error.BadAction;
     const act = try parseAction(allocator, action_tok, &tokens, line);
     return .{ .at = at, .action = act };
 }
 
-fn parseTime(tok: []const u8) ParseError!u64 {
+pub fn parseTime(tok: []const u8) ParseError!u64 {
     if (std.mem.endsWith(u8, tok, "ms")) {
         const num = std.fmt.parseInt(u64, tok[0 .. tok.len - 2], 10) catch return error.BadTiming;
         return num * std.time.ns_per_ms;
@@ -87,9 +103,11 @@ fn parseTime(tok: []const u8) ParseError!u64 {
         const num_str = tok[0 .. tok.len - 1];
         const val = std.fmt.parseFloat(f64, num_str) catch return error.BadTiming;
         if (val < 0) return error.BadTiming;
-        return @intFromFloat(val * 1_000_000_000.0);
+        const ns_per_s_f64: f64 = @floatFromInt(std.time.ns_per_s);
+        return @intFromFloat(val * ns_per_s_f64);
     }
-    return error.BadTiming;
+    const num = std.fmt.parseInt(u64, tok, 10) catch return error.BadTiming;
+    return num * std.time.ns_per_ms;
 }
 
 fn parseAction(allocator: std.mem.Allocator, act_tok: []const u8, tokens: *std.mem.TokenIterator(u8, .any), line: []const u8) ParseError!Action {

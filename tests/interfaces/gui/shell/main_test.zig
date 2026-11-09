@@ -67,6 +67,19 @@ test "--frames keeps a count above zero" {
     try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--frames", "many", "app.elf" }));
 }
 
+test "--virtual-time, --wall-time and --speed parse durations and speed factors" {
+    const args = try shell_main.parse(&.{ "ra8_gui", "--virtual-time", "1200ms", "--wall-time", "5s", "--speed", "max", "app.elf" });
+    try std.testing.expectEqual(@as(?u64, 1200 * std.time.ns_per_ms), args.virtual_time_ns);
+    try std.testing.expectEqual(@as(?u64, 5 * std.time.ns_per_s), args.wall_time_ns);
+    try std.testing.expectEqual(@as(?u64, 0), args.speed_milli);
+    try std.testing.expect(args.limits().auto_run);
+
+    try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--virtual-time", "100ms" }));
+    try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--wall-time", "100ms" }));
+    try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--speed", "bogus", "app.elf" }));
+    try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "--virtual-time", "bogus", "app.elf" }));
+}
+
 test "--theme picks dark, light or system and dark is the default" {
     const colors = @import("gui_app").colors;
     try std.testing.expectEqual(colors.Choice.dark, (try shell_main.parse(&.{ "ra8_gui", "app.elf" })).theme);

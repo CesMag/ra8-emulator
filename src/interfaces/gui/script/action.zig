@@ -5,10 +5,17 @@ const std = @import("std");
 pub const TimeSpec = union(enum) {
     time_ns: u64,
     frame: u32,
+    virtual_ns: u64,
+    wall_ns: u64,
 
     pub fn matches(self: TimeSpec, elapsed_ns: u64, frame_idx: u32) bool {
+        return self.matchesWithVirtual(elapsed_ns, 0, frame_idx);
+    }
+
+    pub fn matchesWithVirtual(self: TimeSpec, wall_ns: u64, virtual_ns: u64, frame_idx: u32) bool {
         return switch (self) {
-            .time_ns => |ns| elapsed_ns >= ns,
+            .time_ns, .wall_ns => |ns| wall_ns >= ns,
+            .virtual_ns => |ns| virtual_ns >= ns,
             .frame => |f| frame_idx >= f,
         };
     }

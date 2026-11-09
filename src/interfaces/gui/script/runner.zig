@@ -67,17 +67,30 @@ pub const Runner = struct {
         now_ns: u64,
         frame_idx: u32,
     ) !void {
+        return self.advanceWithVirtual(layout, width, height, board, now_ns, 0, frame_idx);
+    }
+
+    pub fn advanceWithVirtual(
+        self: *Runner,
+        layout: *const pane_layout.Layout,
+        width: i32,
+        height: i32,
+        board: ?*const shell_board.Board,
+        wall_ns: u64,
+        virtual_ns: u64,
+        frame_idx: u32,
+    ) !void {
         self.cleanRipples(frame_idx);
 
         if (self.active_drag) |drag| {
-            try self.advanceDrag(drag, now_ns);
+            try self.advanceDrag(drag, wall_ns);
         }
 
         var any_pending = false;
         for (self.items) |*item| {
             if (item.executed) continue;
-            if (item.at.matches(now_ns, frame_idx)) {
-                try self.execute(layout, width, height, board, item.action, now_ns, frame_idx);
+            if (item.at.matchesWithVirtual(wall_ns, virtual_ns, frame_idx)) {
+                try self.execute(layout, width, height, board, item.action, wall_ns, frame_idx);
                 item.executed = true;
                 self.last_action_frame = frame_idx;
             } else {

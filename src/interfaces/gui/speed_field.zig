@@ -89,6 +89,7 @@ pub const Field = struct {
     applied: u64 = real_time,
     asked: u64 = real_time,
     ask_id: ?u32 = null,
+    pending: ?u64 = null,
     refused: ?Refusal = null,
     editing: bool = false,
     fresh: bool = false,
@@ -135,6 +136,27 @@ pub const Field = struct {
         }
     }
 
+    pub fn sendSpeed(self: *Field, link: *Link, milli: u64) void {
+        self.ask_id = link.send(proto.SetSpeed, .set_speed, .{ .core = self.core, .milli = milli }) catch |err| switch (err) {
+            error.TableFull => {
+                self.pending = milli;
+                return;
+            },
+            else => {
+                self.pending = null;
+                self.refused = .session;
+                return;
+            },
+        };
+        self.pending = null;
+    }
+
+    pub fn retry(self: *Field, link: *Link) void {
+        if (self.pending) |milli| {
+            self.sendSpeed(link, milli);
+        }
+    }
+
     /// Enter sends a valid speed and refuses the rest in the field, Escape
     /// drops what was typed, Backspace drops a character.
     pub fn key(self: *Field, link: *Link, code: u32) !Outcome {
@@ -149,10 +171,10 @@ pub const Field = struct {
                     self.fresh = false;
                     return .refused;
                 };
-                self.ask_id = try link.send(proto.SetSpeed, .set_speed, .{ .core = self.core, .milli = milli });
                 self.asked = milli;
                 self.editing = false;
                 self.fresh = false;
+                self.sendSpeed(link, milli);
                 return .sent;
             },
             codes.escape => {
@@ -175,9 +197,9 @@ pub const Field = struct {
 
     /// Send a preset speed directly (from the dropdown), clearing any typed text.
     pub fn choose(self: *Field, link: *Link, milli: u64) !Outcome {
-        self.ask_id = try link.send(proto.SetSpeed, .set_speed, .{ .core = self.core, .milli = milli });
         self.asked = milli;
         self.cancel();
+        self.sendSpeed(link, milli);
         return .sent;
     }
 

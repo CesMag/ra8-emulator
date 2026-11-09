@@ -312,6 +312,11 @@ pub const Shell = struct {
         const clock = self.clock orelse return 0;
         return clock.now();
     }
+    /// The emulated board time, or zero when none is available.
+    pub fn boardNow(self: *const Shell) u64 {
+        const time = self.time orelse return 0;
+        return time.boardNow();
+    }
     /// Between two frames: take what a session on a thread of its own has
     /// answered and send a lit run its next slice, so the image is not left
     /// waiting for the window's next frame.

@@ -36,6 +36,24 @@ test "parse timing variants: ms, s, and frames" {
     try std.testing.expectEqual(script.action.Action.quit, item3.action);
 }
 
+test "parse virtual and wall timing" {
+    const text =
+        \\at virtual 850ms quit
+        \\at emulated 1.2s quit
+        \\at wall 2000ms quit
+        \\at real 5s quit
+    ;
+
+    var parsed = try script.parser.parse(std.testing.allocator, text);
+    defer parsed.deinit();
+
+    try std.testing.expectEqual(@as(usize, 4), parsed.items.items.len);
+    try std.testing.expectEqual(script.action.TimeSpec{ .virtual_ns = 850 * std.time.ns_per_ms }, parsed.items.items[0].at);
+    try std.testing.expectEqual(script.action.TimeSpec{ .virtual_ns = 1200 * std.time.ns_per_ms }, parsed.items.items[1].at);
+    try std.testing.expectEqual(script.action.TimeSpec{ .wall_ns = 2000 * std.time.ns_per_ms }, parsed.items.items[2].at);
+    try std.testing.expectEqual(script.action.TimeSpec{ .wall_ns = 5000 * std.time.ns_per_ms }, parsed.items.items[3].at);
+}
+
 test "parse named click targets" {
     const text =
         \\at 1s click bar:run

@@ -11,12 +11,16 @@ const runner_mod = @import("../script/runner.zig");
 const writer_mod = @import("writer.zig");
 const cursor_mod = @import("cursor.zig");
 const shell_loop = @import("../shell/loop.zig");
+const shell_run = @import("../shell/run.zig");
 
 const Framebuffer = raster.Framebuffer;
 const Platform = platform_mod.Platform;
 const Event = platform_mod.Event;
 const Size = platform_mod.Size;
 const Appearance = platform_mod.Appearance;
+
+pub const default_fps: u32 = 30;
+pub const nominal_hz: u64 = 60;
 
 pub const Capture = struct {
     allocator: std.mem.Allocator,
@@ -25,7 +29,7 @@ pub const Capture = struct {
     writer: ?*writer_mod.Writer = null,
     shell: ?*const shell_loop.Shell = null,
     show_cursor: bool = false,
-    fps: u32 = 30,
+    fps: u32 = default_fps,
 
     frame_counter: u32 = 0,
     polled_this_frame: bool = false,
@@ -84,9 +88,10 @@ pub const Capture = struct {
                 const s = self.inner.size();
                 const w: i32 = @intCast(s.width);
                 const h: i32 = @intCast(s.height);
-                const virtual_ns = @as(u64, self.frame_counter) * (std.time.ns_per_s / 60);
+                const wall_ns = if (self.shell) |sh| sh.now() else 0;
+                const virtual_ns = if (self.shell) |sh| sh.boardNow() else @as(u64, self.frame_counter) * shell_run.frame_ns;
                 if (self.shell) |sh| {
-                    runner.advance(&sh.layout, w, h, sh.board, virtual_ns, self.frame_counter) catch {};
+                    runner.advanceWithVirtual(&sh.layout, w, h, sh.board, wall_ns, virtual_ns, self.frame_counter) catch {};
                 }
             }
         }
@@ -118,10 +123,10 @@ pub const Capture = struct {
         defer self.shown();
 
         if (self.writer) |writer| {
-            const video_idx = @as(u32, @intCast(@divTrunc(@as(u64, self.frame_counter) * self.fps, 60)));
+            const video_idx = @as(u32, @intCast(@divTrunc(@as(u64, self.frame_counter) * self.fps, nominal_hz)));
             if (self.last_video_frame == null or video_idx > self.last_video_frame.?) {
                 self.last_video_frame = video_idx;
-                const virtual_ns = @as(u64, self.frame_counter) * (std.time.ns_per_s / 60);
+                const virtual_ns = @as(u64, self.frame_counter) * shell_run.frame_ns;
 
                 if (self.show_cursor and self.runner != null) {
                     try self.ensureOverlay(frame.width, frame.height);

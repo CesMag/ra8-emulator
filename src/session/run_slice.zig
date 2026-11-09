@@ -35,7 +35,7 @@ pub fn run(self: *Session, core: Core, command: api.Run) anyerror!api.Ended {
     try deliverDue(self);
     const stopped: Core = @fromBackingInt(@intCast(self.live.ended_index));
     self.publish(.{ .core = stopped, .kind = .stopped, .ended = ended });
-    if (self.history) |h| try recordStop(self, h, core, stopped, ended);
+    if (self.history) |h| if (command != .cont or !endedOnBudget(ended)) try recordStop(self, h, core, stopped, ended);
     if (ended == .core) {
         const address: ?u32 = switch (ended.core) {
             .count => null,
@@ -90,4 +90,12 @@ pub fn recordStop(self: *Session, h: *api.History, asked: Core, stopped: Core, e
     const tag: u16 = if (ended == .core) 1 else 0;
     const at_ns = if (self.event_clock) |clock| clock.nowFn(clock.context) else 0;
     try h.capture(stopped_pc, tag, at_ns);
+}
+
+fn endedOnBudget(ended: api.Ended) bool {
+    return switch (ended) {
+        .count => true,
+        .core => |c| c == .count,
+        else => false,
+    };
 }

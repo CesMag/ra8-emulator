@@ -53,6 +53,7 @@ const shell_board_pick = @import("board_pick.zig");
 const shell_board_profiles = @import("board_profiles.zig");
 const shell_run = @import("run.zig");
 const shell_pace = @import("pace.zig");
+const speed_field = @import("../speed_field.zig");
 const host_profiles = @import("ra8_host").profiles;
 const host_listener = @import("ra8_rpc").host_listener;
 const script_mod = @import("../script/script.zig");
@@ -62,6 +63,7 @@ const first_image = @import("first_image.zig");
 const shell_boot = @import("boot.zig");
 
 pub const Args = args_mod.Args;
+pub const Limits = args_mod.Limits;
 pub const parse = args_mod.parse;
 pub const pick = args_mod.pick;
 pub const usage = args_mod.usage;
@@ -294,11 +296,11 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     var panes: shell_panes.Panes = .{ .console = &console, .board = &board, .board_input = &feeds.board_input, .devices = &feeds.devices, .faults = &feeds.faults, .camera = &camera, .plug = &feeds.plug, .camera_file = &feeds.camera_file, .registers = &feeds.registers, .edit = &feeds.edit, .memory = &feeds.memory, .memory_field = &feeds.memory_field, .code = &feeds.code, .breaks = &feeds.breaks, .map = &map, .stack = &feeds.stack, .timeline = &shell.timeline.?, .source = &source, .locals = &feeds.locals, .branches = &feeds.branches, .diff = &feeds.diff.view };
     shell.painter = panes.painter();
     if (image) |named| try boot.start(named);
-    try driveAndSave(io, &shell, window, &boot, args.frames, &layout_store, &recent_store, recent_list);
+    try driveAndSave(io, &shell, window, &boot, args.limits(), &layout_store, &recent_store, recent_list);
 }
 
-fn driveAndSave(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, boot: *shell_boot.Boot, frames: ?u32, layout_store: *const shell_layout.Store, recent_store: *const shell_recents.Store, recent_list: shell_recents.List) !void {
-    try drive(io, shell, window, &boot.image, frames);
+fn driveAndSave(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, boot: *shell_boot.Boot, limits: Limits, layout_store: *const shell_layout.Store, recent_store: *const shell_recents.Store, recent_list: shell_recents.List) !void {
+    try driveWithLimits(io, shell, window, &boot.image, limits);
     try boot.flushHistory();
     layout_store.save(&shell.layout);
     recent_store.save(recent_list);
@@ -308,13 +310,22 @@ fn driveAndSave(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform,
 /// session greets. A shell with no session yet runs on empty until the
 /// first image opened starts one (boot.zig) and fills `first`.
 pub fn drive(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, first: *const ?first_image.Image, frames: ?u32) !void {
+    return driveWithLimits(io, shell, window, first, .{ .frames = frames });
+}
+
+pub fn driveWithLimits(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, first: *const ?first_image.Image, limits: Limits) !void {
     var sent = false;
     var drawn: u32 = 0;
     var pace = wall_clock.Host.init(io);
     const clock = pace.clock();
     var pacing: shell_pace.Pace = .{};
+    var start_wall_ns: ?u64 = null;
+    var configured_run = false;
+
     while (true) {
         const began = clock.now();
+        if (start_wall_ns == null) start_wall_ns = began;
+
         pacing.begin(shell, window, began);
         if (!try shell.step(window)) return;
         if (shell.state() == .connected and (!sent or reloadDue(shell))) {
@@ -327,13 +338,32 @@ pub fn drive(io: std.Io, shell: *shell_loop.Shell, window: platform.Platform, fi
             sent = true;
             if (shell.pick) |picked| picked.reload = false;
         }
-        if (frames) |wanted| {
-            if (lost(shell)) return error.ImageNotLoaded;
-            if (shell.status.image != null) drawn += 1;
-            if (drawn == wanted) return;
+
+        configureRun(shell, limits, &configured_run);
+        if (lost(shell)) return error.ImageNotLoaded;
+        if (limits.frames) |w| if (shell.status.image != null) {
+            drawn += 1;
+            if (drawn >= w) return;
+        };
+        if (limits.wall_time_ns) |w| if (clock.now() -| start_wall_ns.? >= w) return;
+        if (limits.virtual_time_ns) |w| if (shell.status.image != null and shell.boardNow() >= w) return;
+
+        if (limits.speed_milli != speed_field.max_wire) {
+            try rest(io, shell, clock, pacing.end(shell, window, began, clock.now()));
         }
-        try rest(io, shell, clock, pacing.end(shell, window, began, clock.now()));
     }
+}
+
+fn configureRun(shell: *shell_loop.Shell, limits: Limits, configured: *bool) void {
+    if (shell.status.image == null or shell.state() != .connected) return;
+    const link = shell.link orelse return;
+    const time = shell.time orelse return;
+    if (limits.speed_milli) |milli| if (!configured.*) {
+        _ = time.field.choose(link, milli) catch {};
+        time.field.applied = milli;
+        configured.* = true;
+    };
+    if (limits.auto_run and !time.run.lit) time.pressCommand(.run, link, &shell.status);
 }
 
 /// Leave what is left of the frame to the host. A session on a thread of
@@ -352,7 +382,7 @@ fn rest(io: std.Io, shell: *shell_loop.Shell, clock: wall_clock.Clock, until_ns:
 /// using. A headless, scripted or frame-counted run answers on the shell's
 /// thread, where every frame sees the same answers every time.
 fn apart(args: Args) bool {
-    return !args.headless and args.frames == null and args.gui_script == null;
+    return !args.headless and args.frames == null and args.gui_script == null and args.wall_time_ns == null and args.virtual_time_ns == null;
 }
 
 fn reloadDue(shell: *const shell_loop.Shell) bool {

@@ -220,6 +220,7 @@ pub const Time = struct {
     /// Start a window frame at wall time `now_ns`: set what the frame owes
     /// the board, and read the clock when it is due.
     pub fn frame(self: *Time, link: *Link, now_ns: u64) void {
+        self.field.retry(link);
         self.run.frame(now_ns, self.field.applied);
         const due = self.stale or ((self.run.lit or self.run.turbo_out) and now_ns -| self.polled_ns >= poll_ns);
         if (!due or self.readout.waiting() or link.state != .connected) return;
