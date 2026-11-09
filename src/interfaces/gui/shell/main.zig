@@ -340,7 +340,9 @@ pub fn driveWithLimits(io: std.Io, shell: *shell_loop.Shell, window: platform.Pl
         }
 
         configureRun(shell, limits, &configured_run);
-        if (lost(shell)) return error.ImageNotLoaded;
+        if (limits.frames != null or limits.wall_time_ns != null or limits.virtual_time_ns != null) {
+            if (lost(shell)) return error.ImageNotLoaded;
+        }
         if (limits.frames) |w| if (shell.status.image != null) {
             drawn += 1;
             if (drawn >= w) return;
