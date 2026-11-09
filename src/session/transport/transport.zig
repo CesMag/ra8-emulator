@@ -343,6 +343,8 @@ pub const Transport = struct {
         const left = base.cyclesUntil(job.target_ns) -| saved(session);
         if (left == 0) return reached();
         try session.setRunBudget(job.core, left);
+        session.advancing = true;
+        defer session.advancing = false;
         const ended = try session.run(job.core, .cont);
         if (ended != .count) return ended;
         const after = try session.now();

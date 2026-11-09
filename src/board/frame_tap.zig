@@ -22,8 +22,8 @@ pub const Tap = struct {
     pub fn afterBoundary(self: *Tap, virtual_ns: u64) void {
         const now = std.Io.Timestamp.now(self.io, .real).toNanoseconds();
         if (self.last_ns != 0 and now - self.last_ns < self.interval_ns) return;
-        self.last_ns = now;
         self.captureFn(self.context, virtual_ns);
+        self.last_ns = std.Io.Timestamp.now(self.io, .real).toNanoseconds();
     }
 };
 

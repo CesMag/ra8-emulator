@@ -8,6 +8,7 @@ const read_image = @import("ra8_board").image.load;
 const memory_load = @import("ra8_chip").core.cpu.memory.load;
 const memmap = @import("ra8_chip").core.memmap;
 const Reboot = @import("ra8_chip").core.reboot.Reboot;
+const run_file = @import("ra8_board").snapshot.run;
 const session_api = @import("../api.zig");
 
 pub const LoaderState = struct {
@@ -16,6 +17,8 @@ pub const LoaderState = struct {
     memory: [2]?Guest = .{ null, null },
     /// An owned copy of each core's last loaded image (RA8EMU-794); replaced on every load.
     loaded: [2]?[]u8 = .{ null, null },
+    /// Precomputed 16-byte image identity for each core's last loaded image.
+    hashes: [2]?[16]u8 = .{ null, null },
     /// Where a reset the firmware asks for restarts CPU0; a load moves it to
     /// the new image's vector table (RA8EMU-959), or the replaced image would boot.
     reboot: ?*Reboot = null,
@@ -39,6 +42,7 @@ pub const LoaderState = struct {
         const copy = try self.allocator.dupe(u8, bytes);
         if (self.loaded[index]) |old| self.allocator.free(old);
         self.loaded[index] = copy;
+        self.hashes[index] = run_file.imageIdentity(copy);
     }
 
     pub fn deinit(self: *LoaderState) void {

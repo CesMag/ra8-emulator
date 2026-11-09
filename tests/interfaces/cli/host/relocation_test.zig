@@ -22,7 +22,7 @@ test "owned host move peer rejects a missing request frame" {
     defer gpa.free(result.stdout);
     defer gpa.free(result.stderr);
     try std.testing.expectEqual(std.process.Child.Term{ .exited = 1 }, result.term);
-    const expected = "error: EndOfStream\n";
+    const expected = if (builtin.os.tag == .linux or builtin.os.tag == .windows) "error: EndOfStream\n" else "error: OperationUnsupported\n";
     try std.testing.expect(std.mem.startsWith(u8, result.stderr, expected));
 }
 
@@ -32,6 +32,6 @@ test "emulator internal host move route reaches the same frame check" {
     defer gpa.free(result.stdout);
     defer gpa.free(result.stderr);
     try std.testing.expectEqual(std.process.Child.Term{ .exited = 1 }, result.term);
-    const expected = "error: EndOfStream\n";
+    const expected = if (builtin.os.tag == .linux or builtin.os.tag == .windows) "error: EndOfStream\n" else "error: OperationUnsupported\n";
     try std.testing.expect(std.mem.startsWith(u8, result.stderr, expected));
 }

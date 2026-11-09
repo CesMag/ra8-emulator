@@ -21,6 +21,7 @@ fn sameManifest(gpa: std.mem.Allocator, old: []const u8, incoming: []const u8) !
     try manifestShape(incoming);
     var a = try manifest.decode(gpa, old);
     defer a.deinit(gpa);
+    if (std.mem.eql(u8, old, incoming)) return;
     var b = try manifest.decode(gpa, incoming);
     defer b.deinit(gpa);
     if (!std.meta.eql(a.position, b.position) or !std.meta.eql(a.picture, b.picture)) return error.ObjectConflict;

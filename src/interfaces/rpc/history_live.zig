@@ -38,7 +38,12 @@ pub fn addManifestObjects(store: history.storage.Store, allocator: std.mem.Alloc
         defer allocator.free(bytes);
         var decoded = session_manifest.decode(allocator, bytes) catch continue;
         defer decoded.deinit(allocator);
-        for (decoded.pages) |page| try addObject(allocator, names, page.object);
+        var last_page: ?session_object_id.ObjectId = null;
+        for (decoded.pages) |page| {
+            if (last_page) |prev| if (prev.eql(page.object)) continue;
+            last_page = page.object;
+            try addObject(allocator, names, page.object);
+        }
         for (decoded.blobs) |blob| try addObject(allocator, names, blob.object);
         if (decoded.picture) |pic| try addObject(allocator, names, pic);
     }

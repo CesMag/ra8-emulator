@@ -205,7 +205,7 @@ pub const FrameTap = struct {
         }
 
         self.capture(virtual_ns, glcdc, maybe_pos) catch return;
-        self.last_host_ns = now_host;
+        self.last_host_ns = self.clock.nowNs();
         self.captures_count += 1;
     }
 

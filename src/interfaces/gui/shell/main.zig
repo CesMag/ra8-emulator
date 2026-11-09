@@ -118,6 +118,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
         return 0;
     } else |_| {}
     const named: ?first_image.Image = if (args.image) |path| first_image.read(allocator, io, path) orelse return 1 else null;
+    defer if (named) |img| allocator.free(img.bytes);
     render_driver.override = args.render_driver;
 
     var window_store = shell_window.Store{ .io = io, .allocator = allocator, .dir = prefs };
@@ -130,6 +131,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
     defer if (script_runner) |*r| r.deinit();
     if (args.gui_script) |p| {
         const text = std.Io.Dir.cwd().readFileAlloc(io, p, allocator, .limited(1024 * 1024)) catch return 1;
+        defer allocator.free(text);
         script_obj = script_mod.parser.parse(allocator, text) catch return 1;
         script_runner = script_mod.runner.Runner.init(allocator, script_obj.?.items.items, args.headless);
     }
@@ -192,49 +194,15 @@ const ShellFeeds = struct {
         try self.camera_file.init();
         try self.memory_field.init();
     }
-
-    fn bind(self: *ShellFeeds, shell: *shell_loop.Shell, console: *shell_console.Console, board: *shell_board.Board, files: *shell_open.Open) shell_panes.Panes {
-        shell.console = console;
-        shell.board = board;
-        shell.board_input = &self.board_input;
-        shell.devices = &self.devices;
-        shell.faults = &self.faults;
-        shell.camera = &self.camera;
-        shell.plug = &self.plug;
-        shell.camera_file = &self.camera_file;
-        shell.registers = &self.registers;
-        shell.edit = &self.edit;
-        shell.stack = &self.stack;
-        shell.memory = &self.memory;
-        shell.memory_field = &self.memory_field;
-        shell.code = &self.code;
-        shell.breaks = &self.breaks;
-        shell.files = files;
-        return .{
-            .console = console,
-            .board = board,
-            .board_input = &self.board_input,
-            .devices = &self.devices,
-            .faults = &self.faults,
-            .camera = &self.camera,
-            .plug = &self.plug,
-            .camera_file = &self.camera_file,
-            .registers = &self.registers,
-            .edit = &self.edit,
-            .memory = &self.memory,
-            .memory_field = &self.memory_field,
-            .code = &self.code,
-            .breaks = &self.breaks,
-            .stack = &self.stack,
-        };
-    }
 };
 
 fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Environ.Map, window: platform.Platform, cap: ?*video_mod.capture.Capture, args: Args, startup: *shell_startup.Startup, image: ?first_image.Image, prefs: ?[]const u8) !void {
     var host_clock = wall_clock.Host.init(io);
     var board_store = shell_board_store.Store{ .io = io, .allocator = allocator, .dir = prefs };
     const rx = try allocator.alloc(u8, 2 * Env.max_frame);
+    defer allocator.free(rx);
     const tx = try allocator.alloc(u8, Env.max_frame);
+    defer allocator.free(tx);
     var boot: shell_boot.Boot = .{ .allocator = allocator, .io = io, .env = env, .window = window, .apps = args.apps[0..args.app_count], .apart = apart(args), .clock = host_clock.clock(), .rx = rx, .tx = tx, .store = &board_store };
     defer boot.deinit();
     var shell = shell_loop.Shell.init(allocator, try pane_layout.twoCore(allocator));
@@ -350,8 +318,9 @@ pub fn driveWithLimits(io: std.Io, shell: *shell_loop.Shell, window: platform.Pl
         if (limits.wall_time_ns) |w| if (clock.now() -| start_wall_ns.? >= w) return;
         if (limits.virtual_time_ns) |w| if (shell.status.image != null and shell.boardNow() >= w) return;
 
-        if (limits.speed_milli != speed_field.max_wire) {
-            try rest(io, shell, clock, pacing.end(shell, window, began, clock.now()));
+        const until_ns = pacing.end(shell, window, began, clock.now());
+        if (shell.worker != null or limits.speed_milli != speed_field.max_wire) {
+            try rest(io, shell, clock, until_ns);
         }
     }
 }

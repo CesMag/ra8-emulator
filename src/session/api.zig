@@ -114,6 +114,8 @@ pub const Session = struct {
     /// machine's states are the past's, not new stops, so the history
     /// ring records nothing while it holds.
     replaying: bool = false,
+    /// Set while a virtual-time advance drives continuous slices.
+    advancing: bool = false,
     /// The first replay determinism error, until a run slice reports it.
     replay_failure: ?stop_machine.ReplayFailure = null,
     prefetch_pool: ?*@import("history/prefetch.zig").Prefetch = null,
@@ -347,15 +349,12 @@ pub const Session = struct {
     pub fn hasCore(self: *const Session, core: Core) bool {
         return @backingInt(core) == self.live.index or self.live.other != null;
     }
-
     pub fn currentCore(self: *const Session) Core {
         return @fromBackingInt(@intCast(self.live.index));
     }
-
     pub fn switchTo(self: *Session, core: Core) anyerror!void {
         try self.select(core);
     }
-
     pub fn view(self: *Session, core: Core) anyerror!core_view.View {
         if (@backingInt(core) == self.live.index) return self.live.view();
         const other = self.live.other orelse return Error.CoreNotAttached;

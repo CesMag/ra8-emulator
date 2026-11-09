@@ -168,48 +168,48 @@ pub const Layer = struct {
         return true;
     }
 
-    pub fn display(self: Layer) Display {
+    pub fn display(self: *const Layer) Display {
         return @fromBackingInt(@intCast(self.ab1 & field.dispsel));
     }
 
     /// AB1.GRCDISPON: whether the rectangle's frame line is drawn. The
     /// in-tree driver never sets it and the layer shows either way.
-    pub fn framed(self: Layer) bool {
+    pub fn framed(self: *const Layer) bool {
         return self.ab1 & field.grcdispon != 0;
     }
 
     /// The rectangle the layer occupies on the panel.
-    pub fn rect(self: Layer) Rect {
+    pub fn rect(self: *const Layer) Rect {
         return self.placed(self.ab2, self.ab3);
     }
 
     /// The alpha rectangle, which narrows the blend inside the layer's own
     /// rectangle. Only consulted when AB1.ARCON is set.
-    pub fn alphaRect(self: Layer) Rect {
+    pub fn alphaRect(self: *const Layer) Rect {
         return self.placed(self.ab4, self.ab5);
     }
 
-    fn placed(self: Layer, vertical: u32, horizontal: u32) Rect {
+    fn placed(self: *const Layer, vertical: u32, horizontal: u32) Rect {
         const raw = Rect.fromPair(vertical, horizontal);
         return if (self.implicit) raw else raw.from(self.origin);
     }
 
-    pub fn alphaRectOn(self: Layer) bool {
+    pub fn alphaRectOn(self: *const Layer) bool {
         return self.ab1 & field.arcon != 0;
     }
 
     /// AB7.ARCDEF: the alpha a pixel is given when its format carries none,
     /// and the alpha the alpha rectangle applies.
-    pub fn defaultAlpha(self: Layer) u32 {
+    pub fn defaultAlpha(self: *const Layer) u32 {
         return self.ab7 >> field.arcdef_shift & field.arcdef_mask;
     }
 
-    pub fn keyOn(self: Layer) bool {
+    pub fn keyOn(self: *const Layer) bool {
         return self.ab7 & field.ckon != 0;
     }
 
     /// A keyed pixel's replacement, or null when the colour is not the key.
-    pub fn keyReplace(self: Layer, colour: u32) ?u32 {
+    pub fn keyReplace(self: *const Layer, colour: u32) ?u32 {
         if (!self.keyOn()) return null;
         if (colour & field.rgb_mask != self.ab8 & field.rgb_mask) return null;
         return self.ab9;
@@ -224,7 +224,11 @@ pub const Layer = struct {
     /// standing aside, and painting a plane colour there would blanket the
     /// layer below it.
     pub fn contribution(self: *Layer, colour: ?u32, column: u32, row: u32) ?u32 {
-        if (!self.rect().covers(column, row)) return null;
+        return self.contributionIn(self.rect(), colour, column, row);
+    }
+
+    pub fn contributionIn(self: *Layer, area: Rect, colour: ?u32, column: u32, row: u32) ?u32 {
+        if (!area.covers(column, row)) return null;
         const mode = self.display();
         if (mode == .background or mode == .transparent) {
             self.hidden += 1;
@@ -246,7 +250,7 @@ pub const Layer = struct {
     /// the layer is displayed rather than blended, the pixel's own alpha
     /// where it is blended, and ARCDEF where the alpha rectangle covers it
     /// or the format carries no alpha of its own.
-    fn withAlpha(self: Layer, colour: u32, mode: Display, column: u32, row: u32) u32 {
+    fn withAlpha(self: *const Layer, colour: u32, mode: Display, column: u32, row: u32) u32 {
         if (mode != .blended) return opaqueColour(colour);
         if (self.alphaRectOn() and self.alphaRect().covers(column, row)) {
             return colour & field.rgb_mask | self.defaultAlpha() << 24;
@@ -255,7 +259,7 @@ pub const Layer = struct {
         return colour & field.rgb_mask | self.defaultAlpha() << 24;
     }
 
-    pub fn quiet(self: Layer) bool {
+    pub fn quiet(self: *const Layer) bool {
         return self.ab1 == 0 and self.ab2 == 0 and self.ab3 == 0 and self.base_colour == 0;
     }
 };

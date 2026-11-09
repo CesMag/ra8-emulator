@@ -369,7 +369,7 @@ fn wire(state: *State, allocator: std.mem.Allocator, io: std.Io, options: Option
     state.landing = .{ .history = &state.history, .grid = &state.edge.saved };
     state.landing_observer = state.landing.observer();
     state.board.input_landing = &state.landing_observer;
-    state.files = .{ .store = &state.cpu0.store.?, .cpu = &state.cpu, .board = &state.board, .edge = &state.edge, .session = &state.session, .image = state.bytes, .images = &state.loading.loaded, .pending = &state.pending, .attachments = .{ .arena = &state.plugs_arena, .plugs = &state.plugs, .faults = &state.faults } };
+    state.files = .{ .store = &state.cpu0.store.?, .cpu = &state.cpu, .board = &state.board, .edge = &state.edge, .session = &state.session, .image = state.bytes, .image_hash = @import("ra8_board").snapshot.run.imageIdentity(state.bytes), .images = &state.loading.loaded, .hashes = &state.loading.hashes, .pending = &state.pending, .attachments = .{ .arena = &state.plugs_arena, .plugs = &state.plugs, .faults = &state.faults } };
     state.state_file = .{ .allocator = allocator, .io = io, .files = &state.files, .dir = options.state_dir, .root = options.root };
     state.history = try session_history.History.init(allocator, &state.files, options.history_frames);
     state.session.history = &state.history;

@@ -127,7 +127,7 @@ pub const Live = struct {
                 native.count == 0 and native.link.pendingCount() == 0 and native.ring_count == 0
             else
                 false;
-            if (quiet and self.shell.status.run == .halted and registers.serial != serial and !registers.want and registers.left == 0) return;
+            if (quiet and self.shell.status.run == .halted and registers.serial != serial and registers.now != null and !registers.want and registers.left == 0) return;
             try self.step();
         }
         return error.NeverSettled;

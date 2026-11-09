@@ -322,7 +322,7 @@ pub const Shell = struct {
     /// waiting for the window's next frame.
     pub fn service(self: *Shell) !void {
         if (self.server) |server| try server.answer();
-        try self.pump();
+        if (self.link) |link| try shell_pump.drain(self, link);
         try execution.paySlices(self, .same);
     }
     /// Feed what the session sent into the status bar model and the leaves.

@@ -214,9 +214,23 @@ pub const Stage = struct {
         self.commits +%= 1;
     }
 
+    /// Whether the stage leaves every RGB888 pixel untouched.
+    pub fn passthrough(self: *const Stage) bool {
+        return !self.gamma_on and
+            self.live.format() == .rgb888 and
+            self.live.bright1 == field.bright_mid and
+            self.live.bright2 == (field.bright_mid << field.green_shift | field.bright_mid) and
+            self.live.contrast == (field.contrast_unity << field.green_shift |
+                field.contrast_unity << field.blue_shift | field.contrast_unity);
+    }
+
     /// Put one composited ARGB8888 pixel on the bus.
     pub fn apply(self: *Stage, colour: u32, column: u32, row: u32) u32 {
         self.pixels +%= 1;
+        if (self.passthrough()) {
+            if (self.capture) |grab| grab.put(column, row, colour);
+            return colour;
+        }
         const depth = self.live.format().depth();
         const bright = self.live.brightness();
         const gains = self.live.contrasts();

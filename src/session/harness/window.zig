@@ -133,7 +133,7 @@ pub const Window = struct {
     fn go(context: *anyopaque, session: *api.Session, command: api.Run) anyerror!api.Ended {
         const self = of(context);
         const live = &session.live;
-        const recorded = command == .step or (command == .cont and live.budget <= live_slots_max);
+        const recorded = command == .step or (!session.advancing and command == .cont and live.budget <= live_slots_max);
         if (self.machine.muted) return live.go(command);
         if (session.replaying or !recorded) return self.plain(command);
         if (self.asleep(self.machine.coreAt()) or !self.current()) return self.plain(command);

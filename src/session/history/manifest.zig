@@ -108,6 +108,12 @@ pub fn objectName(object: [16]u8) [32]u8 {
     return name;
 }
 
+fn encodePage(entry: *[21]u8, page: PageRef) void {
+    entry[0] = @backingInt(page.space);
+    std.mem.writeInt(u32, entry[1..5], page.page_index, .little);
+    @memcpy(entry[5..21], &page.object.bytes);
+}
+
 /// Computes the 128-bit Blake3 Merkle root over all manifest fields, pages and blobs.
 pub fn computeMerkleRoot(
     position: Position,
@@ -117,13 +123,11 @@ pub fn computeMerkleRoot(
     blobs: []const BlobRef,
 ) ObjectId {
     var hasher = std.crypto.hash.Blake3.init(.{});
-
     // 1. Position & metadata
     var pos_buf: [position_mod.encoded_len]u8 = undefined;
     var stream: std.Io.Writer = .fixed(&pos_buf);
     position_mod.encode(&stream, position) catch unreachable;
     hasher.update(&pos_buf);
-
     var meta: [8]u8 = undefined;
     std.mem.writeInt(u32, meta[0..4], checkpoint_id, .little);
     meta[4] = if (picture != null) 1 else 0;
@@ -132,19 +136,21 @@ pub fn computeMerkleRoot(
     meta[7] = 0;
     hasher.update(&meta);
     if (picture) |pic| hasher.update(&pic.bytes);
-
     // 2. Pages
     var p_buf: [4]u8 = undefined;
     std.mem.writeInt(u32, &p_buf, @intCast(pages.len), .little);
     hasher.update(&p_buf);
+    var batch: [21 * 390]u8 = undefined;
+    var used: usize = 0;
     for (pages) |page| {
-        var entry: [21]u8 = undefined;
-        entry[0] = @backingInt(page.space);
-        std.mem.writeInt(u32, entry[1..5], page.page_index, .little);
-        @memcpy(entry[5..21], &page.object.bytes);
-        hasher.update(&entry);
+        if (used + 21 > batch.len) {
+            hasher.update(batch[0..used]);
+            used = 0;
+        }
+        encodePage(batch[used..][0..21], page);
+        used += 21;
     }
-
+    if (used > 0) hasher.update(batch[0..used]);
     // 3. Blobs
     var b_buf: [4]u8 = undefined;
     std.mem.writeInt(u32, &b_buf, @intCast(blobs.len), .little);
@@ -156,7 +162,6 @@ pub fn computeMerkleRoot(
         @memcpy(entry[5..21], &blob.object.bytes);
         hasher.update(&entry);
     }
-
     var full: [32]u8 = undefined;
     hasher.final(&full);
     return .{ .bytes = full[0..16].* };
@@ -165,44 +170,44 @@ pub fn computeMerkleRoot(
 /// Encodes a Manifest to writer with Castagnoli CRC32-C trailer.
 pub fn encode(manifest: *const Manifest, writer: anytype) !void {
     var crc = Crc32c.init();
-
     try writer.writeAll(&magic);
     crc.update(&magic);
-
     var head: [4]u8 = undefined;
     std.mem.writeInt(u32, &head, version, .little);
     try writer.writeAll(&head);
     crc.update(&head);
-
     var pos_buf: [position_mod.encoded_len]u8 = undefined;
     var stream: std.Io.Writer = .fixed(&pos_buf);
     try position_mod.encode(&stream, manifest.position);
     try writer.writeAll(&pos_buf);
     crc.update(&pos_buf);
-
     var meta: [5]u8 = undefined;
     std.mem.writeInt(u32, meta[0..4], manifest.checkpoint_id, .little);
     meta[4] = if (manifest.picture != null) 1 else 0;
     try writer.writeAll(&meta);
     crc.update(&meta);
-
     if (manifest.picture) |pic| {
         try writer.writeAll(&pic.bytes);
         crc.update(&pic.bytes);
     }
-
     var p_count: [4]u8 = undefined;
     std.mem.writeInt(u32, &p_count, @intCast(manifest.pages.len), .little);
     try writer.writeAll(&p_count);
     crc.update(&p_count);
-
+    var batch: [21 * 390]u8 = undefined;
+    var used: usize = 0;
     for (manifest.pages) |page| {
-        var entry: [21]u8 = undefined;
-        entry[0] = @backingInt(page.space);
-        std.mem.writeInt(u32, entry[1..5], page.page_index, .little);
-        @memcpy(entry[5..21], &page.object.bytes);
-        try writer.writeAll(&entry);
-        crc.update(&entry);
+        if (used + 21 > batch.len) {
+            try writer.writeAll(batch[0..used]);
+            crc.update(batch[0..used]);
+            used = 0;
+        }
+        encodePage(batch[used..][0..21], page);
+        used += 21;
+    }
+    if (used > 0) {
+        try writer.writeAll(batch[0..used]);
+        crc.update(batch[0..used]);
     }
 
     var b_count: [4]u8 = undefined;

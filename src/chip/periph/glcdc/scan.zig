@@ -235,14 +235,17 @@ pub const Fold = struct {
     pub fn pixel(self: *Fold, colour: u32) void {
         self.pixels += 1;
         if (colour >> 24 == 0) self.blank += 1;
-        var byte: u32 = 0;
-        while (byte < 4) : (byte += 1) {
-            self.hash = (self.hash ^ (colour >> @intCast(byte * 8) & 0xFF)) *% fnv.prime;
-        }
+        var h = self.hash;
+        h = (h ^ (colour & 0xFF)) *% fnv.prime;
+        h = (h ^ (colour >> 8 & 0xFF)) *% fnv.prime;
+        h = (h ^ (colour >> 16 & 0xFF)) *% fnv.prime;
+        h = (h ^ (colour >> 24)) *% fnv.prime;
+        self.hash = h;
         self.note(colour);
     }
 
     fn note(self: *Fold, colour: u32) void {
+        if (self.colours > 0 and self.seen[self.colours - 1] == colour) return;
         if (self.colours >= colour_sample) return;
         for (self.seen[0..self.colours]) |already| {
             if (already == colour) return;
@@ -266,6 +269,7 @@ pub const Fold = struct {
 /// taken from the high end of its byte first, which is the order the fetch
 /// unit scans a line in.
 pub fn fetch(line: []const u8, column: u32, bits: u32) u32 {
+    if (bits == 8) return if (column < line.len) line[column] else 0;
     if (bits >= 8) {
         const stride = bits / 8;
         const at = column * stride;

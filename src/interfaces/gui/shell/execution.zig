@@ -3,6 +3,7 @@
 //! refreshes the leaves. The arrival pump is pump.zig; input and drawing
 //! stay in loop.zig.
 const Shell = @import("loop.zig").Shell;
+const shell_pump = @import("pump.zig");
 
 /// Most arrivals taken off the link in one frame, so a chatty session cannot starve the window.
 pub const max_arrivals: usize = 64;
@@ -15,7 +16,7 @@ pub fn exchange(self: *Shell) !void {
     try self.pump();
     if (self.server) |server| try server.answer();
     if (self.listener) |listener| try listener.answer();
-    try self.pump();
+    if (self.link) |link| try shell_pump.drain(self, link);
 }
 
 /// Pay what this frame owes a lit run (shell_run.zig), one slice at a
@@ -31,9 +32,12 @@ pub fn paySlices(self: *Shell, frame: enum { fresh, same }) !void {
     // No slice goes out behind a load: the image it would run may be gone.
     while (self.drained and self.status.load_id == null and time.run.next(link, self.now())) {
         const server = self.server orelse return;
-        try server.answer();
-        if (self.listener) |listener| try listener.answer();
-        try self.pump();
+        while (true) {
+            try server.answer();
+            if (self.listener) |listener| try listener.answer();
+            try shell_pump.drain(self, link);
+            if (self.worker != null or !self.drained or time.run.slice_id == null) break;
+        }
     }
 }
 

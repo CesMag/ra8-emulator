@@ -89,13 +89,15 @@ pub const Mixer = struct {
         fetched: [layers]?[]const u8,
         at: u32,
     ) void {
+        var rects: [layers]blend.Rect = undefined;
+        for (planes, 0..) |plane, index| rects[index] = plane.stage.rect();
         var column: u32 = 0;
         while (column < panel.width) : (column += 1) {
             var colour = blend.opaqueColour(panel.background);
             var reached: u32 = 0;
-            for (planes, 0..) |plane, index| {
-                const source = sample(plane.shape, plane.stage.rect(), plane.palette, fetched[index], column);
-                const shown = plane.stage.contribution(source, column, at) orelse continue;
+            for (planes, 0..) |*plane, index| {
+                const source = sample(&plane.shape, rects[index], plane.palette, fetched[index], column);
+                const shown = plane.stage.contributionIn(rects[index], source, column, at) orelse continue;
                 colour = blend.over(shown, colour);
                 reached += 1;
             }
@@ -130,7 +132,7 @@ fn readRow(
 /// The colour one layer's framebuffer holds under a panel coordinate, or
 /// null where the layer has no pixel there.
 fn sample(
-    shape: scan.Shape,
+    shape: *const scan.Shape,
     rect: blend.Rect,
     palette: *const clut.Palette,
     line: ?[]const u8,
@@ -184,24 +186,28 @@ pub fn compose(source: Source, into: []u32) Result {
     if (into.len < @as(usize, source.width) * source.height) return .{ .refused = .too_big };
     var scratch = source;
     var fold = scan.Fold{};
+    var rects: [layers]blend.Rect = undefined;
+    for (scratch.planes[0..scratch.count], 0..) |*plane, index| rects[index] = plane.stage.rect();
+    const apply_stage = !scratch.stage.passthrough() or scratch.stage.capture != null;
+    const base_colour = blend.opaqueColour(scratch.background);
     var lines: [layers][scan.limits.chunk]u8 = undefined;
     var at: u32 = 0;
     while (at < scratch.height) : (at += 1) {
         var fetched: [layers]?[]const u8 = .{ null, null };
         for (scratch.planes[0..scratch.count], 0..) |*plane, index| {
-            fetched[index] = readRow(scratch.memory, plane.shape, plane.stage.rect(), at, &lines[index]) catch {
+            fetched[index] = readRow(scratch.memory, plane.shape, rects[index], at, &lines[index]) catch {
                 return .{ .refused = .fault };
             };
         }
         var column: u32 = 0;
         while (column < scratch.width) : (column += 1) {
-            var colour = blend.opaqueColour(scratch.background);
+            var colour = base_colour;
             for (scratch.planes[0..scratch.count], 0..) |*plane, index| {
-                const fetched_colour = sample(plane.shape, plane.stage.rect(), &plane.palette, fetched[index], column);
-                const shown = plane.stage.contribution(fetched_colour, column, at) orelse continue;
+                const fetched_colour = sample(&plane.shape, rects[index], &plane.palette, fetched[index], column);
+                const shown = plane.stage.contributionIn(rects[index], fetched_colour, column, at) orelse continue;
                 colour = blend.over(shown, colour);
             }
-            colour = scratch.stage.apply(colour, column, at);
+            if (apply_stage) colour = scratch.stage.apply(colour, column, at);
             into[@as(usize, at) * scratch.width + column] = colour;
             fold.pixel(colour);
         }

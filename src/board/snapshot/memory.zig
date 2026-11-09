@@ -202,12 +202,14 @@ fn saveRegion(base: u32, bytes: []const u8, live: u32, writer: anytype) !void {
     try writer.writeInt(u32, base, .little);
     try writer.writeInt(u32, @intCast(bytes.len), .little);
     try writer.writeInt(u32, live, .little);
+    var left: u32 = live;
     var offset: usize = 0;
-    while (offset < bytes.len) : (offset += page) {
+    while (left > 0 and offset < bytes.len) : (offset += page) {
         const chunk = bytes[offset..@min(offset + page, bytes.len)];
         if (zero(chunk)) continue;
         try writer.writeInt(u32, @intCast(offset), .little);
         try writer.writeAll(chunk);
+        left -= 1;
     }
 }
 

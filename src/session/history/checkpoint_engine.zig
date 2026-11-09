@@ -94,7 +94,10 @@ pub const CheckpointEngine = struct {
     }
 
     pub fn registerManifest(self: *CheckpointEngine, manifest: *const manifest_mod.Manifest) !void {
+        var last_page: ?ObjectId = null;
         for (manifest.pages) |page| {
+            if (last_page) |prev| if (prev.eql(page.object)) continue;
+            last_page = page.object;
             try self.seen_objects.put(page.object.bytes, {});
         }
         for (manifest.blobs) |blob| {
@@ -206,7 +209,9 @@ pub const CheckpointEngine = struct {
             }
         }
 
-        std.mem.sort(manifest_mod.PageRef, page_refs, {}, pageLessThan);
+        if (!std.sort.isSorted(manifest_mod.PageRef, page_refs, {}, pageLessThan)) {
+            std.mem.sort(manifest_mod.PageRef, page_refs, {}, pageLessThan);
+        }
         return page_refs;
     }
 

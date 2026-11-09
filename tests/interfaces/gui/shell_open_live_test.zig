@@ -87,14 +87,14 @@ test "reloading the kept image repeatedly returns to its reset vector" {
     live.files.keep(first);
     const want = try resetPc(first);
     for (0..2) |_| {
+        const serial = live.registers.cores[0].serial;
         live.files.reload(&live.link, &live.shell.status);
         for (0..30) |_| {
             try live.step();
             if (live.shell.status.load_id == null) break;
         }
         try std.testing.expectEqual(@as(?u32, null), live.shell.status.load_id);
-        // A load resets the register leaf's batch counter.
-        try live.untilRead(0);
+        try live.untilRead(serial);
         try std.testing.expectEqual(want, live.pc());
         try std.testing.expectEqual(@as(?Refusal, null), live.shell.status.refused);
         try std.testing.expectEqualStrings(first, live.files.path_buf[0..live.files.path_len]);

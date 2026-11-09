@@ -20,7 +20,6 @@ const NvicSource = chip.core.cpu.exception.nvic_source.NvicSource;
 
 const attachment_snapshot = @import("attachments.zig");
 pub const attachments = attachment_snapshot;
-
 pub const Error = error{ SecondCoreNotSaved, UnsupportedAttachments };
 
 pub const Hook = struct {
@@ -45,7 +44,9 @@ pub const Files = struct {
     session: ?*Session = null,
     pair: ?*Pair = null,
     image: ?[]const u8 = null,
+    image_hash: ?[16]u8 = null,
     images: ?*const [2]?[]u8 = null,
+    hashes: ?*const [2]?[16]u8 = null,
     pending: ?*NvicSource = null,
     attachments: ?attachment_snapshot.Binding = null,
 
@@ -204,12 +205,12 @@ pub const Files = struct {
     }
 
     pub fn identity(self: *const Files) run_file.Identity {
-        var hashes: run_file.Identity = @splat(null);
+        var out: run_file.Identity = if (self.hashes) |cached| cached.* else @splat(null);
         if (self.images) |images| for (images.*, 0..) |held, index| {
-            if (held) |image| hashes[index] = run_file.imageIdentity(image);
+            if (out[index] == null and held != null) out[index] = run_file.imageIdentity(held.?);
         };
-        if (hashes[0] == null and self.image != null) hashes[0] = run_file.imageIdentity(self.image.?);
-        return hashes;
+        if (out[0] == null) out[0] = self.image_hash orelse if (self.image) |image| run_file.imageIdentity(image) else null;
+        return out;
     }
 
     fn debugBody(self: *Files, writer: *std.Io.Writer) !void {
@@ -324,7 +325,6 @@ fn readDebug(bytes: []const u8, units: []Units, cores: []const *Cpu) !void {
 }
 
 const second_wiring = .{ "state", "guard.unit" };
-
 const state_wiring = .{ "wiring", "dividers", "timebase", "fault" };
 const clock_wiring = .{ "per_chunk", "words" };
 const FaultState = struct { pc: u32, access: @FieldType(chip.core.fault.Fault, "access") };

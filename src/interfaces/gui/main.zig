@@ -15,8 +15,8 @@ comptime {
 }
 
 pub fn main(init: std.process.Init) !u8 {
-    const allocator = init.arena.allocator();
-    const argv = try init.minimal.args.toSlice(allocator);
+    const allocator = std.heap.smp_allocator;
+    const argv = try init.minimal.args.toSlice(init.arena.allocator());
     // SDL's per-user state directory: the shell's settings page (RA8EMU-963)
     // saves the theme choice there.
     const prefs = sdl.prefDir(allocator);

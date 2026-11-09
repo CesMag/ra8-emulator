@@ -21,10 +21,6 @@ pub fn pump(self: *Shell) !void {
     if (self.plug) |plug| _ = plug.attach(link);
     if (self.timeline != null) timeline_feed.arm(link, &self.trace_armed);
     if (self.startup) |startup| if (self.loaded) startup.attach(link);
-    if (self.registers) |registers| registers.attach(link);
-    if (self.memory_field) |field| _ = field.submit(self.memory);
-    if (self.memory) |memory| memory.attach(link);
-    if (self.code) |code| code.attach(link);
     if (self.breaks) |breaks| breaks.attach(link);
     if (self.stack) |stack| stack.attach(link);
     if (self.source) |source| source.attach(link);
@@ -32,6 +28,15 @@ pub fn pump(self: *Shell) !void {
     if (self.branches) |feed| feed.attach(link, &self.layout);
     if (self.diff) |diff| diff.attach(link, &self.layout);
     if (self.filmstrip) |film| film.attach(link);
+    if (self.registers) |registers| registers.attach(link);
+    if (self.memory_field) |field| _ = field.submit(self.memory);
+    if (self.memory) |memory| memory.attach(link);
+    if (self.code) |code| code.attach(link);
+    return drain(self, link);
+}
+
+/// Take the arrivals this frame allows without queueing new leaf reads.
+pub fn drain(self: *Shell, link: *session_link.Link) !void {
     self.drained = false;
     var taken: usize = 0;
     while (taken < loop.max_arrivals) : (taken += 1) {

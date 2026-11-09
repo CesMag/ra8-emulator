@@ -59,6 +59,8 @@ fn reply(context: *handlers.Context, core: proto.Core, from: u64, ended: api.End
 /// Run until session time reaches `target`, a stop, or a round that moves no time.
 fn rounds(session: *api.Session, which: api.Core, target: u64) !api.Ended {
     const base = session.time_base.?;
+    session.advancing = true;
+    defer session.advancing = false;
     for (0..max_rounds) |_| {
         const left = base.cyclesUntil(target) -| saved(session);
         if (left == 0) break;
