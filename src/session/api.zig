@@ -36,7 +36,6 @@ const session_window = @import("window.zig");
 const window_engine = @import("history/window_engine.zig");
 const session_smooth_rewind = @import("smooth_rewind.zig");
 const history_nav_index = @import("history/nav_index.zig");
-
 const session_search = @import("search.zig");
 pub const Core = @import("event/stream.zig").Core;
 pub const EventStream = @import("event/stream.zig").Stream;
@@ -78,6 +77,7 @@ pub const Event = @import("event/stream.zig").Event;
 const BoardRun = struct { tick: BoardTick, guest: Guest };
 pub const Session = struct {
     live: zig_session.ZigSession,
+    metrics: ?@import("device_metrics.zig").Hook = null,
     time_base: ?*const TimeBase = null,
     event_clock: ?EventClock = null,
     grid: ?*const @import("ra8_chip").core.scheduler.State = null,
@@ -119,6 +119,7 @@ pub const Session = struct {
     /// The first replay determinism error, until a run slice reports it.
     replay_failure: ?stop_machine.ReplayFailure = null,
     prefetch_pool: ?*@import("history/prefetch.zig").Prefetch = null,
+    pub const deviceMetrics = @import("device_metrics.zig").read;
     pub fn attachLoader(self: *Session, loader: Loader) void {
         self.loader = loader;
     }

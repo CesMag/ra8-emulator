@@ -51,3 +51,5 @@ pub const camera = struct {
     pub const source_spec = @import("camera/source/spec.zig");
     pub const source_open = @import("camera/source/open.zig");
 };
+
+pub const metrics = @import("metrics/metrics.zig");

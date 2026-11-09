@@ -131,3 +131,27 @@ test "a corrupt file leaves the layout untouched" {
     try std.testing.expectEqual(before, layout.node(layout.root).body);
     try std.testing.expect(layout.pane(layout.root) == null);
 }
+
+test "metrics panes retain kind core and deck selection after serialization" {
+    const gpa = std.testing.allocator;
+    var layout = try pane_layout.Layout.init(gpa, .{ .kind = .host_metrics, .core = .cpu0 });
+    defer layout.deinit();
+    _ = try layout.split(layout.root, .across, .{ .kind = .device_metrics, .core = .cpu1 });
+    const halves = layout.node(layout.root).body.split;
+    try layout.deck(layout.root, &.{ halves.first, halves.second });
+    var deck = layout.deckAt(layout.root).?;
+    deck.active = 1;
+    try layout.setDeck(layout.root, deck);
+    var buf: [4096]u8 = undefined;
+    var restored = try layout_store.parse(try layout_store.encode(&layout, &buf), gpa);
+    defer restored.deinit();
+    const saved = restored.deckAt(restored.root).?;
+    try std.testing.expectEqual(@as(u8, 1), saved.active);
+    try std.testing.expectEqual(pane_layout.Kind.host_metrics, restored.pane(saved.children[0]).?.kind);
+    try std.testing.expectEqual(pane_layout.Kind.device_metrics, restored.pane(saved.children[1]).?.kind);
+    try std.testing.expectEqual(pane_layout.Core.cpu1, restored.pane(saved.children[1]).?.core);
+    var solved = try restored.solve(gpa, .{ .x = 0, .y = 0, .w = 640, .h = 480 });
+    defer solved.deinit(gpa);
+    try std.testing.expectEqual(@as(usize, 1), solved.panes.items.len);
+    try std.testing.expectEqual(saved.children[1], solved.panes.items[0].index);
+}

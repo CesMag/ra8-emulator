@@ -39,11 +39,16 @@ pub const Tabs = struct { panes: []const pane_layout.Pane, active: u8 };
 /// cell names its pane and takes its own page. Null when the row has no
 /// such cell or it does not fit in the strip.
 pub fn tabAt(title: draw_list.Rect, panes: []const pane_layout.Pane, which: usize) ?draw_list.Rect {
+    var right = title.x + title.w;
+    for (panes) |pane| if (pane.kind == .device_metrics) {
+        right -= coreToggle(title).w;
+        break;
+    };
     var x = title.x + pad;
     for (panes, 0..) |pane, at| {
         const w: i32 = 2 * pad + @as(i32, @intCast(font.textWidth(kindName(pane.kind).len)));
         if (at == which) {
-            if (x + w > title.x + title.w) return null;
+            if (x + w > right) return null;
             return .{ .x = x, .y = title.y, .w = w, .h = title.h };
         }
         x += w;
@@ -100,7 +105,13 @@ pub fn kindName(kind: pane_layout.Kind) []const u8 {
         .map => "Memory Map",
         .diff => "State Diff",
         .branches => "Branch Tree",
+        .host_metrics => "Host Metrics",
+        .device_metrics => "Device Metrics",
     };
+}
+
+pub fn deviceCoreName(core: pane_layout.Core) []const u8 {
+    return if (core == .cpu0) "CPU0 M85" else "CPU1 M33";
 }
 
 pub fn coreName(core: pane_layout.Core) []const u8 {
@@ -135,6 +146,12 @@ pub fn trackArea(width: i32, height: i32) Rect {
 
 pub fn titleOf(area: draw_list.Rect) draw_list.Rect {
     return .{ .x = area.x, .y = area.y, .w = area.w, .h = @min(title_h, area.h) };
+}
+
+/// Core selector at the right edge of the device metrics title, including decks.
+pub fn coreToggle(title: draw_list.Rect) draw_list.Rect {
+    const width = @min(title.w, 80);
+    return .{ .x = title.x + title.w - width, .y = title.y, .w = width, .h = title.h };
 }
 
 pub fn bodyOf(area: draw_list.Rect) draw_list.Rect {
@@ -218,7 +235,12 @@ fn drawLeaf(list: *draw_list.DrawList, table: *const widget.types.Paint, theme: 
         const room = title.w - 2 * pad;
         if (room > 0) drawText(table, title.x + pad, top, font.fit(kindName(pane.kind), @intCast(room)), word(theme.ink), word(theme.face));
         const name_w: i32 = @intCast(font.textWidth(kindName(pane.kind).len));
-        if (room >= name_w + pad + core_w) drawText(table, title.x + title.w - pad - core_w, top, core, word(theme.muted), word(theme.face));
+        if (pane.kind != .host_metrics and room >= name_w + pad + core_w) drawText(table, title.x + title.w - pad - core_w, top, core, word(theme.muted), word(theme.face));
+    }
+    if (pane.kind == .device_metrics) {
+        const toggle = coreToggle(toList(title));
+        fillArea(table, toGeom(toggle), word(theme.face));
+        drawText(table, toggle.x + pad, top, deviceCoreName(pane.core), word(theme.ink), word(theme.face));
     }
     if (painter) |p| {
         const body = toGeom(bodyOf(toList(area)));

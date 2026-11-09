@@ -32,8 +32,15 @@ pub fn titleAt(layout: *const pane_layout.Layout, solved: *const pane_layout.Sol
 /// whether a title took the press.
 pub fn titlePress(layout: *pane_layout.Layout, solved: *const pane_layout.Solved, x: i32, y: i32) bool {
     const index = titleAt(layout, solved, x, y) orelse return false;
-    if (layout.deckParent(index)) |parent| return deckPress(layout, solved, index, parent, x, y);
     const pane = layout.pane(index) orelse return false;
+    if (pane.kind == .device_metrics) {
+        const area = placedAt(solved, index) orelse return false;
+        if (shell_frame.coreToggle(shell_frame.titleOf(area)).contains(x, y)) {
+            layout.nodes.items[index].body.leaf.core = if (pane.core == .cpu0) .cpu1 else .cpu0;
+            return true;
+        }
+    }
+    if (layout.deckParent(index)) |parent| return deckPress(layout, solved, index, parent, x, y);
     layout.setKind(index, nextKind(pane.kind)) catch return false;
     return true;
 }
@@ -72,6 +79,10 @@ pub const Drag = struct { parent: pane_layout.Index, child: u8 };
 /// not on a deck's tab row.
 pub fn dragFrom(layout: *const pane_layout.Layout, solved: *const pane_layout.Solved, x: i32, y: i32) ?Drag {
     const index = titleAt(layout, solved, x, y) orelse return null;
+    if (layout.pane(index).?.kind == .device_metrics) {
+        const area = placedAt(solved, index) orelse return null;
+        if (shell_frame.coreToggle(shell_frame.titleOf(area)).contains(x, y)) return null;
+    }
     const parent = layout.deckParent(index) orelse return null;
     const deck = layout.deckAt(parent) orelse return null;
     // The leaf the row lives on is the active child; its area is the deck's.

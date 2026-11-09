@@ -18,6 +18,7 @@ pub const Error = error{ Unmapped, SecurityViolation };
 /// Fixed host-backed ranges. Separate fields avoid a per-access region loop;
 /// peripheral addresses and cross-range accesses continue through the vtable.
 pub const DirectMemory = struct {
+    touched: ?*@import("memory/touched.zig").Tracker = null,
     flash: ?[]u8 = null,
     sram: ?[]u8 = null,
     enabled: bool = false,
@@ -82,6 +83,7 @@ pub const DirectMemory = struct {
     /// range (RA8EMU-D1).
     inline fn write(self: *const DirectMemory, address: u32, bytes: []const u8) bool {
         const hit = self.locate(address, bytes.len) orelse return false;
+        if (self.touched) |tracker| tracker.note(hit.base, hit.offset, bytes.len);
         if (self.observer) |o| o.bytes(.{ .base = hit.base, .offset = hit.offset, .initiator = self.initiator, .pre = hit.data, .new = bytes });
         @memcpy(hit.data, bytes);
         if (self.lines) |fan| fan.notify(address, bytes.len);

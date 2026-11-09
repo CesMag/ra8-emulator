@@ -68,6 +68,8 @@ fn sleepRun(reaching: bool, armed: bool) !Counter {
     var counter: Counter = .{};
     const hook: zig_boundary.Boundary = .{ .context = &counter, .tickFn = Counter.tick, .chunk = 100, .awakeFn = if (reaching) Counter.reach else null };
     try std.testing.expect(try zig_boundary.run(.{ .cpu = &sleeper.cpu }, &machine, 50_000, null, null, hook) == .count);
+    try std.testing.expect(sleeper.cpu.idle_cycles > 49_000);
+    try std.testing.expect(sleeper.cpu.slots < 1000);
     return counter;
 }
 

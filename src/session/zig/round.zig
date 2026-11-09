@@ -75,6 +75,7 @@ const Round = struct {
         var slots: u64 = 0;
         const ended = drive.runTarget(live.core, live.machine, want, live.watch, &live.clock, &slots, self.limit(0));
         const elapsed = if (ended == .count and cpu.waiting != null) want else slots;
+        cpu.idle_cycles +|= elapsed -| slots;
         saved.advance(@intCast(elapsed), @intCast(slots));
         self.left -|= elapsed;
         const pending = if (self.edge.cut) |latch| latch.takePending() else null;
@@ -114,6 +115,7 @@ const Round = struct {
         var slots: u64 = 0;
         const ended = drive.runTarget(live.core, live.machine, want, live.watch, &live.clock, &slots, self.limit(1));
         const elapsed = if (ended == .count and cpu.waiting != null) want else slots;
+        cpu.idle_cycles +|= elapsed -| slots;
         pair.noteTurn(@intCast(elapsed), @intCast(slots));
         saved.lengths[1] += @intCast(slots);
         saved.at.o = saved.lengths[1];

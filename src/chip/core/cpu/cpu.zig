@@ -82,6 +82,9 @@ pub const Cpu = struct {
     retired: u64 = 0,
     /// Architectural slots, including synchronous entries, across warm reset.
     slots: u64 = 0,
+    /// Virtual cycles spent asleep without executing an architectural slot.
+    idle_cycles: u64 = 0,
+    metrics_epoch: u64 = 0,
     /// Slots which entered a synchronous exception without retiring.
     sync_entries: u64 = 0,
     /// Optional observer for each retired instruction (profiling/debugging).

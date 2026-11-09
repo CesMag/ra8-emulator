@@ -9,7 +9,7 @@ const speed_field = @import("../speed_field.zig");
 const script_parser = @import("../script/parser.zig");
 
 pub const usage = "usage: ra8_gui [--host NAME] [--hosts FILE] [--attach MODEL@ENDPOINT]... [--click]\n" ++
-    "    [--app FILE.ra8app[=MODULE.elf]]... [--camera-source KIND[:ARG]] [--window-stills DIR [--window-stills-every N]]\n" ++
+    "    [--cpu1 IMAGE] [--app FILE.ra8app[=MODULE.elf]]... [--camera-source KIND[:ARG]] [--window-stills DIR [--window-stills-every N]]\n" ++
     "    [--frames N] [--wall-time DURATION] [--virtual-time DURATION] [--speed SPEED] [--theme dark|light|system] [--render-driver NAME]\n" ++
     "    [--headless] [--gui-script PATH] [--gui-video-out PATH] [--gui-video-fps N] [--show-cursor] [IMAGE]\n" ++
     "With no IMAGE the shell opens empty: File > Open ELF starts the session. --headless, --frames, --virtual-time, --wall-time and --gui-script need one.\n";
@@ -20,6 +20,7 @@ pub const default_video_fps: u32 = 30;
 pub const Args = struct {
     /// Null when none was named: the shell opens empty (boot.zig).
     image: ?[]const u8 = null,
+    cpu1: ?[]const u8 = null,
     apps: [card_apps.max_apps][]const u8 = undefined,
     app_count: usize = 0,
     host: ?[]const u8 = null,
@@ -71,6 +72,7 @@ const ValuedFlag = enum {
     @"--hosts",
     @"--attach",
     @"--app",
+    @"--cpu1",
     @"--camera-source",
     @"--window-stills",
     @"--window-stills-every",
@@ -124,6 +126,7 @@ fn take(args: *Args, flag: ValuedFlag, value: []const u8) !void {
         .@"--host" => args.host = value,
         .@"--hosts" => args.hosts = value,
         .@"--attach" => try args.startup.add(value),
+        .@"--cpu1" => args.cpu1 = value,
         .@"--app" => addApp(args, value) catch return error.Usage,
         .@"--camera-source" => args.camera = try source_spec.parse(value),
         .@"--window-stills" => args.stills = value,

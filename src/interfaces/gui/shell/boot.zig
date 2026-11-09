@@ -25,6 +25,7 @@ pub const Boot = struct {
     apps: []const []const u8,
     /// The session answers on a thread of its own (main.zig's `apart`).
     apart: bool,
+    cpu1: ?[]const u8 = null,
     clock: wall_clock.Clock,
     rx: []u8,
     tx: []u8,
@@ -40,7 +41,7 @@ pub const Boot = struct {
     /// Brings the session up on `image` and serves it to the shell. The
     /// drive loop loads the image once the session greets.
     pub fn start(self: *Boot, image: first_image.Image) !void {
-        try self.session.openRecordingApps(self.allocator, self.io, image.path, null, self.store.dir, self.apps);
+        try self.session.openRecordingPair(self.allocator, self.io, image.path, null, self.store.dir, self.apps, self.cpu1);
         errdefer self.session.deinit();
         // The local session rides the worker's native mailbox (RA8EMU-1196)
         // in both modes: the thread serves it only when someone is using the
@@ -50,7 +51,7 @@ pub const Boot = struct {
         self.link.openNative(&self.worker.native);
         const shell = self.shell;
         shell_hosted.bindHosted(&self.hosted, self.allocator, self.io, self.env, self.window, image.path, &self.session, &self.link, shell);
-        shell.pick = shell_rebuild.launch(self.allocator, self.io, image.path, self.apps, &self.session, shell, &self.hosted, &self.link, &self.worker, self.store);
+        shell.pick = shell_rebuild.launch(self.allocator, self.io, image.path, self.apps, self.cpu1, &self.session, shell, &self.hosted, &self.link, &self.worker, self.store);
         if (shell.camera) |camera| camera.preview_provider = .{ .context = &self.session, .previewFn = cameraPreview };
         if (shell.files) |files| files.keep(image.path);
         self.image = image;

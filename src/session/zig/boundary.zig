@@ -77,6 +77,7 @@ pub fn run(core: zig_core.ZigCore, machine: *stop_machine.Machine, count: u64, w
         var slots: u64 = 0;
         const ended = zig_drive.runCounted(core, machine, want, watch, clock, &slots);
         const elapsed = if (ended == .count and core.cpu.waiting != null) want else slots;
+        core.cpu.idle_cycles +|= elapsed -| slots;
         saved.advance(@intCast(elapsed), @intCast(slots));
         const pending = if (edge.cut) |latch| latch.takePending() else null;
         const cut = pending != null;

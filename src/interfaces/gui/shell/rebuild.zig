@@ -18,14 +18,14 @@ const board_store = @import("board_store.zig");
 /// arena), wires them to each other, serves `session` to the shell, and
 /// brings the saved choice back, the status line naming the machine in
 /// force. Null only when out of memory: the shell then has no Board menu.
-pub fn launch(allocator: std.mem.Allocator, io: std.Io, image: []const u8, apps: []const []const u8, session: *local_session.LocalSession, shell: *shell_loop.Shell, hosted: *?shell_hosted.Hosted, link: *session_link.Link, worker: *session_worker.Worker, store: *board_store.Store) ?*shell_pick.Pick {
+pub fn launch(allocator: std.mem.Allocator, io: std.Io, image: []const u8, apps: []const []const u8, cpu1: ?[]const u8, session: *local_session.LocalSession, shell: *shell_loop.Shell, hosted: *?shell_hosted.Hosted, link: *session_link.Link, worker: *session_worker.Worker, store: *board_store.Store) ?*shell_pick.Pick {
     const pick = allocator.create(shell_pick.Pick) catch return null;
     const rebuild = allocator.create(Rebuild) catch {
         allocator.destroy(pick);
         return null;
     };
     pick.* = .{ .allocator = allocator, .io = io, .store = store };
-    rebuild.* = .{ .allocator = allocator, .io = io, .image = image, .apps = apps, .session = session, .shell = shell, .hosted = hosted, .link = link, .worker = worker, .pick = pick };
+    rebuild.* = .{ .allocator = allocator, .io = io, .image = image, .apps = apps, .cpu1 = cpu1, .session = session, .shell = shell, .hosted = hosted, .link = link, .worker = worker, .pick = pick };
     pick.context = rebuild;
     pick.applyFn = applyRebuild;
     pick.chosen = store.restore();
@@ -44,6 +44,7 @@ pub const Rebuild = struct {
     image: []const u8,
     /// The ThreadX apps staged onto the card at boot (RA8EMU-1142).
     apps: []const []const u8,
+    cpu1: ?[]const u8 = null,
     session: *local_session.LocalSession,
     shell: *shell_loop.Shell,
     hosted: *?shell_hosted.Hosted,
@@ -56,7 +57,7 @@ pub const Rebuild = struct {
     /// Reopens the session with `profile`, the pick's composed text.
     pub fn apply(self: *Rebuild, profile: []const u8) !void {
         var replacement: local_session.LocalSession = undefined;
-        try replacement.openRecordingApps(self.allocator, self.io, self.image, profile, if (self.pick.store) |s| s.dir else null, self.apps);
+        try replacement.openRecordingPair(self.allocator, self.io, self.image, profile, if (self.pick.store) |s| s.dir else null, self.apps, self.cpu1);
         // The session is reopened with the worker's thread stopped, and
         // answers again once everything points at the new one.
         self.worker.stop();

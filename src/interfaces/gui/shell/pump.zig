@@ -11,6 +11,13 @@ const shell_memory = @import("memory.zig");
 /// Pump the link into the leaves, then take the arrivals this frame allows.
 pub fn pump(self: *Shell) !void {
     const link = self.link orelse return;
+    if (self.layout.shows(.device_metrics) and self.now() -| self.device_metrics_at >= 250_000_000) {
+        if (link.native) |native| if (native.metrics()) |snapshots| {
+            self.device_metrics = snapshots;
+            for (&self.device_windows, &self.device_metrics) |*window, *snapshot| window.sample(snapshot);
+            self.device_metrics_at = self.now();
+        };
+    }
     if (self.console) |console| console.attach(link);
     if (self.board) |board| board.attach(link);
     if (self.devices) |devices| devices.attach(link);

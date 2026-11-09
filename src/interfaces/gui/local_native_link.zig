@@ -87,6 +87,21 @@ pub const Native = struct {
     ring_count: usize = 0,
     /// The last arrival handed to the window, freed by the next pump.
     taken: ?[]const u8 = null,
+    metrics_requested: std.atomic.Value(bool) = .init(false),
+    metrics_generation: u64 = 0,
+    metrics_delivered: u64 = 0,
+    device_metrics: [2]@import("ra8_session").device_metrics.Snapshot = .{ .{}, .{} },
+
+    /// Window thread reads a copy; the owning session thread publishes at serve boundaries.
+    pub fn metrics(self: *Native) ?[2]@import("ra8_session").device_metrics.Snapshot {
+        self.metrics_requested.store(true, .release);
+        self.wake();
+        if (!self.mutex.tryLock()) return null;
+        defer self.mutex.unlock(self.io);
+        if (self.metrics_generation == self.metrics_delivered) return null;
+        self.metrics_delivered = self.metrics_generation;
+        return self.device_metrics;
+    }
 
     const Slot = struct {
         args: [max_args]u8 align(16),
@@ -198,6 +213,13 @@ pub const Native = struct {
         if (self.stopping.load(.acquire)) return false;
         self.mutex.lockUncancelable(self.io);
         defer self.mutex.unlock(self.io);
+        if (self.metrics_requested.swap(false, .acq_rel)) {
+            self.device_metrics = .{
+                self.link.context.session.deviceMetrics(.cpu0),
+                self.link.context.session.deviceMetrics(.cpu1),
+            };
+            self.metrics_generation +%= 1;
+        }
         var dispatched = false;
         while (self.count > 0 and self.link.pendingCount() < proto.pending_slots) {
             const slot = &self.slots[self.head];

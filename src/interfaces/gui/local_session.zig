@@ -39,19 +39,25 @@ pub const LocalSession = struct {
 
     /// Stage app bytes before recording begins, including the RAM fallback.
     pub fn openRecordingApps(self: *LocalSession, allocator: std.mem.Allocator, io: std.Io, elf_path: []const u8, board_profile: ?[]const u8, dir: ?[]const u8, apps: []const []const u8) !void {
+        return self.openRecordingPair(allocator, io, elf_path, board_profile, dir, apps, null);
+    }
+
+    /// Both core images are installed before the recording root and checkpoint.
+    pub fn openRecordingPair(self: *LocalSession, allocator: std.mem.Allocator, io: std.Io, elf_path: []const u8, board_profile: ?[]const u8, dir: ?[]const u8, apps: []const []const u8, cpu1: ?[]const u8) !void {
         const setup = try allocator.create(served_setup.Served);
         errdefer allocator.destroy(setup);
+        const second: ?served_setup.SecondImage = if (cpu1) |path| .{ .path = path } else null;
         var card: @import("ra8_rpc").served_card.Options = .{};
         for (apps) |path| try card.addApp(path);
         if (dir) |base| {
             const root = try std.fmt.allocPrint(allocator, "{s}{c}history", .{ base, std.fs.path.sep });
             defer allocator.free(root);
-            if (setup.openInputs(allocator, io, elf_path, board_profile, .{ .root = root }, null, .{ .card = card })) |_| {
+            if (setup.openInputs(allocator, io, elf_path, board_profile, .{ .root = root }, second, .{ .card = card })) |_| {
                 self.* = .{ .setup = setup, .allocator = allocator };
                 return;
             } else |_| {}
         }
-        try setup.openInputs(allocator, io, elf_path, board_profile, .{}, null, .{ .card = card });
+        try setup.openInputs(allocator, io, elf_path, board_profile, .{}, second, .{ .card = card });
         self.* = .{ .setup = setup, .allocator = allocator };
     }
 

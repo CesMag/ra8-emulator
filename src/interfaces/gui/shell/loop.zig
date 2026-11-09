@@ -67,6 +67,9 @@ pub const Shell = struct {
     layout: pane_layout.Layout,
     status: status_bar.Status = .{},
     link: ?*session_link.Link = null,
+    device_metrics: [2]@import("ra8_session").device_metrics.Snapshot = .{ .{}, .{} },
+    device_windows: [2]@import("ra8_session").device_metrics.Window = .{ .{}, .{} },
+    device_metrics_at: u64 = 0,
     painter: ?shell_frame.Painter = null,
     /// The palette in use and its picker (RA8EMU-1165).
     themes: shell_theme.Themes = .{},
@@ -87,6 +90,7 @@ pub const Shell = struct {
     camera_file: ?*shell_camera_file.CameraFile = null,
     /// The `--attach` and `--click` plugs, sent once the image is loaded.
     startup: ?*shell_startup.Startup = null,
+    host_metrics: ?*@import("ra8_host").metrics.Sampler = null,
     loaded: bool = false,
     registers: ?*shell_registers.Pair = null,
     /// Register edits over the leaves (RA8EMU-946).
@@ -195,6 +199,7 @@ pub const Shell = struct {
         solved = try shell_frame.solve(&self.layout, self.allocator, width, height);
         var list = draw_list.DrawList.init(self.allocator, size.width, size.height);
         defer list.deinit();
+        if (self.host_metrics) |metrics| if (self.layout.shows(.host_metrics)) metrics.refresh(self.now());
         if (self.board) |board| board.pace(self.now());
         if (self.camera) |camera| camera.pace(self.now(), self.allocator);
         try shell_frame.draw(&list, self.themes.active, .{

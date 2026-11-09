@@ -149,3 +149,5 @@ pub const watch = @import("watch/watch.zig");
 pub const watchpoint = @import("watchpoint.zig");
 pub const widget_tree = @import("widget_tree.zig");
 pub const zig = @import("zig/zig.zig");
+
+pub const device_metrics = @import("device_metrics.zig");

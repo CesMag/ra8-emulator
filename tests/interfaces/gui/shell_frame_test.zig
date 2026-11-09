@@ -286,3 +286,8 @@ test "shell frame edge: leaf title clipping and border drawing with narrow width
         raster.draw(&pixels, &list, font.atlas);
     }
 }
+
+test "device metrics titles identify the two RA8D2 cores" {
+    try std.testing.expectEqualStrings("CPU0 M85", frame.deviceCoreName(.cpu0));
+    try std.testing.expectEqualStrings("CPU1 M33", frame.deviceCoreName(.cpu1));
+}

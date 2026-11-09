@@ -26,6 +26,7 @@ pub fn complete(comptime State: type) bool {
         .{ .name = "window", .reason = "Debugger reverse window retained; plants again after a restore" },
         .{ .name = "persistent", .reason = "Host history recorder and checkpoint policy; armed per run" },
         .{ .name = "display", .reason = "Target renderer wiring and host buffers; guest vsync saved on board" },
+        .{ .name = "metrics_tracking", .reason = "Host per-core metrics instrumentation retained" },
         .{ .name = "tracer", .reason = "Host trace instrumentation retained" },
         .{ .name = "listener", .reason = "Host trace bus callback wiring" },
         .{ .name = "publisher", .reason = "Host trace event publisher wiring" },

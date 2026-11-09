@@ -55,7 +55,7 @@ test "a run nobody watches, a dangling flag, an unknown flag or a second image i
 }
 
 test "the command line's run flags are not ra8_gui's" {
-    const run_flags = [_][]const u8{ "--instructions", "--ms", "--frame-out", "--cpu1", "--ns", "--sd", "--console", "--report" };
+    const run_flags = [_][]const u8{ "--instructions", "--ms", "--frame-out", "--ns", "--sd", "--console", "--report" };
     for (run_flags) |flag| try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "app.elf", flag, "1" }));
 }
 
@@ -249,4 +249,21 @@ test "ra8_gui with no image opens the shell empty and ends when the window close
     try std.testing.expectEqual(@as(u32, 3), Window.presents);
     try std.testing.expectEqual(@as(u32, 1), Window.opens);
     try std.testing.expectEqual(@as(u32, 1), Window.closes);
+}
+
+test "CPU1 image is an explicit M33 startup input" {
+    const args = try shell_main.parse(&.{ "ra8_gui", "cpu0.elf", "--cpu1", "cpu1.elf" });
+    try std.testing.expectEqualStrings("cpu0.elf", args.image.?);
+    try std.testing.expectEqualStrings("cpu1.elf", args.cpu1.?);
+    try std.testing.expectError(error.Usage, shell_main.parse(&.{ "ra8_gui", "cpu0.elf", "--cpu1" }));
+}
+
+test "headless GUI starts both recorded core images" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const code = try shell_main.run(arena.allocator(), std.testing.io, &empty_env, &.{
+        "ra8_gui",                                             "--headless",                                     "--frames", "3", "--cpu1",
+        "tests/fixtures/trustzone/cpu1_pingpong_ipc_cpu1.elf", "tests/fixtures/trustzone/cpu1_pingpong_ipc.elf",
+    }, .{ .open = Window.none, .close = Window.close }, null);
+    try std.testing.expectEqual(@as(u8, 0), code);
 }

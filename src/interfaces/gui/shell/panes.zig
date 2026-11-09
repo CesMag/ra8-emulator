@@ -77,11 +77,16 @@ pub fn waitingFor(kind: pane_layout.Kind) ?[]const u8 {
         .map => "waiting for an image",
         .diff => "waiting for diff results",
         .branches => "waiting for the branches",
+        .host_metrics => "waiting for host metrics",
+        .device_metrics => "waiting for device metrics",
     };
 }
 
 /// The feeds the panes draw from; a missing one leaves its note up.
 pub const Panes = struct {
+    device_metrics: ?*const [2]@import("ra8_session").device_metrics.Snapshot = null,
+    device_windows: ?*const [2]@import("ra8_session").device_metrics.Window = null,
+    host_metrics: ?*const @import("ra8_host").metrics.Sampler = null,
     console: ?*const shell_console.Console = null,
     board: ?*shell_board.Board = null,
     /// The pointer on the board leaf, for the switch it holds down.
@@ -169,6 +174,15 @@ fn drawMono(self: *Panes, list: *draw_list.DrawList, theme: *const Theme, pane: 
 
 fn paint(context: *anyopaque, list: *draw_list.DrawList, table: *const widget.types.Paint, theme: *const Theme, pane: pane_layout.Pane, body: Rect) anyerror!void {
     const self: *Panes = @ptrCast(@alignCast(context));
+    if (pane.kind == .device_metrics) if (self.device_metrics) |metrics| {
+        if (self.device_windows) |windows| {
+            const core: usize = if (pane.core == .cpu0) 0 else 1;
+            return @import("../ui/device_metrics_pane.zig").draw(table, theme, toList(body), &metrics[core], &windows[core]);
+        }
+    };
+    if (pane.kind == .host_metrics) if (self.host_metrics) |metrics| {
+        return @import("../ui/host_metrics_pane.zig").draw(table, theme, toList(body), metrics);
+    };
     if (pane.kind == .console) if (self.console) |console| {
         if (console.hasOutput()) {
             console_strip.draw(table, theme, toList(body), console.saved);

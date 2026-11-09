@@ -203,7 +203,7 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     defer allocator.free(rx);
     const tx = try allocator.alloc(u8, Env.max_frame);
     defer allocator.free(tx);
-    var boot: shell_boot.Boot = .{ .allocator = allocator, .io = io, .env = env, .window = window, .apps = args.apps[0..args.app_count], .apart = apart(args), .clock = host_clock.clock(), .rx = rx, .tx = tx, .store = &board_store };
+    var boot: shell_boot.Boot = .{ .allocator = allocator, .io = io, .env = env, .window = window, .apps = args.apps[0..args.app_count], .cpu1 = args.cpu1, .apart = apart(args), .clock = host_clock.clock(), .rx = rx, .tx = tx, .store = &board_store };
     defer boot.deinit();
     var shell = shell_loop.Shell.init(allocator, try pane_layout.twoCore(allocator));
     if (cap) |c| c.bind(&shell);
@@ -261,7 +261,9 @@ fn local(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Envir
     shell.files = &files;
     var recent_menu = shell_recent_menu.State{ .recents = &recent_list };
     shell.recent_menu = &recent_menu;
-    var panes: shell_panes.Panes = .{ .console = &console, .board = &board, .board_input = &feeds.board_input, .devices = &feeds.devices, .faults = &feeds.faults, .camera = &camera, .plug = &feeds.plug, .camera_file = &feeds.camera_file, .registers = &feeds.registers, .edit = &feeds.edit, .memory = &feeds.memory, .memory_field = &feeds.memory_field, .code = &feeds.code, .breaks = &feeds.breaks, .map = &map, .stack = &feeds.stack, .timeline = &shell.timeline.?, .source = &source, .locals = &feeds.locals, .branches = &feeds.branches, .diff = &feeds.diff.view };
+    var host_metrics: @import("ra8_host").metrics.Sampler = .{};
+    shell.host_metrics = &host_metrics;
+    var panes: shell_panes.Panes = .{ .device_metrics = &shell.device_metrics, .device_windows = &shell.device_windows, .host_metrics = &host_metrics, .console = &console, .board = &board, .board_input = &feeds.board_input, .devices = &feeds.devices, .faults = &feeds.faults, .camera = &camera, .plug = &feeds.plug, .camera_file = &feeds.camera_file, .registers = &feeds.registers, .edit = &feeds.edit, .memory = &feeds.memory, .memory_field = &feeds.memory_field, .code = &feeds.code, .breaks = &feeds.breaks, .map = &map, .stack = &feeds.stack, .timeline = &shell.timeline.?, .source = &source, .locals = &feeds.locals, .branches = &feeds.branches, .diff = &feeds.diff.view };
     shell.painter = panes.painter();
     if (image) |named| try boot.start(named);
     try driveAndSave(io, &shell, window, &boot, args.limits(), &layout_store, &recent_store, recent_list);

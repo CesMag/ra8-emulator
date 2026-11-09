@@ -60,7 +60,11 @@ ra8_emulator app.elf --gdb 3333              # serve gdb, each core a thread
 An ordinary run takes breakpoints and dumps too: `--break-sym`, `--watch`,
 `--dump-regs` and `--dump-mem`. A `-Dgui` build adds a second executable, `ra8_gui`:
 `ra8_gui <elf>` opens the windowed debugger on the image, with its session
-in the same process. The image opens halted; Run, Pause and Step on the
+in the same process. `ra8_gui cpu0.elf --cpu1 cpu1.elf` loads CPU0/M85 and
+CPU1/M33 before recording begins. View > Device Metrics shows each core's
+load and stack state; click its core label to switch, or open two panes.
+RAM figures are shared across both cores. View > Host Metrics monitors the
+host process. The image opens halted; Run, Pause and Step on the
 time bar along the foot of the window run it, and the field beside them
 takes a speed (`0.5`, `2`, `max`). The board leaf shows the board with its
 LEDs; SW1, SW2 and the panel take clicks. Cmd+O (Ctrl+O on Windows and

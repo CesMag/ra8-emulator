@@ -30,6 +30,8 @@ pub fn save(cpu: *const Cpu, core: u8, writer: anytype) !void {
 
 pub fn complete() bool {
     const omitted = .{
+        .{ .name = "metrics_epoch", .reason = "Host telemetry generation advances after restore" },
+        .{ .name = "idle_cycles", .reason = "Host metrics counter retained across restores" },
         .{ .name = "bus", .reason = "Embedding memory and MMIO wiring" },
         .{ .name = "retire_listener", .reason = "Embedding observer callback" },
         .{ .name = "fetch_guard", .reason = "Embedding guard callback" },
@@ -96,6 +98,7 @@ fn apply(cpu: *Cpu, cursor: *fields.Cursor) Error!void {
 
 /// Drop execution accelerators only after the restored state commits.
 pub fn afterRestore(cpu: *Cpu) void {
+    cpu.metrics_epoch +%= 1;
     if (cpu.blocks) |cache| cache.init();
     if (cpu.decoded) |cache| cache.* = .{};
     cpu.trip = .{};

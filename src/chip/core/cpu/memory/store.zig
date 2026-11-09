@@ -19,6 +19,7 @@ pub const MapError = extra.Error;
 pub const Located = struct { base: u32, offset: usize, bytes: []u8 };
 
 pub const Store = struct {
+    touched: @import("touched.zig").Tracker = .{},
     pages: [memmap.ram.len]?[]u8 = @splat(null),
     owned: [memmap.ram.len]bool = @splat(false),
     extra: extra.Extra = .{},
@@ -89,6 +90,7 @@ pub const Store = struct {
     /// so a live store reads as a fresh one before a snapshot fills it
     /// (RA8EMU-768). Borrowed regions are the lender's to clear.
     pub fn wipe(self: *Store) void {
+        self.touched = .{};
         self.barrier(.wipe);
         for (self.pages, self.owned) |held, mine| {
             if (mine) if (held) |bytes| @memset(bytes, 0);
@@ -96,6 +98,11 @@ pub const Store = struct {
         if (self.owns_port) @memset(self.port.?.sdram, 0);
         self.extra.deinit();
         self.notifyCodeRanges();
+    }
+
+    pub fn touches(self: *const Store) *@import("touched.zig").Tracker {
+        if (self.lender) |first| return first.touches();
+        return @constCast(&self.touched);
     }
 
     pub fn region(self: *const Store, base: u32) ?[]const u8 {
@@ -176,6 +183,7 @@ pub const Store = struct {
     /// nothing, the sectors the shadow restores re-executing as usual.
     pub fn rawWrite(self: *Store, address: u32, bytes: []const u8) AccessError!void {
         if (bytes.len == 0) return;
+        self.touches().invalidate();
         if (self.port) |*port| if (port.geometry.locate(address, bytes.len)) |hit| {
             switch (hit.kind) {
                 .ospi => port.flash.rawWrite(hit.offset, bytes),
@@ -192,6 +200,7 @@ pub const Store = struct {
     /// barrier entry, and ranges this store zeroes drop formed blocks so
     /// restored code executes fresh.
     pub fn barrier(self: *Store, event: observer.Barrier) void {
+        if (event == .snapshot_load) self.touches().invalidate();
         if (self.trail()) |o| o.barrier(event);
     }
 
@@ -246,6 +255,7 @@ pub const Store = struct {
     }
 
     inline fn hookBytes(self: *const Store, initiator: Initiator, base: u32, offset: usize, pre: []const u8, new: []const u8) void {
+        self.touches().note(base, offset, new.len);
         if (self.trail()) |o| o.bytes(.{ .base = base, .offset = offset, .initiator = initiator, .pre = pre, .new = new });
     }
 };

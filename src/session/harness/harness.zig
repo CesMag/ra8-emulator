@@ -106,12 +106,18 @@ const State = struct {
     persistent: ?*checkpoints.Armed = null,
     reboot: Reboot,
     display: session_display.Host,
+    metrics_tracking: [2]@import("metrics.zig").Track,
     tracer: ?rtos_hook.Tracer,
     listener: rtos_hook.zig.Listener,
     publisher: rtos_publish.Publisher,
     module_watch: txm_publish.Watcher,
     /// Set by watchModules and pairModules; the state is built without defaults.
     modules: txm_debug.Table,
+
+    fn metricsRead(context: *anyopaque, core: u1) @import("../device_metrics.zig").Snapshot {
+        const self: *State = @ptrCast(@alignCast(context));
+        return @import("metrics.zig").read(self, core);
+    }
 
     fn advance(context: *anyopaque, max_ns: u64) anyerror!void {
         const self: *State = @ptrCast(@alignCast(context));
@@ -312,6 +318,7 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
     try load_input.load(allocator, io, options.host(), &state.board, options.input_script);
     state.cpu0 = .{};
     state.tracer = null;
+    state.metrics_tracking = .{ .{}, .{} };
     errdefer state.cpu0.close();
     _ = try state.cpu0.attachStore(&state.board, state.image);
     const vector = state.image.vectorBase() orelse return error.NoVectorTable;
@@ -351,6 +358,7 @@ pub fn open(allocator: std.mem.Allocator, io: std.Io, options: Options) !Harness
 /// the opened image's initial load.
 fn wire(state: *State, allocator: std.mem.Allocator, io: std.Io, options: Options) !void {
     state.session = .{ .live = .{ .core = .{ .cpu = &state.cpu }, .machine = &state.machine, .budget = debug_session.limits.default_budget, .watch = &state.watching } };
+    state.session.metrics = .{ .context = state, .readFn = State.metricsRead };
     state.transport = .{ .session = &state.session };
     state.session.attachInputScript(&state.board.input_script);
     state.session.attachLoader(.{ .context = &state.loading, .loadFn = LoaderState.load });
