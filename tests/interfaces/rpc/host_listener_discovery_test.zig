@@ -28,7 +28,7 @@ test "ctl's discovery reader reads what the app announced" {
     try file_path.appendSlice(gpa, "/.config/ra8_emulator");
     try std.Io.Dir.cwd().createDirPath(std.testing.io, file_path.items);
     try file_path.appendSlice(gpa, "/discovery");
-    try std.Io.Dir.cwd().writeFile(std.testing.io, .{ .sub_path = file_path.items, .data = "rpc unix:/tmp/rpc.sock\nsession 4113 /work/blink.elf\nsession 5222 /work/my fw.elf\nfocus unix:/tmp/focus.sock\n" });
+    try std.Io.Dir.cwd().writeFile(std.testing.io, .{ .sub_path = file_path.items, .data = "rpc unix:/tmp/rpc.sock\nsession 4113 /work/blink.elf\nsession 5222 /work/my fw.elf\n" });
 
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();

@@ -34,6 +34,8 @@ test "every request, result, and event message round-trips" {
     try roundTrip(protocol.DirtyRect, .{ .core = .cpu0, .x = 1, .y = 2, .width = 2, .height = 2, .virtual_ns = 9, .pixels = "gray" });
     try roundTrip(protocol.SessionEvent, .{ .core = .cpu1, .kind = .loaded, .address = 0x1000 });
     try roundTrip(protocol.Trace, .{ .core = .cpu1, .bytes = "trace" });
+    try roundTrip(protocol.DisasmAsk, .{ .core = .cpu0, .address = 0x0200_0008, .count = 16, .use_pc = 1 });
+    try roundTrip(protocol.DisasmReply, .{ .core = .cpu0, .pc = 0x0200_0008, .count = 2, .rows = "rows" });
 }
 
 const fuzzed = .{
@@ -43,6 +45,7 @@ const fuzzed = .{
     protocol.Now,          protocol.RunBudget,     protocol.PointId,      protocol.U64,
     protocol.U32,          protocol.Bool,          protocol.Ack,          protocol.Stopped,
     protocol.Uart,         protocol.DirtyRect,     protocol.SessionEvent, protocol.Trace,
+    protocol.DisasmAsk,    protocol.DisasmReply,
 };
 
 test "random bytes decode to an error or a value for every message, never a crash" {

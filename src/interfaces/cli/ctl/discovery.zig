@@ -1,10 +1,9 @@
-//! ctl's view of the running app's discovery file (RA8EMU-1155): the file
-//! the hosted app (RA8EMU-1156) rewrites as sessions come and go, listing
-//! its RPC address, one loopback gdb port per session, and its focus
-//! address. No file, or no rpc line in it, means no app is running.
+//! ctl's view of the daemon's discovery file (RA8EMU-1155).
+//! `serve --discover` publishes its per-user RPC address and loopback GDB
+//! session port. No file, or no rpc line, means no discoverable daemon.
 //!
 //! `ctl sessions` lists the sessions; `ctl gdb-address [SESSION]` prints a
-//! ready gdb target. With no running app both say to start ra8_gui first.
+//! ready gdb target. With no running app both say to start ra8_emulator serve --discover first.
 //! Nothing here talks to the app: the file is the whole story.
 const std = @import("std");
 
@@ -73,7 +72,7 @@ fn parseSession(allocator: std.mem.Allocator, line: []const u8, sessions: []Sess
 }
 
 /// `ctl sessions` and `ctl gdb-address [SESSION] [--json]`. Both exit 1
-/// with "start ra8_gui first" when the discovery file is missing.
+/// with "start ra8_emulator serve --discover first" when the discovery file is missing.
 pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Environ.Map, argv: []const []const u8) !u8 {
     const command = argv[2];
     var json = false;
@@ -83,7 +82,7 @@ pub fn run(allocator: std.mem.Allocator, io: std.Io, env: *const std.process.Env
     }
     const snapshot = read(allocator, io, env) catch null;
     if (snapshot == null) {
-        try say(io, json, "start ra8_gui first");
+        try say(io, json, "start ra8_emulator serve --discover first");
         return 1;
     }
     if (std.mem.eql(u8, command, "sessions")) return list(io, json, snapshot.?);
@@ -116,7 +115,7 @@ fn list(io: std.Io, json: bool, snapshot: Snapshot) !u8 {
         try w.flush();
         return 0;
     }
-    try w.print("ra8_gui is running at {s}\n", .{snapshot.rpc});
+    try w.print("ra8_emulator serve is running at {s}\n", .{snapshot.rpc});
     for (snapshot.sessions) |session| {
         try w.print("127.0.0.1:{d} {s}\n", .{ session.port, session.elf });
     }

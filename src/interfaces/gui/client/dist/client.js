@@ -4,8 +4,9 @@
  * Implements RA8RpcClient for seamless browser and Node.js communication with
  * ra8-emulator RFC 6455 transport bridge. Zero runtime dependencies.
  */
-import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, PROTOCOL_MAGIC, PROTOCOL_VERSION, } from "./types.js";
-import { encodeHello, decodeHello, decodeFault, encodeRequest, decodeResponse, decodeEvent, encodeFrame, splitFrames, encodeCoreOnly, encodeRun, encodeReadRegister, encodeWriteRegister, encodeReadMemory, decodeMemory, encodeWriteMemory, encodeSubscription, encodePoint, encodeAdvance, decodeU32, decodeAck, decodeStopped, decodeUart, decodeDirtyRect, decodeMetricsReport, } from "./codec.js";
+import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, Direction, Access, PROTOCOL_MAGIC, PROTOCOL_VERSION, } from "./types.js";
+import { crc32 } from "./elf.js";
+import { encodeHello, decodeHello, decodeFault, encodeRequest, decodeResponse, decodeEvent, encodeFrame, splitFrames, encodeCoreOnly, encodeRun, encodeReadRegister, encodeWriteRegister, encodeReadMemory, decodeMemory, encodeWriteMemory, encodeSubscription, encodePoint, encodePointId, encodeAdvance, encodeSetSpeed, encodeScheduleInput, encodeConsoleInput, encodeDisasmAsk, decodeDisasmReply, decodeStackReport, encodePeriphAsk, encodeFoldedAsk, decodeTextSlice, decodeTraceEvent, decodeTransportEvent, decodeBranchList, encodeBranchSwitch, encodeBranchDelete, encodeBranchConfirmFork, decodeForkStatus, encodeSeek, encodePlayArgs, encodeNavQueryArgs, decodeNavQueryResult, encodeMarkerSetArgs, decodeFrameStatusResult, encodeDiffArgs, decodeDiff, encodeLoad, encodeLoadBegin, encodeLoadChunk, encodeNamedBreak, decodeNamedPoint, encodeWatchpoint, encodeMapAsk, decodeSourceLine, encodeCoreFrame, decodeLocals, decodeAdvanced, decodeU32, decodeU64, decodeAck, decodeStopped, decodeUart, decodeSessionEvent, decodeBoardParts, decodeBacktrace, decodeDirtyRect, decodeMetricsReport, } from "./codec.js";
 /** Lightweight, zero-dependency typed event emitter */
 export class TypedEventEmitter {
     listeners = new Map();
@@ -273,20 +274,259 @@ export class RA8RpcClient extends TypedEventEmitter {
         const resp = await this.call(Method.Unsubscribe, encodeSubscription(core, topic, 0));
         return decodeAck(resp).accepted !== 0;
     }
+    /** Set instruction breakpoint and return its assigned breakpoint ID */
+    async setBreakpointId(core, address) {
+        const resp = await this.call(Method.SetBreakpoint, encodePoint(core, address));
+        return resp.length >= 4 ? decodeU32(resp) : (decodeAck(resp).accepted !== 0 ? 1 : 0);
+    }
     /** Set instruction breakpoint */
     async setBreakpoint(core, address) {
         const resp = await this.call(Method.SetBreakpoint, encodePoint(core, address));
+        return resp.length >= 4 ? true : decodeAck(resp).accepted !== 0;
+    }
+    /** Clear instruction breakpoint by assigned breakpoint ID */
+    async clearBreakpointById(core, id) {
+        const resp = await this.call(Method.ClearBreakpoint, encodePointId(core, id));
         return decodeAck(resp).accepted !== 0;
     }
     /** Clear instruction breakpoint */
-    async clearBreakpoint(core, address) {
-        const resp = await this.call(Method.ClearBreakpoint, encodePoint(core, address));
+    async clearBreakpoint(core, idOrAddress) {
+        const resp = await this.call(Method.ClearBreakpoint, encodePointId(core, idOrAddress));
         return decodeAck(resp).accepted !== 0;
+    }
+    /** Authoritative backend instruction disassembly + symbol entry labels */
+    async disassemble(core = Core.Cpu0, options = {}) {
+        const resp = await this.call(Method.Disasm, encodeDisasmAsk({
+            core,
+            address: options.address ?? 0,
+            count: options.count ?? 24,
+            usePc: options.usePc ?? options.address === undefined,
+        }));
+        return decodeDisasmReply(resp);
+    }
+    /** Query current virtual board time in nanoseconds */
+    async now(core = Core.Cpu0) {
+        const resp = await this.call(Method.Now, encodeCoreOnly(core));
+        return decodeU64(resp);
     }
     /** Advance simulation by virtual nanoseconds */
     async advance(core, ns) {
-        const resp = await this.call(Method.Advance, encodeAdvance(core, ns));
+        const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+        if (resp.length >= 22) {
+            decodeAdvanced(resp);
+            return true;
+        }
         return decodeAck(resp).accepted !== 0;
+    }
+    /** Advance simulation by virtual nanoseconds and return full stop/timing report */
+    async advanceDetail(core, ns) {
+        const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+        return decodeAdvanced(resp);
+    }
+    /** Set emulation pacing speed (0 = unthrottled) */
+    async setSpeed(core = Core.Cpu0, milli = 0n) {
+        const resp = await this.call(Method.SetSpeed, encodeSetSpeed(core, milli));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Get served board front-panel profile, LEDs, and switches */
+    async getBoardParts() {
+        const resp = await this.call(Method.BoardParts, encodeCoreOnly(Core.Cpu0));
+        return decodeBoardParts(resp);
+    }
+    /** Get call stack backtrace for core */
+    async getBacktrace(core = Core.Cpu0) {
+        const resp = await this.call(Method.Backtrace, encodeCoreOnly(core));
+        return decodeBacktrace(resp);
+    }
+    /** Get MSP/PSP stack pointers, low watermarks, and overflow count */
+    async getStackReport(core = Core.Cpu0) {
+        const resp = await this.call(Method.Stack, encodeCoreOnly(core));
+        return decodeStackReport(resp);
+    }
+    /** List peripheral blocks (when block is empty) or inspect a block's registers */
+    async getPeriph(core = Core.Cpu0, block = "", json = false) {
+        const resp = await this.call(Method.Periph, encodePeriphAsk(core, block, json));
+        return decodeTextSlice(resp);
+    }
+    /** List fitted off-chip parts (`MODEL@ENDPOINT` lines) */
+    async getListParts(core = Core.Cpu0) {
+        const resp = await this.call(Method.ListParts, encodeCoreOnly(core));
+        const text = decodeTextSlice(resp).trim();
+        return text.length > 0 ? text.split("\n").filter((l) => l.trim().length > 0) : [];
+    }
+    /** Sampled call stacks folded over [fromNs, toNs) */
+    async getFolded(core = Core.Cpu0, thread = 0xffffffff, fromNs = 0n, toNs = 0xffffffffffffffffn) {
+        const resp = await this.call(Method.Folded, encodeFoldedAsk(core, thread, fromNs, toNs));
+        return decodeTextSlice(resp);
+    }
+    /** List time-travel execution branches in the history DAG */
+    async getBranches() {
+        const resp = await this.call(Method.BranchList, encodeCoreOnly(Core.Cpu0));
+        return decodeBranchList(resp);
+    }
+    /** Switch active execution branch in the history DAG */
+    async switchBranch(branch) {
+        const resp = await this.call(Method.BranchSwitch, encodeBranchSwitch(branch));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Delete a non-live execution branch */
+    async deleteBranch(branch, confirm = false) {
+        const resp = await this.call(Method.BranchDelete, encodeBranchDelete(branch, confirm));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Confirm a pending fork after historical state mutation */
+    async confirmFork(confirm = true) {
+        const resp = await this.call(Method.BranchConfirmFork, encodeBranchConfirmFork(confirm));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Cancel a pending fork */
+    async cancelFork() {
+        const resp = await this.call(Method.BranchCancelFork, new Uint8Array(0));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Check whether a mutation fork is pending confirmation */
+    async getForkStatus() {
+        const resp = await this.call(Method.BranchStatus, encodeCoreOnly(Core.Cpu0));
+        return decodeForkStatus(resp);
+    }
+    /** Seek to a virtual time, cycle, frame, or bookmark target */
+    async seek(target) {
+        const resp = await this.call(Method.Seek, encodeSeek(target));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Reverse-continue backwards to previous breakpoint or start of history */
+    async reverseContinue(core = Core.Cpu0) {
+        const resp = await this.call(Method.Rcont, encodeCoreOnly(core));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Play recorded history forward or backward */
+    async play(dir = Direction.Fwd, speedMilli = 1000n) {
+        const resp = await this.call(Method.Play, encodePlayArgs({ dir, speedMilli }));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Query frame, iteration, marker, RTOS, or ISR index in recorded history */
+    async navQuery(args) {
+        const resp = await this.call(Method.NavQuery, encodeNavQueryArgs(args));
+        return decodeNavQueryResult(resp);
+    }
+    /** Set a named history marker on a symbol or hex address */
+    async setMarker(name, place) {
+        const resp = await this.call(Method.MarkerSet, encodeMarkerSetArgs(name, place));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Query rewind pipeline RAM/disk frame accounting */
+    async getFrameStatus() {
+        const resp = await this.call(Method.FrameStatus, encodeCoreOnly(Core.Cpu0));
+        return decodeFrameStatusResult(resp);
+    }
+    /** Compute architectural register, memory page, and peripheral state diff between two points */
+    async getDiff(a, b) {
+        const resp = await this.call(Method.Diff, encodeDiffArgs(a, b));
+        return decodeDiff(resp);
+    }
+    /** Injected touch or button input to guest firmware */
+    async sendInput(args) {
+        const resp = await this.call(Method.Input, encodeScheduleInput(args));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Send bytes to virtual console UART */
+    async sendConsoleInput(core, bytes) {
+        const resp = await this.call(Method.ConsoleInput, encodeConsoleInput(core, bytes));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /**
+     * Upload an ARM ELF firmware image to the target core.
+     * Uses single-frame Load for compact images (<= 64 KiB) and IEEE-CRC32
+     * chunked streaming (LoadBegin -> LoadChunk -> LoadEnd) for larger images up to 64 MiB.
+     */
+    async loadElf(core, image, onProgress) {
+        const SINGLE_FRAME_CAP = 65_536; // 64 KiB chunks for smooth browser progress & compact WS frames
+        const MAX_ELF_BYTES = 64 * 1024 * 1024;
+        if (image.length === 0) {
+            throw new Error("ELF image is empty");
+        }
+        if (image.length > MAX_ELF_BYTES) {
+            throw new Error(`ELF image exceeds 64 MiB limit (${image.length} bytes)`);
+        }
+        onProgress?.(0, image.length);
+        if (image.length <= SINGLE_FRAME_CAP) {
+            const resp = await this.call(Method.Load, encodeLoad(core, image), 30000);
+            const ok = decodeAck(resp).accepted !== 0;
+            if (ok)
+                onProgress?.(image.length, image.length);
+            return ok;
+        }
+        const checksum = crc32(image);
+        const beginResp = await this.call(Method.LoadBegin, encodeLoadBegin(core, image.length, checksum), 30000);
+        if (decodeAck(beginResp).accepted === 0)
+            return false;
+        for (let offset = 0; offset < image.length; offset += SINGLE_FRAME_CAP) {
+            const end = Math.min(offset + SINGLE_FRAME_CAP, image.length);
+            const slice = image.subarray(offset, end);
+            const chunkResp = await this.call(Method.LoadChunk, encodeLoadChunk(core, offset, slice), 30000);
+            if (decodeAck(chunkResp).accepted === 0)
+                return false;
+            onProgress?.(end, image.length);
+        }
+        const endResp = await this.call(Method.LoadEnd, encodeCoreOnly(core), 30000);
+        return decodeAck(endResp).accepted !== 0;
+    }
+    /** Continue execution from current PC (safe both at reset and after stepping/pausing) */
+    async continueRun(core = Core.Cpu0, budget = 0n) {
+        return this.run(core, RunMode.Cont, budget);
+    }
+    /** Step over function calls (`BL`) on target core */
+    async stepOver(core = Core.Cpu0) {
+        return this.run(core, RunMode.Next, 0n);
+    }
+    /** Step out of current function frame (`LR`/`SP`) on target core */
+    async stepOut(core = Core.Cpu0) {
+        return this.run(core, RunMode.Finish, 0n);
+    }
+    /** Set symbolic breakpoint by function/label name (resolves via ELF/module symbol table) */
+    async setBreakpointByName(core, name) {
+        const resp = await this.call(Method.SetBreakpointName, encodeNamedBreak(core, name));
+        return decodeNamedPoint(resp);
+    }
+    /** Set hardware data watchpoint over [first, last] inclusive and return assigned ID */
+    async setWatchpoint(core, first, last = first, access = Access.Write) {
+        const resp = await this.call(Method.SetWatchpoint, encodeWatchpoint(core, first, last, access));
+        return decodeU32(resp);
+    }
+    /** Clear hardware data watchpoint by assigned ID */
+    async clearWatchpoint(core, id) {
+        const resp = await this.call(Method.ClearWatchpoint, encodePointId(core, id));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Remove either a breakpoint or watchpoint by ID (returns 0 for breakpoint, 1 for watchpoint) */
+    async removePoint(core, id) {
+        const resp = await this.call(Method.RemovePoint, encodePointId(core, id));
+        return decodeU32(resp);
+    }
+    /** Step PC past a software BKPT instruction when halted on one */
+    async skipBreakpoint(core = Core.Cpu0) {
+        const resp = await this.call(Method.SkipBkpt, encodeCoreOnly(core));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Fetch memory region & section map of the core's loaded ELF (text or JSON) */
+    async getMap(core = Core.Cpu0, json = false) {
+        const resp = await this.call(Method.Map, encodeMapAsk(core, json));
+        return decodeTextSlice(resp);
+    }
+    /** Resolve DWARF `.debug_line` source file and line number for the core's current PC */
+    async getSourceLine(core = Core.Cpu0) {
+        const resp = await this.call(Method.SourceLine, encodeCoreOnly(core));
+        return decodeSourceLine(resp);
+    }
+    /** Inspect DWARF `.debug_info` local variables at the core's stopped PC (frame 0) */
+    async getLocals(core = Core.Cpu0) {
+        const resp = await this.call(Method.Locals, encodeCoreOnly(core));
+        return decodeLocals(resp);
+    }
+    /** Inspect DWARF `.debug_info` local variables at a specific unwound call-stack frame */
+    async getLocalsAt(core, frame) {
+        const resp = await this.call(Method.LocalsAt, encodeCoreFrame(core, frame));
+        return decodeLocals(resp);
     }
     /* ------------------------------------------------------------------------ */
     /* Internal Stream and Packet Processing                                    */
@@ -381,6 +621,15 @@ export class RA8RpcClient extends TypedEventEmitter {
                     break;
                 case Topic.LcdDirty:
                     this.emit("lcd_dirty", decodeDirtyRect(payload));
+                    break;
+                case Topic.Trace:
+                    this.emit("trace", decodeTraceEvent(payload));
+                    break;
+                case Topic.Session:
+                    this.emit("session", decodeSessionEvent(payload));
+                    break;
+                case Topic.Transport:
+                    this.emit("transport", decodeTransportEvent(payload));
                     break;
                 default:
                     break;

@@ -54,13 +54,18 @@ fn becomes(pid: i32, letter: u8) bool {
 
 test "the running child's executable digest is a capability, not a path claim" {
     if (builtin.os.tag != .linux) return error.SkipZigTest;
-    var child = try start(&.{"/bin/cat"});
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    try std.Io.Dir.cwd().copyFile("/bin/cat", tmp.dir, "cat", io, .{});
+    const cat = try tmp.dir.realPathFileAlloc(io, "cat", std.testing.allocator);
+    defer std.testing.allocator.free(cat);
+    var child = try start(&.{cat});
     try child.fits();
-    const expected = try move.provider.digest(io, "/bin/cat");
-    try child.verifyExecutable("/bin/cat", expected);
+    const expected = try move.provider.digest(io, cat);
+    try child.verifyExecutable(cat, expected);
     var wrong: [32]u8 = expected;
     wrong[0] ^= 0xff;
-    try std.testing.expectError(error.PeerDigestMismatch, child.verifyExecutable("/bin/cat", wrong));
+    try std.testing.expectError(error.PeerDigestMismatch, child.verifyExecutable(cat, wrong));
     try std.testing.expect(child.reap().?.success());
     child.close();
 }

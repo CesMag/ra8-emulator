@@ -93,7 +93,6 @@ test "sampleHost handles recorded and unavailable telemetry" {
     var sampler: host_metrics.Sampler = .{};
     const raw: host_metrics.Raw = .{
         .cpu_ns = 500_000_000,
-        .cores = 4,
         .rss = 200 * 1024 * 1024,
         .threads = 14,
     };
@@ -101,7 +100,6 @@ test "sampleHost handles recorded and unavailable telemetry" {
 
     const raw2: host_metrics.Raw = .{
         .cpu_ns = 800_000_000,
-        .cores = 4,
         .rss = 220 * 1024 * 1024,
         .threads = 16,
     };
@@ -351,14 +349,12 @@ test "sampleHost stress: boundary CPU percent, 4GB RSS, and 1024 threads" {
     var sampler: host_metrics.Sampler = .{};
     sampler.record(.{
         .cpu_ns = 800_000_000,
-        .cores = 8,
         .rss = 4 * 1024 * 1024 * 1024,
         .threads = 1024,
     }, 1_000_000_000);
 
     sampler.record(.{
         .cpu_ns = 4_800_000_000,
-        .cores = 8,
         .rss = 4 * 1024 * 1024 * 1024,
         .threads = 1024,
     }, 1_500_000_000);

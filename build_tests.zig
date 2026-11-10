@@ -6,8 +6,6 @@ pub const Imports = struct {
     filter: ?[]const u8,
     emu: *std.Build.Module,
     cli: *std.Build.Module,
-    gui: *std.Build.Module,
-    widget: *std.Build.Module,
     gate: *std.Build.Module,
     terms: *std.Build.Module,
     table: *std.Build.Module,
@@ -18,8 +16,6 @@ pub fn compile(b: *std.Build, name: []const u8, root: []const u8, target: std.Bu
     const tests = b.addTest(.{ .name = name, .filters = if (imports.filter) |text| &.{text} else &.{}, .root_module = b.createModule(.{ .root_source_file = b.path(root), .target = target, .optimize = optimize, .link_libc = true }) });
     tests.root_module.addImport("ra8", imports.emu);
     tests.root_module.addImport("cli_app", imports.cli);
-    tests.root_module.addImport("gui_app", imports.gui);
-    tests.root_module.addImport("ra8_widget", imports.widget);
     tests.root_module.addImport("gate", imports.gate);
     tests.root_module.addImport("terms", imports.terms);
     tests.root_module.addImport("example_table", imports.table);

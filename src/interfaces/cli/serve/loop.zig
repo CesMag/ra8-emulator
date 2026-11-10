@@ -9,7 +9,18 @@ const win32 = @import("ra8_host").win32;
 /// How long an idle server waits on its peer before checking again.
 const idle_wait_ms = 20;
 
-pub const Buffers = struct { rx: []u8, tx: []u8 };
+pub const Buffers = struct {
+    rx: []u8,
+    tx: []u8,
+    listener: ?*@import("ra8_rpc").host_listener.Listener = null,
+
+    pub fn pump(self: Buffers, context: *served.Context) !void {
+        if (self.listener) |listener| {
+            listener.pumpGdb();
+            try listener.answer(context, self.tx);
+        }
+    }
+};
 
 /// What the peer's descriptor is, which decides how a hang-up shows.
 pub const Link = enum { pipe, socket };
@@ -27,6 +38,7 @@ pub fn answerStdio(io: std.Io, context: *served.Context, buffers: Buffers) !void
 pub fn answer(io: std.Io, context: *served.Context, wire: served.rpc_lib.Transport, fd: std.posix.fd_t, link: Link, buffers: Buffers) !void {
     var host = served.Host.init(wire, buffers.rx, context);
     while (true) {
+        try buffers.pump(context);
         const polled = host.poll(buffers.tx) catch |err| {
             if (err == error.LinkDown and try closed(io, fd, link)) return;
             return err;

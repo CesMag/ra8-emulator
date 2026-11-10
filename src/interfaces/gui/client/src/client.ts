@@ -20,10 +20,30 @@ import {
   UartEvent,
   SessionEvent,
   TransportEvent,
+  TraceEvent,
   RpcEventEnvelope,
+  BoardParts,
+  Backtrace,
+  DisasmReply,
+  StackReport,
+  BranchItem,
+  ForkStatus,
+  Direction,
+  NavQueryArgs,
+  NavQueryResult,
+  FrameStatusResult,
+  DecodedDiff,
+  ScheduleInputArgs,
+  Access,
+  NamedPointResult,
+  AdvancedResult,
+  SourceLineResult,
+  LocalsResult,
   PROTOCOL_MAGIC,
   PROTOCOL_VERSION,
 } from "./types.js";
+
+import { crc32 } from "./elf.js";
 
 import {
   encodeHello,
@@ -43,11 +63,51 @@ import {
   encodeWriteMemory,
   encodeSubscription,
   encodePoint,
+  encodePointId,
   encodeAdvance,
+  encodeSetSpeed,
+  encodeScheduleInput,
+  encodeConsoleInput,
+  encodeDisasmAsk,
+  decodeDisasmReply,
+  decodeStackReport,
+  encodePeriphAsk,
+  encodeFoldedAsk,
+  decodeTextSlice,
+  decodeTraceEvent,
+  decodeTransportEvent,
+  decodeBranchList,
+  encodeBranchSwitch,
+  encodeBranchDelete,
+  encodeBranchConfirmFork,
+  decodeForkStatus,
+  encodeSeek,
+  encodePlayArgs,
+  encodeNavQueryArgs,
+  decodeNavQueryResult,
+  encodeMarkerSetArgs,
+  decodeFrameStatusResult,
+  encodeDiffArgs,
+  decodeDiff,
+  encodeLoad,
+  encodeLoadBegin,
+  encodeLoadChunk,
+  encodeNamedBreak,
+  decodeNamedPoint,
+  encodeWatchpoint,
+  encodeMapAsk,
+  decodeSourceLine,
+  encodeCoreFrame,
+  decodeLocals,
+  decodeAdvanced,
   decodeU32,
+  decodeU64,
   decodeAck,
   decodeStopped,
   decodeUart,
+  decodeSessionEvent,
+  decodeBoardParts,
+  decodeBacktrace,
   decodeDirtyRect,
   decodeMetricsReport,
 } from "./codec.js";
@@ -64,6 +124,7 @@ export interface ClientEventMap {
   stop: Stopped;
   uart: UartEvent;
   lcd_dirty: DirtyRect;
+  trace: TraceEvent;
   session: SessionEvent;
   transport: TransportEvent;
 }
@@ -433,22 +494,330 @@ export class RA8RpcClient extends TypedEventEmitter {
     return decodeAck(resp).accepted !== 0;
   }
 
+  /** Set instruction breakpoint and return its assigned breakpoint ID */
+  public async setBreakpointId(core: Core, address: number): Promise<number> {
+    const resp = await this.call(Method.SetBreakpoint, encodePoint(core, address));
+    return resp.length >= 4 ? decodeU32(resp) : (decodeAck(resp).accepted !== 0 ? 1 : 0);
+  }
+
   /** Set instruction breakpoint */
   public async setBreakpoint(core: Core, address: number): Promise<boolean> {
     const resp = await this.call(Method.SetBreakpoint, encodePoint(core, address));
+    return resp.length >= 4 ? true : decodeAck(resp).accepted !== 0;
+  }
+
+  /** Clear instruction breakpoint by assigned breakpoint ID */
+  public async clearBreakpointById(core: Core, id: number): Promise<boolean> {
+    const resp = await this.call(Method.ClearBreakpoint, encodePointId(core, id));
     return decodeAck(resp).accepted !== 0;
   }
 
   /** Clear instruction breakpoint */
-  public async clearBreakpoint(core: Core, address: number): Promise<boolean> {
-    const resp = await this.call(Method.ClearBreakpoint, encodePoint(core, address));
+  public async clearBreakpoint(core: Core, idOrAddress: number): Promise<boolean> {
+    const resp = await this.call(Method.ClearBreakpoint, encodePointId(core, idOrAddress));
     return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Authoritative backend instruction disassembly + symbol entry labels */
+  public async disassemble(
+    core: Core = Core.Cpu0,
+    options: { address?: number; count?: number; usePc?: boolean } = {}
+  ): Promise<DisasmReply> {
+    const resp = await this.call(
+      Method.Disasm,
+      encodeDisasmAsk({
+        core,
+        address: options.address ?? 0,
+        count: options.count ?? 24,
+        usePc: options.usePc ?? options.address === undefined,
+      })
+    );
+    return decodeDisasmReply(resp);
+  }
+
+  /** Query current virtual board time in nanoseconds */
+  public async now(core: Core = Core.Cpu0): Promise<bigint> {
+    const resp = await this.call(Method.Now, encodeCoreOnly(core));
+    return decodeU64(resp);
   }
 
   /** Advance simulation by virtual nanoseconds */
   public async advance(core: Core, ns: bigint): Promise<boolean> {
-    const resp = await this.call(Method.Advance, encodeAdvance(core, ns));
+    const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+    if (resp.length >= 22) {
+      decodeAdvanced(resp);
+      return true;
+    }
     return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Advance simulation by virtual nanoseconds and return full stop/timing report */
+  public async advanceDetail(core: Core, ns: bigint): Promise<AdvancedResult> {
+    const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+    return decodeAdvanced(resp);
+  }
+
+  /** Set emulation pacing speed (0 = unthrottled) */
+  public async setSpeed(core: Core = Core.Cpu0, milli: bigint | number = 0n): Promise<boolean> {
+    const resp = await this.call(Method.SetSpeed, encodeSetSpeed(core, milli));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Get served board front-panel profile, LEDs, and switches */
+  public async getBoardParts(): Promise<BoardParts> {
+    const resp = await this.call(Method.BoardParts, encodeCoreOnly(Core.Cpu0));
+    return decodeBoardParts(resp);
+  }
+
+  /** Get call stack backtrace for core */
+  public async getBacktrace(core: Core = Core.Cpu0): Promise<Backtrace> {
+    const resp = await this.call(Method.Backtrace, encodeCoreOnly(core));
+    return decodeBacktrace(resp);
+  }
+
+  /** Get MSP/PSP stack pointers, low watermarks, and overflow count */
+  public async getStackReport(core: Core = Core.Cpu0): Promise<StackReport> {
+    const resp = await this.call(Method.Stack, encodeCoreOnly(core));
+    return decodeStackReport(resp);
+  }
+
+  /** List peripheral blocks (when block is empty) or inspect a block's registers */
+  public async getPeriph(core: Core = Core.Cpu0, block = "", json = false): Promise<string> {
+    const resp = await this.call(Method.Periph, encodePeriphAsk(core, block, json));
+    return decodeTextSlice(resp);
+  }
+
+  /** List fitted off-chip parts (`MODEL@ENDPOINT` lines) */
+  public async getListParts(core: Core = Core.Cpu0): Promise<string[]> {
+    const resp = await this.call(Method.ListParts, encodeCoreOnly(core));
+    const text = decodeTextSlice(resp).trim();
+    return text.length > 0 ? text.split("\n").filter((l) => l.trim().length > 0) : [];
+  }
+
+  /** Sampled call stacks folded over [fromNs, toNs) */
+  public async getFolded(
+    core: Core = Core.Cpu0,
+    thread = 0xffffffff,
+    fromNs = 0n,
+    toNs = 0xffffffffffffffffn
+  ): Promise<string> {
+    const resp = await this.call(Method.Folded, encodeFoldedAsk(core, thread, fromNs, toNs));
+    return decodeTextSlice(resp);
+  }
+
+  /** List time-travel execution branches in the history DAG */
+  public async getBranches(): Promise<BranchItem[]> {
+    const resp = await this.call(Method.BranchList, encodeCoreOnly(Core.Cpu0));
+    return decodeBranchList(resp);
+  }
+
+  /** Switch active execution branch in the history DAG */
+  public async switchBranch(branch: number): Promise<boolean> {
+    const resp = await this.call(Method.BranchSwitch, encodeBranchSwitch(branch));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Delete a non-live execution branch */
+  public async deleteBranch(branch: number, confirm = false): Promise<boolean> {
+    const resp = await this.call(Method.BranchDelete, encodeBranchDelete(branch, confirm));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Confirm a pending fork after historical state mutation */
+  public async confirmFork(confirm = true): Promise<boolean> {
+    const resp = await this.call(Method.BranchConfirmFork, encodeBranchConfirmFork(confirm));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Cancel a pending fork */
+  public async cancelFork(): Promise<boolean> {
+    const resp = await this.call(Method.BranchCancelFork, new Uint8Array(0));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Check whether a mutation fork is pending confirmation */
+  public async getForkStatus(): Promise<ForkStatus> {
+    const resp = await this.call(Method.BranchStatus, encodeCoreOnly(Core.Cpu0));
+    return decodeForkStatus(resp);
+  }
+
+  /** Seek to a virtual time, cycle, frame, or bookmark target */
+  public async seek(target: string): Promise<boolean> {
+    const resp = await this.call(Method.Seek, encodeSeek(target));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Reverse-continue backwards to previous breakpoint or start of history */
+  public async reverseContinue(core: Core = Core.Cpu0): Promise<boolean> {
+    const resp = await this.call(Method.Rcont, encodeCoreOnly(core));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Play recorded history forward or backward */
+  public async play(dir: Direction = Direction.Fwd, speedMilli = 1000n): Promise<boolean> {
+    const resp = await this.call(Method.Play, encodePlayArgs({ dir, speedMilli }));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Query frame, iteration, marker, RTOS, or ISR index in recorded history */
+  public async navQuery(args: NavQueryArgs): Promise<NavQueryResult> {
+    const resp = await this.call(Method.NavQuery, encodeNavQueryArgs(args));
+    return decodeNavQueryResult(resp);
+  }
+
+  /** Set a named history marker on a symbol or hex address */
+  public async setMarker(name: string, place: string): Promise<boolean> {
+    const resp = await this.call(Method.MarkerSet, encodeMarkerSetArgs(name, place));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Query rewind pipeline RAM/disk frame accounting */
+  public async getFrameStatus(): Promise<FrameStatusResult> {
+    const resp = await this.call(Method.FrameStatus, encodeCoreOnly(Core.Cpu0));
+    return decodeFrameStatusResult(resp);
+  }
+
+  /** Compute architectural register, memory page, and peripheral state diff between two points */
+  public async getDiff(a: string, b: string): Promise<DecodedDiff> {
+    const resp = await this.call(Method.Diff, encodeDiffArgs(a, b));
+    return decodeDiff(resp);
+  }
+
+  /** Injected touch or button input to guest firmware */
+  public async sendInput(args: ScheduleInputArgs): Promise<boolean> {
+    const resp = await this.call(Method.Input, encodeScheduleInput(args));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Send bytes to virtual console UART */
+  public async sendConsoleInput(core: Core, bytes: Uint8Array): Promise<boolean> {
+    const resp = await this.call(Method.ConsoleInput, encodeConsoleInput(core, bytes));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /**
+   * Upload an ARM ELF firmware image to the target core.
+   * Uses single-frame Load for compact images (<= 64 KiB) and IEEE-CRC32
+   * chunked streaming (LoadBegin -> LoadChunk -> LoadEnd) for larger images up to 64 MiB.
+   */
+  public async loadElf(
+    core: Core,
+    image: Uint8Array,
+    onProgress?: (loadedBytes: number, totalBytes: number) => void
+  ): Promise<boolean> {
+    const SINGLE_FRAME_CAP = 65_536; // 64 KiB chunks for smooth browser progress & compact WS frames
+    const MAX_ELF_BYTES = 64 * 1024 * 1024;
+    if (image.length === 0) {
+      throw new Error("ELF image is empty");
+    }
+    if (image.length > MAX_ELF_BYTES) {
+      throw new Error(`ELF image exceeds 64 MiB limit (${image.length} bytes)`);
+    }
+
+    onProgress?.(0, image.length);
+    if (image.length <= SINGLE_FRAME_CAP) {
+      const resp = await this.call(Method.Load, encodeLoad(core, image), 30000);
+      const ok = decodeAck(resp).accepted !== 0;
+      if (ok) onProgress?.(image.length, image.length);
+      return ok;
+    }
+
+    const checksum = crc32(image);
+    const beginResp = await this.call(
+      Method.LoadBegin,
+      encodeLoadBegin(core, image.length, checksum),
+      30000
+    );
+    if (decodeAck(beginResp).accepted === 0) return false;
+
+    for (let offset = 0; offset < image.length; offset += SINGLE_FRAME_CAP) {
+      const end = Math.min(offset + SINGLE_FRAME_CAP, image.length);
+      const slice = image.subarray(offset, end);
+      const chunkResp = await this.call(
+        Method.LoadChunk,
+        encodeLoadChunk(core, offset, slice),
+        30000
+      );
+      if (decodeAck(chunkResp).accepted === 0) return false;
+      onProgress?.(end, image.length);
+    }
+
+    const endResp = await this.call(Method.LoadEnd, encodeCoreOnly(core), 30000);
+    return decodeAck(endResp).accepted !== 0;
+  }
+
+  /** Continue execution from current PC (safe both at reset and after stepping/pausing) */
+  public async continueRun(core: Core = Core.Cpu0, budget = 0n): Promise<boolean> {
+    return this.run(core, RunMode.Cont, budget);
+  }
+
+  /** Step over function calls (`BL`) on target core */
+  public async stepOver(core: Core = Core.Cpu0): Promise<boolean> {
+    return this.run(core, RunMode.Next, 0n);
+  }
+
+  /** Step out of current function frame (`LR`/`SP`) on target core */
+  public async stepOut(core: Core = Core.Cpu0): Promise<boolean> {
+    return this.run(core, RunMode.Finish, 0n);
+  }
+
+  /** Set symbolic breakpoint by function/label name (resolves via ELF/module symbol table) */
+  public async setBreakpointByName(core: Core, name: string): Promise<NamedPointResult> {
+    const resp = await this.call(Method.SetBreakpointName, encodeNamedBreak(core, name));
+    return decodeNamedPoint(resp);
+  }
+
+  /** Set hardware data watchpoint over [first, last] inclusive and return assigned ID */
+  public async setWatchpoint(
+    core: Core,
+    first: number,
+    last = first,
+    access: Access = Access.Write
+  ): Promise<number> {
+    const resp = await this.call(Method.SetWatchpoint, encodeWatchpoint(core, first, last, access));
+    return decodeU32(resp);
+  }
+
+  /** Clear hardware data watchpoint by assigned ID */
+  public async clearWatchpoint(core: Core, id: number): Promise<boolean> {
+    const resp = await this.call(Method.ClearWatchpoint, encodePointId(core, id));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Remove either a breakpoint or watchpoint by ID (returns 0 for breakpoint, 1 for watchpoint) */
+  public async removePoint(core: Core, id: number): Promise<number> {
+    const resp = await this.call(Method.RemovePoint, encodePointId(core, id));
+    return decodeU32(resp);
+  }
+
+  /** Step PC past a software BKPT instruction when halted on one */
+  public async skipBreakpoint(core: Core = Core.Cpu0): Promise<boolean> {
+    const resp = await this.call(Method.SkipBkpt, encodeCoreOnly(core));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Fetch memory region & section map of the core's loaded ELF (text or JSON) */
+  public async getMap(core: Core = Core.Cpu0, json = false): Promise<string> {
+    const resp = await this.call(Method.Map, encodeMapAsk(core, json));
+    return decodeTextSlice(resp);
+  }
+
+  /** Resolve DWARF `.debug_line` source file and line number for the core's current PC */
+  public async getSourceLine(core: Core = Core.Cpu0): Promise<SourceLineResult> {
+    const resp = await this.call(Method.SourceLine, encodeCoreOnly(core));
+    return decodeSourceLine(resp);
+  }
+
+  /** Inspect DWARF `.debug_info` local variables at the core's stopped PC (frame 0) */
+  public async getLocals(core: Core = Core.Cpu0): Promise<LocalsResult> {
+    const resp = await this.call(Method.Locals, encodeCoreOnly(core));
+    return decodeLocals(resp);
+  }
+
+  /** Inspect DWARF `.debug_info` local variables at a specific unwound call-stack frame */
+  public async getLocalsAt(core: Core, frame: number): Promise<LocalsResult> {
+    const resp = await this.call(Method.LocalsAt, encodeCoreFrame(core, frame));
+    return decodeLocals(resp);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -560,6 +929,15 @@ export class RA8RpcClient extends TypedEventEmitter {
           break;
         case Topic.LcdDirty:
           this.emit("lcd_dirty", decodeDirtyRect(payload));
+          break;
+        case Topic.Trace:
+          this.emit("trace", decodeTraceEvent(payload));
+          break;
+        case Topic.Session:
+          this.emit("session", decodeSessionEvent(payload));
+          break;
+        case Topic.Transport:
+          this.emit("transport", decodeTransportEvent(payload));
           break;
         default:
           break;

@@ -28,3 +28,6 @@ pub const rewind_feed = @import("rewind_feed.zig");
 pub const nav_wire = @import("nav_wire.zig");
 pub const diff = @import("diff.zig");
 pub const diff_wire = @import("diff_wire.zig");
+pub const disasm = @import("disasm.zig");
+pub const disasm_wire = @import("disasm_wire.zig");
+pub const locals_wire = @import("locals_wire.zig");

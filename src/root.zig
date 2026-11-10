@@ -1,7 +1,7 @@
 //! The `ra8` umbrella for tests and embedders (ADR 0004 in the knowledge
 //! base, RA8EMU-A-2): one name per library module and nothing else. The
-//! embedding API is `session` (`ra8.session.harness.open`). The two
-//! applications are not here: they are the cli_app and gui_app modules.
+//! embedding API is `session` (`ra8.session.harness.open`). The CLI
+//! application lives in its own cli_app module.
 pub const host = @import("ra8_host");
 pub const snapshot = @import("ra8_snapshot");
 pub const chip = @import("ra8_chip");

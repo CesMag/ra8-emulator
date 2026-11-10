@@ -8,8 +8,8 @@ writing code here.
 
 ADR 0004 (knowledge base article RA8EMU-A-2) sets the layout. The chip is a
 standalone library, the board library uses the chip plus pluggable
-components, and the CLI and the GUI are separate applications over one
-embedding API. Each library and each application is a named build module.
+components, and the CLI uses one embedding API. The browser GUI uses WebSocket RPC.
+Each Zig library and the CLI application is a named build module.
 Code in one module imports another by module name (`@import("ra8_chip")`),
 never by a relative path that leaves its own directory. Zig refuses a file
 import outside a module's root directory and a module name build.zig did not
@@ -23,30 +23,26 @@ ra8_chip        src/chip/               ra8_snapshot
 ra8_components  src/components/         ra8_chip, ra8_snapshot
 ra8_board       src/board/              ra8_chip, ra8_components, ra8_snapshot
 ra8_session     src/session/            ra8_board, ra8_chip, ra8_components
-ra8_render      src/interfaces/render/  ra8_session, ra8_widget, ra8_widget_host
+ra8_render      src/interfaces/render/  ra8_session (board composition and encoders)
 ra8_rpc         src/interfaces/rpc/     ra8_session, ra8_components, ra8_host, ra8_rpc_wire
 ra8_gdb         src/interfaces/gdb/     ra8_session, ra8_chip, ra8_host
 ra8_usbip       src/interfaces/usbip/   ra8_board, ra8_chip, ra8_host
-cli_app         src/interfaces/cli/     every library and ra8_rpc_wire, never gui_app
-gui_app         src/interfaces/gui/     ra8_session, ra8_rpc, ra8_render, ra8_components, ra8_host,
-                                        ra8_rpc_wire, ra8_widget; never ra8_board, ra8_chip or cli_app
-gui_sdl         src/interfaces/gui/     the sdl files: gui_app, ra8_render and SDL3
+cli_app         src/interfaces/cli/     every library and ra8_rpc_wire
+Angular PWA     src/interfaces/gui/     browser client of WebSocket RPC; no Zig module
 tests/          one test file per source file, on the mirrored path
 ```
 
 A module imports only modules below it, and only the adapters and the
 applications import `ra8_host`. `ra8_rpc_wire` is ra8-firmware's wire library
-(named `ra8_rpc` there), and `ra8_widget` and `ra8_widget_host` are its widget
-libraries. Every module's root file is `root.zig` in its own directory. Inside
-`ra8_board`, the run policy (pacing, speed, soak) is `src/session/run/` and the
+(named `ra8_rpc` there). Every Zig module's root file is `root.zig` in its
+own directory. The run policy (pacing, speed, soak) is `src/session/run/` and the
 image loader is `src/board/image/`.
 
-An executable's entry file is a root of its own beside its application
-module: `src/interfaces/cli/main.zig` (ra8_emulator) imports `cli_app` and
-`ra8_host`, and `src/interfaces/gui/main.zig` (ra8_gui) imports `gui_app`,
-`gui_sdl` and `ra8_host`. The GUI reads and changes the machine only through
-the Session API, which is why `gui_app` is given neither the board nor the
-chip.
+The CLI executable's entry file is `src/interfaces/cli/main.zig`
+(ra8_emulator), which imports `cli_app` and `ra8_host`. The Angular PWA
+workspace is `src/interfaces/gui/`, with the shared TypeScript SDK under
+`client/`. The PWA reads and changes the machine through WebSocket RPC.
+There is no native GUI executable, SDL module, or Zig GUI test suite.
 
 Nothing below the applications opens host files or devices. A component that
 needs host data declares an interface (a frame source, a byte source, a
@@ -78,8 +74,7 @@ file that carries the directory's name is the block's or the part's own
 `src/chip/periph/gpt/channel.zig` is tested by
 `tests/chip/periph/gpt/channel_test.zig`.
 
-There is no `@cImport` in the tree. SDL3's C API reaches the GUI through the
-translate-c package in build.zig, and that is the only C boundary.
+There is no `@cImport` in the tree and no SDL or translate-c dependency.
 
 ## Documentation and tickets
 
@@ -118,7 +113,7 @@ src/board/image/elf.zig  ->  tests/board/image/elf_test.zig
 `tests/all.zig` and `tests/all_host.zig` are the test roots and between them
 list every test file (`ra8_tests` and `ra8_host_tests`). A test file reaches
 a library through the `ra8` module (`const crc = ra8.chip.periph.crc;`) and an
-application's files through `cli_app` or `gui_app`
+CLI application's files through `cli_app`
 (`const cli = @import("cli_app").cli;`), never through a relative path into
 `src/`. A decl a test needs is `pub`; a fixture the test owns lives in the test
 file.
@@ -126,8 +121,7 @@ file.
 ## Idiomatic Zig, not C habits
 
 Slices and fat pointers, never null-terminated strings or a pointer plus a
-length, unless a real C boundary needs them, and SDL3 through translate-c is the only
-such boundary. Constants are `pub const` grouped under a namespace struct, not
+length, unless a real host ABI boundary needs them. Constants are `pub const` grouped under a namespace struct, not
 `K_`-prefixed macro constants and not an enum standing in for a bag of
 unrelated numbers; enums are for real enumerations. Errors are error sets, not
 sentinel returns.
@@ -141,9 +135,9 @@ single-command execution limits.
 
 Rules per PR (each command gets its own window):
 
-1. Fast validation: `zig fmt --check build.zig build_tests.zig src tests tools`, `zig build gate -j1`, `zig build -j1`, and `zig build -Dgui -j1` when GUI or host camera code is touched.
+1. Fast validation: `zig fmt --check build.zig build_tests.zig src tests tools`, `zig build gate -j1`, `zig build -j1`. For TypeScript SDK changes, run its typecheck, build, and tests.
 2. Targeted suites: run `zig build ra8_tests -j1 -Dtest-filter=chip.periph.crc_test` (or `ra8_host_tests` for host tests), replacing the filter with each changed file's qualified test name. Keep the suite roots so sibling fixtures remain in the module boundary. Use the corresponding `-exe` step to separate compilation from execution when needed.
-3. Build each suite separately: `zig build ra8_host_tests-exe -j1`, `zig build ra8_tests-exe -j1`, and `zig build ra8_gui_link_tests-exe -j1`. Run each installed binary directly with `bash tools/test_batch.sh zig-out/bin/NAME /tmp/NAME.log`. Do not use `-Dtest-filter` for these builds. The runner uses `ulimit -v 3000000` and an 800-second timeout. Log attempts append. Rerun interrupted suites from their start; an absent terminal marker or `CUT` is incomplete, never green.
+3. Build each suite separately: `zig build ra8_host_tests-exe -j1` and `zig build ra8_tests-exe -j1`. Run each installed binary directly with `bash tools/test_batch.sh zig-out/bin/NAME /tmp/NAME.log`. Do not use `-Dtest-filter` for these builds. The runner uses `ulimit -v 3000000` and an 800-second timeout. Log attempts append. Rerun interrupted suites from their start; an absent terminal marker or `CUT` is incomplete, never green.
 4. Run `zig build consumer-smoke -j1` and `bash tests/tools/test_batch_test.sh` separately. Keep the corpus golden comparisons (`tools/dualcore_corpus.sh`, `tools/modules_corpus.sh`, `tools/fault_corpus.sh`, and `tools/plug_corpus.sh`) as separate commands.
 5. Coverage net: a full batched sweep (steps 3+4) on the latest `main` at least once per 90-minute monitor window, run by the monitor or emu-core. A failed or incomplete sweep halts merges until triaged or completed.
 

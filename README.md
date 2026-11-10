@@ -13,8 +13,8 @@ this is how its firmware gets proven.
 
 It is three things in one repository: an emulator you run from the command
 line, a debugger for the firmware it runs, and a Zig library other programs
-embed. Everything is Zig, the CPU core and disassembler included, and no C
-library is linked beyond libc.
+embed. The execution engine, CPU core and disassembler are Zig, and no C
+library is linked beyond libc. The browser frontend uses TypeScript.
 
 ## Install
 
@@ -31,7 +31,6 @@ export PATH="$HOME/.local/zig-x86_64-linux-0.17.0:$PATH"
 
 ```sh
 zig build                       # zig-out/bin/ra8_emulator
-zig build -Dgui                 # also the windowed debugger (fetches SDL3)
 zig build gate                  # zig fmt --check, file and function length, terms
 ```
 
@@ -58,19 +57,21 @@ ra8_emulator app.elf --gdb 3333              # serve gdb, each core a thread
 
 `--cpu1` brings up the second core in any of them, and `core 1` selects it.
 An ordinary run takes breakpoints and dumps too: `--break-sym`, `--watch`,
-`--dump-regs` and `--dump-mem`. A `-Dgui` build adds a second executable, `ra8_gui`:
-`ra8_gui <elf>` opens the windowed debugger on the image, with its session
-in the same process. `ra8_gui cpu0.elf --cpu1 cpu1.elf` loads CPU0/M85 and
-CPU1/M33 before recording begins. View > Device Metrics shows each core's
-load and stack state; click its core label to switch, or open two panes.
-RAM figures are shared across both cores. View > Host Metrics monitors the
-host process. The image opens halted; Run, Pause and Step on the
-time bar along the foot of the window run it, and the field beside them
-takes a speed (`0.5`, `2`, `max`). The board leaf shows the board with its
-LEDs; SW1, SW2 and the panel take clicks. Cmd+O (Ctrl+O on Windows and
-Linux) picks another image in the OS's own file dialog, and it opens halted
-the same way. `serve` and `ctl` run a
-session in one process and drive it from another, locally or over TCP.
+`--dump-regs` and `--dump-mem`. `serve` and `ctl` run a session in one
+process and drive it from another, locally or over TCP. The TCP RPC listener
+accepts both raw RPC and WebSocket clients:
+
+```sh
+zig-out/bin/ra8_emulator serve --listen tcp:127.0.0.1:4567 app.elf
+# Optional per-user discovery and hosted GDB for IDE clients:
+zig-out/bin/ra8_emulator serve --discover --listen tcp:127.0.0.1:4567 app.elf
+```
+
+The Angular PWA workspace is `src/interfaces/gui/`; its TypeScript RPC client
+is already available in `src/interfaces/gui/client/`. The native Zig/SDL GUI
+has been retired on `dev`; its reference implementation remains on the
+`BSIKAR/time-travel` branch. The PWA application is still to be implemented.
+
 
 ## Rebuilt-ELF replay
 

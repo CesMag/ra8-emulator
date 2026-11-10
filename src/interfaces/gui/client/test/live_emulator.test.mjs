@@ -72,12 +72,43 @@ async function runLiveTest() {
 
     // 5. Read Memory at PC (0x02000000)
     const mem = await client.readMemory(Core.Cpu0, 0x02000000, 16);
-    console.log(`✓ readMemory(0x00000000, 16): ${Array.from(mem).map(b => b.toString(16).padStart(2, "0")).join(" ")}`);
+    console.log(`✓ readMemory(0x02000000, 16): ${Array.from(mem).map(b => b.toString(16).padStart(2, "0")).join(" ")}`);
     if (mem.length !== 16) {
       throw new Error(`Expected 16 bytes memory, got ${mem.length}`);
     }
 
-    // 6. Disconnect
+    // 6. Authoritative Backend Disassembly (0x013D)
+    const disasm = await client.disassemble(Core.Cpu0, { usePc: true, count: 8 });
+    console.log(`✓ disassemble(CPU0, usePc=true, count=8): pc=0x${disasm.pc.toString(16)}, rows=${disasm.rows.length}, first="${disasm.rows[0]?.text}"`);
+    if (disasm.rows.length === 0 || !disasm.rows[0]?.decoded || !disasm.rows[0]?.text) {
+      throw new Error("Expected decoded disassembly rows from Zig backend");
+    }
+
+    // 7. BoardParts, StackReport, Periph, Now, and Breakpoint ID roundtrip
+    const boardParts = await client.getBoardParts();
+    console.log(`✓ getBoardParts(): panel="${boardParts.panel}" (${boardParts.panelWidth}x${boardParts.panelHeight}), LEDs=[${boardParts.ledNames.join(", ")}], switches=[${boardParts.switchNames.join(", ")}]`);
+    if (boardParts.switchNames.length === 0) {
+      throw new Error("Expected dynamic switchNames from boardParts");
+    }
+
+    const stack = await client.getStackReport(Core.Cpu0);
+    console.log(`✓ getStackReport(CPU0): msp=0x${stack.msp.toString(16)}, lowMsp=0x${stack.lowMsp.toString(16)}`);
+
+    const periphBlocks = await client.getPeriph(Core.Cpu0, "");
+    console.log(`✓ getPeriph(CPU0, ""): ${periphBlocks.trim().split("\n").length} blocks reported`);
+
+    const vns = await client.now(Core.Cpu0);
+    console.log(`✓ now(CPU0): ${vns} ns`);
+
+    const bpAddr = disasm.rows[0].address;
+    const bpId = await client.setBreakpointId(Core.Cpu0, bpAddr);
+    const cleared = await client.clearBreakpointById(Core.Cpu0, bpId);
+    console.log(`✓ setBreakpointId(0x${bpAddr.toString(16)}) => id=${bpId}, clearBreakpointById(${bpId}) => ${cleared}`);
+    if (!cleared) {
+      throw new Error("Expected clearBreakpointById to succeed");
+    }
+
+    // 8. Disconnect
     client.disconnect();
     console.log("✓ Client disconnected cleanly");
 

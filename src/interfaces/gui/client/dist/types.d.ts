@@ -31,7 +31,7 @@ export declare enum ErrorCode {
     AppTooLong = 258,
     AppHistory = 259
 }
-/** All 59 Session RPC Opcodes (Method in rpc.zig) */
+/** All 61 Session RPC Opcodes (Method in rpc.zig) */
 export declare enum Method {
     Load = 256,
     Run = 257,
@@ -92,7 +92,8 @@ export declare enum Method {
     NavQuery = 313,
     MarkerSet = 314,
     FrameStatus = 315,
-    Diff = 316
+    Diff = 316,
+    Disasm = 317
 }
 /** Opcode is an alias for Method */
 export { Method as Opcode };
@@ -409,5 +410,233 @@ export interface ScheduleInputArgs {
 }
 export interface Ack {
     accepted: number;
+}
+export interface BoardParts {
+    panel: string;
+    panelWidth: number;
+    panelHeight: number;
+    ledNames: string[];
+    ledColors: number[];
+    switchNames: string[];
+}
+export interface StackFrame {
+    pc: number;
+    interrupted: number;
+    offset: number;
+    line: number;
+    name: string;
+    file: string;
+}
+export interface Backtrace {
+    core: Core;
+    count: number;
+    frames: StackFrame[];
+}
+/** Authoritative backend disassembly request (DisasmAsk in disasm_wire.zig) */
+export interface DisasmAsk {
+    core: Core;
+    address?: number;
+    count?: number;
+    usePc?: boolean;
+}
+/** Single decoded instruction row from Zig backend (DisasmRow in disasm_wire.zig) */
+export interface DisasmRow {
+    address: number;
+    size: number;
+    decoded: boolean;
+    raw: Uint8Array;
+    text: string;
+    symbol: string;
+}
+/** Authoritative backend disassembly reply (DisasmReply in disasm_wire.zig) */
+export interface DisasmReply {
+    core: Core;
+    pc: number;
+    count: number;
+    rows: DisasmRow[];
+}
+/** Stack watermark and overflow report (StackReport in rpc.zig) */
+export interface StackReport {
+    core: Core;
+    msp: number;
+    psp: number;
+    lowMsp: number;
+    lowPsp: number;
+    hasStack: boolean;
+    base: number;
+    size: number;
+    overflow: number;
+}
+/** RTOS and exception trace event on Topic.Trace (TraceEvent in trace_wire.zig) */
+export interface TraceEvent {
+    core: Core;
+    kind: EventKind;
+    virtualNs: bigint;
+    thread: number;
+    exception: number;
+    name: string;
+}
+/** Why a time-travel history branch forked (ForkReason in record.zig) */
+export declare enum ForkReason {
+    Base = 0,
+    Writes = 1,
+    Taps = 2,
+    Buttons = 3,
+    Keystrokes = 4,
+    PlugUnplugFault = 5,
+    CameraChange = 6,
+    SkipBkpt = 7,
+    Load = 8
+}
+/** One branch item in the execution DAG (BranchItem in branch_wire.zig) */
+export interface BranchItem {
+    id: number;
+    parent: number;
+    forkR: bigint;
+    recordedEndR: bigint;
+    childCount: number;
+    reason: ForkReason;
+    flags: number;
+    isLive: boolean;
+    isKept: boolean;
+    isPinned: boolean;
+}
+/** Pending fork status (ForkStatus in branch_wire.zig) */
+export interface ForkStatus {
+    pending: boolean;
+    reason: ForkReason;
+    branch: number;
+    r: bigint;
+}
+/** Playback direction (Direction in nav_wire.zig) */
+export declare enum Direction {
+    Fwd = 0,
+    Back = 1
+}
+/** Playback arguments (PlayArgs in nav_wire.zig) */
+export interface PlayArgs {
+    dir: Direction;
+    speedMilli?: bigint;
+}
+/** Navigation query kind (NavQueryKind in nav_wire.zig) */
+export declare enum NavQueryKind {
+    Frame = 0,
+    Iteration = 1,
+    Marker = 2,
+    Rtos = 3,
+    Isr = 4
+}
+/** Navigation query arguments (NavQueryArgs in nav_wire.zig) */
+export interface NavQueryArgs {
+    kind: NavQueryKind;
+    index?: bigint;
+    name?: string;
+}
+/** Navigation query reply (NavQueryResult in nav_wire.zig) */
+export interface NavQueryResult {
+    found: boolean;
+    branch: number;
+    r: bigint;
+    phase: number;
+    o: number;
+    gap: number;
+    count: bigint;
+    slots: bigint;
+    virtualNs: bigint;
+}
+/** Rewind and frame pipeline status (FrameStatusResult in nav_wire.zig) */
+export interface FrameStatusResult {
+    ramBytes: bigint;
+    diskBytes: bigint;
+    queueBytes: bigint;
+    frames: bigint;
+    decodedSegments: bigint;
+}
+/** Position of one side of a state diff (Side in diff_wire.zig) */
+export interface DiffSide {
+    branch: number;
+    r: bigint;
+}
+export interface DiffRegItem {
+    core: Core;
+    name: string;
+    valA: number;
+    valB: number;
+}
+export interface DiffPageItem {
+    space: number;
+    pageIndex: number;
+    address: number;
+    hasA: boolean;
+    objA: Uint8Array;
+    hasB: boolean;
+    objB: Uint8Array;
+}
+export interface DiffPeriphItem {
+    unit: string;
+    offset: number;
+    oldVal: number;
+    newVal: number;
+    changedBytes: number;
+}
+/** Decoded state diff between two execution points (DecodedDiff in diff_wire.zig) */
+export interface DecodedDiff {
+    frames: number;
+    a: DiffSide;
+    b: DiffSide;
+    regs: DiffRegItem[];
+    pages: DiffPageItem[];
+    periphs: DiffPeriphItem[];
+}
+/** Symbolic breakpoint placement result (NamedPoint in rpc.zig) */
+export interface NamedPointResult {
+    id: number;
+    address: number;
+    deferred: boolean;
+}
+/** Virtual-time advance completion reply (Advanced in rpc.zig) */
+export interface AdvancedResult {
+    core: Core;
+    fromNs: bigint;
+    toNs: bigint;
+    reason: StopReason;
+    address: number;
+}
+/** DWARF source location for a core's PC (SourceLine in rpc.zig) */
+export interface SourceLineResult {
+    found: boolean;
+    pc: number;
+    line: number;
+    path: string;
+}
+/** Storage location kind for a DWARF local variable (where_kinds in locals_wire.zig) */
+export declare enum LocalWhereKind {
+    None = 0,
+    Frame = 1,
+    RegisterIndirect = 2,
+    InRegister = 3,
+    Address = 4
+}
+/** Single DWARF local variable entry (LocalRow in locals_wire.zig) */
+export interface LocalVariable {
+    name: string;
+    typeName: string;
+    size: number;
+    whereKind: LocalWhereKind;
+    whereA: bigint;
+    whereB: bigint;
+}
+/** Function locals reply for a halted core/frame (Locals in locals_wire.zig) */
+export interface LocalsResult {
+    core: Core;
+    count: number;
+    locals: LocalVariable[];
+}
+/** Parsed ELF32 symbol entry for instant client-side symbol search and autocomplete */
+export interface ElfSymbol {
+    name: string;
+    address: number;
+    size: number;
+    kind: "func" | "object" | "other";
 }
 //# sourceMappingURL=types.d.ts.map

@@ -1,6 +1,6 @@
 //! One session's gdb port while the app hosts it (RA8EMU-1156): a loopback
 //! TCP listener per session, listed in the discovery file, and one gdb
-//! client served a frame at a time so the host keeps painting between
+//! client served a frame at a time so the daemon keeps serving between
 //! packets. Reads are answered at once; a continue runs one budget per
 //! pump and its stop reply goes out when the run ends (rsp_zig's pump
 //! mode). Nothing here blocks: every step peeks first.
@@ -19,7 +19,7 @@ pub const Session = struct {
     elf: []const u8,
     port: u16,
     listener: std.Io.net.Server,
-    /// The session the panes draw through; null lists the port without
+    /// The daemon's served session; null lists the port without
     /// serving it yet.
     live: ?*session_api.Session = null,
     /// The host clock the gdb target's transport wall reads, when a
@@ -43,7 +43,7 @@ pub const Session = struct {
     };
 
     /// Accept a waiting gdb client, drain what it has sent, answer what is
-    /// answerable, and keep a pumped continue going. Once per frame.
+    /// answerable, and keep a pumped continue going. Once per daemon turn.
     pub fn pump(self: *Session) void {
         if (self.client == null) self.accept();
         const c = &(self.client orelse return);

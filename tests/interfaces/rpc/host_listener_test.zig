@@ -1,5 +1,5 @@
 //! Host listener discovery, served RPC, GDB and reconnect tests (RA8EMU-1156).
-//! They use the same Served context as the panes and real host sockets.
+//! They use the same Served context as the primary connection and real host sockets.
 const std = @import("std");
 const ra8 = @import("ra8");
 const cli_app = @import("cli_app");
@@ -47,7 +47,6 @@ test "the discovery file lists the rpc address and the sessions" {
     var port_buf: [32]u8 = undefined;
     const port_line = try std.fmt.bufPrint(&port_buf, "session {d} /some/image.elf", .{port});
     try std.testing.expectEqualStrings(port_line, lines.next().?);
-    try std.testing.expect(std.mem.startsWith(u8, lines.next().?, "focus "));
     try std.testing.expectEqual(@as(?[]const u8, null), lines.next());
 
     bound.deinit();
@@ -82,7 +81,7 @@ test "a client over the socket is served on the opened session" {
     try loadAndRead(peer, &bound, &opened.context, tx);
 }
 
-test "a client's subscriptions stay off the panes' context" {
+test "a client's subscriptions stay off the primary connection' context" {
     const gpa = std.testing.allocator;
     const home = try tempHome(gpa);
     defer {
@@ -107,13 +106,13 @@ test "a client's subscriptions stay off the panes' context" {
     _ = try next(peer, &bound, &opened.context, tx);
 
     // The client subscribes to the uart topic over the wire and gets its
-    // own feed; the panes' context keeps none and no topics (RA8EMU-1196).
+    // own feed; the primary connection' context keeps none and no topics (RA8EMU-1196).
     _ = try call(peer, &bound, &opened.context, tx, proto.Ack, proto.Subscription, .subscribe, .{ .core = .cpu0, .topic = .uart });
     try std.testing.expect(bound.client.?.context.uart_feed != null);
     try std.testing.expectEqual(@as(?usize, null), opened.context.uart_feed);
     try std.testing.expectEqual(@as(u8, 0), opened.context.topics[0]);
 
-    // Hanging up releases the client's feed; the panes' context is untouched.
+    // Hanging up releases the client's feed; the primary connection' context is untouched.
     connection.close();
     try bound.answer(&opened.context, tx);
     try std.testing.expect(bound.client == null);
@@ -234,31 +233,6 @@ const next = helpers.next;
 const call = helpers.call;
 const loadAndRead = helpers.loadAndRead;
 
-test "a focus connection is taken once and the second launch hands off" {
-    const gpa = std.testing.allocator;
-    const home = try tempHome(gpa);
-    defer {
-        std.Io.Dir.cwd().deleteTree(std.testing.io, home) catch {};
-        gpa.free(home);
-    }
-    var env = try envWithHome(gpa, home);
-    defer env.deinit();
-    var bound = try listener_mod.Listener.bind(gpa, std.testing.io, &env);
-    defer bound.deinit();
-
-    try bound.announce();
-    try std.testing.expect(!bound.takeFocus());
-    // The second launch: read the discovery file, connect to the focus
-    // address, exit. focusRunning does all three.
-    try listener_mod.focusRunning(gpa, std.testing.io, &env);
-    try std.testing.expect(bound.takeFocus());
-    try std.testing.expect(!bound.takeFocus());
-
-    // With no running app, focusRunning fails and the caller runs on.
-    std.Io.Dir.cwd().deleteFile(std.testing.io, bound.discovery_path) catch {};
-    try std.testing.expectError(error.NotRunning, listener_mod.focusRunning(gpa, std.testing.io, &env));
-}
-
 fn connect(address: listener_mod.Address) !Connection {
     return switch (address) {
         .unix => |path| Connection.unix(std.testing.io, path),
@@ -278,7 +252,7 @@ test "an async advance queues over the socket and completes on the transport top
     var opened: served_setup.Served = undefined;
     try opened.open(gpa, std.testing.io, image, null, null);
     defer opened.deinit();
-    // The hosted shell binds the queued advance contract on (hosted.zig);
+    // The daemon can bind the queued advance contract;
     // the test mirrors it so the listener's client sees bit 15.
     opened.context.transport_async = true;
     var bound = try listener_mod.Listener.bind(gpa, std.testing.io, &env);

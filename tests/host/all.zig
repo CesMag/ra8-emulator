@@ -31,7 +31,6 @@ test {
     _ = @import("camera/v4l2/negotiate_test.zig");
     _ = @import("camera/v4l2/stream_test.zig");
     _ = @import("camera/webcam/consent_test.zig");
-    _ = @import("camera/webcam/always_test.zig");
     _ = @import("camera/webcam/privacy_test.zig");
     _ = @import("camera/y4m/header_test.zig");
 }
