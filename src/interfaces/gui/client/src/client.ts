@@ -21,6 +21,9 @@ import {
   SessionEvent,
   TransportEvent,
   RpcEventEnvelope,
+  BoardParts,
+  Backtrace,
+  ScheduleInputArgs,
   PROTOCOL_MAGIC,
   PROTOCOL_VERSION,
 } from "./types.js";
@@ -44,10 +47,16 @@ import {
   encodeSubscription,
   encodePoint,
   encodeAdvance,
+  encodeSetSpeed,
+  encodeScheduleInput,
+  encodeConsoleInput,
   decodeU32,
   decodeAck,
   decodeStopped,
   decodeUart,
+  decodeSessionEvent,
+  decodeBoardParts,
+  decodeBacktrace,
   decodeDirtyRect,
   decodeMetricsReport,
 } from "./codec.js";
@@ -451,6 +460,36 @@ export class RA8RpcClient extends TypedEventEmitter {
     return decodeAck(resp).accepted !== 0;
   }
 
+  /** Set emulation pacing speed (0 = unthrottled) */
+  public async setSpeed(core: Core = Core.Cpu0, milli: bigint | number = 0n): Promise<boolean> {
+    const resp = await this.call(Method.SetSpeed, encodeSetSpeed(core, milli));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Get served board front-panel profile, LEDs, and switches */
+  public async getBoardParts(): Promise<BoardParts> {
+    const resp = await this.call(Method.BoardParts, encodeCoreOnly(Core.Cpu0));
+    return decodeBoardParts(resp);
+  }
+
+  /** Get call stack backtrace for core */
+  public async getBacktrace(core: Core = Core.Cpu0): Promise<Backtrace> {
+    const resp = await this.call(Method.Backtrace, encodeCoreOnly(core));
+    return decodeBacktrace(resp);
+  }
+
+  /** Injected touch or button input to guest firmware */
+  public async sendInput(args: ScheduleInputArgs): Promise<boolean> {
+    const resp = await this.call(Method.Input, encodeScheduleInput(args));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Send bytes to virtual console UART */
+  public async sendConsoleInput(core: Core, bytes: Uint8Array): Promise<boolean> {
+    const resp = await this.call(Method.ConsoleInput, encodeConsoleInput(core, bytes));
+    return decodeAck(resp).accepted !== 0;
+  }
+
   /* ------------------------------------------------------------------------ */
   /* Internal Stream and Packet Processing                                    */
   /* ------------------------------------------------------------------------ */
@@ -560,6 +599,9 @@ export class RA8RpcClient extends TypedEventEmitter {
           break;
         case Topic.LcdDirty:
           this.emit("lcd_dirty", decodeDirtyRect(payload));
+          break;
+        case Topic.Session:
+          this.emit("session", decodeSessionEvent(payload));
           break;
         default:
           break;

@@ -1,0 +1,37 @@
+<div class="workbench-layout">
+  <!-- Top Navigation & Connection Status -->
+  <header class="workbench-header">
+    <app-connection-bar></app-connection-bar>
+  </header>
+
+  <!-- Execution Controls Bar -->
+  <div class="workbench-controls">
+    <app-execution-controls></app-execution-controls>
+  </div>
+
+  <!-- Main Multi-Pane Workbench Grid -->
+  <main class="workbench-grid">
+    <!-- Left Column: Virtual Board & Metrics -->
+    <section class="grid-col left-col">
+      <app-virtual-board></app-virtual-board>
+      <app-metrics-panel></app-metrics-panel>
+    </section>
+
+    <!-- Center Column: Disassembly & Memory Hex Inspector -->
+    <section class="grid-col center-col">
+      <app-disassembly-view></app-disassembly-view>
+      <app-memory-inspector></app-memory-inspector>
+    </section>
+
+    <!-- Right Column: CPU Registers & Call Stack -->
+    <section class="grid-col right-col">
+      <app-register-inspector></app-register-inspector>
+      <app-call-stack></app-call-stack>
+    </section>
+  </main>
+
+  <!-- Bottom: UART Serial Terminal -->
+  <footer class="workbench-footer">
+    <app-uart-terminal></app-uart-terminal>
+  </footer>
+</div>

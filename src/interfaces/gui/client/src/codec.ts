@@ -25,6 +25,12 @@ import {
   Stopped,
   UartEvent,
   Ack,
+  EventKind,
+  SessionEvent,
+  ScheduleInputArgs,
+  BoardParts,
+  StackFrame,
+  Backtrace,
   HEADER_BYTES,
   METRICS_REPORT_BYTES,
   MAX_PAYLOAD,
@@ -481,3 +487,123 @@ export function encodeDirtyRect(rect: DirtyRect): Uint8Array {
   buf.set(rect.pixels, 21);
   return buf;
 }
+
+/** Encode SetSpeed argument (9 bytes: core u8, milli u64 LE) */
+export function encodeSetSpeed(core: Core, milli: bigint | number): Uint8Array {
+  const buf = new Uint8Array(9);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setBigUint64(1, BigInt(milli), true);
+  return buf;
+}
+
+/** Encode ScheduleInput argument (27 bytes) */
+export function encodeScheduleInput(args: ScheduleInputArgs): Uint8Array {
+  const buf = new Uint8Array(27);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, args.core);
+  view.setBigUint64(1, BigInt(args.atNs ?? 0n), true);
+  view.setUint8(9, args.kind);
+  view.setUint16(10, args.x ?? 0, true);
+  view.setUint16(12, args.y ?? 0, true);
+  view.setUint16(14, args.toX ?? 0, true);
+  view.setUint16(16, args.toY ?? 0, true);
+  view.setBigUint64(18, BigInt(args.durationNs ?? 0n), true);
+  view.setUint8(26, args.button ?? 0);
+  return buf;
+}
+
+/** Encode ConsoleInput argument (1 + 4 + bytes.length) */
+export function encodeConsoleInput(core: Core, bytes: Uint8Array): Uint8Array {
+  const buf = new Uint8Array(1 + 4 + bytes.length);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setUint32(1, bytes.length, true);
+  buf.set(bytes, 5);
+  return buf;
+}
+
+/** Decode SessionEvent (6 bytes: core u8, kind u8, address u32 LE) */
+export function decodeSessionEvent(data: Uint8Array): SessionEvent {
+  if (data.length < 6) {
+    throw new Error("Truncated SessionEvent");
+  }
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return {
+    core: view.getUint8(0) as Core,
+    kind: view.getUint8(1) as EventKind,
+    address: view.getUint32(2, true),
+  };
+}
+
+function readSlice(data: Uint8Array, offset: { val: number }): Uint8Array {
+  if (offset.val + 4 > data.length) throw new Error("Truncated slice length");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const len = view.getUint32(offset.val, true);
+  offset.val += 4;
+  if (offset.val + len > data.length) throw new Error("Truncated slice data");
+  const slice = data.subarray(offset.val, offset.val + len);
+  offset.val += len;
+  return slice;
+}
+
+/** Decode BoardParts reply */
+export function decodeBoardParts(data: Uint8Array): BoardParts {
+  const offset = { val: 0 };
+  const decoder = new TextDecoder();
+  const panel = decoder.decode(readSlice(data, offset));
+  if (offset.val + 8 > data.length) throw new Error("Truncated BoardParts dims");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const panelWidth = view.getUint32(offset.val, true);
+  offset.val += 4;
+  const panelHeight = view.getUint32(offset.val, true);
+  offset.val += 4;
+  const ledNamesRaw = decoder.decode(readSlice(data, offset));
+  const ledNames = ledNamesRaw.length > 0 ? ledNamesRaw.split("\n") : [];
+  const ledColorsRaw = readSlice(data, offset);
+  const ledColors: number[] = [];
+  const colorView = new DataView(ledColorsRaw.buffer, ledColorsRaw.byteOffset, ledColorsRaw.byteLength);
+  for (let i = 0; i + 1 < ledColorsRaw.length; i += 2) {
+    ledColors.push(colorView.getUint16(i, true));
+  }
+  const switchNamesRaw = decoder.decode(readSlice(data, offset));
+  const switchNames = switchNamesRaw.length > 0 ? switchNamesRaw.split("\n") : [];
+
+  return { panel, panelWidth, panelHeight, ledNames, ledColors, switchNames };
+}
+
+/** Decode Backtrace reply */
+export function decodeBacktrace(data: Uint8Array): Backtrace {
+  if (data.length < 6) throw new Error("Truncated Backtrace header");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const core = view.getUint8(0) as Core;
+  const count = view.getUint8(1);
+  const framesLen = view.getUint32(2, true);
+  const framesBytes = data.subarray(6, 6 + framesLen);
+
+  const frames: StackFrame[] = [];
+  let at = 0;
+  const decoder = new TextDecoder();
+  for (let i = 0; i < count && at < framesBytes.length; i++) {
+    const frameLen = framesBytes[at];
+    if (frameLen === undefined) break;
+    at += 1;
+    if (at + frameLen > framesBytes.length) break;
+    const fData = framesBytes.subarray(at, at + frameLen);
+    at += frameLen;
+    if (fData.length < 13) continue;
+    const fView = new DataView(fData.buffer, fData.byteOffset, fData.byteLength);
+    const pc = fView.getUint32(0, true);
+    const interrupted = fView.getUint8(4);
+    const fOffset = fView.getUint32(5, true);
+    const line = fView.getUint32(9, true);
+
+    const fSliceOffset = { val: 13 };
+    const name = decoder.decode(readSlice(fData, fSliceOffset));
+    const file = decoder.decode(readSlice(fData, fSliceOffset));
+    frames.push({ pc, interrupted, offset: fOffset, line, name, file });
+  }
+
+  return { core, count, frames };
+}
+

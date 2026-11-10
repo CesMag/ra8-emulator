@@ -4,7 +4,7 @@
  * Implements RA8RpcClient for seamless browser and Node.js communication with
  * ra8-emulator RFC 6455 transport bridge. Zero runtime dependencies.
  */
-import { Method, Topic, Core, Register, RunMode, Hello, MetricsReport, DirtyRect, Stopped, UartEvent, SessionEvent, TransportEvent, RpcEventEnvelope } from "./types.js";
+import { Method, Topic, Core, Register, RunMode, Hello, MetricsReport, DirtyRect, Stopped, UartEvent, SessionEvent, TransportEvent, RpcEventEnvelope, BoardParts, Backtrace, ScheduleInputArgs } from "./types.js";
 export type EventListener<T = any> = (data: T) => void;
 /** Client events map */
 export interface ClientEventMap {
@@ -90,6 +90,16 @@ export declare class RA8RpcClient extends TypedEventEmitter {
     clearBreakpoint(core: Core, address: number): Promise<boolean>;
     /** Advance simulation by virtual nanoseconds */
     advance(core: Core, ns: bigint): Promise<boolean>;
+    /** Set emulation pacing speed (0 = unthrottled) */
+    setSpeed(core?: Core, milli?: bigint | number): Promise<boolean>;
+    /** Get served board front-panel profile, LEDs, and switches */
+    getBoardParts(): Promise<BoardParts>;
+    /** Get call stack backtrace for core */
+    getBacktrace(core?: Core): Promise<Backtrace>;
+    /** Injected touch or button input to guest firmware */
+    sendInput(args: ScheduleInputArgs): Promise<boolean>;
+    /** Send bytes to virtual console UART */
+    sendConsoleInput(core: Core, bytes: Uint8Array): Promise<boolean>;
     private sendRaw;
     private onData;
     private processFrame;

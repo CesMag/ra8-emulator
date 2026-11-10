@@ -53,7 +53,7 @@ pub fn isScanned(name: []const u8) bool {
 fn isOutput(path: []const u8) bool {
     var parts = std.mem.tokenizeAny(u8, path, "/\\");
     while (parts.next()) |part| {
-        if (part[0] == '.' or std.mem.eql(u8, part, "zig-out") or std.mem.eql(u8, part, "zig-pkg")) return true;
+        if (part[0] == '.' or std.mem.eql(u8, part, "zig-out") or std.mem.eql(u8, part, "zig-pkg") or std.mem.eql(u8, part, "node_modules")) return true;
     }
     return false;
 }

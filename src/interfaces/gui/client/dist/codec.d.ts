@@ -4,7 +4,7 @@
  * Implements high-performance binary encoding and decoding using DataView
  * adhering to ra8_rpc_wire specifications and zero-padding struct layout.
  */
-import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, RpcHeader, RpcRequestEnvelope, RpcResponseEnvelope, RpcEventEnvelope, Hello, Fault, MetricsReport, DirtyRect, Stopped, UartEvent, Ack } from "./types.js";
+import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, RpcHeader, RpcRequestEnvelope, RpcResponseEnvelope, RpcEventEnvelope, Hello, Fault, MetricsReport, DirtyRect, Stopped, UartEvent, Ack, SessionEvent, ScheduleInputArgs, BoardParts, Backtrace } from "./types.js";
 /** Encode the 6-byte frame header */
 export declare function encodeHeader(length: number, kind: Kind | number): Uint8Array;
 /** Decode the 6-byte frame header */
@@ -80,4 +80,16 @@ export declare function encodeMetricsReport(report: MetricsReport): Uint8Array;
 export declare function decodeDirtyRect(data: Uint8Array): DirtyRect;
 /** Encode DirtyRect */
 export declare function encodeDirtyRect(rect: DirtyRect): Uint8Array;
+/** Encode SetSpeed argument (9 bytes: core u8, milli u64 LE) */
+export declare function encodeSetSpeed(core: Core, milli: bigint | number): Uint8Array;
+/** Encode ScheduleInput argument (27 bytes) */
+export declare function encodeScheduleInput(args: ScheduleInputArgs): Uint8Array;
+/** Encode ConsoleInput argument (1 + 4 + bytes.length) */
+export declare function encodeConsoleInput(core: Core, bytes: Uint8Array): Uint8Array;
+/** Decode SessionEvent (6 bytes: core u8, kind u8, address u32 LE) */
+export declare function decodeSessionEvent(data: Uint8Array): SessionEvent;
+/** Decode BoardParts reply */
+export declare function decodeBoardParts(data: Uint8Array): BoardParts;
+/** Decode Backtrace reply */
+export declare function decodeBacktrace(data: Uint8Array): Backtrace;
 //# sourceMappingURL=codec.d.ts.map

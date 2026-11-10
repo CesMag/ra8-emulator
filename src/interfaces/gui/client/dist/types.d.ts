@@ -410,4 +410,25 @@ export interface ScheduleInputArgs {
 export interface Ack {
     accepted: number;
 }
+export interface BoardParts {
+    panel: string;
+    panelWidth: number;
+    panelHeight: number;
+    ledNames: string[];
+    ledColors: number[];
+    switchNames: string[];
+}
+export interface StackFrame {
+    pc: number;
+    interrupted: number;
+    offset: number;
+    line: number;
+    name: string;
+    file: string;
+}
+export interface Backtrace {
+    core: Core;
+    count: number;
+    frames: StackFrame[];
+}
 //# sourceMappingURL=types.d.ts.map

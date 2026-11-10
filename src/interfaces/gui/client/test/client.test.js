@@ -54,6 +54,12 @@ import {
   encodeSubscription,
   encodePoint,
   encodeAdvance,
+  encodeSetSpeed,
+  encodeScheduleInput,
+  encodeConsoleInput,
+  decodeSessionEvent,
+  decodeBoardParts,
+  decodeBacktrace,
   decodeU32,
   encodeU32,
   decodeAck,
@@ -253,6 +259,94 @@ runTest('Event envelope roundtrip', () => {
   assert.deepEqual(Array.from(event.payload), [0x10, 0x20, 0x30]);
 });
 
+runTest('encodeSetSpeed encodes core and milli u64 LE', () => {
+  const buf = encodeSetSpeed(Core.Cpu0, 100n);
+  assert.equal(buf.length, 1 + 8);
+  assert.equal(buf[0], Core.Cpu0);
+  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  assert.equal(view.getBigUint64(1, true), 100n);
+});
+
+runTest('encodeScheduleInput encodes input args to 27 bytes', () => {
+  const btn = encodeScheduleInput({ core: Core.Cpu0, kind: 0, button: 1 });
+  assert.equal(btn.length, 27);
+  assert.equal(btn[0], Core.Cpu0);
+  assert.equal(btn[9], 0); // kind = 0
+  assert.equal(btn[26], 1); // button = 1
+
+  const touch = encodeScheduleInput({ core: Core.Cpu0, kind: 1, x: 250, y: 150 });
+  assert.equal(touch.length, 27);
+  assert.equal(touch[0], Core.Cpu0);
+  assert.equal(touch[9], 1); // kind = 1
+  const v = new DataView(touch.buffer, touch.byteOffset, touch.byteLength);
+  assert.equal(v.getUint16(10, true), 250);
+  assert.equal(v.getUint16(12, true), 150);
+});
+
+runTest('encodeConsoleInput encodes core and payload bytes', () => {
+  const data = new TextEncoder().encode('test');
+  const buf = encodeConsoleInput(Core.Cpu0, data);
+  assert.equal(buf.length, 1 + 4 + 4);
+  assert.equal(buf[0], Core.Cpu0);
+  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  assert.equal(view.getUint32(1, true), 4);
+  assert.deepEqual(Array.from(buf.slice(5)), Array.from(data));
+});
+
+runTest('decodeSessionEvent parses session event kinds', () => {
+  const buf = new Uint8Array([0, 15, 0x00, 0x10, 0x00, 0x00]); // Core 0, LedChanged = 15, address 0x1000
+  const ev = decodeSessionEvent(buf);
+  assert.equal(ev.core, Core.Cpu0);
+  assert.equal(ev.kind, 15);
+  assert.equal(ev.address, 0x1000);
+});
+
+runTest('decodeBoardParts parses panel, dimensions, LEDs and switches', () => {
+  // Construct board parts payload using 4-byte LE length prefixes
+  const panelBytes = new TextEncoder().encode('TestPanel');
+  const ledNames = new TextEncoder().encode('LED1\nLED2');
+  const swNames = new TextEncoder().encode('SW1');
+
+  const buf = new Uint8Array(256);
+  let off = 0;
+  // panel slice
+  new DataView(buf.buffer).setUint32(off, panelBytes.length, true); off += 4;
+  buf.set(panelBytes, off); off += panelBytes.length;
+  // width & height
+  new DataView(buf.buffer).setUint32(off, 800, true); off += 4;
+  new DataView(buf.buffer).setUint32(off, 480, true); off += 4;
+  // ledNames slice
+  new DataView(buf.buffer).setUint32(off, ledNames.length, true); off += 4;
+  buf.set(ledNames, off); off += ledNames.length;
+  // ledColors slice
+  new DataView(buf.buffer).setUint32(off, 4, true); off += 4;
+  new DataView(buf.buffer).setUint16(off, 0xF800, true); off += 2;
+  new DataView(buf.buffer).setUint16(off, 0x001F, true); off += 2;
+  // switchNames slice
+  new DataView(buf.buffer).setUint32(off, swNames.length, true); off += 4;
+  buf.set(swNames, off); off += swNames.length;
+
+  const parts = decodeBoardParts(buf.subarray(0, off));
+  assert.equal(parts.panel, 'TestPanel');
+  assert.equal(parts.panelWidth, 800);
+  assert.equal(parts.panelHeight, 480);
+  assert.deepEqual(parts.ledNames, ['LED1', 'LED2']);
+  assert.deepEqual(parts.ledColors, [0xF800, 0x001F]);
+  assert.deepEqual(parts.switchNames, ['SW1']);
+});
+
+runTest('decodeBacktrace parses stack frames', () => {
+  const buf = new Uint8Array(6);
+  buf[0] = Core.Cpu0;
+  buf[1] = 0; // count = 0
+  new DataView(buf.buffer).setUint32(2, 0, true); // framesLen = 0
+
+  const bt = decodeBacktrace(buf);
+  assert.equal(bt.core, Core.Cpu0);
+  assert.equal(bt.count, 0);
+  assert.equal(bt.frames.length, 0);
+});
+
 /* -------------------------------------------------------------------------- */
 /* Test Group 3: MetricsReport 32-Byte Wire Layout                            */
 /* -------------------------------------------------------------------------- */
@@ -444,9 +538,38 @@ class MockWebSocketServer {
           case Method.Unsubscribe:
           case Method.SetBreakpoint:
           case Method.ClearBreakpoint:
-          case Method.Advance: {
+          case Method.Advance:
+          case Method.SetSpeed:
+          case Method.Input:
+          case Method.ConsoleInput: {
             const ackPayload = new Uint8Array([1]); // accepted = 1
             const resp = encodeResponse(req.id, true, ackPayload);
+            this.sendToClient(encodeFrame(Kind.Response, resp));
+            break;
+          }
+
+          case Method.BoardParts: {
+            const panel = new TextEncoder().encode('MockPanel');
+            const buf = new Uint8Array(128);
+            let off = 0;
+            new DataView(buf.buffer).setUint32(off, panel.length, true); off += 4;
+            buf.set(panel, off); off += panel.length;
+            new DataView(buf.buffer).setUint32(off, 1024, true); off += 4;
+            new DataView(buf.buffer).setUint32(off, 600, true); off += 4;
+            new DataView(buf.buffer).setUint32(off, 0, true); off += 4; // 0 ledNames
+            new DataView(buf.buffer).setUint32(off, 0, true); off += 4; // 0 ledColors
+            new DataView(buf.buffer).setUint32(off, 0, true); off += 4; // 0 switchNames
+            const resp = encodeResponse(req.id, true, buf.subarray(0, off));
+            this.sendToClient(encodeFrame(Kind.Response, resp));
+            break;
+          }
+
+          case Method.Backtrace: {
+            const buf = new Uint8Array(6);
+            buf[0] = Core.Cpu0;
+            buf[1] = 0;
+            new DataView(buf.buffer).setUint32(2, 0, true);
+            const resp = encodeResponse(req.id, true, buf);
             this.sendToClient(encodeFrame(Kind.Response, resp));
             break;
           }
@@ -590,6 +713,25 @@ await runAsyncTest('full client RPC workflow against mock WebSocket server', asy
   assert.equal(metrics.cpu0LoadPercent, 88);
   assert.equal(metrics.cpu0Pinned, 1);
   assert.equal(metrics.cpu0RamUsedBytes, 0x2000);
+
+  // Step 8b: Test setSpeed, getBoardParts, getBacktrace, sendInput, sendConsoleInput
+  const speedOk = await client.setSpeed(Core.Cpu0, 100);
+  assert.equal(speedOk, true);
+
+  const parts = await client.getBoardParts();
+  assert.equal(parts.panel, 'MockPanel');
+  assert.equal(parts.panelWidth, 1024);
+  assert.equal(parts.panelHeight, 600);
+
+  const bt = await client.getBacktrace(Core.Cpu0);
+  assert.equal(bt.count, 0);
+  assert.equal(bt.frames.length, 0);
+
+  const touchOk = await client.sendInput({ core: Core.Cpu0, kind: 1, x: 100, y: 100 });
+  assert.equal(touchOk, true);
+
+  const consoleOk = await client.sendConsoleInput(Core.Cpu0, new Uint8Array([65, 66]));
+  assert.equal(consoleOk, true);
 
   // Step 9: Test subscribe and event emission
   const subAck = await client.subscribe(Core.Cpu0, Topic.LcdDirty);
