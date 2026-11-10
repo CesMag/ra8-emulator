@@ -209,6 +209,9 @@ test {
     _ = @import("interfaces/rpc/session/branch_wire_test.zig");
     _ = @import("interfaces/rpc/session/diff_test.zig");
     _ = @import("interfaces/rpc/session/diff_wire_test.zig");
+    _ = @import("interfaces/rpc/session/disasm_test.zig");
+    _ = @import("interfaces/rpc/session/disasm_wire_test.zig");
+    _ = @import("interfaces/rpc/session/locals_wire_test.zig");
     _ = @import("interfaces/rpc/served_cpu1_test.zig");
     _ = @import("interfaces/rpc/served_second_test.zig");
     _ = @import("interfaces/rpc/served_history_test.zig");

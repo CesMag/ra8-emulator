@@ -4,7 +4,7 @@
  * Implements high-performance binary encoding and decoding using DataView
  * adhering to ra8_rpc_wire specifications and zero-padding struct layout.
  */
-import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, RpcHeader, RpcRequestEnvelope, RpcResponseEnvelope, RpcEventEnvelope, Hello, Fault, MetricsReport, DirtyRect, Stopped, UartEvent, Ack, SessionEvent, ScheduleInputArgs, BoardParts, Backtrace } from "./types.js";
+import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, RpcHeader, RpcRequestEnvelope, RpcResponseEnvelope, RpcEventEnvelope, Hello, Fault, MetricsReport, DirtyRect, Stopped, UartEvent, Ack, SessionEvent, ScheduleInputArgs, BoardParts, Backtrace, DisasmAsk, DisasmReply, StackReport, TraceEvent, TransportEvent, BranchItem, ForkStatus, PlayArgs, NavQueryArgs, NavQueryResult, FrameStatusResult, DecodedDiff } from "./types.js";
 /** Encode the 6-byte frame header */
 export declare function encodeHeader(length: number, kind: Kind | number): Uint8Array;
 /** Decode the 6-byte frame header */
@@ -92,4 +92,50 @@ export declare function decodeSessionEvent(data: Uint8Array): SessionEvent;
 export declare function decodeBoardParts(data: Uint8Array): BoardParts;
 /** Decode Backtrace reply */
 export declare function decodeBacktrace(data: Uint8Array): Backtrace;
+/** Decode U64 result (8 bytes) */
+export declare function decodeU64(data: Uint8Array): bigint;
+/** Encode PointId argument (5 bytes: core u8, id u32 LE) */
+export declare function encodePointId(core: Core, id: number): Uint8Array;
+/** Encode DisasmAsk argument (7 bytes: core u8, address u32 LE, count u8, use_pc u8) */
+export declare function encodeDisasmAsk(args: DisasmAsk): Uint8Array;
+/** Decode DisasmReply from Method.Disasm (0x013D) */
+export declare function decodeDisasmReply(data: Uint8Array): DisasmReply;
+/** Decode StackReport (30 bytes) */
+export declare function decodeStackReport(data: Uint8Array): StackReport;
+/** Decode single UTF-8 slice reply (PartList, PeriphText, MapText, FoldedText) */
+export declare function decodeTextSlice(data: Uint8Array): string;
+/** Encode PeriphAsk (core u8, json u8, block []const u8) */
+export declare function encodePeriphAsk(core: Core, block?: string, json?: boolean): Uint8Array;
+/** Encode FoldedAsk (21 bytes: core u8, thread u32, from_ns u64, to_ns u64) */
+export declare function encodeFoldedAsk(core: Core, thread?: number, fromNs?: bigint, toNs?: bigint): Uint8Array;
+/** Decode TraceEvent on Topic.Trace */
+export declare function decodeTraceEvent(data: Uint8Array): TraceEvent;
+/** Decode TransportEvent on Topic.Transport (56 bytes) */
+export declare function decodeTransportEvent(data: Uint8Array): TransportEvent;
+/** Decode BranchList reply from Method.BranchList (0x0130) */
+export declare function decodeBranchList(data: Uint8Array): BranchItem[];
+/** Encode BranchSwitch (4 bytes: branch u32 LE) */
+export declare function encodeBranchSwitch(branch: number): Uint8Array;
+/** Encode BranchDelete (5 bytes: branch u32 LE, confirm u8) */
+export declare function encodeBranchDelete(branch: number, confirm?: boolean): Uint8Array;
+/** Encode BranchConfirmFork (1 byte: confirm u8) */
+export declare function encodeBranchConfirmFork(confirm?: boolean): Uint8Array;
+/** Decode ForkStatus (14 bytes) */
+export declare function decodeForkStatus(data: Uint8Array): ForkStatus;
+/** Encode Seek argument (target []const u8) */
+export declare function encodeSeek(target: string): Uint8Array;
+/** Encode PlayArgs (9 bytes: dir u8, speed_milli u64 LE) */
+export declare function encodePlayArgs(args: PlayArgs): Uint8Array;
+/** Encode NavQueryArgs (kind u8, index u64 LE, name []const u8) */
+export declare function encodeNavQueryArgs(args: NavQueryArgs): Uint8Array;
+/** Decode NavQueryResult (43 bytes) */
+export declare function decodeNavQueryResult(data: Uint8Array): NavQueryResult;
+/** Encode MarkerSetArgs (name []const u8, place []const u8) */
+export declare function encodeMarkerSetArgs(name: string, place: string): Uint8Array;
+/** Decode FrameStatusResult (40 bytes) */
+export declare function decodeFrameStatusResult(data: Uint8Array): FrameStatusResult;
+/** Encode DiffArgs (a []const u8, b []const u8) */
+export declare function encodeDiffArgs(a: string, b: string): Uint8Array;
+/** Decode DiffWire reply from Method.Diff (0x013C) per diff_wire.zig */
+export declare function decodeDiff(data: Uint8Array): DecodedDiff;
 //# sourceMappingURL=codec.d.ts.map

@@ -20,9 +20,19 @@ import {
   UartEvent,
   SessionEvent,
   TransportEvent,
+  TraceEvent,
   RpcEventEnvelope,
   BoardParts,
   Backtrace,
+  DisasmReply,
+  StackReport,
+  BranchItem,
+  ForkStatus,
+  Direction,
+  NavQueryArgs,
+  NavQueryResult,
+  FrameStatusResult,
+  DecodedDiff,
   ScheduleInputArgs,
   PROTOCOL_MAGIC,
   PROTOCOL_VERSION,
@@ -46,11 +56,34 @@ import {
   encodeWriteMemory,
   encodeSubscription,
   encodePoint,
+  encodePointId,
   encodeAdvance,
   encodeSetSpeed,
   encodeScheduleInput,
   encodeConsoleInput,
+  encodeDisasmAsk,
+  decodeDisasmReply,
+  decodeStackReport,
+  encodePeriphAsk,
+  encodeFoldedAsk,
+  decodeTextSlice,
+  decodeTraceEvent,
+  decodeTransportEvent,
+  decodeBranchList,
+  encodeBranchSwitch,
+  encodeBranchDelete,
+  encodeBranchConfirmFork,
+  decodeForkStatus,
+  encodeSeek,
+  encodePlayArgs,
+  encodeNavQueryArgs,
+  decodeNavQueryResult,
+  encodeMarkerSetArgs,
+  decodeFrameStatusResult,
+  encodeDiffArgs,
+  decodeDiff,
   decodeU32,
+  decodeU64,
   decodeAck,
   decodeStopped,
   decodeUart,
@@ -73,6 +106,7 @@ export interface ClientEventMap {
   stop: Stopped;
   uart: UartEvent;
   lcd_dirty: DirtyRect;
+  trace: TraceEvent;
   session: SessionEvent;
   transport: TransportEvent;
 }
@@ -442,16 +476,51 @@ export class RA8RpcClient extends TypedEventEmitter {
     return decodeAck(resp).accepted !== 0;
   }
 
+  /** Set instruction breakpoint and return its assigned breakpoint ID */
+  public async setBreakpointId(core: Core, address: number): Promise<number> {
+    const resp = await this.call(Method.SetBreakpoint, encodePoint(core, address));
+    return resp.length >= 4 ? decodeU32(resp) : (decodeAck(resp).accepted !== 0 ? 1 : 0);
+  }
+
   /** Set instruction breakpoint */
   public async setBreakpoint(core: Core, address: number): Promise<boolean> {
     const resp = await this.call(Method.SetBreakpoint, encodePoint(core, address));
+    return resp.length >= 4 ? true : decodeAck(resp).accepted !== 0;
+  }
+
+  /** Clear instruction breakpoint by assigned breakpoint ID */
+  public async clearBreakpointById(core: Core, id: number): Promise<boolean> {
+    const resp = await this.call(Method.ClearBreakpoint, encodePointId(core, id));
     return decodeAck(resp).accepted !== 0;
   }
 
   /** Clear instruction breakpoint */
-  public async clearBreakpoint(core: Core, address: number): Promise<boolean> {
-    const resp = await this.call(Method.ClearBreakpoint, encodePoint(core, address));
+  public async clearBreakpoint(core: Core, idOrAddress: number): Promise<boolean> {
+    const resp = await this.call(Method.ClearBreakpoint, encodePointId(core, idOrAddress));
     return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Authoritative backend instruction disassembly + symbol entry labels */
+  public async disassemble(
+    core: Core = Core.Cpu0,
+    options: { address?: number; count?: number; usePc?: boolean } = {}
+  ): Promise<DisasmReply> {
+    const resp = await this.call(
+      Method.Disasm,
+      encodeDisasmAsk({
+        core,
+        address: options.address ?? 0,
+        count: options.count ?? 24,
+        usePc: options.usePc ?? options.address === undefined,
+      })
+    );
+    return decodeDisasmReply(resp);
+  }
+
+  /** Query current virtual board time in nanoseconds */
+  public async now(core: Core = Core.Cpu0): Promise<bigint> {
+    const resp = await this.call(Method.Now, encodeCoreOnly(core));
+    return decodeU64(resp);
   }
 
   /** Advance simulation by virtual nanoseconds */
@@ -476,6 +545,114 @@ export class RA8RpcClient extends TypedEventEmitter {
   public async getBacktrace(core: Core = Core.Cpu0): Promise<Backtrace> {
     const resp = await this.call(Method.Backtrace, encodeCoreOnly(core));
     return decodeBacktrace(resp);
+  }
+
+  /** Get MSP/PSP stack pointers, low watermarks, and overflow count */
+  public async getStackReport(core: Core = Core.Cpu0): Promise<StackReport> {
+    const resp = await this.call(Method.Stack, encodeCoreOnly(core));
+    return decodeStackReport(resp);
+  }
+
+  /** List peripheral blocks (when block is empty) or inspect a block's registers */
+  public async getPeriph(core: Core = Core.Cpu0, block = "", json = false): Promise<string> {
+    const resp = await this.call(Method.Periph, encodePeriphAsk(core, block, json));
+    return decodeTextSlice(resp);
+  }
+
+  /** List fitted off-chip parts (`MODEL@ENDPOINT` lines) */
+  public async getListParts(core: Core = Core.Cpu0): Promise<string[]> {
+    const resp = await this.call(Method.ListParts, encodeCoreOnly(core));
+    const text = decodeTextSlice(resp).trim();
+    return text.length > 0 ? text.split("\n").filter((l) => l.trim().length > 0) : [];
+  }
+
+  /** Sampled call stacks folded over [fromNs, toNs) */
+  public async getFolded(
+    core: Core = Core.Cpu0,
+    thread = 0xffffffff,
+    fromNs = 0n,
+    toNs = 0xffffffffffffffffn
+  ): Promise<string> {
+    const resp = await this.call(Method.Folded, encodeFoldedAsk(core, thread, fromNs, toNs));
+    return decodeTextSlice(resp);
+  }
+
+  /** List time-travel execution branches in the history DAG */
+  public async getBranches(): Promise<BranchItem[]> {
+    const resp = await this.call(Method.BranchList, encodeCoreOnly(Core.Cpu0));
+    return decodeBranchList(resp);
+  }
+
+  /** Switch active execution branch in the history DAG */
+  public async switchBranch(branch: number): Promise<boolean> {
+    const resp = await this.call(Method.BranchSwitch, encodeBranchSwitch(branch));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Delete a non-live execution branch */
+  public async deleteBranch(branch: number, confirm = false): Promise<boolean> {
+    const resp = await this.call(Method.BranchDelete, encodeBranchDelete(branch, confirm));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Confirm a pending fork after historical state mutation */
+  public async confirmFork(confirm = true): Promise<boolean> {
+    const resp = await this.call(Method.BranchConfirmFork, encodeBranchConfirmFork(confirm));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Cancel a pending fork */
+  public async cancelFork(): Promise<boolean> {
+    const resp = await this.call(Method.BranchCancelFork, new Uint8Array(0));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Check whether a mutation fork is pending confirmation */
+  public async getForkStatus(): Promise<ForkStatus> {
+    const resp = await this.call(Method.BranchStatus, encodeCoreOnly(Core.Cpu0));
+    return decodeForkStatus(resp);
+  }
+
+  /** Seek to a virtual time, cycle, frame, or bookmark target */
+  public async seek(target: string): Promise<boolean> {
+    const resp = await this.call(Method.Seek, encodeSeek(target));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Reverse-continue backwards to previous breakpoint or start of history */
+  public async reverseContinue(core: Core = Core.Cpu0): Promise<boolean> {
+    const resp = await this.call(Method.Rcont, encodeCoreOnly(core));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Play recorded history forward or backward */
+  public async play(dir: Direction = Direction.Fwd, speedMilli = 1000n): Promise<boolean> {
+    const resp = await this.call(Method.Play, encodePlayArgs({ dir, speedMilli }));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Query frame, iteration, marker, RTOS, or ISR index in recorded history */
+  public async navQuery(args: NavQueryArgs): Promise<NavQueryResult> {
+    const resp = await this.call(Method.NavQuery, encodeNavQueryArgs(args));
+    return decodeNavQueryResult(resp);
+  }
+
+  /** Set a named history marker on a symbol or hex address */
+  public async setMarker(name: string, place: string): Promise<boolean> {
+    const resp = await this.call(Method.MarkerSet, encodeMarkerSetArgs(name, place));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Query rewind pipeline RAM/disk frame accounting */
+  public async getFrameStatus(): Promise<FrameStatusResult> {
+    const resp = await this.call(Method.FrameStatus, encodeCoreOnly(Core.Cpu0));
+    return decodeFrameStatusResult(resp);
+  }
+
+  /** Compute architectural register, memory page, and peripheral state diff between two points */
+  public async getDiff(a: string, b: string): Promise<DecodedDiff> {
+    const resp = await this.call(Method.Diff, encodeDiffArgs(a, b));
+    return decodeDiff(resp);
   }
 
   /** Injected touch or button input to guest firmware */
@@ -600,8 +777,14 @@ export class RA8RpcClient extends TypedEventEmitter {
         case Topic.LcdDirty:
           this.emit("lcd_dirty", decodeDirtyRect(payload));
           break;
+        case Topic.Trace:
+          this.emit("trace", decodeTraceEvent(payload));
+          break;
         case Topic.Session:
           this.emit("session", decodeSessionEvent(payload));
+          break;
+        case Topic.Transport:
+          this.emit("transport", decodeTransportEvent(payload));
           break;
         default:
           break;

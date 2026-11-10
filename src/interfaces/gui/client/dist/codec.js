@@ -522,4 +522,355 @@ export function decodeBacktrace(data) {
     }
     return { core, count, frames };
 }
+/** Decode U64 result (8 bytes) */
+export function decodeU64(data) {
+    if (data.length < 8)
+        throw new Error("Truncated U64");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    return view.getBigUint64(0, true);
+}
+/** Encode PointId argument (5 bytes: core u8, id u32 LE) */
+export function encodePointId(core, id) {
+    const buf = new Uint8Array(5);
+    const view = new DataView(buf.buffer);
+    view.setUint8(0, core);
+    view.setUint32(1, id, true);
+    return buf;
+}
+/** Encode DisasmAsk argument (7 bytes: core u8, address u32 LE, count u8, use_pc u8) */
+export function encodeDisasmAsk(args) {
+    const buf = new Uint8Array(7);
+    const view = new DataView(buf.buffer);
+    view.setUint8(0, args.core);
+    view.setUint32(1, args.address ?? 0, true);
+    view.setUint8(5, args.count ?? 24);
+    view.setUint8(6, args.usePc ? 1 : 0);
+    return buf;
+}
+/** Decode DisasmReply from Method.Disasm (0x013D) */
+export function decodeDisasmReply(data) {
+    if (data.length < 10)
+        throw new Error("Truncated DisasmReply header");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    const core = view.getUint8(0);
+    const pc = view.getUint32(1, true);
+    const count = view.getUint8(5);
+    const rowsLen = view.getUint32(6, true);
+    if (data.length < 10 + rowsLen)
+        throw new Error("Truncated DisasmReply rows");
+    const rowsBytes = data.subarray(10, 10 + rowsLen);
+    const rows = [];
+    const decoder = new TextDecoder();
+    let at = 0;
+    for (let i = 0; i < count && at < rowsBytes.length; i++) {
+        if (at + 12 > rowsBytes.length)
+            throw new Error("Truncated DisasmRow header");
+        const rView = new DataView(rowsBytes.buffer, rowsBytes.byteOffset + at, rowsBytes.length - at);
+        const address = rView.getUint32(0, true);
+        const size = rView.getUint8(4);
+        const decoded = rView.getUint8(5) !== 0;
+        const raw = rowsBytes.slice(at + 6, at + 10);
+        const tlen = rView.getUint8(10);
+        if (at + 11 + tlen + 1 > rowsBytes.length)
+            throw new Error("Truncated DisasmRow text");
+        const text = decoder.decode(rowsBytes.subarray(at + 11, at + 11 + tlen));
+        const slen = rowsBytes[at + 11 + tlen] ?? 0;
+        const total = 11 + tlen + 1 + slen;
+        if (at + total > rowsBytes.length)
+            throw new Error("Truncated DisasmRow symbol");
+        const symbol = decoder.decode(rowsBytes.subarray(at + 12 + tlen, at + total));
+        rows.push({ address, size, decoded, raw, text, symbol });
+        at += total;
+    }
+    return { core, pc, count, rows };
+}
+/** Decode StackReport (30 bytes) */
+export function decodeStackReport(data) {
+    if (data.length < 30)
+        throw new Error("Truncated StackReport: requires 30 bytes");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    return {
+        core: view.getUint8(0),
+        msp: view.getUint32(1, true),
+        psp: view.getUint32(5, true),
+        lowMsp: view.getUint32(9, true),
+        lowPsp: view.getUint32(13, true),
+        hasStack: view.getUint8(17) !== 0,
+        base: view.getUint32(18, true),
+        size: view.getUint32(22, true),
+        overflow: view.getUint32(26, true),
+    };
+}
+/** Decode single UTF-8 slice reply (PartList, PeriphText, MapText, FoldedText) */
+export function decodeTextSlice(data) {
+    const offset = { val: 0 };
+    return new TextDecoder().decode(readSlice(data, offset));
+}
+/** Encode PeriphAsk (core u8, json u8, block []const u8) */
+export function encodePeriphAsk(core, block = "", json = false) {
+    const blockBytes = new TextEncoder().encode(block);
+    const buf = new Uint8Array(6 + blockBytes.length);
+    const view = new DataView(buf.buffer);
+    view.setUint8(0, core);
+    view.setUint8(1, json ? 1 : 0);
+    view.setUint32(2, blockBytes.length, true);
+    buf.set(blockBytes, 6);
+    return buf;
+}
+/** Encode FoldedAsk (21 bytes: core u8, thread u32, from_ns u64, to_ns u64) */
+export function encodeFoldedAsk(core, thread = 0xffffffff, fromNs = 0n, toNs = 0xffffffffffffffffn) {
+    const buf = new Uint8Array(21);
+    const view = new DataView(buf.buffer);
+    view.setUint8(0, core);
+    view.setUint32(1, thread >>> 0, true);
+    view.setBigUint64(5, fromNs, true);
+    view.setBigUint64(13, toNs, true);
+    return buf;
+}
+/** Decode TraceEvent on Topic.Trace */
+export function decodeTraceEvent(data) {
+    if (data.length < 20)
+        throw new Error("Truncated TraceEvent");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    const core = view.getUint8(0);
+    const kind = view.getUint8(1);
+    const virtualNs = view.getBigUint64(2, true);
+    const thread = view.getUint32(10, true);
+    const exception = view.getUint16(14, true);
+    const offset = { val: 16 };
+    const name = new TextDecoder().decode(readSlice(data, offset));
+    return { core, kind, virtualNs, thread, exception, name };
+}
+/** Decode TransportEvent on Topic.Transport (56 bytes) */
+export function decodeTransportEvent(data) {
+    if (data.length < 56)
+        throw new Error("Truncated TransportEvent: requires 56 bytes");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    return {
+        epoch: view.getBigUint64(0, true),
+        phase: view.getUint8(8),
+        targetNs: view.getBigUint64(9, true),
+        reachedNs: view.getBigUint64(17, true),
+        slices: view.getBigUint64(25, true),
+        finished: view.getUint8(33),
+        core: view.getUint8(34),
+        fromNs: view.getBigUint64(35, true),
+        toNs: view.getBigUint64(43, true),
+        reason: view.getUint8(51),
+        address: view.getUint32(52, true),
+    };
+}
+const BRANCH_ITEM_BYTES = 30;
+/** Decode BranchList reply from Method.BranchList (0x0130) */
+export function decodeBranchList(data) {
+    if (data.length < 8)
+        throw new Error("Truncated BranchList header");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    const count = view.getUint32(0, true);
+    const offset = { val: 4 };
+    const bytes = readSlice(data, offset);
+    const items = [];
+    const available = Math.min(count, Math.floor(bytes.length / BRANCH_ITEM_BYTES));
+    for (let i = 0; i < available; i++) {
+        const base = i * BRANCH_ITEM_BYTES;
+        const iView = new DataView(bytes.buffer, bytes.byteOffset + base, BRANCH_ITEM_BYTES);
+        const id = iView.getUint32(0, true);
+        const parent = iView.getUint32(4, true);
+        const forkR = iView.getBigUint64(8, true);
+        const recordedEndR = iView.getBigUint64(16, true);
+        const childCount = iView.getUint32(24, true);
+        const reason = iView.getUint8(28);
+        const flags = iView.getUint8(29);
+        items.push({
+            id,
+            parent,
+            forkR,
+            recordedEndR,
+            childCount,
+            reason,
+            flags,
+            isLive: (flags & 1) !== 0,
+            isKept: (flags & 2) !== 0,
+            isPinned: (flags & 4) !== 0,
+        });
+    }
+    return items;
+}
+/** Encode BranchSwitch (4 bytes: branch u32 LE) */
+export function encodeBranchSwitch(branch) {
+    return encodeU32(branch);
+}
+/** Encode BranchDelete (5 bytes: branch u32 LE, confirm u8) */
+export function encodeBranchDelete(branch, confirm = false) {
+    const buf = new Uint8Array(5);
+    const view = new DataView(buf.buffer);
+    view.setUint32(0, branch, true);
+    view.setUint8(4, confirm ? 1 : 0);
+    return buf;
+}
+/** Encode BranchConfirmFork (1 byte: confirm u8) */
+export function encodeBranchConfirmFork(confirm = true) {
+    return new Uint8Array([confirm ? 1 : 0]);
+}
+/** Decode ForkStatus (14 bytes) */
+export function decodeForkStatus(data) {
+    if (data.length < 14)
+        throw new Error("Truncated ForkStatus: requires 14 bytes");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    return {
+        pending: view.getUint8(0) !== 0,
+        reason: view.getUint8(1),
+        branch: view.getUint32(2, true),
+        r: view.getBigUint64(6, true),
+    };
+}
+/** Encode Seek argument (target []const u8) */
+export function encodeSeek(target) {
+    const bytes = new TextEncoder().encode(target);
+    const buf = new Uint8Array(4 + bytes.length);
+    new DataView(buf.buffer).setUint32(0, bytes.length, true);
+    buf.set(bytes, 4);
+    return buf;
+}
+/** Encode PlayArgs (9 bytes: dir u8, speed_milli u64 LE) */
+export function encodePlayArgs(args) {
+    const buf = new Uint8Array(9);
+    const view = new DataView(buf.buffer);
+    view.setUint8(0, args.dir);
+    view.setBigUint64(1, BigInt(args.speedMilli ?? 0n), true);
+    return buf;
+}
+/** Encode NavQueryArgs (kind u8, index u64 LE, name []const u8) */
+export function encodeNavQueryArgs(args) {
+    const nameBytes = new TextEncoder().encode(args.name ?? "");
+    const buf = new Uint8Array(1 + 8 + 4 + nameBytes.length);
+    const view = new DataView(buf.buffer);
+    view.setUint8(0, args.kind);
+    view.setBigUint64(1, BigInt(args.index ?? 0n), true);
+    view.setUint32(9, nameBytes.length, true);
+    buf.set(nameBytes, 13);
+    return buf;
+}
+/** Decode NavQueryResult (43 bytes) */
+export function decodeNavQueryResult(data) {
+    if (data.length < 43)
+        throw new Error("Truncated NavQueryResult: requires 43 bytes");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    return {
+        found: view.getUint8(0) !== 0,
+        branch: view.getUint32(1, true),
+        r: view.getBigUint64(5, true),
+        phase: view.getUint8(13),
+        o: view.getUint32(14, true),
+        gap: view.getUint8(18),
+        count: view.getBigUint64(19, true),
+        slots: view.getBigUint64(27, true),
+        virtualNs: view.getBigUint64(35, true),
+    };
+}
+/** Encode MarkerSetArgs (name []const u8, place []const u8) */
+export function encodeMarkerSetArgs(name, place) {
+    const enc = new TextEncoder();
+    const nBytes = enc.encode(name);
+    const pBytes = enc.encode(place);
+    const buf = new Uint8Array(8 + nBytes.length + pBytes.length);
+    const view = new DataView(buf.buffer);
+    view.setUint32(0, nBytes.length, true);
+    buf.set(nBytes, 4);
+    view.setUint32(4 + nBytes.length, pBytes.length, true);
+    buf.set(pBytes, 8 + nBytes.length);
+    return buf;
+}
+/** Decode FrameStatusResult (40 bytes) */
+export function decodeFrameStatusResult(data) {
+    if (data.length < 40)
+        throw new Error("Truncated FrameStatusResult: requires 40 bytes");
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    return {
+        ramBytes: view.getBigUint64(0, true),
+        diskBytes: view.getBigUint64(8, true),
+        queueBytes: view.getBigUint64(16, true),
+        frames: view.getBigUint64(24, true),
+        decodedSegments: view.getBigUint64(32, true),
+    };
+}
+/** Encode DiffArgs (a []const u8, b []const u8) */
+export function encodeDiffArgs(a, b) {
+    return encodeMarkerSetArgs(a, b);
+}
+/** Decode DiffWire reply from Method.Diff (0x013C) per diff_wire.zig */
+export function decodeDiff(data) {
+    const outerOffset = { val: 0 };
+    const bytes = readSlice(data, outerOffset);
+    if (bytes.length < 32)
+        throw new Error("Truncated DiffWire body");
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    let at = 0;
+    const regCount = view.getUint16(at, true);
+    at += 2;
+    const pageCount = view.getUint16(at, true);
+    at += 2;
+    const periphCount = view.getUint16(at, true);
+    at += 2;
+    const frames = view.getUint16(at, true);
+    at += 2;
+    const sides = [
+        { branch: view.getUint32(at, true), r: view.getBigUint64(at + 4, true) },
+        { branch: view.getUint32(at + 12, true), r: view.getBigUint64(at + 16, true) },
+    ];
+    at += 24;
+    const decoder = new TextDecoder();
+    const regs = [];
+    for (let i = 0; i < regCount; i++) {
+        if (at + 2 > bytes.length)
+            throw new Error("Truncated DiffRegItem header");
+        const core = bytes[at];
+        const nlen = bytes[at + 1] ?? 0;
+        at += 2;
+        if (at + nlen + 8 > bytes.length)
+            throw new Error("Truncated DiffRegItem body");
+        const name = decoder.decode(bytes.subarray(at, at + nlen));
+        at += nlen;
+        const valA = view.getUint32(at, true);
+        at += 4;
+        const valB = view.getUint32(at, true);
+        at += 4;
+        regs.push({ core, name, valA, valB });
+    }
+    const pages = [];
+    for (let i = 0; i < pageCount; i++) {
+        if (at + 43 > bytes.length)
+            throw new Error("Truncated DiffPageItem");
+        const space = bytes[at] ?? 0;
+        const pageIndex = view.getUint32(at + 1, true);
+        const address = view.getUint32(at + 5, true);
+        const hasA = (bytes[at + 9] ?? 0) !== 0;
+        const objA = bytes.slice(at + 10, at + 26);
+        const hasB = (bytes[at + 26] ?? 0) !== 0;
+        const objB = bytes.slice(at + 27, at + 43);
+        at += 43;
+        pages.push({ space, pageIndex, address, hasA, objA, hasB, objB });
+    }
+    const periphs = [];
+    for (let i = 0; i < periphCount; i++) {
+        if (at + 1 > bytes.length)
+            throw new Error("Truncated DiffPeriphItem header");
+        const ulen = bytes[at] ?? 0;
+        at += 1;
+        if (at + ulen + 16 > bytes.length)
+            throw new Error("Truncated DiffPeriphItem body");
+        const unit = decoder.decode(bytes.subarray(at, at + ulen));
+        at += ulen;
+        const offset = view.getUint32(at, true);
+        at += 4;
+        const oldVal = view.getUint32(at, true);
+        at += 4;
+        const newVal = view.getUint32(at, true);
+        at += 4;
+        const changedBytes = view.getUint32(at, true);
+        at += 4;
+        periphs.push({ unit, offset, oldVal, newVal, changedBytes });
+    }
+    return { frames, a: sides[0], b: sides[1], regs, pages, periphs };
+}
 //# sourceMappingURL=codec.js.map

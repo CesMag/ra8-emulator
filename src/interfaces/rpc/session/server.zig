@@ -38,6 +38,7 @@ const rewind_feed = @import("rewind_feed.zig");
 const session_marker = @import("nav_marker.zig");
 const session_diff = @import("diff.zig");
 pub const session_metrics = @import("metrics.zig");
+pub const session_disasm = @import("disasm.zig");
 
 /// The framing library, for callers that only import the emulator.
 pub const rpc_lib = rpc;
@@ -109,6 +110,7 @@ pub const routes = .{
     .{ @backingInt(M.marker_set), session_marker.markerSet },
     .{ @backingInt(M.frame_status), session_nav.frameStatus },
     .{ @backingInt(M.diff), session_diff.diff },
+    .{ @backingInt(M.disasm), session_disasm.disasm },
 };
 
 pub const Server = rpc.Server(Context, proto.max_payload, routes);

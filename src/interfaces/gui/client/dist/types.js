@@ -33,7 +33,7 @@ export var ErrorCode;
     ErrorCode[ErrorCode["AppTooLong"] = 258] = "AppTooLong";
     ErrorCode[ErrorCode["AppHistory"] = 259] = "AppHistory";
 })(ErrorCode || (ErrorCode = {}));
-/** All 59 Session RPC Opcodes (Method in rpc.zig) */
+/** All 61 Session RPC Opcodes (Method in rpc.zig) */
 export var Method;
 (function (Method) {
     Method[Method["Load"] = 256] = "Load";
@@ -97,6 +97,7 @@ export var Method;
     Method[Method["MarkerSet"] = 314] = "MarkerSet";
     Method[Method["FrameStatus"] = 315] = "FrameStatus";
     Method[Method["Diff"] = 316] = "Diff";
+    Method[Method["Disasm"] = 317] = "Disasm";
 })(Method || (Method = {}));
 /** Opcode is an alias for Method */
 export { Method as Opcode };
@@ -250,4 +251,32 @@ export var ResultTag;
     ResultTag[ResultTag["Ok"] = 0] = "Ok";
     ResultTag[ResultTag["Err"] = 1] = "Err";
 })(ResultTag || (ResultTag = {}));
+/** Why a time-travel history branch forked (ForkReason in record.zig) */
+export var ForkReason;
+(function (ForkReason) {
+    ForkReason[ForkReason["Base"] = 0] = "Base";
+    ForkReason[ForkReason["Writes"] = 1] = "Writes";
+    ForkReason[ForkReason["Taps"] = 2] = "Taps";
+    ForkReason[ForkReason["Buttons"] = 3] = "Buttons";
+    ForkReason[ForkReason["Keystrokes"] = 4] = "Keystrokes";
+    ForkReason[ForkReason["PlugUnplugFault"] = 5] = "PlugUnplugFault";
+    ForkReason[ForkReason["CameraChange"] = 6] = "CameraChange";
+    ForkReason[ForkReason["SkipBkpt"] = 7] = "SkipBkpt";
+    ForkReason[ForkReason["Load"] = 8] = "Load";
+})(ForkReason || (ForkReason = {}));
+/** Playback direction (Direction in nav_wire.zig) */
+export var Direction;
+(function (Direction) {
+    Direction[Direction["Fwd"] = 0] = "Fwd";
+    Direction[Direction["Back"] = 1] = "Back";
+})(Direction || (Direction = {}));
+/** Navigation query kind (NavQueryKind in nav_wire.zig) */
+export var NavQueryKind;
+(function (NavQueryKind) {
+    NavQueryKind[NavQueryKind["Frame"] = 0] = "Frame";
+    NavQueryKind[NavQueryKind["Iteration"] = 1] = "Iteration";
+    NavQueryKind[NavQueryKind["Marker"] = 2] = "Marker";
+    NavQueryKind[NavQueryKind["Rtos"] = 3] = "Rtos";
+    NavQueryKind[NavQueryKind["Isr"] = 4] = "Isr";
+})(NavQueryKind || (NavQueryKind = {}));
 //# sourceMappingURL=types.js.map

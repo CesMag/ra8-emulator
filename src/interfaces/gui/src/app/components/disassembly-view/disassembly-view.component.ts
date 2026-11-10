@@ -1,19 +1,29 @@
-import { Component, inject, computed, signal, effect, OnDestroy } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmulatorService } from '../../services/emulator.service';
-import { DisassemblerService, DecodedInstruction } from '../../services/disassembler.service';
+import { Core, DisasmRow } from 'ra8-rpc-client';
+
+interface ViewInstruction {
+  address: number;
+  hex: string;
+  mnemonic: string;
+  operands: string;
+  symbol: string;
+  isCurrentPc: boolean;
+  hasBreakpoint: boolean;
+}
 
 @Component({
   selector: 'app-disassembly-view',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="disasm-card">
-      <div class="card-header">
+    <div class="pane-card">
+      <div class="pane-header">
         <div class="header-left">
-          <span class="title">DISASSEMBLY</span>
-          <span class="pc-badge">PC: 0x{{ currentPcHex() }}</span>
+          <span class="pane-title">Authoritative Disassembly</span>
+          <span class="engine-tag">Zig Armv8.1-M / Helium Decoder</span>
         </div>
         <div class="header-right">
           <button
@@ -21,15 +31,15 @@ import { DisassemblerService, DecodedInstruction } from '../../services/disassem
             class="follow-btn"
             [class.active]="followPc()"
             (click)="toggleFollowPc()"
-            title="Follow Program Counter"
+            title="Track Program Counter automatically on step/halt"
           >
-            📌 Follow PC
+            Follow PC
           </button>
           <div class="jump-box">
             <input
               type="text"
               class="jump-input"
-              placeholder="0xAddr"
+              placeholder="0x02000000"
               [ngModel]="jumpAddressText()"
               (ngModelChange)="jumpAddressText.set($event)"
               (keydown.enter)="jumpToAddress()"
@@ -39,200 +49,261 @@ import { DisassemblerService, DecodedInstruction } from '../../services/disassem
         </div>
       </div>
 
-      <div class="disasm-table-container">
-        <div *ngIf="instructions().length === 0" class="empty-state">
-          No disassembly available (Connect or halt CPU to inspect instructions)
+      <!-- Synchronized Dual-Core Split or Focused Stream -->
+      <div class="lanes-grid" [class.split]="showSplit()">
+        <!-- CPU0 (Cortex-M85) Disassembly Stream -->
+        <div *ngIf="showCpu0()" class="core-lane">
+          <div class="lane-subheader m85">
+            <span>CPU0 • Cortex-M85</span>
+            <code>PC 0x{{ toHex8(emu.cpu0Pc()) }}</code>
+          </div>
+          <div class="disasm-scroll">
+            <div *ngIf="cpu0Rows().length === 0" class="empty-state">
+              Connect emulator backend to stream Cortex-M85 instructions
+            </div>
+
+            <table *ngIf="cpu0Rows().length > 0" class="disasm-table">
+              <tbody>
+                <ng-container *ngFor="let row of cpu0Rows()">
+                  <tr *ngIf="row.symbol" class="symbol-row">
+                    <td colspan="4">&lt;{{ row.symbol }}&gt;:</td>
+                  </tr>
+                  <tr class="instr-row" [class.current-pc]="row.isCurrentPc">
+                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu0)">
+                      <span class="bp-dot" [class.active]="row.hasBreakpoint">●</span>
+                      <span *ngIf="row.isCurrentPc" class="pc-arrow">▶</span>
+                    </td>
+                    <td class="col-addr">0x{{ toHex8(row.address) }}</td>
+                    <td class="col-hex">{{ row.hex }}</td>
+                    <td class="col-asm">
+                      <span class="mnemonic">{{ row.mnemonic }}</span>
+                      <span class="operands">{{ row.operands }}</span>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <table *ngIf="instructions().length > 0" class="disasm-table">
-          <thead>
-            <tr>
-              <th class="col-bp"></th>
-              <th class="col-addr">Address</th>
-              <th class="col-hex">Opcode</th>
-              <th class="col-asm">Instruction</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="let instr of instructions()"
-              class="disasm-row"
-              [class.current-pc]="instr.isCurrentPc"
-            >
-              <!-- Breakpoint Gutter -->
-              <td class="col-bp" (click)="toggleBreakpoint(instr.address)">
-                <span
-                  class="bp-dot"
-                  [class.active]="instr.hasBreakpoint"
-                  [title]="instr.hasBreakpoint ? 'Clear Breakpoint' : 'Set Breakpoint'"
-                >●</span>
-                <span *ngIf="instr.isCurrentPc" class="pc-arrow">▶</span>
-              </td>
+        <!-- CPU1 (Cortex-M33) Disassembly Stream -->
+        <div *ngIf="showCpu1()" class="core-lane">
+          <div class="lane-subheader m33">
+            <span>CPU1 • Cortex-M33</span>
+            <code *ngIf="emu.cpu1Attached()">PC 0x{{ toHex8(emu.cpu1Pc()) }}</code>
+            <code *ngIf="!emu.cpu1Attached()">CLOCK-GATED</code>
+          </div>
+          <div class="disasm-scroll">
+            <div *ngIf="!emu.cpu1Attached()" class="empty-state">
+              Companion Cortex-M33 core is clock-gated (load dual-core ELF or --companion image to activate)
+            </div>
+            <div *ngIf="emu.cpu1Attached() && cpu1Rows().length === 0" class="empty-state">
+              Halt CPU1 to stream Cortex-M33 instructions
+            </div>
 
-              <!-- Address -->
-              <td class="col-addr">0x{{ toHex8(instr.address) }}</td>
-
-              <!-- Hex Opcode -->
-              <td class="col-hex">{{ instr.hex }}</td>
-
-              <!-- Instruction -->
-              <td class="col-asm">
-                <span class="mnemonic">{{ instr.mnemonic }}</span>
-                <span class="operands">{{ instr.operands }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <table *ngIf="emu.cpu1Attached() && cpu1Rows().length > 0" class="disasm-table">
+              <tbody>
+                <ng-container *ngFor="let row of cpu1Rows()">
+                  <tr *ngIf="row.symbol" class="symbol-row">
+                    <td colspan="4">&lt;{{ row.symbol }}&gt;:</td>
+                  </tr>
+                  <tr class="instr-row" [class.current-pc]="row.isCurrentPc">
+                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu1)">
+                      <span class="bp-dot" [class.active]="row.hasBreakpoint">●</span>
+                      <span *ngIf="row.isCurrentPc" class="pc-arrow">▶</span>
+                    </td>
+                    <td class="col-addr">0x{{ toHex8(row.address) }}</td>
+                    <td class="col-hex">{{ row.hex }}</td>
+                    <td class="col-asm">
+                      <span class="mnemonic">{{ row.mnemonic }}</span>
+                      <span class="operands">{{ row.operands }}</span>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   `,
   styles: [`
-    .disasm-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
+    .pane-card {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(6, 10, 19, 0.92));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
 
-    .card-header {
+    .pane-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 10px;
-      background: var(--bg-tertiary);
-      border-bottom: 1px solid var(--border-color);
+      padding: 7px 12px;
+      background: rgba(15, 23, 42, 0.55);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
       flex-wrap: wrap;
       gap: 8px;
     }
 
-    .header-left {
+    .header-left,
+    .header-right {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-primary);
+    .pane-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #f1f5f9;
     }
 
-    .pc-badge {
-      font-size: 0.7rem;
-      font-family: monospace;
+    .engine-tag {
+      font-size: 0.64rem;
+      font-family: "JetBrains Mono", monospace;
       color: #38bdf8;
       background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.22);
       padding: 1px 6px;
       border-radius: 4px;
     }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
     .follow-btn {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: #94a3b8;
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 4px;
+      font-size: 0.69rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 5px;
       cursor: pointer;
     }
     .follow-btn.active {
-      background: rgba(56, 189, 248, 0.2);
+      background: rgba(2, 132, 199, 0.22);
       color: #38bdf8;
-      border-color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.45);
     }
 
     .jump-box {
-      display: flex;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
+      display: inline-flex;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
       overflow: hidden;
+      background: #090d16;
     }
 
     .jump-input {
-      background: #0f172a;
+      background: transparent;
       border: none;
       color: #f1f5f9;
-      font-family: monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.7rem;
-      padding: 2px 6px;
-      width: 90px;
+      padding: 3px 7px;
+      width: 92px;
       outline: none;
     }
 
     .jump-btn {
-      background: #334155;
+      background: rgba(51, 65, 85, 0.8);
       border: none;
-      color: #f1f5f9;
-      font-size: 0.7rem;
-      padding: 2px 8px;
+      color: #e2e8f0;
+      font-size: 0.69rem;
+      font-weight: 600;
+      padding: 3px 8px;
       cursor: pointer;
     }
     .jump-btn:hover { background: #475569; }
 
-    .disasm-table-container {
-      max-height: 280px;
+    .lanes-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    .lanes-grid.split {
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 960px) {
+      .lanes-grid.split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .core-lane + .core-lane {
+      border-left: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .lane-subheader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 10px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      background: rgba(9, 13, 22, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .lane-subheader.m85 { color: #38bdf8; }
+    .lane-subheader.m33 { color: #c084fc; }
+    .lane-subheader code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.66rem;
+      color: #94a3b8;
+    }
+
+    .disasm-scroll {
+      max-height: 270px;
       overflow-y: auto;
-      font-family: monospace;
-      font-size: 0.75rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.72rem;
     }
 
     .empty-state {
-      padding: 24px;
+      padding: 24px 14px;
       text-align: center;
       color: #64748b;
-      font-style: italic;
+      font-size: 0.72rem;
     }
 
     .disasm-table {
       width: 100%;
       border-collapse: collapse;
-      user-select: text;
     }
 
-    .disasm-table th {
-      background: #181b20;
-      color: #64748b;
-      font-weight: 600;
-      padding: 4px 6px;
-      text-align: left;
-      font-size: 0.7rem;
-      position: sticky;
-      top: 0;
-      z-index: 2;
+    .symbol-row td {
+      padding: 5px 8px 2px;
+      color: #34d399;
+      font-weight: 700;
+      font-size: 0.69rem;
+      background: rgba(16, 185, 129, 0.06);
+      border-top: 1px solid rgba(52, 211, 153, 0.14);
     }
 
-    .disasm-row {
-      border-bottom: 1px solid #1c2028;
+    .instr-row {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
     }
-    .disasm-row:hover {
-      background: #1e2430;
+    .instr-row:hover {
+      background: rgba(30, 41, 59, 0.45);
     }
-
-    .disasm-row.current-pc {
-      background: rgba(56, 189, 248, 0.15);
-      border-left: 2px solid #38bdf8;
+    .instr-row.current-pc {
+      background: rgba(56, 189, 248, 0.14);
+      box-shadow: inset 2px 0 0 #38bdf8;
     }
 
     .col-bp {
-      width: 32px;
+      width: 28px;
       text-align: center;
       cursor: pointer;
-      padding: 2px;
+      padding: 2px 4px;
+      white-space: nowrap;
     }
 
     .bp-dot {
-      color: #334155;
-      font-size: 0.8rem;
-      line-height: 1;
-      transition: color 0.15s;
+      color: rgba(100, 116, 139, 0.35);
+      font-size: 0.72rem;
+      transition: color 0.12s;
     }
     .col-bp:hover .bp-dot { color: #f87171; }
     .bp-dot.active {
@@ -242,20 +313,20 @@ import { DisassemblerService, DecodedInstruction } from '../../services/disassem
 
     .pc-arrow {
       color: #38bdf8;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       margin-left: 2px;
     }
 
     .col-addr {
-      width: 90px;
+      width: 84px;
       color: #94a3b8;
-      padding: 2px 6px;
+      padding: 2px 5px;
     }
 
     .col-hex {
-      width: 110px;
+      width: 82px;
       color: #64748b;
-      padding: 2px 6px;
+      padding: 2px 5px;
     }
 
     .col-asm {
@@ -265,9 +336,9 @@ import { DisassemblerService, DecodedInstruction } from '../../services/disassem
     .mnemonic {
       color: #f472b6;
       font-weight: 600;
-      margin-right: 8px;
+      margin-right: 7px;
       display: inline-block;
-      min-width: 45px;
+      min-width: 44px;
     }
 
     .operands {
@@ -276,32 +347,50 @@ import { DisassemblerService, DecodedInstruction } from '../../services/disassem
   `]
 })
 export class DisassemblyViewComponent {
-  private emu = inject(EmulatorService);
-  private disasm = inject(DisassemblerService);
+  public emu = inject(EmulatorService);
+  public Core = Core;
 
   public followPc = signal<boolean>(true);
   public jumpAddressText = signal<string>('');
-  public viewBaseAddress = signal<number | null>(null);
-  public instructions = signal<DecodedInstruction[]>([]);
 
-  public currentPc = computed(() => {
-    return this.emu.registers()['pc'] ?? 0;
-  });
+  public showSplit = computed(() => this.emu.inspectionMode() === 'split');
+  public showCpu0 = computed(() => this.emu.inspectionMode() !== 'cpu1');
+  public showCpu1 = computed(() => this.emu.inspectionMode() !== 'cpu0');
 
-  public currentPcHex = computed(() => {
-    return this.toHex8(this.currentPc());
-  });
+  public cpu0Rows = computed<ViewInstruction[]>(() =>
+    this.mapRows(this.emu.cpu0Disasm(), this.emu.cpu0Pc(), this.emu.cpu0Breakpoints())
+  );
 
-  constructor() {
-    // When PC changes or breakpoints change, refresh disassembly view
-    effect(() => {
-      const pc = this.currentPc();
-      const bps = this.emu.breakpoints();
-      if (this.followPc() || this.viewBaseAddress() === null) {
-        this.fetchDisassembly(pc, bps);
-      } else {
-        this.fetchDisassembly(this.viewBaseAddress()!, bps);
+  public cpu1Rows = computed<ViewInstruction[]>(() =>
+    this.mapRows(this.emu.cpu1Disasm(), this.emu.cpu1Pc(), this.emu.cpu1Breakpoints())
+  );
+
+  private mapRows(
+    rows: DisasmRow[],
+    pc: number,
+    bps: Map<number, number>
+  ): ViewInstruction[] {
+    const normalizedPc = pc & ~1;
+    return rows.map((r) => {
+      const size = r.size || 2;
+      const hexParts: string[] = [];
+      for (let i = 0; i < size && i < r.raw.length; i++) {
+        hexParts.push((r.raw[i] ?? 0).toString(16).padStart(2, '0'));
       }
+      const trimmed = (r.decoded && r.text ? r.text : '.short 0x' + hexParts.join('')).trim();
+      const spaceIdx = trimmed.search(/\s/);
+      const mnemonic = spaceIdx === -1 ? trimmed : trimmed.slice(0, spaceIdx);
+      const operands = spaceIdx === -1 ? '' : trimmed.slice(spaceIdx + 1).trim();
+
+      return {
+        address: r.address,
+        hex: hexParts.join(' '),
+        mnemonic,
+        operands,
+        symbol: r.symbol,
+        isCurrentPc: (r.address & ~1) === normalizedPc,
+        hasBreakpoint: bps.has(r.address & ~1),
+      };
     });
   }
 
@@ -309,7 +398,10 @@ export class DisassemblyViewComponent {
     const next = !this.followPc();
     this.followPc.set(next);
     if (next) {
-      this.fetchDisassembly(this.currentPc(), this.emu.breakpoints());
+      void this.emu.refreshDisassembly(Core.Cpu0);
+      if (this.emu.cpu1Attached()) {
+        void this.emu.refreshDisassembly(Core.Cpu1);
+      }
     }
   }
 
@@ -318,31 +410,16 @@ export class DisassemblyViewComponent {
     if (!raw) return;
     const addr = raw.startsWith('0x') || raw.startsWith('0X')
       ? parseInt(raw.slice(2), 16)
-      : parseInt(raw, 10);
-
+      : parseInt(raw, 16);
     if (!isNaN(addr)) {
       this.followPc.set(false);
-      this.viewBaseAddress.set(addr >>> 0);
-      this.fetchDisassembly(addr >>> 0, this.emu.breakpoints());
+      const targetCore = this.emu.inspectionMode() === 'cpu1' ? Core.Cpu1 : Core.Cpu0;
+      void this.emu.refreshDisassembly(targetCore, addr >>> 0, 28);
     }
   }
 
-  public toggleBreakpoint(addr: number): void {
-    void this.emu.toggleBreakpoint(addr);
-  }
-
-  private async fetchDisassembly(targetAddr: number, bps: Set<number>): Promise<void> {
-    // Read 64 bytes around target address (-16 to +48)
-    const startAddr = Math.max(0, (targetAddr - 16) & ~1);
-    const readLen = 64;
-
-    const bytes = await this.emu.readMemory(startAddr, readLen);
-    if (bytes && bytes.length > 0) {
-      const decoded = this.disasm.disassemble(bytes, startAddr, this.currentPc(), bps);
-      this.instructions.set(decoded);
-    } else {
-      this.instructions.set([]);
-    }
+  public toggleBp(addr: number, core: Core): void {
+    void this.emu.toggleBreakpoint(addr, core);
   }
 
   public toHex8(val: number): string {

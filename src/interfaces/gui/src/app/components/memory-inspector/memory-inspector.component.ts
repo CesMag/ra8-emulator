@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal, effect } from '@angular/core';
+import { Component, inject, signal, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmulatorService } from '../../services/emulator.service';
@@ -8,6 +8,8 @@ interface MemoryRow {
   addressHex: string;
   bytes: number[];
   hexBytes: string[];
+  changedMask: boolean[];
+  rowChanged: boolean;
   ascii: string;
 }
 
@@ -16,27 +18,28 @@ interface MemoryRow {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="memory-card">
-      <div class="card-header">
+    <div class="pane-card">
+      <div class="pane-header">
         <div class="header-left">
-          <span class="title">MEMORY INSPECTOR</span>
+          <span class="pane-title">Memory Hex Inspector</span>
           <span class="range-badge">0x{{ toHex8(currentBaseAddress()) }}</span>
+          <span *ngIf="changedByteCount() > 0" class="delta-badge">
+            Δ {{ changedByteCount() }} bytes mutated
+          </span>
         </div>
         <div class="header-right">
-          <!-- Preset buttons -->
           <div class="preset-group">
-            <button type="button" class="preset-btn" (click)="jumpToSram()">SRAM</button>
-            <button type="button" class="preset-btn" (click)="jumpToFlash()">FLASH</button>
-            <button type="button" class="preset-btn" (click)="jumpToSp()">SP</button>
-            <button type="button" class="preset-btn" (click)="jumpToPc()">PC</button>
+            <button type="button" class="preset-btn" (click)="jumpToSram()" title="RA8 System SRAM (0x22000000)">SRAM</button>
+            <button type="button" class="preset-btn" (click)="jumpToMram()" title="RA8 Code MRAM/Flash (0x02000000)">MRAM</button>
+            <button type="button" class="preset-btn" (click)="jumpToSp()" title="Jump to active Stack Pointer">SP</button>
+            <button type="button" class="preset-btn" (click)="jumpToPc()" title="Jump to Program Counter">PC</button>
           </div>
 
-          <!-- Address navigation input -->
           <div class="addr-box">
             <input
               type="text"
               class="addr-input"
-              placeholder="0x20000000"
+              placeholder="0x22000000"
               [ngModel]="targetAddressInput()"
               (ngModelChange)="targetAddressInput.set($event)"
               (keydown.enter)="applyAddressInput()"
@@ -47,35 +50,36 @@ interface MemoryRow {
         </div>
       </div>
 
-      <div class="hex-table-container">
+      <div class="hex-scroll">
         <div *ngIf="rows().length === 0" class="empty-state">
-          No memory data loaded (Connect or navigate to valid address range)
+          Connect emulator backend or enter a mapped RA8 address (e.g. 0x22000000 SRAM, 0x02000000 MRAM)
         </div>
 
         <table *ngIf="rows().length > 0" class="hex-table">
           <thead>
             <tr>
-              <th class="col-addr">Offset</th>
-              <th class="col-bytes" colspan="16">
-                <span>00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F</span>
-              </th>
-              <th class="col-ascii">Decoded Text</th>
+              <th class="col-addr">Address</th>
+              <th class="col-bytes">00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F</th>
+              <th class="col-ascii">ASCII</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of rows()" class="hex-row">
+            <tr
+              *ngFor="let row of rows()"
+              class="hex-row"
+              [class.row-delta]="row.rowChanged"
+            >
               <td class="col-addr">0x{{ row.addressHex }}</td>
               <td class="col-bytes">
                 <span
                   *ngFor="let b of row.bytes; let idx = index"
                   class="byte-val"
                   [class.gap]="idx === 7"
-                  [class.zero]="b === 0"
+                  [class.zero]="b === 0 && !row.changedMask[idx]"
+                  [class.changed]="row.changedMask[idx]"
                   (click)="startEdit(row.address + idx, b)"
-                  [title]="'Edit byte at 0x' + toHex8(row.address + idx)"
-                >
-                  {{ row.hexBytes[idx] }}
-                </span>
+                  [title]="'Click to poke byte at 0x' + toHex8(row.address + idx)"
+                >{{ row.hexBytes[idx] }}</span>
               </td>
               <td class="col-ascii">{{ row.ascii }}</td>
             </tr>
@@ -83,9 +87,8 @@ interface MemoryRow {
         </table>
       </div>
 
-      <!-- Edit Byte Modal/Bar -->
       <div *ngIf="editingAddr() !== null" class="edit-bar">
-        <span class="edit-label">Writing byte at 0x{{ toHex8(editingAddr()!) }}:</span>
+        <span class="edit-label">Poke byte &#64; 0x{{ toHex8(editingAddr()!) }}:</span>
         <input
           type="text"
           class="byte-input"
@@ -102,169 +105,183 @@ interface MemoryRow {
     </div>
   `,
   styles: [`
-    .memory-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
+    .pane-card {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(6, 10, 19, 0.92));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
 
-    .card-header {
+    .pane-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 10px;
-      background: var(--bg-tertiary);
-      border-bottom: 1px solid var(--border-color);
+      padding: 7px 12px;
+      background: rgba(15, 23, 42, 0.55);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
       flex-wrap: wrap;
       gap: 8px;
     }
 
-    .header-left {
+    .header-left,
+    .header-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
+      flex-wrap: wrap;
     }
 
-    .title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-primary);
+    .pane-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #f1f5f9;
     }
 
     .range-badge {
-      font-size: 0.7rem;
-      font-family: monospace;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
       color: #38bdf8;
       background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.22);
       padding: 1px 6px;
       border-radius: 4px;
     }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .delta-badge {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.64rem;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 1px 6px;
+      border-radius: 999px;
     }
 
     .preset-group {
-      display: flex;
-      gap: 2px;
+      display: inline-flex;
+      gap: 3px;
     }
 
     .preset-btn {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.09);
       color: #94a3b8;
       font-size: 0.65rem;
-      padding: 2px 6px;
-      border-radius: 3px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
       cursor: pointer;
     }
-    .preset-btn:hover { background: #334155; color: #fff; }
+    .preset-btn:hover { color: #f8fafc; background: rgba(51, 65, 85, 0.9); }
 
     .addr-box {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
       overflow: hidden;
     }
 
     .addr-input {
-      background: #0f172a;
+      background: transparent;
       border: none;
       color: #f1f5f9;
-      font-family: monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.7rem;
-      padding: 2px 6px;
-      width: 95px;
+      padding: 3px 7px;
+      width: 92px;
       outline: none;
     }
 
     .nav-btn {
-      background: #334155;
+      background: rgba(51, 65, 85, 0.8);
       border: none;
-      color: #f1f5f9;
+      color: #e2e8f0;
       font-size: 0.65rem;
-      padding: 2px 6px;
+      padding: 3px 7px;
       cursor: pointer;
     }
     .nav-btn:hover { background: #475569; }
 
-    .hex-table-container {
-      max-height: 280px;
+    .hex-scroll {
+      max-height: 245px;
       overflow-y: auto;
-      font-family: monospace;
-      font-size: 0.75rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.71rem;
     }
 
     .empty-state {
-      padding: 24px;
+      padding: 22px 14px;
       text-align: center;
       color: #64748b;
-      font-style: italic;
+      font-size: 0.71rem;
     }
 
     .hex-table {
       width: 100%;
       border-collapse: collapse;
-      user-select: text;
     }
 
     .hex-table th {
-      background: #181b20;
+      background: rgba(9, 13, 22, 0.92);
       color: #64748b;
       font-weight: 600;
-      padding: 4px 6px;
+      padding: 4px 8px;
       text-align: left;
-      font-size: 0.7rem;
+      font-size: 0.66rem;
       position: sticky;
       top: 0;
       z-index: 2;
     }
 
     .hex-row {
-      border-bottom: 1px solid #1c2028;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
     }
-    .hex-row:hover { background: #1e2430; }
+    .hex-row:hover { background: rgba(30, 41, 59, 0.4); }
+    .hex-row.row-delta {
+      background: rgba(245, 158, 11, 0.05);
+    }
 
     .col-addr {
       color: #94a3b8;
       padding: 2px 8px;
-      width: 90px;
+      width: 88px;
     }
 
     .col-bytes {
-      padding: 2px 8px;
-      letter-spacing: 0.05em;
+      padding: 2px 6px;
+      white-space: nowrap;
     }
 
     .byte-val {
       display: inline-block;
-      width: 22px;
+      width: 21px;
       text-align: center;
-      color: #f1f5f9;
+      color: #e2e8f0;
       cursor: pointer;
-      border-radius: 2px;
+      border-radius: 3px;
     }
     .byte-val:hover {
       background: #38bdf8;
-      color: #000;
+      color: #020617;
     }
-    .byte-val.gap {
-      margin-right: 8px;
-    }
-    .byte-val.zero {
-      color: #475569;
+    .byte-val.gap { margin-right: 7px; }
+    .byte-val.zero { color: #475569; }
+    .byte-val.changed {
+      color: #fbbf24;
+      font-weight: 700;
+      background: rgba(245, 158, 11, 0.2);
+      box-shadow: 0 0 6px rgba(245, 158, 11, 0.25);
     }
 
     .col-ascii {
       color: #38bdf8;
       padding: 2px 8px;
-      border-left: 1px solid #1c2028;
+      border-left: 1px solid rgba(255, 255, 255, 0.05);
       white-space: pre;
     }
 
@@ -272,101 +289,105 @@ interface MemoryRow {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 4px 10px;
-      background: #1e293b;
-      border-top: 1px solid #334155;
-      font-size: 0.75rem;
+      padding: 5px 12px;
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.72rem;
     }
-
-    .edit-label { color: #94a3b8; font-family: monospace; }
+    .edit-label { color: #cbd5e1; font-family: "JetBrains Mono", monospace; }
     .byte-input {
-      width: 35px;
-      background: #0f172a;
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      font-family: monospace;
-      font-size: 0.75rem;
+      width: 34px;
+      background: #090d16;
+      border: 1px solid #f59e0b;
+      color: #fbbf24;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.72rem;
       padding: 1px 4px;
       text-align: center;
+      border-radius: 4px;
       outline: none;
     }
     .edit-btn {
       padding: 2px 8px;
-      border-radius: 3px;
-      font-size: 0.7rem;
-      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.69rem;
+      font-weight: 600;
       border: none;
+      cursor: pointer;
     }
     .edit-btn.save { background: #0284c7; color: #fff; }
-    .edit-btn.cancel { background: #475569; color: #fff; }
+    .edit-btn.cancel { background: #334155; color: #e2e8f0; }
   `]
 })
 export class MemoryInspectorComponent {
   private emu = inject(EmulatorService);
 
-  public currentBaseAddress = signal<number>(0x20000000); // Default SRAM base
-  public targetAddressInput = signal<string>('0x20000000');
+  public currentBaseAddress = signal<number>(0x02000000); // Default RA8 Code MRAM base
+  public targetAddressInput = signal<string>('0x02000000');
   public rows = signal<MemoryRow[]>([]);
+  public changedByteCount = signal<number>(0);
   public editingAddr = signal<number | null>(null);
   public editByteHex = signal<string>('00');
 
-  private readonly PAGE_SIZE = 256; // 16 rows * 16 bytes
+  private previousPageAddr: number | null = null;
+  private previousBytes: Uint8Array | null = null;
+  private readonly PAGE_SIZE = 256;
 
   constructor() {
-    // When connection or base address changes, reload memory
     effect(() => {
       const state = this.emu.connectionState();
       const addr = this.currentBaseAddress();
+      const _epoch = this.emu.memoryEpoch();
       if (state === 'connected') {
-        this.fetchMemory(addr);
+        void this.fetchMemory(addr, _epoch >= 0);
       } else {
         this.rows.set([]);
+        this.changedByteCount.set(0);
+        this.previousBytes = null;
       }
     });
   }
 
   public jumpTo(addr: number): void {
-    this.currentBaseAddress.set(addr >>> 0);
-    this.targetAddressInput.set(`0x${this.toHex8(addr)}`);
+    const aligned = (addr & ~0xf) >>> 0;
+    this.currentBaseAddress.set(aligned);
+    this.targetAddressInput.set(`0x${this.toHex8(aligned)}`);
   }
 
   public jumpToSram(): void {
-    this.jumpTo(0x20000000);
+    this.jumpTo(0x22000000);
   }
 
-  public jumpToFlash(): void {
-    this.jumpTo(0x00000000);
+  public jumpToMram(): void {
+    this.jumpTo(0x02000000);
   }
 
   public jumpToSp(): void {
-    const sp = this.emu.registers()['sp'] ?? 0x20004000;
-    this.jumpTo(sp & ~0xF);
+    const sp = this.emu.cpu0Registers()['sp'] ?? 0x22000000;
+    this.jumpTo(sp);
   }
 
   public jumpToPc(): void {
-    const pc = this.emu.registers()['pc'] ?? 0x00000000;
-    this.jumpTo(pc & ~0xF);
+    const pc = this.emu.cpu0Pc() || 0x02000000;
+    this.jumpTo(pc);
   }
 
   public applyAddressInput(): void {
     const raw = this.targetAddressInput().trim();
     const parsed = raw.startsWith('0x') || raw.startsWith('0X')
       ? parseInt(raw.slice(2), 16)
-      : parseInt(raw, 10);
-
+      : parseInt(raw, 16);
     if (!isNaN(parsed)) {
-      this.jumpTo(parsed & ~0xF);
+      this.jumpTo(parsed >>> 0);
     }
   }
 
   public prevPage(): void {
-    const next = Math.max(0, this.currentBaseAddress() - this.PAGE_SIZE);
-    this.jumpTo(next);
+    this.jumpTo(Math.max(0, this.currentBaseAddress() - this.PAGE_SIZE));
   }
 
   public nextPage(): void {
-    const next = (this.currentBaseAddress() + this.PAGE_SIZE) >>> 0;
-    this.jumpTo(next);
+    this.jumpTo((this.currentBaseAddress() + this.PAGE_SIZE) >>> 0);
   }
 
   public startEdit(addr: number, currentVal: number): void {
@@ -383,20 +404,21 @@ export class MemoryInspectorComponent {
     if (addr === null) return;
     const val = parseInt(this.editByteHex(), 16);
     if (!isNaN(val)) {
-      const ok = await this.emu.writeMemory(addr, new Uint8Array([val & 0xFF]));
-      if (ok) {
-        await this.fetchMemory(this.currentBaseAddress());
-      }
+      await this.emu.writeMemory(addr, new Uint8Array([val & 0xff]));
     }
     this.editingAddr.set(null);
   }
 
-  private async fetchMemory(addr: number): Promise<void> {
+  private async fetchMemory(addr: number, compareDelta: boolean): Promise<void> {
     const bytes = await this.emu.readMemory(addr, this.PAGE_SIZE);
     if (!bytes) {
       this.rows.set([]);
       return;
     }
+
+    const samePage = compareDelta && this.previousPageAddr === addr && this.previousBytes !== null;
+    const prev = this.previousBytes;
+    let deltaTotal = 0;
 
     const newRows: MemoryRow[] = [];
     for (let r = 0; r < bytes.length; r += 16) {
@@ -404,17 +426,26 @@ export class MemoryInspectorComponent {
       const slice = bytes.subarray(r, r + 16);
       const rowBytes: number[] = [];
       const hexBytes: string[] = [];
+      const changedMask: boolean[] = [];
+      let rowChanged = false;
       let ascii = '';
 
       for (let i = 0; i < 16; i++) {
         if (i < slice.length) {
-          const b = slice[i];
+          const b = slice[i] ?? 0;
+          const isChanged = Boolean(samePage && prev && prev[r + i] !== undefined && prev[r + i] !== b);
+          if (isChanged) {
+            rowChanged = true;
+            deltaTotal += 1;
+          }
           rowBytes.push(b);
           hexBytes.push(b.toString(16).padStart(2, '0').toUpperCase());
-          ascii += (b >= 32 && b <= 126) ? String.fromCharCode(b) : '.';
+          changedMask.push(isChanged);
+          ascii += b >= 32 && b <= 126 ? String.fromCharCode(b) : '.';
         } else {
           rowBytes.push(0);
-          hexBytes.push('??');
+          hexBytes.push('  ');
+          changedMask.push(false);
           ascii += ' ';
         }
       }
@@ -424,10 +455,15 @@ export class MemoryInspectorComponent {
         addressHex: this.toHex8(rowAddr),
         bytes: rowBytes,
         hexBytes,
-        ascii
+        changedMask,
+        rowChanged,
+        ascii,
       });
     }
 
+    this.previousPageAddr = addr;
+    this.previousBytes = new Uint8Array(bytes);
+    this.changedByteCount.set(deltaTotal);
     this.rows.set(newRows);
   }
 

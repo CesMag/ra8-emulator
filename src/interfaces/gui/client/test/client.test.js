@@ -60,6 +60,13 @@ import {
   decodeSessionEvent,
   decodeBoardParts,
   decodeBacktrace,
+  encodeDisasmAsk,
+  decodeDisasmReply,
+  decodeStackReport,
+  decodeBranchList,
+  decodeForkStatus,
+  decodeDiff,
+  ForkReason,
   decodeU32,
   encodeU32,
   decodeAck,
@@ -104,9 +111,9 @@ console.log('=== RA8 TypeScript RPC Client Test Suite ===\n');
 /* -------------------------------------------------------------------------- */
 console.log('--- Test Group 1: Enum & Schema Completeness ---');
 
-runTest('all Method opcodes are defined from 0x0100 through 0x013C', () => {
+runTest('all Method opcodes are defined from 0x0100 through 0x013D', () => {
   const methodValues = Object.values(Method).filter(v => typeof v === 'number');
-  assert.equal(methodValues.length, 60, 'Expected all 60 Method opcodes across 0x0100..0x013C');
+  assert.equal(methodValues.length, 61, 'Expected all 61 Method opcodes across 0x0100..0x013D');
   assert.equal(Method.Load, 0x0100);
   assert.equal(Method.Run, 0x0101);
   assert.equal(Method.Pause, 0x0102);
@@ -167,6 +174,7 @@ runTest('all Method opcodes are defined from 0x0100 through 0x013C', () => {
   assert.equal(Method.MarkerSet, 0x013A);
   assert.equal(Method.FrameStatus, 0x013B);
   assert.equal(Method.Diff, 0x013C);
+  assert.equal(Method.Disasm, 0x013D);
 });
 
 runTest('all 7 Topic event codes are defined from 0x0100 through 0x0106', () => {
@@ -299,6 +307,119 @@ runTest('decodeSessionEvent parses session event kinds', () => {
   assert.equal(ev.core, Core.Cpu0);
   assert.equal(ev.kind, 15);
   assert.equal(ev.address, 0x1000);
+});
+
+runTest('encodeDisasmAsk and decodeDisasmReply roundtrip Zig disasm_wire binary layout', () => {
+  const ask = encodeDisasmAsk({ core: Core.Cpu0, address: 0x02000100, count: 16, usePc: true });
+  assert.equal(ask.length, 7);
+  assert.equal(ask[0], Core.Cpu0);
+  assert.equal(new DataView(ask.buffer).getUint32(1, true), 0x02000100);
+  assert.equal(ask[5], 16);
+  assert.equal(ask[6], 1);
+
+  const textBytes = new TextEncoder().encode('movs r0, #42');
+  const symBytes = new TextEncoder().encode('Reset_Handler');
+  const rowLen = 4 + 1 + 1 + 4 + 1 + textBytes.length + 1 + symBytes.length;
+  const replyBuf = new Uint8Array(10 + rowLen);
+  const rv = new DataView(replyBuf.buffer);
+  rv.setUint8(0, Core.Cpu0);
+  rv.setUint32(1, 0x02000100, true);
+  rv.setUint8(5, 1);
+  rv.setUint32(6, rowLen, true);
+  let at = 10;
+  rv.setUint32(at, 0x02000100, true); at += 4;
+  rv.setUint8(at++, 2);
+  rv.setUint8(at++, 1);
+  replyBuf.set([0x2a, 0x20, 0x00, 0x00], at); at += 4;
+  rv.setUint8(at++, textBytes.length);
+  replyBuf.set(textBytes, at); at += textBytes.length;
+  rv.setUint8(at++, symBytes.length);
+  replyBuf.set(symBytes, at);
+
+  const reply = decodeDisasmReply(replyBuf);
+  assert.equal(reply.core, Core.Cpu0);
+  assert.equal(reply.pc, 0x02000100);
+  assert.equal(reply.rows.length, 1);
+  assert.equal(reply.rows[0].address, 0x02000100);
+  assert.equal(reply.rows[0].size, 2);
+  assert.equal(reply.rows[0].decoded, true);
+  assert.equal(reply.rows[0].text, 'movs r0, #42');
+  assert.equal(reply.rows[0].symbol, 'Reset_Handler');
+});
+
+runTest('decodeStackReport, decodeBranchList, decodeForkStatus, and decodeDiff parse Zig layouts', () => {
+  const stackBuf = new Uint8Array(30);
+  const sv = new DataView(stackBuf.buffer);
+  sv.setUint8(0, Core.Cpu0);
+  sv.setUint32(1, 0x22010000, true);
+  sv.setUint32(5, 0x22008000, true);
+  sv.setUint32(9, 0x2200fe00, true);
+  sv.setUint32(13, 0x22007f00, true);
+  sv.setUint8(17, 1);
+  sv.setUint32(18, 0x2200f000, true);
+  sv.setUint32(22, 0x1000, true);
+  sv.setUint32(26, 0, true);
+  const sr = decodeStackReport(stackBuf);
+  assert.equal(sr.msp, 0x22010000);
+  assert.equal(sr.lowMsp, 0x2200fe00);
+  assert.equal(sr.hasStack, true);
+  assert.equal(sr.size, 0x1000);
+
+  const branchBuf = new Uint8Array(8 + 30);
+  const bv = new DataView(branchBuf.buffer);
+  bv.setUint32(0, 1, true);
+  bv.setUint32(4, 30, true);
+  bv.setUint32(8, 2, true); // id
+  bv.setUint32(12, 1, true); // parent
+  bv.setBigUint64(16, 1200n, true); // forkR
+  bv.setBigUint64(24, 2400n, true); // recordedEndR
+  bv.setUint32(32, 0, true); // childCount
+  bv.setUint8(36, ForkReason.Writes);
+  bv.setUint8(37, 0b11); // live + kept
+  const branches = decodeBranchList(branchBuf);
+  assert.equal(branches.length, 1);
+  assert.equal(branches[0].id, 2);
+  assert.equal(branches[0].parent, 1);
+  assert.equal(branches[0].forkR, 1200n);
+  assert.equal(branches[0].reason, ForkReason.Writes);
+  assert.equal(branches[0].isLive, true);
+  assert.equal(branches[0].isKept, true);
+
+  const forkBuf = new Uint8Array(14);
+  const fv = new DataView(forkBuf.buffer);
+  fv.setUint8(0, 1);
+  fv.setUint8(1, ForkReason.Buttons);
+  fv.setUint32(2, 1, true);
+  fv.setBigUint64(6, 512n, true);
+  const fs = decodeForkStatus(forkBuf);
+  assert.equal(fs.pending, true);
+  assert.equal(fs.reason, ForkReason.Buttons);
+  assert.equal(fs.r, 512n);
+
+  const diffBody = new Uint8Array(32 + 12);
+  const dv = new DataView(diffBody.buffer);
+  dv.setUint16(0, 1, true); // 1 reg
+  dv.setUint16(2, 0, true);
+  dv.setUint16(4, 0, true);
+  dv.setUint16(6, 8, true); // 8 frames
+  dv.setUint32(8, 0, true);
+  dv.setBigUint64(12, 100n, true);
+  dv.setUint32(20, 1, true);
+  dv.setBigUint64(24, 200n, true);
+  dv.setUint8(32, Core.Cpu0);
+  dv.setUint8(33, 2);
+  diffBody.set([0x72, 0x30], 34); // 'r0'
+  dv.setUint32(36, 0x10, true);
+  dv.setUint32(40, 0x42, true);
+  const diffOuter = new Uint8Array(4 + diffBody.length);
+  new DataView(diffOuter.buffer).setUint32(0, diffBody.length, true);
+  diffOuter.set(diffBody, 4);
+  const diff = decodeDiff(diffOuter);
+  assert.equal(diff.frames, 8);
+  assert.equal(diff.b.branch, 1);
+  assert.equal(diff.regs.length, 1);
+  assert.equal(diff.regs[0].name, 'r0');
+  assert.equal(diff.regs[0].valB, 0x42);
 });
 
 runTest('decodeBoardParts parses panel, dimensions, LEDs and switches', () => {

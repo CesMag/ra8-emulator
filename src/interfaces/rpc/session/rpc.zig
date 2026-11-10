@@ -82,6 +82,7 @@ pub const Method = enum(u16) {
     marker_set = 0x013A,
     frame_status = 0x013B,
     diff = 0x013C,
+    disasm = 0x013D,
 };
 pub const Topic = enum(u16) { stop = 0x0100, uart = 0x0101, speed = 0x0102, lcd_dirty = 0x0103, trace = 0x0104, session = 0x0105, transport = 0x0106 };
 pub const Core = enum(u8) { cpu0, cpu1 };
@@ -293,47 +294,15 @@ pub const SourceLine = struct {
 };
 /// Characters of the answered source path.
 pub const source_path_cap = 256;
-/// A function's locals at a stopped core (RA8EMU-805): `count` rows in
-/// `rows`, each a LocalRow as locals_wire.zig packs it.
-pub const Locals = struct {
-    core: Core,
-    count: u8,
-    rows: []const u8,
-    pub const max_len = .{ .rows = locals_bytes };
-};
-/// One local of a function's locals. `where_kind` says where the local's
-/// bytes live (where_kinds), with `where_a` and `where_b` carrying what
-/// that kind needs; a type with no answer keeps `size` 0.
-pub const LocalRow = struct {
-    name: []const u8,
-    type_name: []const u8,
-    size: u32,
-    where_kind: u8,
-    where_a: u64,
-    where_b: u64,
-    pub const max_len = .{ .name = local_name_cap, .type_name = local_type_cap };
-};
-/// Where kinds a LocalRow's bytes live at.
-pub const where_kinds = struct {
-    pub const none: u8 = 0;
-    /// At an offset (signed, in `where_a`) from the frame base.
-    pub const frame: u8 = 1;
-    /// In the register in `where_a` holding an address plus the signed
-    /// offset in `where_b`.
-    pub const register: u8 = 2;
-    /// In the register in `where_a` outright.
-    pub const in_register: u8 = 3;
-    /// At the fixed address in `where_a`.
-    pub const address: u8 = 4;
-};
-/// The most locals one answer carries, and the characters a local's name
-/// and its type's name keep.
-pub const locals_rows = 32;
-pub const local_name_cap = 40;
-pub const local_type_cap = 40;
-/// One row's widest encoding plus the length byte before it.
-pub const local_row_bytes = 1 + local_name_cap + 4 + local_type_cap + 4 + 4 + 1 + 8 + 8;
-pub const locals_bytes = locals_rows * local_row_bytes;
+pub const locals_wire_types = @import("locals_wire.zig");
+pub const Locals = locals_wire_types.Locals;
+pub const LocalRow = locals_wire_types.LocalRow;
+pub const where_kinds = locals_wire_types.where_kinds;
+pub const locals_rows = locals_wire_types.locals_rows;
+pub const local_name_cap = locals_wire_types.local_name_cap;
+pub const local_type_cap = locals_wire_types.local_type_cap;
+pub const local_row_bytes = locals_wire_types.local_row_bytes;
+pub const locals_bytes = locals_wire_types.locals_bytes;
 /// The board's RTC calendar (RA8EMU-809). With `valid` 0 the counters hold
 /// no date and every date field is 0; `running` is RCR2.START.
 pub const RtcReport = struct {
@@ -387,6 +356,10 @@ pub const DiffWire = diff_wire.DiffWire;
 pub const DiffArgs = diff_wire.DiffArgs;
 pub const metrics_wire = @import("metrics_wire.zig");
 pub const MetricsReport = metrics_wire.MetricsReport;
+pub const disasm_wire = @import("disasm_wire.zig");
+pub const DisasmAsk = disasm_wire.DisasmAsk;
+pub const DisasmReply = disasm_wire.DisasmReply;
+pub const DisasmRow = disasm_wire.DisasmRow;
 /// Calls a client can hold unanswered at once before freeing slots.
 pub const pending_slots = 32;
 pub const Client = rpc.Client(pending_slots, max_payload);

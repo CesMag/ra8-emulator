@@ -4,33 +4,35 @@
     <app-connection-bar></app-connection-bar>
   </header>
 
-  <!-- Execution Controls Bar -->
+  <!-- Execution Controls Bar & Expandable Right-Opening Time-Travel DAG Drawer -->
   <div class="workbench-controls">
     <app-execution-controls></app-execution-controls>
+    <app-execution-dag></app-execution-dag>
   </div>
 
   <!-- Main Multi-Pane Workbench Grid -->
   <main class="workbench-grid">
-    <!-- Left Column: Virtual Board & Metrics -->
+    <!-- Left Column: Virtual Hardware Bench & Host/Guest Diagnostics -->
     <section class="grid-col left-col">
       <app-virtual-board></app-virtual-board>
       <app-metrics-panel></app-metrics-panel>
     </section>
 
-    <!-- Center Column: Disassembly & Memory Hex Inspector -->
+    <!-- Center Column: Synchronized Dual-Core Disassembly & Memory Hex Inspector -->
     <section class="grid-col center-col">
       <app-disassembly-view></app-disassembly-view>
       <app-memory-inspector></app-memory-inspector>
     </section>
 
-    <!-- Right Column: CPU Registers & Call Stack -->
+    <!-- Right Column: Dual-Core Registers, Call Stack & Progressive Peripheral Inspector -->
     <section class="grid-col right-col">
       <app-register-inspector></app-register-inspector>
       <app-call-stack></app-call-stack>
+      <app-peripheral-inspector></app-peripheral-inspector>
     </section>
   </main>
 
-  <!-- Bottom: UART Serial Terminal -->
+  <!-- Bottom: UART Serial Console -->
   <footer class="workbench-footer">
     <app-uart-terminal></app-uart-terminal>
   </footer>
