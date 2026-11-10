@@ -2,6 +2,7 @@ import { Component, inject, signal, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmulatorService } from '../../services/emulator.service';
+import { Access } from 'ra8-rpc-client';
 
 interface MemoryRow {
   address: number;
@@ -39,11 +40,12 @@ interface MemoryRow {
             <input
               type="text"
               class="addr-input font-mono"
-              placeholder="0x22000000"
+              placeholder="0x22000000 or sym"
               [ngModel]="targetAddressInput()"
               (ngModelChange)="targetAddressInput.set($event)"
               (keydown.enter)="applyAddressInput()"
             />
+            <button type="button" class="nav-btn" (click)="applyAddressInput()" title="Jump to address or global symbol">Go</button>
             <button type="button" class="nav-btn" (click)="prevPage()" title="Previous 256 bytes">◀</button>
             <button type="button" class="nav-btn" (click)="nextPage()" title="Next 256 bytes">▶</button>
           </div>
@@ -78,8 +80,10 @@ interface MemoryRow {
                   [class.gap]="idx === 7"
                   [class.zero]="b === 0 && !row.changedMask[idx]"
                   [class.changed]="row.changedMask[idx]"
+                  [class.watched]="isByteWatched(row.address + idx)"
+                  [class.selected]="editingAddr() === row.address + idx"
                   (click)="startEdit(row.address + idx, b)"
-                  [title]="'Click to poke byte at 0x' + toHex8(row.address + idx)"
+                  [title]="'Click to poke byte or set hardware watchpoint at 0x' + toHex8(row.address + idx)"
                 >{{ row.hexBytes[idx] }}</span>
               </td>
               <td class="col-ascii">{{ row.ascii }}</td>
@@ -88,9 +92,9 @@ interface MemoryRow {
         </table>
       </div>
 
-      <!-- Inline Poke Byte Strip -->
+      <!-- Inline Poke Byte & Hardware Watchpoint Strip -->
       <div *ngIf="editingAddr() !== null" class="edit-strip font-mono">
-        <span class="edit-label">Poke byte &#64; 0x{{ toHex8(editingAddr()!) }}:</span>
+        <span class="edit-label">0x{{ toHex8(editingAddr()!) }}:</span>
         <input
           type="text"
           class="byte-input font-mono"
@@ -101,8 +105,25 @@ interface MemoryRow {
           (keydown.escape)="cancelByteEdit()"
           autofocus
         />
-        <button type="button" class="edit-action-btn write" (click)="saveByteEdit()">Write</button>
-        <button type="button" class="edit-action-btn cancel" (click)="cancelByteEdit()">Cancel</button>
+        <button type="button" class="edit-action-btn write" (click)="saveByteEdit()">Poke Byte</button>
+        <span class="strip-sep"></span>
+        <button
+          type="button"
+          class="edit-action-btn watch"
+          (click)="watchSelectedAddress(Access.Write)"
+          title="Halt CPU immediately when firmware writes to this 4-byte address"
+        >
+          + Watch Write (4B)
+        </button>
+        <button
+          type="button"
+          class="edit-action-btn watch"
+          (click)="watchSelectedAddress(Access.Access)"
+          title="Halt CPU on any read or write to this 4-byte address"
+        >
+          + Watch R/W
+        </button>
+        <button type="button" class="edit-action-btn cancel" (click)="cancelByteEdit()">Close</button>
       </div>
     </div>
   `,
@@ -187,15 +208,17 @@ interface MemoryRow {
       color: var(--text-primary);
       font-size: 10px;
       padding: 2px 6px;
-      width: 84px;
+      width: 108px;
       outline: none;
     }
 
     .nav-btn {
       background: var(--border-subtle);
       border: none;
+      border-left: 1px solid var(--border-subtle);
       color: var(--text-primary);
       font-size: 9px;
+      font-weight: 600;
       padding: 2px 6px;
       cursor: pointer;
     }
@@ -271,7 +294,7 @@ interface MemoryRow {
       transition: background 0.1s;
     }
 
-    .byte-val:hover {
+    .byte-val:hover, .byte-val.selected {
       background: var(--accent-blue);
       color: #ffffff;
     }
@@ -290,6 +313,11 @@ interface MemoryRow {
       background: var(--accent-amber-subtle);
     }
 
+    .byte-val.watched {
+      box-shadow: inset 0 -2px 0 var(--accent-red);
+      font-weight: 700;
+    }
+
     .col-ascii {
       color: var(--accent-blue);
       padding: 0 6px;
@@ -298,8 +326,8 @@ interface MemoryRow {
     }
 
     .edit-strip {
-      height: 26px;
-      min-height: 26px;
+      height: 28px;
+      min-height: 28px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -312,6 +340,7 @@ interface MemoryRow {
 
     .edit-label {
       color: var(--text-secondary);
+      font-weight: 600;
     }
 
     .byte-input {
@@ -326,13 +355,21 @@ interface MemoryRow {
       outline: none;
     }
 
+    .strip-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--border-subtle);
+      margin: 0 2px;
+    }
+
     .edit-action-btn {
-      padding: 1px 6px;
+      padding: 2px 7px;
       border-radius: var(--radius-sm);
       font-size: 10px;
-      font-weight: 500;
-      border: none;
+      font-weight: 600;
+      border: 1px solid transparent;
       cursor: pointer;
+      white-space: nowrap;
     }
 
     .edit-action-btn.write {
@@ -340,16 +377,24 @@ interface MemoryRow {
       color: #ffffff;
     }
 
+    .edit-action-btn.watch {
+      background: var(--accent-amber-subtle);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
     .edit-action-btn.cancel {
       background: var(--border-subtle);
       color: var(--text-secondary);
+      margin-left: auto;
     }
   `]
 })
 export class MemoryInspectorComponent {
   private emu = inject(EmulatorService);
+  public Access = Access;
 
-  public currentBaseAddress = signal<number>(0x02000000); // Default RA8 Code MRAM base
+  public currentBaseAddress = signal<number>(0x02000000);
   public targetAddressInput = signal<string>('0x02000000');
   public rows = signal<MemoryRow[]>([]);
   public changedByteCount = signal<number>(0);
@@ -360,7 +405,16 @@ export class MemoryInspectorComponent {
   private previousBytes: Uint8Array | null = null;
   private readonly PAGE_SIZE = 256;
 
+  public watchedRanges = computed(() => this.emu.watchpoints());
+
   constructor() {
+    effect(() => {
+      const req = this.emu.requestedMemoryJump();
+      if (req !== null) {
+        this.jumpTo(req);
+      }
+    });
+
     effect(() => {
       const state = this.emu.connectionState();
       const addr = this.currentBaseAddress();
@@ -373,6 +427,11 @@ export class MemoryInspectorComponent {
         this.previousBytes = null;
       }
     });
+  }
+
+  public isByteWatched(addr: number): boolean {
+    const u = addr >>> 0;
+    return this.watchedRanges().some((w) => u >= w.first && u <= w.last);
   }
 
   public jumpTo(addr: number): void {
@@ -401,11 +460,17 @@ export class MemoryInspectorComponent {
 
   public applyAddressInput(): void {
     const raw = this.targetAddressInput().trim();
-    const parsed = raw.startsWith('0x') || raw.startsWith('0X')
-      ? parseInt(raw.slice(2), 16)
-      : parseInt(raw, 16);
-    if (!isNaN(parsed)) {
-      this.jumpTo(parsed >>> 0);
+    if (!raw) return;
+    if (/^0x[0-9a-f]+$/i.test(raw) || /^[0-9a-f]{6,8}$/i.test(raw)) {
+      const parsed = parseInt(raw.replace(/^0x/i, ''), 16);
+      if (!isNaN(parsed)) {
+        this.jumpTo(parsed >>> 0);
+      }
+      return;
+    }
+    const sym = this.emu.cpu0ElfSymbols().find((s) => s.name === raw);
+    if (sym) {
+      this.jumpTo(sym.address >>> 0);
     }
   }
 
@@ -418,7 +483,7 @@ export class MemoryInspectorComponent {
   }
 
   public startEdit(addr: number, currentVal: number): void {
-    this.editingAddr.set(addr);
+    this.editingAddr.set(addr >>> 0);
     this.editByteHex.set(currentVal.toString(16).padStart(2, '0').toUpperCase());
   }
 
@@ -433,6 +498,14 @@ export class MemoryInspectorComponent {
     if (!isNaN(val)) {
       await this.emu.writeMemory(addr, new Uint8Array([val & 0xff]));
     }
+    this.editingAddr.set(null);
+  }
+
+  public async watchSelectedAddress(access: Access): Promise<void> {
+    const addr = this.editingAddr();
+    if (addr === null) return;
+    const alignedWord = (addr & ~0x3) >>> 0;
+    await this.emu.addWatchpoint(alignedWord, 4, access);
     this.editingAddr.set(null);
   }
 

@@ -67,6 +67,22 @@ import {
   decodeForkStatus,
   decodeDiff,
   ForkReason,
+  Access,
+  LocalWhereKind,
+  encodeLoad,
+  encodeLoadBegin,
+  encodeLoadChunk,
+  encodeNamedBreak,
+  decodeNamedPoint,
+  encodeWatchpoint,
+  encodeMapAsk,
+  decodeSourceLine,
+  encodeCoreFrame,
+  decodeLocals,
+  decodeAdvanced,
+  crc32,
+  inspectElf,
+  parseElfSymbols,
   decodeU32,
   encodeU32,
   decodeAck,
@@ -659,7 +675,6 @@ class MockWebSocketServer {
           case Method.Unsubscribe:
           case Method.SetBreakpoint:
           case Method.ClearBreakpoint:
-          case Method.Advance:
           case Method.SetSpeed:
           case Method.Input:
           case Method.ConsoleInput: {
@@ -731,6 +746,49 @@ class MockWebSocketServer {
             break;
           }
 
+          case Method.Load:
+          case Method.LoadBegin:
+          case Method.LoadChunk:
+          case Method.LoadEnd:
+          case Method.ClearWatchpoint:
+          case Method.SkipBkpt: {
+            this.seenMethods = this.seenMethods || [];
+            this.seenMethods.push(req.method);
+            const resp = encodeResponse(req.id, true, new Uint8Array([1]));
+            this.sendToClient(encodeFrame(Kind.Response, resp));
+            break;
+          }
+
+          case Method.SetBreakpointName: {
+            const np = new Uint8Array(9);
+            const npView = new DataView(np.buffer);
+            npView.setUint32(0, 7, true);
+            npView.setUint32(4, 0x02000140, true);
+            npView.setUint8(8, 0);
+            const resp = encodeResponse(req.id, true, np);
+            this.sendToClient(encodeFrame(Kind.Response, resp));
+            break;
+          }
+
+          case Method.SetWatchpoint: {
+            const resp = encodeResponse(req.id, true, encodeU32(3));
+            this.sendToClient(encodeFrame(Kind.Response, resp));
+            break;
+          }
+
+          case Method.Advance: {
+            const adv = new Uint8Array(22);
+            const advView = new DataView(adv.buffer);
+            advView.setUint8(0, Core.Cpu0);
+            advView.setBigUint64(1, 1000n, true);
+            advView.setBigUint64(9, 1_001_000n, true);
+            advView.setUint8(17, StopReason.Count);
+            advView.setUint32(18, 0x02000180, true);
+            const resp = encodeResponse(req.id, true, adv);
+            this.sendToClient(encodeFrame(Kind.Response, resp));
+            break;
+          }
+
           default: {
             const resp = encodeResponse(req.id, false, ErrorCode.UnknownMethod);
             this.sendToClient(encodeFrame(Kind.Response, resp));
@@ -794,6 +852,77 @@ class MockWebSocket {
   }
 }
 
+runTest('IEEE CRC32, ELF32 header inspection, and CUJ wire codecs', () => {
+  const digits = new TextEncoder().encode('123456789');
+  assert.equal(crc32(digits), 0xcbf43926);
+
+  // Reject non-ELF
+  assert.equal(inspectElf(digits).valid, false);
+
+  // Minimal valid 52-byte ARM32 LE ELF header
+  const fakeElf = new Uint8Array(52);
+  fakeElf.set([0x7f, 0x45, 0x4c, 0x46, 1, 1, 1], 0);
+  const hView = new DataView(fakeElf.buffer);
+  hView.setUint16(18, 40, true); // EM_ARM
+  hView.setUint32(24, 0x02000101, true);
+  const info = inspectElf(fakeElf);
+  assert.equal(info.valid, true);
+  assert.equal(info.entry, 0x02000101);
+
+  // Encode Load / LoadBegin / LoadChunk / NamedBreak / Watchpoint / MapAsk / CoreFrame
+  assert.equal(encodeLoad(Core.Cpu0, new Uint8Array([1, 2, 3])).length, 8);
+  assert.equal(encodeLoadBegin(Core.Cpu1, 500000, 0x12345678).length, 13);
+  assert.equal(encodeLoadChunk(Core.Cpu0, 262144, new Uint8Array(10)).length, 23);
+  assert.equal(encodeNamedBreak(Core.Cpu0, 'main').length, 9);
+  assert.equal(encodeWatchpoint(Core.Cpu0, 0x22000000, 0x22000003, Access.Write).length, 10);
+  assert.deepEqual(Array.from(encodeMapAsk(Core.Cpu0, true)), [0, 1]);
+  assert.equal(encodeCoreFrame(Core.Cpu0, 2).length, 5);
+
+  // Decode SourceLine
+  const pathBytes = new TextEncoder().encode('src/main.c');
+  const slBuf = new Uint8Array(13 + pathBytes.length);
+  const slView = new DataView(slBuf.buffer);
+  slView.setUint8(0, 1);
+  slView.setUint32(1, 0x02000140, true);
+  slView.setUint32(5, 42, true);
+  slView.setUint32(9, pathBytes.length, true);
+  slBuf.set(pathBytes, 13);
+  const sl = decodeSourceLine(slBuf);
+  assert.equal(sl.found, true);
+  assert.equal(sl.pc, 0x02000140);
+  assert.equal(sl.line, 42);
+  assert.equal(sl.path, 'src/main.c');
+
+  // Decode Locals with negative frame offset (-8)
+  const nBytes = new TextEncoder().encode('counter');
+  const tBytes = new TextEncoder().encode('uint32_t');
+  const rowBody = new Uint8Array(4 + nBytes.length + 4 + tBytes.length + 21);
+  const rbView = new DataView(rowBody.buffer);
+  let p = 0;
+  rbView.setUint32(p, nBytes.length, true); p += 4;
+  rowBody.set(nBytes, p); p += nBytes.length;
+  rbView.setUint32(p, tBytes.length, true); p += 4;
+  rowBody.set(tBytes, p); p += tBytes.length;
+  rbView.setUint32(p, 4, true); p += 4;
+  rbView.setUint8(p, LocalWhereKind.Frame); p += 1;
+  rbView.setBigInt64(p, -8n, true); p += 8;
+  rbView.setBigUint64(p, 0n, true);
+
+  const locBuf = new Uint8Array(6 + 1 + rowBody.length);
+  const locView = new DataView(locBuf.buffer);
+  locView.setUint8(0, Core.Cpu0);
+  locView.setUint8(1, 1);
+  locView.setUint32(2, 1 + rowBody.length, true);
+  locBuf[6] = rowBody.length;
+  locBuf.set(rowBody, 7);
+  const decodedLocals = decodeLocals(locBuf);
+  assert.equal(decodedLocals.count, 1);
+  assert.equal(decodedLocals.locals[0].name, 'counter');
+  assert.equal(decodedLocals.locals[0].typeName, 'uint32_t');
+  assert.equal(decodedLocals.locals[0].whereKind, LocalWhereKind.Frame);
+  assert.equal(decodedLocals.locals[0].whereA, -8n);
+});
+
 await runAsyncTest('full client RPC workflow against mock WebSocket server', async () => {
   // Step 1: Initialize RA8RpcClient with MockWebSocketClass
   const client = new RA8RpcClient({ WebSocketClass: MockWebSocket });
@@ -854,6 +983,39 @@ await runAsyncTest('full client RPC workflow against mock WebSocket server', asy
   const consoleOk = await client.sendConsoleInput(Core.Cpu0, new Uint8Array([65, 66]));
   assert.equal(consoleOk, true);
 
+  // Step 8c: Test loadElf (single-frame + chunked), setBreakpointByName, setWatchpoint, advanceDetail
+  const progressEvents = [];
+  const smallOk = await client.loadElf(Core.Cpu0, new Uint8Array(1024), (loaded, total) => {
+    progressEvents.push([loaded, total]);
+  });
+  assert.equal(smallOk, true);
+  assert.equal(progressEvents.at(-1)[0], 1024);
+
+  const largeBytes = new Uint8Array(300_000);
+  largeBytes.fill(0x5a);
+  const largeProgress = [];
+  const largeOk = await client.loadElf(Core.Cpu0, largeBytes, (loaded, total) => {
+    largeProgress.push([loaded, total]);
+  });
+  assert.equal(largeOk, true);
+  assert.equal(largeProgress.length >= 3, true); // 0, 262144, 300000
+  assert.equal(largeProgress.at(-1)[0], 300_000);
+
+  const namedBp = await client.setBreakpointByName(Core.Cpu0, 'main');
+  assert.equal(namedBp.id, 7);
+  assert.equal(namedBp.address, 0x02000140);
+  assert.equal(namedBp.deferred, false);
+
+  const wpId = await client.setWatchpoint(Core.Cpu0, 0x22000100, 0x22000103, Access.Write);
+  assert.equal(wpId, 3);
+  assert.equal(await client.clearWatchpoint(Core.Cpu0, wpId), true);
+
+  const advRes = await client.advanceDetail(Core.Cpu0, 1_000_000n);
+  assert.equal(advRes.core, Core.Cpu0);
+  assert.equal(advRes.toNs, 1_001_000n);
+  assert.equal(await client.advance(Core.Cpu0, 1_000_000n), true);
+  assert.equal(await client.skipBreakpoint(Core.Cpu0), true);
+
   // Step 9: Test subscribe and event emission
   const subAck = await client.subscribe(Core.Cpu0, Topic.LcdDirty);
   assert.equal(subAck, true);
@@ -891,3 +1053,4 @@ console.log(`\n=== Test Results: ${testsPassed} passed, ${testsFailed} failed ==
 if (testsFailed > 0) {
   process.exit(1);
 }
+

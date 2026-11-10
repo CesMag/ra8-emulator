@@ -25,6 +25,7 @@ pub const Connection = struct {
     frame_remaining: usize = 0,
     frame_mask: [4]u8 = .{ 0, 0, 0, 0 },
     frame_mask_offset: usize = 0,
+    in_fragmented_binary: bool = false,
 
     pub fn fromFd(io: std.Io, fd: std.posix.fd_t) Connection {
         return .{ .stream = .{ .socket = .{ .handle = fd, .address = .{ .ip4 = .loopback(0) } } }, .io = io };
@@ -213,13 +214,14 @@ pub const Connection = struct {
 
             switch (hdr.opcode) {
                 .binary => {
-                    if (!hdr.masked) return error.BadMessage;
-                    self.frame_remaining = hdr.payload_len;
-                    self.frame_mask = hdr.mask;
-                    self.frame_mask_offset = 0;
-                    self.rx_start = hdr.header_len;
-                    self.rx_len -= hdr.header_len;
-                    return self.deliverPayload(into);
+                    if (self.in_fragmented_binary or !hdr.masked) return error.BadMessage;
+                    self.in_fragmented_binary = !hdr.fin;
+                    return self.startDataFrame(hdr, into);
+                },
+                .continuation => {
+                    if (!self.in_fragmented_binary or !hdr.masked) return error.BadMessage;
+                    self.in_fragmented_binary = !hdr.fin;
+                    return self.startDataFrame(hdr, into);
                 },
                 .ping => {
                     const total_len = hdr.header_len + hdr.payload_len;
@@ -249,6 +251,15 @@ pub const Connection = struct {
                 else => return error.BadMessage,
             }
         }
+    }
+
+    fn startDataFrame(self: *Connection, hdr: ws_frame.Header, into: []u8) rpc.Transport.Error!usize {
+        self.frame_remaining = hdr.payload_len;
+        self.frame_mask = hdr.mask;
+        self.frame_mask_offset = 0;
+        self.rx_start = hdr.header_len;
+        self.rx_len -= hdr.header_len;
+        return self.deliverPayload(into);
     }
 
     fn deliverPayload(self: *Connection, into: []u8) rpc.Transport.Error!usize {

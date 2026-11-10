@@ -4,7 +4,7 @@
  * Implements high-performance binary encoding and decoding using DataView
  * adhering to ra8_rpc_wire specifications and zero-padding struct layout.
  */
-import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, RpcHeader, RpcRequestEnvelope, RpcResponseEnvelope, RpcEventEnvelope, Hello, Fault, MetricsReport, DirtyRect, Stopped, UartEvent, Ack, SessionEvent, ScheduleInputArgs, BoardParts, Backtrace, DisasmAsk, DisasmReply, StackReport, TraceEvent, TransportEvent, BranchItem, ForkStatus, PlayArgs, NavQueryArgs, NavQueryResult, FrameStatusResult, DecodedDiff } from "./types.js";
+import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, RpcHeader, RpcRequestEnvelope, RpcResponseEnvelope, RpcEventEnvelope, Hello, Fault, MetricsReport, DirtyRect, Stopped, UartEvent, Ack, SessionEvent, ScheduleInputArgs, BoardParts, Backtrace, DisasmAsk, DisasmReply, StackReport, TraceEvent, TransportEvent, BranchItem, ForkStatus, PlayArgs, NavQueryArgs, NavQueryResult, FrameStatusResult, DecodedDiff, Access, NamedPointResult, AdvancedResult, SourceLineResult, LocalsResult } from "./types.js";
 /** Encode the 6-byte frame header */
 export declare function encodeHeader(length: number, kind: Kind | number): Uint8Array;
 /** Decode the 6-byte frame header */
@@ -138,4 +138,26 @@ export declare function decodeFrameStatusResult(data: Uint8Array): FrameStatusRe
 export declare function encodeDiffArgs(a: string, b: string): Uint8Array;
 /** Decode DiffWire reply from Method.Diff (0x013C) per diff_wire.zig */
 export declare function decodeDiff(data: Uint8Array): DecodedDiff;
+/** Encode single-frame Load argument (core u8, image []const u8) */
+export declare function encodeLoad(core: Core, image: Uint8Array): Uint8Array;
+/** Encode LoadBegin argument (13 bytes: core u8, total_len u64 LE, checksum u32 LE) */
+export declare function encodeLoadBegin(core: Core, totalLen: bigint | number, checksum: number): Uint8Array;
+/** Encode LoadChunk argument (13 + bytes.length: core u8, offset u64 LE, bytes []const u8) */
+export declare function encodeLoadChunk(core: Core, offset: bigint | number, bytes: Uint8Array): Uint8Array;
+/** Encode NamedBreak argument (core u8, name []const u8) */
+export declare function encodeNamedBreak(core: Core, name: string): Uint8Array;
+/** Decode NamedPoint reply (9 bytes: id u32 LE, address u32 LE, deferred u8) */
+export declare function decodeNamedPoint(data: Uint8Array): NamedPointResult;
+/** Encode Watchpoint argument (10 bytes: core u8, first u32 LE, last u32 LE, access u8) */
+export declare function encodeWatchpoint(core: Core, first: number, last: number, access: Access): Uint8Array;
+/** Encode MapAsk argument (2 bytes: core u8, json u8) */
+export declare function encodeMapAsk(core: Core, json?: boolean): Uint8Array;
+/** Decode SourceLine reply (found u8, pc u32 LE, line u32 LE, path []const u8) */
+export declare function decodeSourceLine(data: Uint8Array): SourceLineResult;
+/** Encode CoreFrame argument (5 bytes: core u8, frame u32 LE) */
+export declare function encodeCoreFrame(core: Core, frame: number): Uint8Array;
+/** Decode Locals reply (core u8, count u8, rows []const u8 of length-prefixed LocalRow) */
+export declare function decodeLocals(data: Uint8Array): LocalsResult;
+/** Decode Advanced reply (22 bytes: core u8, from_ns u64 LE, to_ns u64 LE, reason u8, address u32 LE) */
+export declare function decodeAdvanced(data: Uint8Array): AdvancedResult;
 //# sourceMappingURL=codec.d.ts.map

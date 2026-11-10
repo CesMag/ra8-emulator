@@ -49,6 +49,13 @@ import {
   DiffPageItem,
   DiffPeriphItem,
   DecodedDiff,
+  Access,
+  NamedPointResult,
+  AdvancedResult,
+  SourceLineResult,
+  LocalWhereKind,
+  LocalVariable,
+  LocalsResult,
   HEADER_BYTES,
   METRICS_REPORT_BYTES,
   MAX_PAYLOAD,
@@ -993,5 +1000,171 @@ export function decodeDiff(data: Uint8Array): DecodedDiff {
 
   return { frames, a: sides[0], b: sides[1], regs, pages, periphs };
 }
+
+/** Encode single-frame Load argument (core u8, image []const u8) */
+export function encodeLoad(core: Core, image: Uint8Array): Uint8Array {
+  const buf = new Uint8Array(5 + image.length);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setUint32(1, image.length, true);
+  buf.set(image, 5);
+  return buf;
+}
+
+/** Encode LoadBegin argument (13 bytes: core u8, total_len u64 LE, checksum u32 LE) */
+export function encodeLoadBegin(
+  core: Core,
+  totalLen: bigint | number,
+  checksum: number
+): Uint8Array {
+  const buf = new Uint8Array(13);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setBigUint64(1, BigInt(totalLen), true);
+  view.setUint32(9, checksum >>> 0, true);
+  return buf;
+}
+
+/** Encode LoadChunk argument (13 + bytes.length: core u8, offset u64 LE, bytes []const u8) */
+export function encodeLoadChunk(
+  core: Core,
+  offset: bigint | number,
+  bytes: Uint8Array
+): Uint8Array {
+  const buf = new Uint8Array(13 + bytes.length);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setBigUint64(1, BigInt(offset), true);
+  view.setUint32(9, bytes.length, true);
+  buf.set(bytes, 13);
+  return buf;
+}
+
+/** Encode NamedBreak argument (core u8, name []const u8) */
+export function encodeNamedBreak(core: Core, name: string): Uint8Array {
+  const nameBytes = new TextEncoder().encode(name);
+  const buf = new Uint8Array(5 + nameBytes.length);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setUint32(1, nameBytes.length, true);
+  buf.set(nameBytes, 5);
+  return buf;
+}
+
+/** Decode NamedPoint reply (9 bytes: id u32 LE, address u32 LE, deferred u8) */
+export function decodeNamedPoint(data: Uint8Array): NamedPointResult {
+  if (data.length < 9) throw new Error("Truncated NamedPoint: requires 9 bytes");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return {
+    id: view.getUint32(0, true),
+    address: view.getUint32(4, true),
+    deferred: view.getUint8(8) !== 0,
+  };
+}
+
+/** Encode Watchpoint argument (10 bytes: core u8, first u32 LE, last u32 LE, access u8) */
+export function encodeWatchpoint(
+  core: Core,
+  first: number,
+  last: number,
+  access: Access
+): Uint8Array {
+  const buf = new Uint8Array(10);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setUint32(1, first >>> 0, true);
+  view.setUint32(5, last >>> 0, true);
+  view.setUint8(9, access);
+  return buf;
+}
+
+/** Encode MapAsk argument (2 bytes: core u8, json u8) */
+export function encodeMapAsk(core: Core, json = false): Uint8Array {
+  return new Uint8Array([core, json ? 1 : 0]);
+}
+
+/** Decode SourceLine reply (found u8, pc u32 LE, line u32 LE, path []const u8) */
+export function decodeSourceLine(data: Uint8Array): SourceLineResult {
+  if (data.length < 13) throw new Error("Truncated SourceLine: requires at least 13 bytes");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const found = view.getUint8(0) !== 0;
+  const pc = view.getUint32(1, true);
+  const line = view.getUint32(5, true);
+  const offset = { val: 9 };
+  const path = new TextDecoder().decode(readSlice(data, offset));
+  return { found, pc, line, path };
+}
+
+/** Encode CoreFrame argument (5 bytes: core u8, frame u32 LE) */
+export function encodeCoreFrame(core: Core, frame: number): Uint8Array {
+  const buf = new Uint8Array(5);
+  const view = new DataView(buf.buffer);
+  view.setUint8(0, core);
+  view.setUint32(1, frame >>> 0, true);
+  return buf;
+}
+
+/** Decode Locals reply (core u8, count u8, rows []const u8 of length-prefixed LocalRow) */
+export function decodeLocals(data: Uint8Array): LocalsResult {
+  if (data.length < 6) throw new Error("Truncated Locals header: requires at least 6 bytes");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const core = view.getUint8(0) as Core;
+  const count = view.getUint8(1);
+  const outerOff = { val: 2 };
+  const rowsBytes = readSlice(data, outerOff);
+
+  const locals: LocalVariable[] = [];
+  const decoder = new TextDecoder();
+  let at = 0;
+
+  for (let i = 0; i < count && at < rowsBytes.length; i++) {
+    const rowLen = rowsBytes[at];
+    if (rowLen === undefined || at + 1 + rowLen > rowsBytes.length) {
+      throw new Error("Truncated LocalRow packet");
+    }
+    const rData = rowsBytes.subarray(at + 1, at + 1 + rowLen);
+    at += 1 + rowLen;
+
+    const rOff = { val: 0 };
+    const name = decoder.decode(readSlice(rData, rOff));
+    const typeName = decoder.decode(readSlice(rData, rOff));
+    if (rOff.val + 21 > rData.length) {
+      throw new Error("Truncated LocalRow fixed fields");
+    }
+    const rView = new DataView(
+      rData.buffer,
+      rData.byteOffset + rOff.val,
+      rData.length - rOff.val
+    );
+    const size = rView.getUint32(0, true);
+    const whereKind = rView.getUint8(4) as LocalWhereKind;
+    const whereA =
+      whereKind === LocalWhereKind.Frame
+        ? rView.getBigInt64(5, true)
+        : rView.getBigUint64(5, true);
+    const whereB =
+      whereKind === LocalWhereKind.RegisterIndirect
+        ? rView.getBigInt64(13, true)
+        : rView.getBigUint64(13, true);
+
+    locals.push({ name, typeName, size, whereKind, whereA, whereB });
+  }
+
+  return { core, count, locals };
+}
+
+/** Decode Advanced reply (22 bytes: core u8, from_ns u64 LE, to_ns u64 LE, reason u8, address u32 LE) */
+export function decodeAdvanced(data: Uint8Array): AdvancedResult {
+  if (data.length < 22) throw new Error("Truncated Advanced reply: requires 22 bytes");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return {
+    core: view.getUint8(0) as Core,
+    fromNs: view.getBigUint64(1, true),
+    toNs: view.getBigUint64(9, true),
+    reason: view.getUint8(17),
+    address: view.getUint32(18, true),
+  };
+}
+
 
 

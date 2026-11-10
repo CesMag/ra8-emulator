@@ -4,8 +4,9 @@
  * Implements RA8RpcClient for seamless browser and Node.js communication with
  * ra8-emulator RFC 6455 transport bridge. Zero runtime dependencies.
  */
-import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, Direction, PROTOCOL_MAGIC, PROTOCOL_VERSION, } from "./types.js";
-import { encodeHello, decodeHello, decodeFault, encodeRequest, decodeResponse, decodeEvent, encodeFrame, splitFrames, encodeCoreOnly, encodeRun, encodeReadRegister, encodeWriteRegister, encodeReadMemory, decodeMemory, encodeWriteMemory, encodeSubscription, encodePoint, encodePointId, encodeAdvance, encodeSetSpeed, encodeScheduleInput, encodeConsoleInput, encodeDisasmAsk, decodeDisasmReply, decodeStackReport, encodePeriphAsk, encodeFoldedAsk, decodeTextSlice, decodeTraceEvent, decodeTransportEvent, decodeBranchList, encodeBranchSwitch, encodeBranchDelete, encodeBranchConfirmFork, decodeForkStatus, encodeSeek, encodePlayArgs, encodeNavQueryArgs, decodeNavQueryResult, encodeMarkerSetArgs, decodeFrameStatusResult, encodeDiffArgs, decodeDiff, decodeU32, decodeU64, decodeAck, decodeStopped, decodeUart, decodeSessionEvent, decodeBoardParts, decodeBacktrace, decodeDirtyRect, decodeMetricsReport, } from "./codec.js";
+import { Kind, ErrorCode, Method, Topic, Core, Register, RunMode, Direction, Access, PROTOCOL_MAGIC, PROTOCOL_VERSION, } from "./types.js";
+import { crc32 } from "./elf.js";
+import { encodeHello, decodeHello, decodeFault, encodeRequest, decodeResponse, decodeEvent, encodeFrame, splitFrames, encodeCoreOnly, encodeRun, encodeReadRegister, encodeWriteRegister, encodeReadMemory, decodeMemory, encodeWriteMemory, encodeSubscription, encodePoint, encodePointId, encodeAdvance, encodeSetSpeed, encodeScheduleInput, encodeConsoleInput, encodeDisasmAsk, decodeDisasmReply, decodeStackReport, encodePeriphAsk, encodeFoldedAsk, decodeTextSlice, decodeTraceEvent, decodeTransportEvent, decodeBranchList, encodeBranchSwitch, encodeBranchDelete, encodeBranchConfirmFork, decodeForkStatus, encodeSeek, encodePlayArgs, encodeNavQueryArgs, decodeNavQueryResult, encodeMarkerSetArgs, decodeFrameStatusResult, encodeDiffArgs, decodeDiff, encodeLoad, encodeLoadBegin, encodeLoadChunk, encodeNamedBreak, decodeNamedPoint, encodeWatchpoint, encodeMapAsk, decodeSourceLine, encodeCoreFrame, decodeLocals, decodeAdvanced, decodeU32, decodeU64, decodeAck, decodeStopped, decodeUart, decodeSessionEvent, decodeBoardParts, decodeBacktrace, decodeDirtyRect, decodeMetricsReport, } from "./codec.js";
 /** Lightweight, zero-dependency typed event emitter */
 export class TypedEventEmitter {
     listeners = new Map();
@@ -310,8 +311,17 @@ export class RA8RpcClient extends TypedEventEmitter {
     }
     /** Advance simulation by virtual nanoseconds */
     async advance(core, ns) {
-        const resp = await this.call(Method.Advance, encodeAdvance(core, ns));
+        const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+        if (resp.length >= 22) {
+            decodeAdvanced(resp);
+            return true;
+        }
         return decodeAck(resp).accepted !== 0;
+    }
+    /** Advance simulation by virtual nanoseconds and return full stop/timing report */
+    async advanceDetail(core, ns) {
+        const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+        return decodeAdvanced(resp);
     }
     /** Set emulation pacing speed (0 = unthrottled) */
     async setSpeed(core = Core.Cpu0, milli = 0n) {
@@ -423,6 +433,100 @@ export class RA8RpcClient extends TypedEventEmitter {
     async sendConsoleInput(core, bytes) {
         const resp = await this.call(Method.ConsoleInput, encodeConsoleInput(core, bytes));
         return decodeAck(resp).accepted !== 0;
+    }
+    /**
+     * Upload an ARM ELF firmware image to the target core.
+     * Uses single-frame Load for compact images (<= 64 KiB) and IEEE-CRC32
+     * chunked streaming (LoadBegin -> LoadChunk -> LoadEnd) for larger images up to 64 MiB.
+     */
+    async loadElf(core, image, onProgress) {
+        const SINGLE_FRAME_CAP = 65_536; // 64 KiB chunks for smooth browser progress & compact WS frames
+        const MAX_ELF_BYTES = 64 * 1024 * 1024;
+        if (image.length === 0) {
+            throw new Error("ELF image is empty");
+        }
+        if (image.length > MAX_ELF_BYTES) {
+            throw new Error(`ELF image exceeds 64 MiB limit (${image.length} bytes)`);
+        }
+        onProgress?.(0, image.length);
+        if (image.length <= SINGLE_FRAME_CAP) {
+            const resp = await this.call(Method.Load, encodeLoad(core, image), 30000);
+            const ok = decodeAck(resp).accepted !== 0;
+            if (ok)
+                onProgress?.(image.length, image.length);
+            return ok;
+        }
+        const checksum = crc32(image);
+        const beginResp = await this.call(Method.LoadBegin, encodeLoadBegin(core, image.length, checksum), 30000);
+        if (decodeAck(beginResp).accepted === 0)
+            return false;
+        for (let offset = 0; offset < image.length; offset += SINGLE_FRAME_CAP) {
+            const end = Math.min(offset + SINGLE_FRAME_CAP, image.length);
+            const slice = image.subarray(offset, end);
+            const chunkResp = await this.call(Method.LoadChunk, encodeLoadChunk(core, offset, slice), 30000);
+            if (decodeAck(chunkResp).accepted === 0)
+                return false;
+            onProgress?.(end, image.length);
+        }
+        const endResp = await this.call(Method.LoadEnd, encodeCoreOnly(core), 30000);
+        return decodeAck(endResp).accepted !== 0;
+    }
+    /** Continue execution from current PC (safe both at reset and after stepping/pausing) */
+    async continueRun(core = Core.Cpu0, budget = 0n) {
+        return this.run(core, RunMode.Cont, budget);
+    }
+    /** Step over function calls (`BL`) on target core */
+    async stepOver(core = Core.Cpu0) {
+        return this.run(core, RunMode.Next, 0n);
+    }
+    /** Step out of current function frame (`LR`/`SP`) on target core */
+    async stepOut(core = Core.Cpu0) {
+        return this.run(core, RunMode.Finish, 0n);
+    }
+    /** Set symbolic breakpoint by function/label name (resolves via ELF/module symbol table) */
+    async setBreakpointByName(core, name) {
+        const resp = await this.call(Method.SetBreakpointName, encodeNamedBreak(core, name));
+        return decodeNamedPoint(resp);
+    }
+    /** Set hardware data watchpoint over [first, last] inclusive and return assigned ID */
+    async setWatchpoint(core, first, last = first, access = Access.Write) {
+        const resp = await this.call(Method.SetWatchpoint, encodeWatchpoint(core, first, last, access));
+        return decodeU32(resp);
+    }
+    /** Clear hardware data watchpoint by assigned ID */
+    async clearWatchpoint(core, id) {
+        const resp = await this.call(Method.ClearWatchpoint, encodePointId(core, id));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Remove either a breakpoint or watchpoint by ID (returns 0 for breakpoint, 1 for watchpoint) */
+    async removePoint(core, id) {
+        const resp = await this.call(Method.RemovePoint, encodePointId(core, id));
+        return decodeU32(resp);
+    }
+    /** Step PC past a software BKPT instruction when halted on one */
+    async skipBreakpoint(core = Core.Cpu0) {
+        const resp = await this.call(Method.SkipBkpt, encodeCoreOnly(core));
+        return decodeAck(resp).accepted !== 0;
+    }
+    /** Fetch memory region & section map of the core's loaded ELF (text or JSON) */
+    async getMap(core = Core.Cpu0, json = false) {
+        const resp = await this.call(Method.Map, encodeMapAsk(core, json));
+        return decodeTextSlice(resp);
+    }
+    /** Resolve DWARF `.debug_line` source file and line number for the core's current PC */
+    async getSourceLine(core = Core.Cpu0) {
+        const resp = await this.call(Method.SourceLine, encodeCoreOnly(core));
+        return decodeSourceLine(resp);
+    }
+    /** Inspect DWARF `.debug_info` local variables at the core's stopped PC (frame 0) */
+    async getLocals(core = Core.Cpu0) {
+        const resp = await this.call(Method.Locals, encodeCoreOnly(core));
+        return decodeLocals(resp);
+    }
+    /** Inspect DWARF `.debug_info` local variables at a specific unwound call-stack frame */
+    async getLocalsAt(core, frame) {
+        const resp = await this.call(Method.LocalsAt, encodeCoreFrame(core, frame));
+        return decodeLocals(resp);
     }
     /* ------------------------------------------------------------------------ */
     /* Internal Stream and Packet Processing                                    */

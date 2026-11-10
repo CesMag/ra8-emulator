@@ -4,7 +4,7 @@
  * Implements RA8RpcClient for seamless browser and Node.js communication with
  * ra8-emulator RFC 6455 transport bridge. Zero runtime dependencies.
  */
-import { Method, Topic, Core, Register, RunMode, Hello, MetricsReport, DirtyRect, Stopped, UartEvent, SessionEvent, TransportEvent, TraceEvent, RpcEventEnvelope, BoardParts, Backtrace, DisasmReply, StackReport, BranchItem, ForkStatus, Direction, NavQueryArgs, NavQueryResult, FrameStatusResult, DecodedDiff, ScheduleInputArgs } from "./types.js";
+import { Method, Topic, Core, Register, RunMode, Hello, MetricsReport, DirtyRect, Stopped, UartEvent, SessionEvent, TransportEvent, TraceEvent, RpcEventEnvelope, BoardParts, Backtrace, DisasmReply, StackReport, BranchItem, ForkStatus, Direction, NavQueryArgs, NavQueryResult, FrameStatusResult, DecodedDiff, ScheduleInputArgs, Access, NamedPointResult, AdvancedResult, SourceLineResult, LocalsResult } from "./types.js";
 export type EventListener<T = any> = (data: T) => void;
 /** Client events map */
 export interface ClientEventMap {
@@ -103,6 +103,8 @@ export declare class RA8RpcClient extends TypedEventEmitter {
     now(core?: Core): Promise<bigint>;
     /** Advance simulation by virtual nanoseconds */
     advance(core: Core, ns: bigint): Promise<boolean>;
+    /** Advance simulation by virtual nanoseconds and return full stop/timing report */
+    advanceDetail(core: Core, ns: bigint): Promise<AdvancedResult>;
     /** Set emulation pacing speed (0 = unthrottled) */
     setSpeed(core?: Core, milli?: bigint | number): Promise<boolean>;
     /** Get served board front-panel profile, LEDs, and switches */
@@ -147,6 +149,36 @@ export declare class RA8RpcClient extends TypedEventEmitter {
     sendInput(args: ScheduleInputArgs): Promise<boolean>;
     /** Send bytes to virtual console UART */
     sendConsoleInput(core: Core, bytes: Uint8Array): Promise<boolean>;
+    /**
+     * Upload an ARM ELF firmware image to the target core.
+     * Uses single-frame Load for compact images (<= 64 KiB) and IEEE-CRC32
+     * chunked streaming (LoadBegin -> LoadChunk -> LoadEnd) for larger images up to 64 MiB.
+     */
+    loadElf(core: Core, image: Uint8Array, onProgress?: (loadedBytes: number, totalBytes: number) => void): Promise<boolean>;
+    /** Continue execution from current PC (safe both at reset and after stepping/pausing) */
+    continueRun(core?: Core, budget?: bigint): Promise<boolean>;
+    /** Step over function calls (`BL`) on target core */
+    stepOver(core?: Core): Promise<boolean>;
+    /** Step out of current function frame (`LR`/`SP`) on target core */
+    stepOut(core?: Core): Promise<boolean>;
+    /** Set symbolic breakpoint by function/label name (resolves via ELF/module symbol table) */
+    setBreakpointByName(core: Core, name: string): Promise<NamedPointResult>;
+    /** Set hardware data watchpoint over [first, last] inclusive and return assigned ID */
+    setWatchpoint(core: Core, first: number, last?: number, access?: Access): Promise<number>;
+    /** Clear hardware data watchpoint by assigned ID */
+    clearWatchpoint(core: Core, id: number): Promise<boolean>;
+    /** Remove either a breakpoint or watchpoint by ID (returns 0 for breakpoint, 1 for watchpoint) */
+    removePoint(core: Core, id: number): Promise<number>;
+    /** Step PC past a software BKPT instruction when halted on one */
+    skipBreakpoint(core?: Core): Promise<boolean>;
+    /** Fetch memory region & section map of the core's loaded ELF (text or JSON) */
+    getMap(core?: Core, json?: boolean): Promise<string>;
+    /** Resolve DWARF `.debug_line` source file and line number for the core's current PC */
+    getSourceLine(core?: Core): Promise<SourceLineResult>;
+    /** Inspect DWARF `.debug_info` local variables at the core's stopped PC (frame 0) */
+    getLocals(core?: Core): Promise<LocalsResult>;
+    /** Inspect DWARF `.debug_info` local variables at a specific unwound call-stack frame */
+    getLocalsAt(core: Core, frame: number): Promise<LocalsResult>;
     private sendRaw;
     private onData;
     private processFrame;

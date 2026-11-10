@@ -279,4 +279,13 @@ export var NavQueryKind;
     NavQueryKind[NavQueryKind["Rtos"] = 3] = "Rtos";
     NavQueryKind[NavQueryKind["Isr"] = 4] = "Isr";
 })(NavQueryKind || (NavQueryKind = {}));
+/** Storage location kind for a DWARF local variable (where_kinds in locals_wire.zig) */
+export var LocalWhereKind;
+(function (LocalWhereKind) {
+    LocalWhereKind[LocalWhereKind["None"] = 0] = "None";
+    LocalWhereKind[LocalWhereKind["Frame"] = 1] = "Frame";
+    LocalWhereKind[LocalWhereKind["RegisterIndirect"] = 2] = "RegisterIndirect";
+    LocalWhereKind[LocalWhereKind["InRegister"] = 3] = "InRegister";
+    LocalWhereKind[LocalWhereKind["Address"] = 4] = "Address";
+})(LocalWhereKind || (LocalWhereKind = {}));
 //# sourceMappingURL=types.js.map

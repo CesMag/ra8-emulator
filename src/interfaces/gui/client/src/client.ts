@@ -34,9 +34,16 @@ import {
   FrameStatusResult,
   DecodedDiff,
   ScheduleInputArgs,
+  Access,
+  NamedPointResult,
+  AdvancedResult,
+  SourceLineResult,
+  LocalsResult,
   PROTOCOL_MAGIC,
   PROTOCOL_VERSION,
 } from "./types.js";
+
+import { crc32 } from "./elf.js";
 
 import {
   encodeHello,
@@ -82,6 +89,17 @@ import {
   decodeFrameStatusResult,
   encodeDiffArgs,
   decodeDiff,
+  encodeLoad,
+  encodeLoadBegin,
+  encodeLoadChunk,
+  encodeNamedBreak,
+  decodeNamedPoint,
+  encodeWatchpoint,
+  encodeMapAsk,
+  decodeSourceLine,
+  encodeCoreFrame,
+  decodeLocals,
+  decodeAdvanced,
   decodeU32,
   decodeU64,
   decodeAck,
@@ -525,8 +543,18 @@ export class RA8RpcClient extends TypedEventEmitter {
 
   /** Advance simulation by virtual nanoseconds */
   public async advance(core: Core, ns: bigint): Promise<boolean> {
-    const resp = await this.call(Method.Advance, encodeAdvance(core, ns));
+    const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+    if (resp.length >= 22) {
+      decodeAdvanced(resp);
+      return true;
+    }
     return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Advance simulation by virtual nanoseconds and return full stop/timing report */
+  public async advanceDetail(core: Core, ns: bigint): Promise<AdvancedResult> {
+    const resp = await this.call(Method.Advance, encodeAdvance(core, ns), 30000);
+    return decodeAdvanced(resp);
   }
 
   /** Set emulation pacing speed (0 = unthrottled) */
@@ -665,6 +693,131 @@ export class RA8RpcClient extends TypedEventEmitter {
   public async sendConsoleInput(core: Core, bytes: Uint8Array): Promise<boolean> {
     const resp = await this.call(Method.ConsoleInput, encodeConsoleInput(core, bytes));
     return decodeAck(resp).accepted !== 0;
+  }
+
+  /**
+   * Upload an ARM ELF firmware image to the target core.
+   * Uses single-frame Load for compact images (<= 64 KiB) and IEEE-CRC32
+   * chunked streaming (LoadBegin -> LoadChunk -> LoadEnd) for larger images up to 64 MiB.
+   */
+  public async loadElf(
+    core: Core,
+    image: Uint8Array,
+    onProgress?: (loadedBytes: number, totalBytes: number) => void
+  ): Promise<boolean> {
+    const SINGLE_FRAME_CAP = 65_536; // 64 KiB chunks for smooth browser progress & compact WS frames
+    const MAX_ELF_BYTES = 64 * 1024 * 1024;
+    if (image.length === 0) {
+      throw new Error("ELF image is empty");
+    }
+    if (image.length > MAX_ELF_BYTES) {
+      throw new Error(`ELF image exceeds 64 MiB limit (${image.length} bytes)`);
+    }
+
+    onProgress?.(0, image.length);
+    if (image.length <= SINGLE_FRAME_CAP) {
+      const resp = await this.call(Method.Load, encodeLoad(core, image), 30000);
+      const ok = decodeAck(resp).accepted !== 0;
+      if (ok) onProgress?.(image.length, image.length);
+      return ok;
+    }
+
+    const checksum = crc32(image);
+    const beginResp = await this.call(
+      Method.LoadBegin,
+      encodeLoadBegin(core, image.length, checksum),
+      30000
+    );
+    if (decodeAck(beginResp).accepted === 0) return false;
+
+    for (let offset = 0; offset < image.length; offset += SINGLE_FRAME_CAP) {
+      const end = Math.min(offset + SINGLE_FRAME_CAP, image.length);
+      const slice = image.subarray(offset, end);
+      const chunkResp = await this.call(
+        Method.LoadChunk,
+        encodeLoadChunk(core, offset, slice),
+        30000
+      );
+      if (decodeAck(chunkResp).accepted === 0) return false;
+      onProgress?.(end, image.length);
+    }
+
+    const endResp = await this.call(Method.LoadEnd, encodeCoreOnly(core), 30000);
+    return decodeAck(endResp).accepted !== 0;
+  }
+
+  /** Continue execution from current PC (safe both at reset and after stepping/pausing) */
+  public async continueRun(core: Core = Core.Cpu0, budget = 0n): Promise<boolean> {
+    return this.run(core, RunMode.Cont, budget);
+  }
+
+  /** Step over function calls (`BL`) on target core */
+  public async stepOver(core: Core = Core.Cpu0): Promise<boolean> {
+    return this.run(core, RunMode.Next, 0n);
+  }
+
+  /** Step out of current function frame (`LR`/`SP`) on target core */
+  public async stepOut(core: Core = Core.Cpu0): Promise<boolean> {
+    return this.run(core, RunMode.Finish, 0n);
+  }
+
+  /** Set symbolic breakpoint by function/label name (resolves via ELF/module symbol table) */
+  public async setBreakpointByName(core: Core, name: string): Promise<NamedPointResult> {
+    const resp = await this.call(Method.SetBreakpointName, encodeNamedBreak(core, name));
+    return decodeNamedPoint(resp);
+  }
+
+  /** Set hardware data watchpoint over [first, last] inclusive and return assigned ID */
+  public async setWatchpoint(
+    core: Core,
+    first: number,
+    last = first,
+    access: Access = Access.Write
+  ): Promise<number> {
+    const resp = await this.call(Method.SetWatchpoint, encodeWatchpoint(core, first, last, access));
+    return decodeU32(resp);
+  }
+
+  /** Clear hardware data watchpoint by assigned ID */
+  public async clearWatchpoint(core: Core, id: number): Promise<boolean> {
+    const resp = await this.call(Method.ClearWatchpoint, encodePointId(core, id));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Remove either a breakpoint or watchpoint by ID (returns 0 for breakpoint, 1 for watchpoint) */
+  public async removePoint(core: Core, id: number): Promise<number> {
+    const resp = await this.call(Method.RemovePoint, encodePointId(core, id));
+    return decodeU32(resp);
+  }
+
+  /** Step PC past a software BKPT instruction when halted on one */
+  public async skipBreakpoint(core: Core = Core.Cpu0): Promise<boolean> {
+    const resp = await this.call(Method.SkipBkpt, encodeCoreOnly(core));
+    return decodeAck(resp).accepted !== 0;
+  }
+
+  /** Fetch memory region & section map of the core's loaded ELF (text or JSON) */
+  public async getMap(core: Core = Core.Cpu0, json = false): Promise<string> {
+    const resp = await this.call(Method.Map, encodeMapAsk(core, json));
+    return decodeTextSlice(resp);
+  }
+
+  /** Resolve DWARF `.debug_line` source file and line number for the core's current PC */
+  public async getSourceLine(core: Core = Core.Cpu0): Promise<SourceLineResult> {
+    const resp = await this.call(Method.SourceLine, encodeCoreOnly(core));
+    return decodeSourceLine(resp);
+  }
+
+  /** Inspect DWARF `.debug_info` local variables at the core's stopped PC (frame 0) */
+  public async getLocals(core: Core = Core.Cpu0): Promise<LocalsResult> {
+    const resp = await this.call(Method.Locals, encodeCoreOnly(core));
+    return decodeLocals(resp);
+  }
+
+  /** Inspect DWARF `.debug_info` local variables at a specific unwound call-stack frame */
+  public async getLocalsAt(core: Core, frame: number): Promise<LocalsResult> {
+    const resp = await this.call(Method.LocalsAt, encodeCoreFrame(core, frame));
+    return decodeLocals(resp);
   }
 
   /* ------------------------------------------------------------------------ */

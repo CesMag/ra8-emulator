@@ -24,7 +24,17 @@ interface ViewInstruction {
       <div class="disasm-subtoolbar">
         <div class="sub-left">
           <span class="view-label">Armv8.1-M / Helium Stream</span>
+          <button
+            *ngIf="isConnected()"
+            type="button"
+            class="quick-bp-chip font-mono"
+            (click)="breakAtMain()"
+            title="Set symbolic breakpoint on main() and jump disassembly there"
+          >
+            ● Break &#64; main
+          </button>
         </div>
+
         <div class="sub-right">
           <button
             type="button"
@@ -35,16 +45,38 @@ interface ViewInstruction {
           >
             Follow PC
           </button>
+
           <div class="jump-box">
             <input
               type="text"
+              list="disasm-symbol-suggestions"
               class="jump-input font-mono"
-              placeholder="0x02000000"
+              placeholder="Symbol (main) or 0xAddr…"
               [ngModel]="jumpAddressText()"
               (ngModelChange)="jumpAddressText.set($event)"
-              (keydown.enter)="jumpToAddress()"
+              (keydown.enter)="jumpToTarget()"
             />
-            <button type="button" class="jump-btn" (click)="jumpToAddress()">Go</button>
+            <datalist id="disasm-symbol-suggestions">
+              <option *ngFor="let sym of symbolSuggestions()" [value]="sym"></option>
+            </datalist>
+            <button
+              type="button"
+              class="jump-btn"
+              [disabled]="!isConnected() || !jumpAddressText().trim()"
+              (click)="jumpToTarget()"
+              title="Jump disassembly view to symbol or hex address"
+            >
+              Go
+            </button>
+            <button
+              type="button"
+              class="jump-btn bp-btn"
+              [disabled]="!isConnected() || !jumpAddressText().trim()"
+              (click)="setBreakAtTarget()"
+              title="Set execution breakpoint at symbol name or hex address"
+            >
+              + Break
+            </button>
           </div>
         </div>
       </div>
@@ -54,12 +86,17 @@ interface ViewInstruction {
         <!-- CPU0 (Cortex-M85) Disassembly Stream -->
         <div *ngIf="showCpu0()" class="core-lane">
           <div class="lane-header m85">
-            <span class="lane-title">CPU0 • Cortex-M85</span>
+            <div class="lane-left">
+              <span class="lane-title">CPU0 • Cortex-M85</span>
+              <span *ngIf="cpu0SourceBadge()" class="src-pill font-mono" [title]="cpu0SourceFull()">
+                {{ cpu0SourceBadge() }}
+              </span>
+            </div>
             <code class="lane-pc font-mono">PC 0x{{ toHex8(emu.cpu0Pc()) }}</code>
           </div>
           <div class="disasm-scroll">
             <div *ngIf="cpu0Rows().length === 0" class="empty-state">
-              Connect emulator backend to stream Cortex-M85 instructions
+              Connect emulator backend or load an <code>.elf</code> image to stream Cortex-M85 instructions
             </div>
 
             <table *ngIf="cpu0Rows().length > 0" class="disasm-table font-mono">
@@ -69,7 +106,7 @@ interface ViewInstruction {
                     <td colspan="4">&lt;{{ row.symbol }}&gt;:</td>
                   </tr>
                   <tr class="instr-row" [class.current-pc]="row.isCurrentPc">
-                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu0)" title="Toggle Breakpoint">
+                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu0)" title="Click to toggle execution breakpoint">
                       <span class="bp-dot" [class.active]="row.hasBreakpoint">●</span>
                       <span *ngIf="row.isCurrentPc" class="pc-arrow">▶</span>
                     </td>
@@ -89,13 +126,18 @@ interface ViewInstruction {
         <!-- CPU1 (Cortex-M33) Disassembly Stream -->
         <div *ngIf="showCpu1()" class="core-lane">
           <div class="lane-header m33">
-            <span class="lane-title">CPU1 • Cortex-M33</span>
+            <div class="lane-left">
+              <span class="lane-title">CPU1 • Cortex-M33</span>
+              <span *ngIf="cpu1SourceBadge()" class="src-pill font-mono">
+                {{ cpu1SourceBadge() }}
+              </span>
+            </div>
             <code *ngIf="emu.cpu1Attached()" class="lane-pc font-mono">PC 0x{{ toHex8(emu.cpu1Pc()) }}</code>
             <code *ngIf="!emu.cpu1Attached()" class="lane-pc font-mono">CLOCK-GATED</code>
           </div>
           <div class="disasm-scroll">
             <div *ngIf="!emu.cpu1Attached()" class="empty-state">
-              Companion Cortex-M33 core is clock-gated (load dual-core image to activate)
+              Companion Cortex-M33 core is clock-gated (start server with <code>--cpu1 &lt;m33.elf&gt;</code> to activate)
             </div>
             <div *ngIf="emu.cpu1Attached() && cpu1Rows().length === 0" class="empty-state">
               Halt CPU1 to stream Cortex-M33 instructions
@@ -108,7 +150,7 @@ interface ViewInstruction {
                     <td colspan="4">&lt;{{ row.symbol }}&gt;:</td>
                   </tr>
                   <tr class="instr-row" [class.current-pc]="row.isCurrentPc">
-                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu1)" title="Toggle Breakpoint">
+                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu1)" title="Click to toggle execution breakpoint">
                       <span class="bp-dot" [class.active]="row.hasBreakpoint">●</span>
                       <span *ngIf="row.isCurrentPc" class="pc-arrow">▶</span>
                     </td>
@@ -152,13 +194,32 @@ interface ViewInstruction {
     .sub-left, .sub-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .view-label {
       font-size: 10px;
       color: var(--text-secondary);
       font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .quick-bp-chip {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--accent-red);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .quick-bp-chip:hover {
+      background: var(--bg-well);
+      border-color: var(--accent-red);
     }
 
     .action-btn {
@@ -170,6 +231,7 @@ interface ViewInstruction {
       font-weight: 500;
       padding: 2px 7px;
       cursor: pointer;
+      white-space: nowrap;
       transition: all 0.12s;
     }
 
@@ -199,22 +261,33 @@ interface ViewInstruction {
       color: var(--text-primary);
       font-size: 10px;
       padding: 2px 6px;
-      width: 82px;
+      width: 168px;
       outline: none;
     }
 
     .jump-btn {
       background: var(--border-subtle);
       border: none;
+      border-left: 1px solid var(--border-subtle);
       color: var(--text-primary);
       font-size: 10px;
       font-weight: 600;
-      padding: 2px 6px;
+      padding: 2px 7px;
       cursor: pointer;
+      white-space: nowrap;
     }
 
-    .jump-btn:hover {
+    .jump-btn:hover:not(:disabled) {
       background: var(--border-strong);
+    }
+
+    .jump-btn.bp-btn {
+      color: var(--accent-red);
+    }
+
+    .jump-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
 
     .lanes-grid {
@@ -252,14 +325,36 @@ interface ViewInstruction {
       font-size: 10px;
       font-weight: 600;
       flex-shrink: 0;
+      gap: 6px;
     }
 
-    .lane-header.m85 .lane-title { color: var(--accent-blue); }
-    .lane-header.m33 .lane-title { color: var(--accent-purple); }
+    .lane-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .lane-header.m85 .lane-title { color: var(--accent-blue); white-space: nowrap; }
+    .lane-header.m33 .lane-title { color: var(--accent-purple); white-space: nowrap; }
+
+    .src-pill {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--accent-green);
+      background: var(--accent-green-subtle);
+      padding: 0 5px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 170px;
+    }
 
     .lane-pc {
       color: var(--text-secondary);
       font-size: 10px;
+      white-space: nowrap;
     }
 
     .disasm-scroll {
@@ -274,6 +369,15 @@ interface ViewInstruction {
       text-align: center;
       color: var(--text-tertiary);
       font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .empty-state code {
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      background: var(--bg-well);
+      padding: 1px 4px;
+      border-radius: 3px;
     }
 
     .disasm-table {
@@ -376,9 +480,41 @@ export class DisassemblyViewComponent {
   public followPc = signal<boolean>(true);
   public jumpAddressText = signal<string>('');
 
+  public isConnected = computed(() => this.emu.connectionState() === 'connected');
   public showSplit = computed(() => this.emu.inspectionMode() === 'split');
   public showCpu0 = computed(() => this.emu.inspectionMode() !== 'cpu1');
   public showCpu1 = computed(() => this.emu.inspectionMode() !== 'cpu0');
+
+  public cpu0SourceBadge = computed(() => {
+    const sl = this.emu.cpu0SourceLine();
+    if (!sl || !sl.found || !sl.path) return '';
+    const base = sl.path.split(/[\\/]/).pop() ?? sl.path;
+    return `${base}:${sl.line}`;
+  });
+
+  public cpu0SourceFull = computed(() => {
+    const sl = this.emu.cpu0SourceLine();
+    if (!sl || !sl.found) return '';
+    return `${sl.path}:${sl.line}`;
+  });
+
+  public cpu1SourceBadge = computed(() => {
+    const sl = this.emu.cpu1SourceLine();
+    if (!sl || !sl.found || !sl.path) return '';
+    const base = sl.path.split(/[\\/]/).pop() ?? sl.path;
+    return `${base}:${sl.line}`;
+  });
+
+  public symbolSuggestions = computed<string[]>(() => {
+    const set = new Set<string>(['main', 'Reset_Handler', 'SysTick_Handler', 'HardFault_Handler']);
+    for (const sym of this.emu.cpu0ElfSymbols()) {
+      if (sym.kind === 'func' && set.size < 80) set.add(sym.name);
+    }
+    for (const row of this.emu.cpu0Disasm()) {
+      if (row.symbol) set.add(row.symbol);
+    }
+    return Array.from(set);
+  });
 
   public cpu0Rows = computed<ViewInstruction[]>(() =>
     this.mapRows(this.emu.cpu0Disasm(), this.emu.cpu0Pc(), this.emu.cpu0Breakpoints())
@@ -417,6 +553,10 @@ export class DisassemblyViewComponent {
     });
   }
 
+  private targetCore(): Core {
+    return this.emu.inspectionMode() === 'cpu1' && this.emu.cpu1Attached() ? Core.Cpu1 : Core.Cpu0;
+  }
+
   public toggleFollowPc(): void {
     const next = !this.followPc();
     this.followPc.set(next);
@@ -428,16 +568,70 @@ export class DisassemblyViewComponent {
     }
   }
 
-  public jumpToAddress(): void {
+  public async jumpToTarget(): Promise<void> {
     const raw = this.jumpAddressText().trim();
     if (!raw) return;
-    const addr = raw.startsWith('0x') || raw.startsWith('0X')
-      ? parseInt(raw.slice(2), 16)
-      : parseInt(raw, 16);
-    if (!isNaN(addr)) {
+    const core = this.targetCore();
+
+    if (/^0x[0-9a-f]+$/i.test(raw) || /^[0-9a-f]{8}$/i.test(raw)) {
+      const addr = parseInt(raw.replace(/^0x/i, ''), 16) >>> 0;
       this.followPc.set(false);
-      const targetCore = this.emu.inspectionMode() === 'cpu1' ? Core.Cpu1 : Core.Cpu0;
-      void this.emu.refreshDisassembly(targetCore, addr >>> 0, 28);
+      await this.emu.refreshDisassembly(core, addr, 28);
+      return;
+    }
+
+    // Symbol lookup: first check client-parsed ELF symbols, then current disasm rows
+    const syms = core === Core.Cpu1 ? this.emu.cpu1ElfSymbols() : this.emu.cpu0ElfSymbols();
+    const symMatch = syms.find((s) => s.name === raw);
+    if (symMatch) {
+      this.followPc.set(false);
+      await this.emu.refreshDisassembly(core, (symMatch.address & ~1) >>> 0, 28);
+      return;
+    }
+
+    const disasmMatch = (core === Core.Cpu1 ? this.emu.cpu1Disasm() : this.emu.cpu0Disasm()).find(
+      (r) => r.symbol === raw
+    );
+    if (disasmMatch) {
+      this.followPc.set(false);
+      await this.emu.refreshDisassembly(core, (disasmMatch.address & ~1) >>> 0, 28);
+      return;
+    }
+
+    // Fallback: set breakpoint by name via backend DWARF/symtab to resolve address, jump, and keep user informed
+    const bp = await this.emu.addNamedBreakpoint(raw, core);
+    if (bp && !bp.deferred) {
+      this.followPc.set(false);
+      await this.emu.refreshDisassembly(core, (bp.address & ~1) >>> 0, 28);
+    }
+  }
+
+  public async setBreakAtTarget(): Promise<void> {
+    const raw = this.jumpAddressText().trim();
+    if (!raw) return;
+    const core = this.targetCore();
+
+    if (/^0x[0-9a-f]+$/i.test(raw)) {
+      const addr = parseInt(raw.slice(2), 16) >>> 0;
+      await this.emu.toggleBreakpoint(addr, core);
+      this.followPc.set(false);
+      await this.emu.refreshDisassembly(core, addr & ~1, 28);
+    } else {
+      const bp = await this.emu.addNamedBreakpoint(raw, core);
+      if (bp && !bp.deferred) {
+        this.followPc.set(false);
+        await this.emu.refreshDisassembly(core, (bp.address & ~1) >>> 0, 28);
+      }
+    }
+    this.jumpAddressText.set('');
+  }
+
+  public async breakAtMain(): Promise<void> {
+    const core = this.targetCore();
+    const bp = await this.emu.addNamedBreakpoint('main', core);
+    if (bp && !bp.deferred) {
+      this.followPc.set(false);
+      await this.emu.refreshDisassembly(core, (bp.address & ~1) >>> 0, 28);
     }
   }
 

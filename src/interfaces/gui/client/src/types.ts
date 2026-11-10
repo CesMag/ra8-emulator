@@ -655,3 +655,62 @@ export interface DecodedDiff {
   periphs: DiffPeriphItem[];
 }
 
+/** Symbolic breakpoint placement result (NamedPoint in rpc.zig) */
+export interface NamedPointResult {
+  id: number;
+  address: number;
+  deferred: boolean;
+}
+
+/** Virtual-time advance completion reply (Advanced in rpc.zig) */
+export interface AdvancedResult {
+  core: Core;
+  fromNs: bigint;
+  toNs: bigint;
+  reason: StopReason;
+  address: number;
+}
+
+/** DWARF source location for a core's PC (SourceLine in rpc.zig) */
+export interface SourceLineResult {
+  found: boolean;
+  pc: number;
+  line: number;
+  path: string;
+}
+
+/** Storage location kind for a DWARF local variable (where_kinds in locals_wire.zig) */
+export enum LocalWhereKind {
+  None = 0,
+  Frame = 1,
+  RegisterIndirect = 2,
+  InRegister = 3,
+  Address = 4,
+}
+
+/** Single DWARF local variable entry (LocalRow in locals_wire.zig) */
+export interface LocalVariable {
+  name: string;
+  typeName: string;
+  size: number;
+  whereKind: LocalWhereKind;
+  whereA: bigint;
+  whereB: bigint;
+}
+
+/** Function locals reply for a halted core/frame (Locals in locals_wire.zig) */
+export interface LocalsResult {
+  core: Core;
+  count: number;
+  locals: LocalVariable[];
+}
+
+/** Parsed ELF32 symbol entry for instant client-side symbol search and autocomplete */
+export interface ElfSymbol {
+  name: string;
+  address: number;
+  size: number;
+  kind: "func" | "object" | "other";
+}
+
+

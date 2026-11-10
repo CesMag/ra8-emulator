@@ -1,21 +1,92 @@
 <div class="workbench-layout">
+  <!-- Full-Window .elf Drag & Drop Glass Overlay -->
+  <div *ngIf="isDraggingFile()" class="drop-overlay">
+    <div class="drop-card">
+      <div class="drop-icon">↑</div>
+      <div class="drop-title">Drop <code>.elf</code> Firmware Image to Load &amp; Debug</div>
+      <div class="drop-sub">
+        Resets {{ inspectionMode() === 'cpu1' && cpu1Attached() ? 'CPU1 (Cortex-M33)' : 'CPU0 (Cortex-M85)' }},
+        sets a breakpoint on <code>main()</code>, and halts ready to step.
+      </div>
+    </div>
+  </div>
+
   <!-- Top 44px Xcode Navigation Toolbar -->
   <header class="workbench-header">
     <app-connection-bar></app-connection-bar>
   </header>
 
-  <!-- Halt Notification Banner (Breakpoints, Faults, Stepping) -->
+  <!-- Zero-Context Guided Quickstart Strip (Shown when offline until connected or dismissed) -->
+  <div *ngIf="showQuickstartBanner()" class="quickstart-strip">
+    <div class="qs-steps">
+      <span class="qs-badge">Quickstart</span>
+      <span class="qs-step">
+        <strong>1.</strong> Start local backend:
+        <code class="qs-cmd font-mono" (click)="copyQuickCommand()" title="Click to copy command">{{ quickServeCommand() }}</code>
+      </span>
+      <button type="button" class="qs-btn" (click)="copyQuickCommand()">
+        {{ quickCopied() ? 'Copied' : 'Copy' }}
+      </button>
+      <button type="button" class="qs-btn primary" (click)="retryQuickConnect()">
+        Connect Now
+      </button>
+      <span class="qs-sep">•</span>
+      <span class="qs-step">
+        <strong>2.</strong> Click <strong>↑ Load ELF…</strong> or drag &amp; drop any <code>.elf</code> to auto-break at <code>main()</code> and step with <kbd>F10</kbd> / <kbd>F11</kbd>.
+      </span>
+    </div>
+    <button
+      type="button"
+      class="qs-dismiss"
+      (click)="dismissedQuickstart.set(true)"
+      title="Dismiss quickstart guide"
+    >
+      ✕
+    </button>
+  </div>
+
+  <!-- Actionable Error Banner (Invalid ELF, Symbol Not Found, RPC Rejection) -->
+  <div *ngIf="showErrorBanner()" class="error-banner">
+    <div class="err-info">
+      <span class="err-title">Error:</span>
+      <span>{{ emu.errorMessage() }}</span>
+    </div>
+    <button type="button" class="halt-dismiss-btn" (click)="dismissError()" title="Dismiss error">✕</button>
+  </div>
+
+  <!-- Actionable Halt Notification Banner (Breakpoints, Watchpoints, Faults) -->
   <div *ngIf="showHaltBanner()" class="halt-banner">
     <div class="halt-info">
-      <span class="halt-icon">🛑</span>
-      <span class="halt-title">Halt:</span>
+      <span class="halt-title">Halted</span>
       <span class="halt-core">{{ lastStopInfo()!.core === Core.Cpu0 ? 'CPU0 (M85)' : 'CPU1 (M33)' }}</span>
       <span class="halt-sep">•</span>
       <span class="halt-reason">{{ lastStopReason() }}</span>
       <span class="halt-sep">•</span>
       <span class="halt-pc font-mono">PC 0x{{ toHex8(lastStopInfo()!.address) }}</span>
+      <span *ngIf="haltSourceBadge()" class="halt-src font-mono">{{ haltSourceBadge() }}</span>
     </div>
-    <button type="button" class="halt-dismiss-btn" (click)="dismissBanner()" title="Dismiss halt banner">✕</button>
+
+    <div class="halt-actions">
+      <button type="button" class="halt-act-btn" (click)="setBottomTab('locals')">
+        Locals &amp; Watch
+      </button>
+      <button type="button" class="halt-act-btn" (click)="setBottomTab('stack')">
+        Call Stack
+      </button>
+      <button
+        *ngIf="canSkipBkpt()"
+        type="button"
+        class="halt-act-btn"
+        (click)="skipHaltBkpt()"
+        title="Advance PC past software BKPT instruction"
+      >
+        Skip BKPT
+      </button>
+      <button type="button" class="halt-act-btn primary" (click)="continueFromHalt()">
+        ▶ Continue
+      </button>
+      <button type="button" class="halt-dismiss-btn" (click)="dismissBanner()" title="Dismiss halt banner">✕</button>
+    </div>
   </div>
 
   <!-- Main Docked IDE Viewport: Zero Window Scroll -->
@@ -95,7 +166,7 @@
         </div>
       </section>
 
-      <!-- Bottom Deck: Registers, Call Stack, & Diagnostics -->
+      <!-- Bottom Deck: Registers, Locals & Watch, Call Stack, & Diagnostics -->
       <section class="deck bottom-deck">
         <div class="deck-tabs-bar">
           <div class="deck-tabs-group">
@@ -106,6 +177,15 @@
               (click)="setBottomTab('registers')"
             >
               Registers
+            </button>
+            <button
+              type="button"
+              class="deck-tab-btn"
+              [class.active]="bottomDeckTab() === 'locals'"
+              (click)="setBottomTab('locals')"
+            >
+              Locals &amp; Watch
+              <span *ngIf="activeStopCount() > 0" class="tab-count font-mono">{{ activeStopCount() }}</span>
             </button>
             <button
               type="button"
@@ -145,11 +225,18 @@
 
         <div class="deck-content">
           <app-register-inspector *ngIf="bottomDeckTab() === 'registers'"></app-register-inspector>
+          <app-locals-watch *ngIf="bottomDeckTab() === 'locals'"></app-locals-watch>
           <app-call-stack *ngIf="bottomDeckTab() === 'stack'"></app-call-stack>
           <app-metrics-panel *ngIf="bottomDeckTab() === 'metrics'"></app-metrics-panel>
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Subtle Floating Status Toast -->
+  <div *ngIf="emu.statusToast() as toast" class="status-toast font-mono">
+    <span class="toast-dot"></span>
+    <span>{{ toast }}</span>
   </div>
 
   <!-- Bottom Drawer: Serial Console & Time-Travel DAG -->

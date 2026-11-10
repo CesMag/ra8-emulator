@@ -211,3 +211,51 @@ test "ws_transport poll reports buffered bytes and socket readiness" {
     peers[0].rx_len = 10;
     try std.testing.expect(server_t.vtable.poll(server_t.ctx) > 0);
 }
+
+test "ws_transport reassembles fragmented binary + continuation frames and rejects stray continuation" {
+    var peers = try testPair();
+    defer for (&peers) |*peer| peer.close();
+
+    const server_t = peers[0].transport();
+    peers[0].state = .websocket;
+
+    const mask1 = [4]u8{ 0x11, 0x22, 0x33, 0x44 };
+    var part1: [5]u8 = undefined;
+    @memcpy(&part1, "hello");
+    ws_frame.unmask(&part1, mask1);
+
+    var frame1: [11]u8 = undefined;
+    frame1[0] = 0x02; // FIN=0 + binary
+    frame1[1] = 0x80 | 5;
+    @memcpy(frame1[2..6], &mask1);
+    @memcpy(frame1[6..11], &part1);
+
+    const mask2 = [4]u8{ 0x55, 0x66, 0x77, 0x88 };
+    var part2: [6]u8 = undefined;
+    @memcpy(&part2, "_world");
+    ws_frame.unmask(&part2, mask2);
+
+    var frame2: [12]u8 = undefined;
+    frame2[0] = 0x80; // FIN=1 + continuation (0x00)
+    frame2[1] = 0x80 | 6;
+    @memcpy(frame2[2..6], &mask2);
+    @memcpy(frame2[6..12], &part2);
+
+    var combined: [23]u8 = undefined;
+    @memcpy(combined[0..11], &frame1);
+    @memcpy(combined[11..23], &frame2);
+    try ready.sendAll(io, peers[1].stream.socket.handle, &combined, 1000);
+
+    var out: [32]u8 = undefined;
+    var total: usize = 0;
+    while (total < 11) {
+        try std.testing.expect((try ready.wait(io, peers[0].stream.socket.handle, 1000)).any() or peers[0].rx_len > 0);
+        total += try server_t.vtable.receive(server_t.ctx, out[total..]);
+    }
+    try std.testing.expectEqualStrings("hello_world", out[0..total]);
+
+    // Stray continuation frame when not in fragmented state returns error.BadMessage
+    try ready.sendAll(io, peers[1].stream.socket.handle, &frame2, 1000);
+    try std.testing.expect((try ready.wait(io, peers[0].stream.socket.handle, 1000)).any());
+    try std.testing.expectError(error.BadMessage, server_t.vtable.receive(server_t.ctx, &out));
+}
