@@ -18,27 +18,27 @@ interface MemoryRow {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="pane-card">
-      <div class="pane-header">
-        <div class="header-left">
-          <span class="pane-title">Memory Hex Inspector</span>
-          <span class="range-badge">0x{{ toHex8(currentBaseAddress()) }}</span>
-          <span *ngIf="changedByteCount() > 0" class="delta-badge">
-            Δ {{ changedByteCount() }} bytes mutated
+    <div class="memory-pane">
+      <!-- Sub-Toolbar -->
+      <div class="memory-subtoolbar">
+        <div class="sub-left">
+          <span class="range-pill font-mono">0x{{ toHex8(currentBaseAddress()) }}</span>
+          <span *ngIf="changedByteCount() > 0" class="delta-pill font-mono">
+            Δ {{ changedByteCount() }}B mutated
           </span>
-        </div>
-        <div class="header-right">
           <div class="preset-group">
             <button type="button" class="preset-btn" (click)="jumpToSram()" title="RA8 System SRAM (0x22000000)">SRAM</button>
             <button type="button" class="preset-btn" (click)="jumpToMram()" title="RA8 Code MRAM/Flash (0x02000000)">MRAM</button>
             <button type="button" class="preset-btn" (click)="jumpToSp()" title="Jump to active Stack Pointer">SP</button>
             <button type="button" class="preset-btn" (click)="jumpToPc()" title="Jump to Program Counter">PC</button>
           </div>
+        </div>
 
+        <div class="sub-right">
           <div class="addr-box">
             <input
               type="text"
-              class="addr-input"
+              class="addr-input font-mono"
               placeholder="0x22000000"
               [ngModel]="targetAddressInput()"
               (ngModelChange)="targetAddressInput.set($event)"
@@ -50,12 +50,13 @@ interface MemoryRow {
         </div>
       </div>
 
+      <!-- Hex Table View -->
       <div class="hex-scroll">
         <div *ngIf="rows().length === 0" class="empty-state">
-          Connect emulator backend or enter a mapped RA8 address (e.g. 0x22000000 SRAM, 0x02000000 MRAM)
+          Connect emulator backend or jump to mapped memory (0x22000000 SRAM, 0x02000000 MRAM)
         </div>
 
-        <table *ngIf="rows().length > 0" class="hex-table">
+        <table *ngIf="rows().length > 0" class="hex-table font-mono">
           <thead>
             <tr>
               <th class="col-addr">Address</th>
@@ -87,11 +88,12 @@ interface MemoryRow {
         </table>
       </div>
 
-      <div *ngIf="editingAddr() !== null" class="edit-bar">
+      <!-- Inline Poke Byte Strip -->
+      <div *ngIf="editingAddr() !== null" class="edit-strip font-mono">
         <span class="edit-label">Poke byte &#64; 0x{{ toHex8(editingAddr()!) }}:</span>
         <input
           type="text"
-          class="byte-input"
+          class="byte-input font-mono"
           [ngModel]="editByteHex()"
           (ngModelChange)="editByteHex.set($event)"
           maxlength="2"
@@ -99,224 +101,249 @@ interface MemoryRow {
           (keydown.escape)="cancelByteEdit()"
           autofocus
         />
-        <button type="button" class="edit-btn save" (click)="saveByteEdit()">Write</button>
-        <button type="button" class="edit-btn cancel" (click)="cancelByteEdit()">Cancel</button>
+        <button type="button" class="edit-action-btn write" (click)="saveByteEdit()">Write</button>
+        <button type="button" class="edit-action-btn cancel" (click)="cancelByteEdit()">Cancel</button>
       </div>
     </div>
   `,
   styles: [`
-    .pane-card {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(6, 10, 19, 0.92));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      overflow: hidden;
+    .memory-pane {
+      height: 100%;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-surface);
     }
 
-    .pane-header {
+    .memory-subtoolbar {
+      height: 28px;
+      min-height: 28px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 7px 12px;
-      background: rgba(15, 23, 42, 0.55);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      flex-wrap: wrap;
+      justify-content: space-between;
+      padding: 0 10px;
+      flex-shrink: 0;
       gap: 8px;
     }
 
-    .header-left,
-    .header-right {
+    .sub-left, .sub-right {
       display: flex;
       align-items: center;
-      gap: 7px;
-      flex-wrap: wrap;
+      gap: 6px;
     }
 
-    .pane-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-
-    .range-badge {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.68rem;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.22);
+    .range-pill {
+      font-size: 10px;
+      color: var(--accent-blue);
+      background: var(--accent-blue-subtle);
       padding: 1px 6px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
     }
 
-    .delta-badge {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.64rem;
-      color: #fbbf24;
-      background: rgba(245, 158, 11, 0.14);
-      border: 1px solid rgba(245, 158, 11, 0.35);
+    .delta-pill {
+      font-size: 10px;
+      color: var(--accent-amber);
+      background: var(--accent-amber-subtle);
       padding: 1px 6px;
-      border-radius: 999px;
+      border-radius: var(--radius-sm);
     }
 
     .preset-group {
       display: inline-flex;
-      gap: 3px;
+      gap: 2px;
     }
 
     .preset-btn {
-      background: rgba(30, 41, 59, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      color: #94a3b8;
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 4px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 5px;
       cursor: pointer;
+      transition: all 0.12s;
     }
-    .preset-btn:hover { color: #f8fafc; background: rgba(51, 65, 85, 0.9); }
+
+    .preset-btn:hover {
+      background: var(--bg-well);
+      color: var(--text-primary);
+    }
 
     .addr-box {
       display: inline-flex;
       align-items: center;
-      background: #090d16;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
+      background: var(--bg-well);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
       overflow: hidden;
     }
 
     .addr-input {
       background: transparent;
       border: none;
-      color: #f1f5f9;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.7rem;
-      padding: 3px 7px;
-      width: 92px;
+      color: var(--text-primary);
+      font-size: 10px;
+      padding: 2px 6px;
+      width: 84px;
       outline: none;
     }
 
     .nav-btn {
-      background: rgba(51, 65, 85, 0.8);
+      background: var(--border-subtle);
       border: none;
-      color: #e2e8f0;
-      font-size: 0.65rem;
-      padding: 3px 7px;
+      color: var(--text-primary);
+      font-size: 9px;
+      padding: 2px 6px;
       cursor: pointer;
     }
-    .nav-btn:hover { background: #475569; }
+
+    .nav-btn:hover {
+      background: var(--border-strong);
+    }
 
     .hex-scroll {
-      max-height: 245px;
+      flex: 1;
+      min-height: 0;
       overflow-y: auto;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.71rem;
+      font-size: 11px;
     }
 
     .empty-state {
-      padding: 22px 14px;
+      padding: 30px 14px;
       text-align: center;
-      color: #64748b;
-      font-size: 0.71rem;
+      color: var(--text-tertiary);
+      font-size: 11px;
     }
 
     .hex-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
     .hex-table th {
-      background: rgba(9, 13, 22, 0.92);
-      color: #64748b;
+      background: var(--bg-well);
+      color: var(--text-tertiary);
       font-weight: 600;
-      padding: 4px 8px;
+      padding: 3px 6px;
       text-align: left;
-      font-size: 0.66rem;
+      font-size: 10px;
       position: sticky;
       top: 0;
       z-index: 2;
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .hex-row {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      border-bottom: 1px solid var(--border-subtle);
+      height: 19px;
     }
-    .hex-row:hover { background: rgba(30, 41, 59, 0.4); }
+
+    .hex-row:hover {
+      background: var(--bg-well);
+    }
+
     .hex-row.row-delta {
-      background: rgba(245, 158, 11, 0.05);
+      background: var(--accent-amber-subtle);
     }
 
     .col-addr {
-      color: #94a3b8;
-      padding: 2px 8px;
-      width: 88px;
+      color: var(--text-secondary);
+      padding: 0 6px;
+      width: 82px;
     }
 
     .col-bytes {
-      padding: 2px 6px;
+      padding: 0 4px;
       white-space: nowrap;
     }
 
     .byte-val {
       display: inline-block;
-      width: 21px;
+      width: 20px;
       text-align: center;
-      color: #e2e8f0;
+      color: var(--text-primary);
       cursor: pointer;
-      border-radius: 3px;
+      border-radius: 2px;
+      transition: background 0.1s;
     }
+
     .byte-val:hover {
-      background: #38bdf8;
-      color: #020617;
+      background: var(--accent-blue);
+      color: #ffffff;
     }
-    .byte-val.gap { margin-right: 7px; }
-    .byte-val.zero { color: #475569; }
+
+    .byte-val.gap {
+      margin-right: 6px;
+    }
+
+    .byte-val.zero {
+      color: var(--text-tertiary);
+    }
+
     .byte-val.changed {
-      color: #fbbf24;
+      color: var(--accent-amber);
       font-weight: 700;
-      background: rgba(245, 158, 11, 0.2);
-      box-shadow: 0 0 6px rgba(245, 158, 11, 0.25);
+      background: var(--accent-amber-subtle);
     }
 
     .col-ascii {
-      color: #38bdf8;
-      padding: 2px 8px;
-      border-left: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--accent-blue);
+      padding: 0 6px;
+      border-left: 1px solid var(--border-subtle);
       white-space: pre;
     }
 
-    .edit-bar {
+    .edit-strip {
+      height: 26px;
+      min-height: 26px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 5px 12px;
-      background: rgba(15, 23, 42, 0.9);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.72rem;
+      gap: 6px;
+      padding: 0 10px;
+      background: var(--bg-well);
+      border-top: 1px solid var(--border-subtle);
+      font-size: 10px;
+      flex-shrink: 0;
     }
-    .edit-label { color: #cbd5e1; font-family: "JetBrains Mono", monospace; }
+
+    .edit-label {
+      color: var(--text-secondary);
+    }
+
     .byte-input {
-      width: 34px;
-      background: #090d16;
-      border: 1px solid #f59e0b;
-      color: #fbbf24;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.72rem;
+      width: 30px;
+      background: var(--bg-surface);
+      border: 1px solid var(--accent-amber);
+      color: var(--accent-amber);
+      font-size: 10px;
       padding: 1px 4px;
       text-align: center;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       outline: none;
     }
-    .edit-btn {
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.69rem;
-      font-weight: 600;
+
+    .edit-action-btn {
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 500;
       border: none;
       cursor: pointer;
     }
-    .edit-btn.save { background: #0284c7; color: #fff; }
-    .edit-btn.cancel { background: #334155; color: #e2e8f0; }
+
+    .edit-action-btn.write {
+      background: var(--accent-blue);
+      color: #ffffff;
+    }
+
+    .edit-action-btn.cancel {
+      background: var(--border-subtle);
+      color: var(--text-secondary);
+    }
   `]
 })
 export class MemoryInspectorComponent {

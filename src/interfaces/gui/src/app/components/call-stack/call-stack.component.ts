@@ -8,30 +8,32 @@ import { StackFrame } from 'ra8-rpc-client';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="pane-card">
-      <div class="pane-header">
-        <span class="pane-title">Call Stack Backtrace</span>
+    <div class="stack-pane">
+      <!-- Sub-Toolbar -->
+      <div class="stack-subtoolbar">
+        <span class="sub-label">Backtrace Frames</span>
         <button
           type="button"
           class="refresh-btn"
           (click)="refresh()"
           [disabled]="!isConnected()"
-          title="Refresh Dual-Core Call Stacks"
+          title="Refresh call stack"
         >
           ↻
         </button>
       </div>
 
+      <!-- Frames List -->
       <div class="stacks-body">
         <!-- CPU0 Stack -->
         <div *ngIf="showCpu0()" class="stack-lane">
           <div class="lane-label m85">CPU0 • Cortex-M85 ({{ cpu0Frames().length }} frames)</div>
           <div *ngIf="cpu0Frames().length === 0" class="empty-state">
-            No unwound frames (halt CPU0 with debug symbols to inspect call chain)
+            No unwound frames (halt CPU0 to inspect call chain)
           </div>
           <div
             *ngFor="let frame of cpu0Frames(); let i = index"
-            class="frame-item"
+            class="frame-item font-mono"
             [class.innermost]="i === 0"
           >
             <span class="frame-idx">#{{ i }}</span>
@@ -51,7 +53,7 @@ import { StackFrame } from 'ra8-rpc-client';
           </div>
           <div
             *ngFor="let frame of cpu1Frames(); let i = index"
-            class="frame-item"
+            class="frame-item font-mono"
             [class.innermost]="i === 0"
           >
             <span class="frame-idx">#{{ i }}</span>
@@ -66,68 +68,82 @@ import { StackFrame } from 'ra8-rpc-client';
     </div>
   `,
   styles: [`
-    .pane-card {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(6, 10, 19, 0.92));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      overflow: hidden;
+    .stack-pane {
+      height: 100%;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-surface);
     }
 
-    .pane-header {
+    .stack-subtoolbar {
+      height: 28px;
+      min-height: 28px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 7px 12px;
-      background: rgba(15, 23, 42, 0.55);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      justify-content: space-between;
+      padding: 0 10px;
+      flex-shrink: 0;
     }
 
-    .pane-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #f1f5f9;
+    .sub-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
     .refresh-btn {
       background: transparent;
       border: none;
-      color: #94a3b8;
-      font-size: 0.88rem;
+      color: var(--text-secondary);
+      font-size: 12px;
       cursor: pointer;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
     }
-    .refresh-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .refresh-btn:hover:not(:disabled) {
+      color: var(--text-primary);
+      background: var(--border-subtle);
+    }
+    .refresh-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
 
     .stacks-body {
-      max-height: 200px;
+      flex: 1;
+      min-height: 0;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
     }
 
     .stack-lane {
-      padding: 6px 8px;
+      padding: 4px 8px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
+
     .stack-lane + .stack-lane {
-      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      border-top: 1px solid var(--border-subtle);
     }
 
     .lane-label {
-      font-size: 0.66rem;
+      font-size: 10px;
       font-weight: 600;
+      padding: 2px 4px;
     }
-    .lane-label.m85 { color: #38bdf8; }
-    .lane-label.m33 { color: #c084fc; }
+    .lane-label.m85 { color: var(--accent-blue); }
+    .lane-label.m33 { color: var(--accent-purple); }
 
     .empty-state {
-      padding: 8px 4px;
-      font-size: 0.7rem;
-      color: #64748b;
+      padding: 16px 8px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-align: center;
     }
 
     .frame-item {
@@ -135,19 +151,20 @@ import { StackFrame } from 'ra8-rpc-client';
       align-items: center;
       gap: 8px;
       padding: 4px 8px;
-      background: rgba(9, 13, 22, 0.68);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 5px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.71rem;
+      background: var(--bg-well);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
     }
+
     .frame-item.innermost {
-      border-left: 2px solid #38bdf8;
+      border-left: 2px solid var(--accent-blue);
     }
 
     .frame-idx {
-      color: #64748b;
+      color: var(--text-tertiary);
       font-weight: 700;
+      width: 22px;
     }
 
     .frame-details {
@@ -155,10 +172,11 @@ import { StackFrame } from 'ra8-rpc-client';
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      gap: 1px;
     }
 
     .fn-name {
-      color: #f1f5f9;
+      color: var(--text-primary);
       font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -166,16 +184,16 @@ import { StackFrame } from 'ra8-rpc-client';
     }
 
     .file-info {
-      font-size: 0.63rem;
-      color: #94a3b8;
+      font-size: 10px;
+      color: var(--text-secondary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .frame-pc {
-      color: #38bdf8;
-      font-size: 0.68rem;
+      color: var(--accent-blue);
+      font-size: 10px;
     }
   `]
 })

@@ -16,14 +16,14 @@ import { EmulatorService } from '../../services/emulator.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="terminal-card">
-      <div class="terminal-header">
-        <div class="header-left">
-          <span class="pane-title">Serial Console (SCI8 UART)</span>
-          <span class="badge">{{ entries().length }} lines</span>
+    <div class="terminal-pane">
+      <!-- Terminal Controls Strip -->
+      <div class="terminal-subtoolbar">
+        <div class="sub-left">
+          <span class="sub-label font-mono">{{ entries().length }} lines</span>
         </div>
-        <div class="header-right">
-          <label class="autoscroll-toggle">
+        <div class="sub-right">
+          <label class="autoscroll-label">
             <input
               type="checkbox"
               [ngModel]="autoScroll()"
@@ -36,7 +36,8 @@ import { EmulatorService } from '../../services/emulator.service';
         </div>
       </div>
 
-      <div #scrollContainer class="terminal-body">
+      <!-- Console Body -->
+      <div #scrollContainer class="terminal-body font-mono">
         <div *ngIf="entries().length === 0" class="empty-terminal">
           Awaiting serial output on SCI8 console...
         </div>
@@ -48,12 +49,13 @@ import { EmulatorService } from '../../services/emulator.service';
         </div>
       </div>
 
-      <div class="terminal-footer">
-        <span class="prompt">SCI8 TX &gt;</span>
+      <!-- Input Bar -->
+      <div class="terminal-footer font-mono">
+        <span class="prompt">TX &gt;</span>
         <input
           type="text"
-          class="terminal-input"
-          placeholder="Transmit serial line to guest firmware (Enter to send)..."
+          class="terminal-input font-mono"
+          placeholder="Transmit line to guest firmware (Enter to send)..."
           [ngModel]="inputText()"
           (ngModelChange)="inputText.set($event)"
           (keydown.enter)="send()"
@@ -71,105 +73,95 @@ import { EmulatorService } from '../../services/emulator.service';
     </div>
   `,
   styles: [`
-    .terminal-card {
-      background: linear-gradient(180deg, rgba(13, 17, 23, 0.94), rgba(6, 9, 15, 0.98));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      overflow: hidden;
+    .terminal-pane {
+      height: 100%;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-surface);
     }
 
-    .terminal-header {
+    .terminal-subtoolbar {
+      height: 26px;
+      min-height: 26px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      padding: 7px 12px;
-      background: rgba(15, 23, 42, 0.55);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      flex-wrap: wrap;
-      gap: 8px;
+      padding: 0 10px;
+      flex-shrink: 0;
     }
 
-    .header-left,
-    .header-right {
+    .sub-left, .sub-right {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .pane-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #f1f5f9;
+    .sub-label {
+      font-size: 10px;
+      color: var(--text-tertiary);
     }
 
-    .badge {
-      font-size: 0.66rem;
-      color: #94a3b8;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-family: "JetBrains Mono", monospace;
-    }
-
-    .autoscroll-toggle {
+    .autoscroll-label {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      font-size: 0.7rem;
-      color: #94a3b8;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-secondary);
       cursor: pointer;
     }
 
     .tool-btn {
-      background: rgba(30, 41, 59, 0.75);
-      color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      border-radius: 5px;
-      font-size: 0.69rem;
-      font-weight: 600;
-      padding: 2px 8px;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 6px;
       cursor: pointer;
     }
-    .tool-btn:hover { background: rgba(51, 65, 85, 0.9); color: #fff; }
+    .tool-btn:hover {
+      background: var(--bg-well);
+      color: var(--text-primary);
+    }
 
     .terminal-body {
-      height: 165px;
+      flex: 1;
+      min-height: 0;
       overflow-y: auto;
-      padding: 8px 12px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.73rem;
+      padding: 6px 10px;
+      font-size: 11px;
       line-height: 1.45;
-      background: #06090f;
+      background: var(--bg-well);
     }
 
     .empty-terminal {
-      color: #64748b;
-      padding: 12px 0;
+      color: var(--text-tertiary);
+      padding: 10px 0;
     }
 
     .terminal-line {
       display: flex;
-      gap: 7px;
+      gap: 6px;
       word-break: break-all;
-      color: #7dd3fc;
+      color: var(--accent-blue);
     }
     .terminal-line.input-line {
-      color: #86efac;
+      color: var(--accent-green);
     }
 
     .line-time {
-      color: #475569;
-      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      font-size: 10px;
       user-select: none;
     }
 
     .line-prefix {
-      color: #64748b;
-      font-size: 0.65rem;
+      color: var(--text-secondary);
+      font-size: 10px;
       user-select: none;
     }
 
@@ -178,46 +170,55 @@ import { EmulatorService } from '../../services/emulator.service';
     }
 
     .terminal-footer {
+      height: 28px;
+      min-height: 28px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      background: rgba(15, 23, 42, 0.6);
-      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      gap: 6px;
+      padding: 0 10px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
 
     .prompt {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.71rem;
-      color: #34d399;
+      font-size: 10px;
+      color: var(--accent-green);
       font-weight: 600;
     }
 
     .terminal-input {
       flex: 1;
-      background: #06090f;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
-      color: #f1f5f9;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.73rem;
-      padding: 4px 8px;
+      background: var(--bg-well);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 11px;
+      padding: 2px 6px;
       outline: none;
     }
-    .terminal-input:focus { border-color: #38bdf8; }
-    .terminal-input:disabled { opacity: 0.45; cursor: not-allowed; }
+    .terminal-input:focus {
+      border-color: var(--accent-blue);
+    }
+    .terminal-input:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
 
     .send-btn {
-      background: #0284c7;
+      background: var(--accent-blue);
       border: none;
-      border-radius: 5px;
-      color: #fff;
-      font-size: 0.72rem;
+      border-radius: var(--radius-sm);
+      color: #ffffff;
+      font-size: 10px;
       font-weight: 600;
-      padding: 4px 12px;
+      padding: 3px 8px;
       cursor: pointer;
     }
-    .send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .send-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
   `]
 })
 export class UartTerminalComponent implements AfterViewChecked {

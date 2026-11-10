@@ -2,318 +2,539 @@ import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmulatorService } from '../../services/emulator.service';
+import { Core } from 'ra8-rpc-client';
 
 @Component({
   selector: 'app-connection-bar',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="top-bar">
-      <!-- Brand Identity -->
-      <div class="brand">
-        <div class="chip-badge">RA8</div>
-        <div class="brand-meta">
-          <span class="brand-title">RA8 Emulator Workbench</span>
-          <span class="brand-sub">Dual-Core Cortex-M85 / M33 • Hardware &amp; Time-Travel Fabric</span>
+    <header class="xcode-toolbar">
+      <!-- Left: App Identity, Target Device, & Connection Status -->
+      <div class="toolbar-section toolbar-left">
+        <div class="app-identity">
+          <div class="app-icon">RA8</div>
+          <div class="app-titles">
+            <span class="app-name">RA8 Workbench</span>
+            <span class="target-chip">EK-RA8D2</span>
+          </div>
         </div>
-      </div>
 
-      <!-- Center: Unified Connection / Offline Pill (Single-line, click-to-copy CLI command) -->
-      <div class="status-center">
-        <button
-          *ngIf="!isConnected()"
-          type="button"
-          class="offline-pill"
-          [class.is-error]="state() === 'error'"
-          (click)="copyLaunchCommand()"
-          title="Click to copy launch command (Offline PWA shell active; live emulation requires backend)"
-        >
-          <span class="pill-dot"></span>
-          <span class="pill-state">{{ isConnecting() ? 'Connecting…' : 'Offline' }}</span>
-          <span class="pill-sep">•</span>
-          <span class="pill-cmd">Run: <code>{{ launchCommand() }}</code></span>
-          <span class="copy-tag">{{ copied() ? 'Copied ✓' : '📋' }}</span>
-        </button>
-
-        <div *ngIf="isConnected()" class="online-pill">
-          <span class="pill-dot online"></span>
-          <span>Connected</span>
-          <span class="pill-sep">•</span>
-          <code>{{ emu.serverUrl() }}</code>
-          <span class="pill-sep" *ngIf="boardPanelLabel()">•</span>
-          <span class="panel-tag" *ngIf="boardPanelLabel()">{{ boardPanelLabel() }}</span>
-        </div>
-      </div>
-
-      <!-- Right: Actor Mode, DAG Toggle, & Endpoint Controls -->
-      <div class="header-actions">
-        <button
-          type="button"
-          class="actor-btn"
-          [class.agent]="actorMode() === 'agent'"
-          (click)="toggleActor()"
-          title="Attribution tag recorded on interactive mutations and timeline forks"
-        >
-          <span>{{ actorMode() === 'human' ? '👤 Human' : '🤖 Agent' }}</span>
-        </button>
-
-        <button
-          type="button"
-          class="dag-toggle-btn"
-          [class.active]="dagOpen()"
-          (click)="toggleDag()"
-          title="Toggle Right-Opening Time-Travel Execution DAG"
-        >
-          <span>🌿 Timeline DAG</span>
-          <span class="lane-count">{{ laneCount() }}</span>
-        </button>
-
-        <div class="url-group">
-          <span class="ws-tag">WS</span>
-          <input
-            type="text"
-            class="url-input"
-            placeholder="ws://127.0.0.1:4567"
-            [ngModel]="urlInput()"
-            (ngModelChange)="urlInput.set($event)"
-            [disabled]="isConnecting() || isConnected()"
-            (keydown.enter)="toggleConnection()"
-          />
+        <div class="conn-anchor">
           <button
             type="button"
-            class="conn-btn"
+            class="conn-pill-btn"
             [class.connected]="isConnected()"
             [class.connecting]="isConnecting()"
-            (click)="toggleConnection()"
+            (click)="showSettings.set(!showSettings())"
+            title="Configure Emulator WebSocket Connection"
           >
-            {{ isConnecting() ? '…' : isConnected() ? 'Disconnect' : 'Connect' }}
+            <span class="status-dot" [class.online]="isConnected()" [class.busy]="isConnecting()"></span>
+            <span class="conn-text">{{ isConnected() ? 'Online' : isConnecting() ? 'Connecting…' : 'Offline' }}</span>
           </button>
+
+          <!-- Settings Popover -->
+          <div *ngIf="showSettings()" class="settings-popover">
+            <div class="popover-header">
+              <span>Emulator WebSocket</span>
+              <button type="button" class="close-btn" (click)="showSettings.set(false)">✕</button>
+            </div>
+            <div class="popover-body">
+              <label class="input-label" for="ws-url-input">Server Endpoint</label>
+              <div class="input-row">
+                <input
+                  id="ws-url-input"
+                  type="text"
+                  class="xcode-input"
+                  [ngModel]="urlInput()"
+                  (ngModelChange)="urlInput.set($event)"
+                  placeholder="ws://127.0.0.1:4567"
+                  (keydown.enter)="applyConnection()"
+                />
+                <button
+                  type="button"
+                  class="xcode-btn"
+                  [class.destructive]="isConnected()"
+                  (click)="applyConnection()"
+                >
+                  {{ isConnected() ? 'Disconnect' : 'Connect' }}
+                </button>
+              </div>
+              <div *ngIf="!isConnected()" class="cmd-help">
+                <div class="cmd-label">Start local backend:</div>
+                <code class="cmd-code" (click)="copyLaunchCommand()">{{ launchCommand() }}</code>
+                <span class="copy-hint">{{ copied() ? 'Copied to clipboard' : 'Click code to copy' }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      <!-- Center: Iconic Xcode Activity HUD -->
+      <div class="toolbar-section toolbar-center">
+        <div class="activity-hud" [class.offline]="!isConnected()" [class.running]="isRunning()">
+          <ng-container *ngIf="isConnected()">
+            <div class="hud-item core-m85">
+              <span class="hud-core-label">M85</span>
+              <span class="hud-value font-mono">0x{{ toHex8(emu.cpu0Pc()) }}</span>
+              <span class="hud-sub">{{ emu.cpu0StateLabel() }}</span>
+            </div>
+
+            <span class="hud-divider"></span>
+
+            <div class="hud-item core-m33" [class.dimmed]="!cpu1Attached()">
+              <span class="hud-core-label">M33</span>
+              <span class="hud-value font-mono" *ngIf="cpu1Attached()">0x{{ toHex8(emu.cpu1Pc()) }}</span>
+              <span class="hud-sub">{{ emu.cpu1StateLabel() }}</span>
+            </div>
+
+            <span class="hud-divider"></span>
+
+            <div class="hud-item hud-meta">
+              <span class="hud-value font-mono">{{ formattedCycles() }}</span>
+              <span class="hud-sub font-mono">{{ pacingText() }}</span>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="!isConnected()">
+            <div class="hud-offline-wrap" (click)="copyLaunchCommand()">
+              <span class="status-dot"></span>
+              <span class="offline-headline">Emulator Backend Disconnected</span>
+              <span class="offline-sub">• Click to copy startup command</span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Right: Transport Controls & Workbench Utilities -->
+      <div class="toolbar-section toolbar-right">
+        <!-- Segmented Transport Controls -->
+        <div class="transport-segment">
+          <button
+            type="button"
+            class="xcode-btn play-btn"
+            [class.active]="isRunning()"
+            [disabled]="!isConnected()"
+            (click)="toggleRun()"
+            [title]="isRunning() ? 'Pause Session' : 'Run Session'"
+          >
+            {{ isRunning() ? '⏸ Pause' : '▶ Run' }}
+          </button>
+
+          <button
+            type="button"
+            class="xcode-btn"
+            [disabled]="!isConnected() || isRunning()"
+            (click)="stepM85()"
+            title="Single-step CPU0 (Cortex-M85)"
+          >
+            Step M85
+          </button>
+
+          <button
+            *ngIf="cpu1Attached()"
+            type="button"
+            class="xcode-btn"
+            [disabled]="!isConnected() || isRunning()"
+            (click)="stepM33()"
+            title="Single-step CPU1 (Cortex-M33)"
+          >
+            Step M33
+          </button>
+
+          <button
+            type="button"
+            class="xcode-btn"
+            [disabled]="!isConnected()"
+            (click)="reset()"
+            title="Seek Session Origin (t=0)"
+          >
+            ↺
+          </button>
+        </div>
+
+        <div class="v-sep"></div>
+
+        <!-- Timeline DAG Drawer Toggle -->
+        <button
+          type="button"
+          class="xcode-btn"
+          [class.active]="dagOpen()"
+          (click)="toggleDag()"
+          title="Toggle Time-Travel Execution DAG"
+        >
+          Timeline
+        </button>
+
+        <!-- Actor Attribution Mode -->
+        <button
+          type="button"
+          class="xcode-btn actor-btn"
+          [class.agent]="actorMode() === 'agent'"
+          (click)="toggleActor()"
+          title="Actor attribution recorded on mutations and forks"
+        >
+          {{ actorMode() === 'human' ? '👤 Human' : '🤖 Agent' }}
+        </button>
+
+        <!-- macOS Theme Toggle (Sun / Moon) -->
+        <button
+          type="button"
+          class="xcode-btn icon-only"
+          (click)="toggleTheme()"
+          [title]="isDark() ? 'Switch to macOS Light Theme' : 'Switch to Xcode Dark Theme'"
+        >
+          {{ isDark() ? '☀️' : '🌙' }}
+        </button>
+      </div>
+    </header>
   `,
   styles: [`
-    .top-bar {
+    .xcode-toolbar {
+      height: 44px;
+      min-height: 44px;
+      max-height: 44px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0 14px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      user-select: none;
+      position: relative;
+      z-index: 50;
       gap: 12px;
-      padding: 8px 16px;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(9, 13, 22, 0.98));
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-      flex-wrap: wrap;
     }
 
-    .brand {
+    .toolbar-section {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .chip-badge {
-      background: linear-gradient(135deg, #0284c7 0%, #0f766e 100%);
-      color: #f8fafc;
-      font-weight: 800;
-      font-size: 0.78rem;
-      padding: 5px 8px;
-      border-radius: 5px;
-      letter-spacing: 0.06em;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.28);
+    .toolbar-left {
+      min-width: 250px;
     }
 
-    .brand-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-
-    .brand-title {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: #f8fafc;
-      letter-spacing: -0.01em;
-    }
-
-    .brand-sub {
-      font-size: 0.68rem;
-      color: #94a3b8;
-    }
-
-    .status-center {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      min-width: 260px;
-    }
-
-    .offline-pill,
-    .online-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 4px 11px;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      line-height: 1.2;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(15, 23, 42, 0.85);
-      color: #cbd5e1;
-      transition: border-color 0.15s, background 0.15s;
-    }
-
-    .offline-pill {
-      cursor: pointer;
-    }
-    .offline-pill:hover {
-      border-color: rgba(56, 189, 248, 0.45);
-      background: rgba(30, 41, 59, 0.9);
-    }
-    .offline-pill.is-error {
-      border-color: rgba(245, 158, 11, 0.35);
-    }
-
-    .pill-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #f59e0b;
-      flex-shrink: 0;
-    }
-    .pill-dot.online {
-      background: #22c55e;
-      box-shadow: 0 0 8px #22c55e;
-    }
-
-    .pill-state {
-      font-weight: 600;
-      color: #fbbf24;
-    }
-
-    .pill-sep {
-      color: #475569;
-    }
-
-    .pill-cmd code,
-    .online-pill code {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.69rem;
-      color: #38bdf8;
-    }
-
-    .copy-tag {
-      font-size: 0.68rem;
-      color: #94a3b8;
-      padding-left: 2px;
-    }
-
-    .panel-tag {
-      color: #34d399;
-      font-weight: 600;
-      font-size: 0.69rem;
-    }
-
-    .header-actions {
+    .app-identity {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
     }
 
-    .actor-btn,
-    .dag-toggle-btn {
+    .app-icon {
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(135deg, var(--accent-blue), #5856d6);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      letter-spacing: 0.04em;
+    }
+
+    .app-titles {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .app-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .target-chip {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      background: var(--border-subtle);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .conn-anchor {
+      position: relative;
+    }
+
+    .conn-pill-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      background: rgba(30, 41, 59, 0.7);
-      color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.09);
+      padding: 3px 8px;
+      background: var(--border-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      color: var(--text-secondary);
+      font-size: 11px;
       cursor: pointer;
-      transition: all 0.15s;
-    }
-    .actor-btn:hover,
-    .dag-toggle-btn:hover {
-      background: rgba(51, 65, 85, 0.85);
-      color: #f8fafc;
-    }
-    .actor-btn.agent {
-      border-color: rgba(168, 85, 247, 0.45);
-      color: #e9d5ff;
-      background: rgba(88, 28, 135, 0.3);
-    }
-    .dag-toggle-btn.active {
-      border-color: rgba(56, 189, 248, 0.55);
-      background: rgba(2, 132, 199, 0.22);
-      color: #38bdf8;
+      transition: background 0.15s, border-color 0.15s;
     }
 
-    .lane-count {
-      background: rgba(15, 23, 42, 0.9);
-      padding: 0 5px;
-      border-radius: 999px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.66rem;
-      color: #38bdf8;
+    .conn-pill-btn:hover {
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
     }
 
-    .url-group {
-      display: inline-flex;
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-amber);
+    }
+    .status-dot.online {
+      background: var(--accent-green);
+    }
+    .status-dot.busy {
+      background: var(--accent-blue);
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; }
+      to { opacity: 1; }
+    }
+
+    /* Center Activity HUD */
+    .toolbar-center {
+      flex: 1;
+      justify-content: center;
+      max-width: 540px;
+    }
+
+    .activity-hud {
+      width: 100%;
+      height: 30px;
+      background: var(--bg-well);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
       align-items: center;
-      background: #090d16;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      overflow: hidden;
+      justify-content: center;
+      padding: 0 12px;
+      gap: 12px;
+      transition: border-color 0.15s;
     }
 
-    .ws-tag {
-      font-size: 0.64rem;
+    .activity-hud.running {
+      border-color: var(--accent-blue-subtle);
+    }
+
+    .hud-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .hud-item.dimmed {
+      opacity: 0.4;
+    }
+
+    .hud-core-label {
+      font-size: 10px;
       font-weight: 700;
-      color: #64748b;
-      padding: 4px 7px;
-      background: rgba(30, 41, 59, 0.55);
-      border-right: 1px solid rgba(255, 255, 255, 0.07);
+      color: var(--accent-blue);
+      letter-spacing: 0.04em;
     }
 
-    .url-input {
+    .hud-value {
+      font-size: 11px;
+      color: var(--text-primary);
+    }
+
+    .hud-sub {
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .hud-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border-subtle);
+    }
+
+    .hud-offline-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .offline-headline {
+      color: var(--accent-amber);
+      font-weight: 500;
+    }
+    .offline-sub {
+      color: var(--text-secondary);
+    }
+
+    /* Right Section: Buttons */
+    .toolbar-right {
+      min-width: 250px;
+      justify-content: flex-end;
+    }
+
+    .transport-segment {
+      display: flex;
+      align-items: center;
+      background: var(--bg-well);
+      padding: 2px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      gap: 2px;
+    }
+
+    .xcode-btn {
       background: transparent;
       border: none;
-      color: #f1f5f9;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.72rem;
+      color: var(--text-primary);
       padding: 4px 8px;
-      width: 155px;
-      outline: none;
-    }
-    .url-input:disabled {
-      color: #64748b;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.12s, color 0.12s;
     }
 
-    .conn-btn {
-      background: #0284c7;
-      color: #fff;
-      border: none;
-      padding: 5px 11px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
+    .xcode-btn:hover:not(:disabled) {
+      background: var(--bg-surface-elevated);
     }
-    .conn-btn:hover { background: #0369a1; }
-    .conn-btn.connected { background: #dc2626; }
-    .conn-btn.connected:hover { background: #b91c1c; }
-    .conn-btn.connecting { background: #d97706; cursor: wait; }
+
+    .xcode-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .xcode-btn.active {
+      background: var(--accent-blue-subtle);
+      color: var(--accent-blue);
+    }
+
+    .xcode-btn.play-btn.active {
+      background: var(--accent-blue);
+      color: #ffffff;
+    }
+
+    .xcode-btn.icon-only {
+      padding: 4px 6px;
+      font-size: 12px;
+    }
+
+    .v-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border-subtle);
+    }
+
+    /* Settings Popover */
+    .settings-popover {
+      position: absolute;
+      top: 34px;
+      left: 0;
+      width: 320px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .popover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .input-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .xcode-input {
+      flex: 1;
+      background: var(--bg-well);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 5px 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+
+    .xcode-btn.destructive {
+      background: var(--accent-red);
+      color: #ffffff;
+    }
+
+    .cmd-help {
+      margin-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cmd-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .cmd-code {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      background: var(--bg-well);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 4px 6px;
+      cursor: pointer;
+      color: var(--accent-amber);
+      word-break: break-all;
+    }
+
+    .copy-hint {
+      font-size: 9px;
+      color: var(--text-tertiary);
+    }
   `]
 })
 export class ConnectionBarComponent {
   public emu = inject(EmulatorService);
 
   public urlInput = signal<string>(this.emu.serverUrl());
+  public showSettings = signal<boolean>(false);
   public copied = signal<boolean>(false);
 
   public state = this.emu.connectionState;
@@ -322,16 +543,19 @@ export class ConnectionBarComponent {
 
   public isConnected = computed(() => this.state() === 'connected');
   public isConnecting = computed(() => this.state() === 'connecting');
+  public isRunning = computed(() => this.emu.executionStatus() === 'running');
+  public cpu1Attached = this.emu.cpu1Attached;
+  public isDark = computed(() => this.emu.currentTheme() === 'dark');
 
-  public laneCount = computed(() => {
-    const backend = this.emu.backendBranches();
-    return backend.length > 0 ? backend.length : this.emu.sessionLanes().length;
+  public formattedCycles = computed(() => {
+    const r = this.emu.currentR();
+    return `${r.toLocaleString()} cyc`;
   });
 
-  public boardPanelLabel = computed(() => {
-    const parts = this.emu.boardParts();
-    if (!parts) return '';
-    return parts.panel ? `${parts.panel} (${parts.panelWidth}×${parts.panelHeight})` : 'Headless Board';
+  public pacingText = computed(() => {
+    const ratio = this.emu.pacingRatio();
+    if (ratio === null) return '1.00x';
+    return `${ratio.toFixed(2)}x`;
   });
 
   public launchCommand = computed(() => {
@@ -340,10 +564,43 @@ export class ConnectionBarComponent {
     return `ra8_emulator serve --listen tcp:${hostPort}`;
   });
 
+  public toHex8(val: number): string {
+    return (val >>> 0).toString(16).padStart(8, '0');
+  }
+
   public copyLaunchCommand(): void {
     void navigator.clipboard?.writeText(this.launchCommand());
     this.copied.set(true);
     setTimeout(() => this.copied.set(false), 1800);
+  }
+
+  public applyConnection(): void {
+    if (this.isConnected()) {
+      this.emu.disconnect();
+    } else {
+      void this.emu.connect(this.urlInput());
+    }
+    this.showSettings.set(false);
+  }
+
+  public toggleRun(): void {
+    if (this.isRunning()) {
+      void this.emu.pause();
+    } else {
+      void this.emu.run();
+    }
+  }
+
+  public stepM85(): void {
+    void this.emu.step(Core.Cpu0);
+  }
+
+  public stepM33(): void {
+    void this.emu.step(Core.Cpu1);
+  }
+
+  public reset(): void {
+    void this.emu.reset();
   }
 
   public toggleActor(): void {
@@ -354,11 +611,7 @@ export class ConnectionBarComponent {
     this.emu.dagDrawerOpen.update((v) => !v);
   }
 
-  public toggleConnection(): void {
-    if (this.isConnected()) {
-      this.emu.disconnect();
-    } else {
-      void this.emu.connect(this.urlInput());
-    }
+  public toggleTheme(): void {
+    this.emu.toggleTheme();
   }
 }

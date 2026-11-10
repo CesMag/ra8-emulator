@@ -202,6 +202,7 @@ export class EmulatorService implements OnDestroy {
     },
   ]);
   public readonly activeLaneId = signal<number>(0);
+  public readonly currentR = computed<bigint>(() => this.virtualTimeNs());
   private stepCounter = 0n;
 
   // Progressive Peripherals & Console / Activity Streams
@@ -213,11 +214,33 @@ export class EmulatorService implements OnDestroy {
   public readonly consoleEntries = signal<ConsoleEntry[]>([]);
   public readonly memoryEpoch = signal<number>(0);
 
+  // Theme state ('dark' | 'light')
+  public readonly currentTheme = signal<'dark' | 'light'>(
+    typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+      ? 'light'
+      : 'dark'
+  );
+
   // High-throughput LCD dirty rect stream
   public readonly lcdDirty$ = new Subject<DirtyRect>();
 
   constructor() {
+    this.setTheme(this.currentTheme());
     void this.connect(this.serverUrl());
+  }
+
+  public toggleTheme(): void {
+    const next = this.currentTheme() === 'dark' ? 'light' : 'dark';
+    this.setTheme(next);
+  }
+
+  public setTheme(theme: 'dark' | 'light'): void {
+    this.currentTheme.set(theme);
+    if (typeof document !== 'undefined') {
+      document.body.setAttribute('data-theme', theme);
+      document.body.classList.toggle('theme-light', theme === 'light');
+      document.body.classList.toggle('theme-dark', theme === 'dark');
+    }
   }
 
   ngOnDestroy(): void {

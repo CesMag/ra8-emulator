@@ -19,26 +19,26 @@ interface ViewInstruction {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="pane-card">
-      <div class="pane-header">
-        <div class="header-left">
-          <span class="pane-title">Authoritative Disassembly</span>
-          <span class="engine-tag">Zig Armv8.1-M / Helium Decoder</span>
+    <div class="disasm-pane">
+      <!-- Sub-Toolbar -->
+      <div class="disasm-subtoolbar">
+        <div class="sub-left">
+          <span class="view-label">Armv8.1-M / Helium Stream</span>
         </div>
-        <div class="header-right">
+        <div class="sub-right">
           <button
             type="button"
-            class="follow-btn"
+            class="action-btn"
             [class.active]="followPc()"
             (click)="toggleFollowPc()"
-            title="Track Program Counter automatically on step/halt"
+            title="Auto-track Program Counter on step/halt"
           >
             Follow PC
           </button>
           <div class="jump-box">
             <input
               type="text"
-              class="jump-input"
+              class="jump-input font-mono"
               placeholder="0x02000000"
               [ngModel]="jumpAddressText()"
               (ngModelChange)="jumpAddressText.set($event)"
@@ -53,23 +53,23 @@ interface ViewInstruction {
       <div class="lanes-grid" [class.split]="showSplit()">
         <!-- CPU0 (Cortex-M85) Disassembly Stream -->
         <div *ngIf="showCpu0()" class="core-lane">
-          <div class="lane-subheader m85">
-            <span>CPU0 • Cortex-M85</span>
-            <code>PC 0x{{ toHex8(emu.cpu0Pc()) }}</code>
+          <div class="lane-header m85">
+            <span class="lane-title">CPU0 • Cortex-M85</span>
+            <code class="lane-pc font-mono">PC 0x{{ toHex8(emu.cpu0Pc()) }}</code>
           </div>
           <div class="disasm-scroll">
             <div *ngIf="cpu0Rows().length === 0" class="empty-state">
               Connect emulator backend to stream Cortex-M85 instructions
             </div>
 
-            <table *ngIf="cpu0Rows().length > 0" class="disasm-table">
+            <table *ngIf="cpu0Rows().length > 0" class="disasm-table font-mono">
               <tbody>
                 <ng-container *ngFor="let row of cpu0Rows()">
                   <tr *ngIf="row.symbol" class="symbol-row">
                     <td colspan="4">&lt;{{ row.symbol }}&gt;:</td>
                   </tr>
                   <tr class="instr-row" [class.current-pc]="row.isCurrentPc">
-                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu0)">
+                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu0)" title="Toggle Breakpoint">
                       <span class="bp-dot" [class.active]="row.hasBreakpoint">●</span>
                       <span *ngIf="row.isCurrentPc" class="pc-arrow">▶</span>
                     </td>
@@ -88,27 +88,27 @@ interface ViewInstruction {
 
         <!-- CPU1 (Cortex-M33) Disassembly Stream -->
         <div *ngIf="showCpu1()" class="core-lane">
-          <div class="lane-subheader m33">
-            <span>CPU1 • Cortex-M33</span>
-            <code *ngIf="emu.cpu1Attached()">PC 0x{{ toHex8(emu.cpu1Pc()) }}</code>
-            <code *ngIf="!emu.cpu1Attached()">CLOCK-GATED</code>
+          <div class="lane-header m33">
+            <span class="lane-title">CPU1 • Cortex-M33</span>
+            <code *ngIf="emu.cpu1Attached()" class="lane-pc font-mono">PC 0x{{ toHex8(emu.cpu1Pc()) }}</code>
+            <code *ngIf="!emu.cpu1Attached()" class="lane-pc font-mono">CLOCK-GATED</code>
           </div>
           <div class="disasm-scroll">
             <div *ngIf="!emu.cpu1Attached()" class="empty-state">
-              Companion Cortex-M33 core is clock-gated (load dual-core ELF or --companion image to activate)
+              Companion Cortex-M33 core is clock-gated (load dual-core image to activate)
             </div>
             <div *ngIf="emu.cpu1Attached() && cpu1Rows().length === 0" class="empty-state">
               Halt CPU1 to stream Cortex-M33 instructions
             </div>
 
-            <table *ngIf="emu.cpu1Attached() && cpu1Rows().length > 0" class="disasm-table">
+            <table *ngIf="emu.cpu1Attached() && cpu1Rows().length > 0" class="disasm-table font-mono">
               <tbody>
                 <ng-container *ngFor="let row of cpu1Rows()">
                   <tr *ngIf="row.symbol" class="symbol-row">
                     <td colspan="4">&lt;{{ row.symbol }}&gt;:</td>
                   </tr>
                   <tr class="instr-row" [class.current-pc]="row.isCurrentPc">
-                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu1)">
+                    <td class="col-bp" (click)="toggleBp(row.address, Core.Cpu1)" title="Toggle Breakpoint">
                       <span class="bp-dot" [class.active]="row.hasBreakpoint">●</span>
                       <span *ngIf="row.isCurrentPc" class="pc-arrow">▶</span>
                     </td>
@@ -128,221 +128,244 @@ interface ViewInstruction {
     </div>
   `,
   styles: [`
-    .pane-card {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(6, 10, 19, 0.92));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
-      overflow: hidden;
+    .disasm-pane {
+      height: 100%;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-surface);
     }
 
-    .pane-header {
+    .disasm-subtoolbar {
+      height: 28px;
+      min-height: 28px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      padding: 7px 12px;
-      background: rgba(15, 23, 42, 0.55);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      flex-wrap: wrap;
+      padding: 0 10px;
+      flex-shrink: 0;
       gap: 8px;
     }
 
-    .header-left,
-    .header-right {
+    .sub-left, .sub-right {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .pane-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #f1f5f9;
+    .view-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
-    .engine-tag {
-      font-size: 0.64rem;
-      font-family: "JetBrains Mono", monospace;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.22);
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
-
-    .follow-btn {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
-      font-size: 0.69rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 5px;
+    .action-btn {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 7px;
       cursor: pointer;
+      transition: all 0.12s;
     }
-    .follow-btn.active {
-      background: rgba(2, 132, 199, 0.22);
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.45);
+
+    .action-btn:hover {
+      background: var(--bg-well);
+      color: var(--text-primary);
+    }
+
+    .action-btn.active {
+      background: var(--accent-blue-subtle);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      font-weight: 600;
     }
 
     .jump-box {
       display: inline-flex;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
       overflow: hidden;
-      background: #090d16;
+      background: var(--bg-well);
     }
 
     .jump-input {
       background: transparent;
       border: none;
-      color: #f1f5f9;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.7rem;
-      padding: 3px 7px;
-      width: 92px;
+      color: var(--text-primary);
+      font-size: 10px;
+      padding: 2px 6px;
+      width: 82px;
       outline: none;
     }
 
     .jump-btn {
-      background: rgba(51, 65, 85, 0.8);
+      background: var(--border-subtle);
       border: none;
-      color: #e2e8f0;
-      font-size: 0.69rem;
+      color: var(--text-primary);
+      font-size: 10px;
       font-weight: 600;
-      padding: 3px 8px;
+      padding: 2px 6px;
       cursor: pointer;
     }
-    .jump-btn:hover { background: #475569; }
+
+    .jump-btn:hover {
+      background: var(--border-strong);
+    }
 
     .lanes-grid {
+      flex: 1;
+      min-height: 0;
       display: grid;
       grid-template-columns: 1fr;
+      overflow: hidden;
     }
+
     .lanes-grid.split {
       grid-template-columns: 1fr 1fr;
     }
-    @media (max-width: 960px) {
-      .lanes-grid.split {
-        grid-template-columns: 1fr;
-      }
+
+    .core-lane {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .core-lane + .core-lane {
-      border-left: 1px solid rgba(255, 255, 255, 0.07);
+      border-left: 1px solid var(--border-subtle);
     }
 
-    .lane-subheader {
+    .lane-header {
+      height: 24px;
+      min-height: 24px;
+      background: var(--bg-well);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 4px 10px;
-      font-size: 0.68rem;
+      justify-content: space-between;
+      padding: 0 8px;
+      font-size: 10px;
       font-weight: 600;
-      background: rgba(9, 13, 22, 0.7);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
     }
-    .lane-subheader.m85 { color: #38bdf8; }
-    .lane-subheader.m33 { color: #c084fc; }
-    .lane-subheader code {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.66rem;
-      color: #94a3b8;
+
+    .lane-header.m85 .lane-title { color: var(--accent-blue); }
+    .lane-header.m33 .lane-title { color: var(--accent-purple); }
+
+    .lane-pc {
+      color: var(--text-secondary);
+      font-size: 10px;
     }
 
     .disasm-scroll {
-      max-height: 270px;
+      flex: 1;
+      min-height: 0;
       overflow-y: auto;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.72rem;
+      font-size: 11px;
     }
 
     .empty-state {
-      padding: 24px 14px;
+      padding: 30px 14px;
       text-align: center;
-      color: #64748b;
-      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      font-size: 11px;
     }
 
     .disasm-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
     .symbol-row td {
-      padding: 5px 8px 2px;
-      color: #34d399;
+      padding: 4px 8px 1px;
+      color: var(--accent-green);
       font-weight: 700;
-      font-size: 0.69rem;
-      background: rgba(16, 185, 129, 0.06);
-      border-top: 1px solid rgba(52, 211, 153, 0.14);
+      font-size: 10px;
+      background: var(--accent-green-subtle);
+      border-top: 1px solid var(--border-subtle);
     }
 
     .instr-row {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      border-bottom: 1px solid var(--border-subtle);
+      height: 20px;
     }
+
     .instr-row:hover {
-      background: rgba(30, 41, 59, 0.45);
+      background: var(--bg-well);
     }
+
     .instr-row.current-pc {
-      background: rgba(56, 189, 248, 0.14);
-      box-shadow: inset 2px 0 0 #38bdf8;
+      background: var(--accent-blue-subtle);
+      box-shadow: inset 2px 0 0 var(--accent-blue);
     }
 
     .col-bp {
-      width: 28px;
+      width: 24px;
       text-align: center;
       cursor: pointer;
-      padding: 2px 4px;
+      padding: 0;
       white-space: nowrap;
+      user-select: none;
     }
 
     .bp-dot {
-      color: rgba(100, 116, 139, 0.35);
-      font-size: 0.72rem;
-      transition: color 0.12s;
+      color: var(--text-tertiary);
+      opacity: 0.3;
+      font-size: 10px;
+      transition: color 0.12s, opacity 0.12s;
     }
-    .col-bp:hover .bp-dot { color: #f87171; }
+
+    .col-bp:hover .bp-dot {
+      color: var(--accent-red);
+      opacity: 0.8;
+    }
+
     .bp-dot.active {
-      color: #ef4444;
-      text-shadow: 0 0 6px #ef4444;
+      color: var(--accent-red);
+      opacity: 1;
     }
 
     .pc-arrow {
-      color: #38bdf8;
-      font-size: 0.62rem;
-      margin-left: 2px;
+      color: var(--accent-blue);
+      font-size: 8px;
+      margin-left: 1px;
     }
 
     .col-addr {
-      width: 84px;
-      color: #94a3b8;
-      padding: 2px 5px;
+      width: 82px;
+      color: var(--text-secondary);
+      padding: 0 4px;
     }
 
     .col-hex {
-      width: 82px;
-      color: #64748b;
-      padding: 2px 5px;
+      width: 78px;
+      color: var(--text-tertiary);
+      padding: 0 4px;
     }
 
     .col-asm {
-      padding: 2px 6px;
+      padding: 0 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .mnemonic {
-      color: #f472b6;
+      color: var(--accent-purple);
       font-weight: 600;
-      margin-right: 7px;
+      margin-right: 6px;
       display: inline-block;
-      min-width: 44px;
+      min-width: 42px;
     }
 
     .operands {
-      color: #e2e8f0;
+      color: var(--text-primary);
     }
   `]
 })

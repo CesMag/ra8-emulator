@@ -19,32 +19,24 @@ import { FramebufferRenderer, InputKind, DirtyRect } from 'ra8-rpc-client';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="pane-card">
-      <div class="pane-header">
-        <div class="pane-title-group">
-          <span class="pane-title">Virtual Board &amp; Display</span>
-          <span class="panel-chip">{{ panelName() }}</span>
+    <div class="simulator-wrapper">
+      <!-- Section Header -->
+      <div class="simulator-header">
+        <div class="header-left">
+          <span class="device-title">Virtual Hardware Bench</span>
+          <span class="panel-tag">{{ panelName() }}</span>
         </div>
-        <div class="board-badges">
-          <span class="badge res-badge" *ngIf="hasPanel()">{{ displayWidth() }} × {{ displayHeight() }}</span>
-          <span class="badge fps-badge" [class.active]="fps() > 0">{{ fps() }} fps</span>
+        <div class="header-right">
+          <span class="meta-pill font-mono" *ngIf="hasPanel()">{{ displayWidth() }} × {{ displayHeight() }}</span>
+          <span class="meta-pill font-mono" [class.live]="fps() > 0">{{ fps() }} fps</span>
         </div>
       </div>
 
-      <!-- Authentic Renesas EK-RA8D2 Emerald FR4 PCB -->
-      <div class="pcb-board">
-        <!-- Corner Standoffs & Silkscreen -->
-        <div class="pcb-top-silkscreen">
-          <span class="standoff"></span>
-          <span class="silk-text">RENESAS EK-RA8D2 • R7FA8D2BHECBD (M85 + M33)</span>
-          <span class="standoff"></span>
-        </div>
-
-        <!-- Dynamic MIPI-DSI / GLCDC TFT Bezel (or Headless Notice) -->
-        <div *ngIf="hasPanel()" class="tft-bezel">
-          <div class="tft-silk">J14 MIPI-DSI • {{ panelName() }} • GT911 Capacitive Touch</div>
+      <!-- Apple Simulator Device Frame -->
+      <div class="simulator-stage">
+        <div *ngIf="hasPanel()" class="device-bezel">
           <div
-            class="lcd-viewport"
+            class="screen-viewport"
             [style.aspect-ratio]="displayWidth() + ' / ' + displayHeight()"
           >
             <canvas
@@ -54,383 +46,325 @@ import { FramebufferRenderer, InputKind, DirtyRect } from 'ra8-rpc-client';
               (pointerdown)="onPointerDown($event)"
               (pointerup)="onPointerUp($event)"
               (pointerleave)="onPointerCancel()"
-              class="lcd-canvas"
+              class="screen-canvas"
             ></canvas>
-            <div *ngIf="isWaitingForSignal()" class="lcd-standby">
-              <div class="standby-ring"></div>
-              <span class="standby-title">{{ isConnected() ? 'GLCDC Scanout Standby' : 'Display Offline' }}</span>
-              <span class="standby-sub">
-                {{ isConnected() ? 'Touch gestures active • Waiting for first dirty-rect frame' : 'Connect emulator backend to stream framebuffer' }}
+            <div *ngIf="isWaitingForSignal()" class="screen-standby">
+              <div class="standby-spinner"></div>
+              <span class="standby-text">{{ isConnected() ? 'Awaiting GLCDC scanout…' : 'Simulator Offline' }}</span>
+              <span class="standby-hint">
+                {{ isConnected() ? 'Touch gestures enabled' : 'Connect backend to stream display' }}
               </span>
             </div>
           </div>
         </div>
 
-        <div *ngIf="!hasPanel()" class="headless-notice">
-          Headless board profile fitted (no GLCDC / E-ink panel attached). Front-panel GPIO LEDs and switches remain live.
+        <div *ngIf="!hasPanel()" class="headless-device-card">
+          <div class="headless-icon">📺</div>
+          <div class="headless-title">Headless Board Profile</div>
+          <div class="headless-desc">No display attached. Front-panel LEDs and tactile switches remain live.</div>
         </div>
 
-        <!-- Dynamic Front-Panel SMD LEDs & 3D Tactile Switches from BoardParts RPC -->
-        <div class="front-panel">
-          <div class="panel-group">
-            <span class="silk-label">USER LEDS ({{ leds().length }})</span>
-            <div class="leds-strip">
+        <!-- Docked Hardware Controls -->
+        <div class="hardware-dock">
+          <!-- User LEDs Strip -->
+          <div class="dock-section">
+            <span class="dock-label">LEDs</span>
+            <div class="led-array">
               <div
                 *ngFor="let led of leds(); let i = index"
-                class="smd-led-slot"
+                class="led-item"
                 [title]="led.name + (led.lit ? ' (ON)' : ' (OFF)')"
               >
-                <div class="smd-package">
-                  <div
-                    class="smd-lens"
-                    [class.lit]="led.lit"
-                    [style.--led-color]="led.color"
-                  ></div>
-                </div>
-                <span class="comp-silk">{{ led.shortName }}</span>
+                <div
+                  class="micro-led"
+                  [class.lit]="led.lit"
+                  [style.--led-color]="led.color"
+                ></div>
+                <span class="led-name">{{ led.shortName }}</span>
               </div>
             </div>
           </div>
 
-          <div class="panel-group switches-group" *ngIf="switchNames().length > 0">
-            <span class="silk-label">TACTILE SWITCHES</span>
-            <div class="switches-strip">
+          <div class="dock-divider"></div>
+
+          <!-- Tactile Push Buttons -->
+          <div class="dock-section" *ngIf="switchNames().length > 0">
+            <span class="dock-label">Buttons</span>
+            <div class="button-array">
               <button
                 *ngFor="let sw of switchNames(); let idx = index"
                 type="button"
-                class="tactile-switch"
+                class="tactile-btn"
                 (mousedown)="pressButton(idx)"
                 [disabled]="!isConnected()"
-                [title]="'Trigger hardware switch ' + sw + ' (channel ' + idx + ')'"
+                [title]="'Press ' + sw"
               >
-                <span class="switch-cap"></span>
-                <span class="comp-silk">{{ sw }}</span>
+                {{ sw }}
               </button>
             </div>
           </div>
-        </div>
 
-        <div class="pcb-bottom-silkscreen">
-          <span class="standoff"></span>
-          <span class="silk-coords" *ngIf="lastTouchText()">TOUCH {{ lastTouchText() }}</span>
-          <span class="silk-coords" *ngIf="!lastTouchText()">PB01 / P008 / P600 GPIO MATRIX</span>
-          <span class="standoff"></span>
+          <!-- Touch / GPIO Telemetry -->
+          <div class="dock-section meta-section" *ngIf="lastTouchText()">
+            <span class="dock-label">Touch</span>
+            <span class="touch-text font-mono">{{ lastTouchText() }}</span>
+          </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .pane-card {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(6, 10, 19, 0.92));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 0, 0, 0.35);
-      border-radius: 10px;
-      overflow: hidden;
+    .simulator-wrapper {
       display: flex;
       flex-direction: column;
+      height: 100%;
+      background: var(--bg-app);
+      user-select: none;
     }
 
-    .pane-header {
+    .simulator-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 8px 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      background: rgba(15, 23, 42, 0.55);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
     }
 
-    .pane-title-group {
+    .header-left, .header-right {
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .pane-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-
-    .panel-chip {
-      font-size: 0.66rem;
-      font-family: "JetBrains Mono", monospace;
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(52, 211, 153, 0.25);
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
-
-    .board-badges {
-      display: flex;
       gap: 6px;
     }
 
-    .badge {
-      font-size: 0.68rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: "JetBrains Mono", monospace;
-      border: 1px solid rgba(255, 255, 255, 0.07);
+    .device-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
     }
 
-    .res-badge {
-      background: rgba(15, 23, 42, 0.8);
-      color: #94a3b8;
+    .panel-tag {
+      font-size: 10px;
+      color: var(--text-secondary);
+      background: var(--border-subtle);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
     }
 
-    .fps-badge {
-      background: rgba(15, 23, 42, 0.8);
-      color: #64748b;
+    .meta-pill {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      background: var(--border-subtle);
+      color: var(--text-secondary);
     }
-    .fps-badge.active {
-      background: rgba(34, 197, 94, 0.16);
-      color: #4ade80;
-      border-color: rgba(74, 222, 128, 0.35);
+    .meta-pill.live {
+      background: var(--accent-green-subtle);
+      color: var(--accent-green);
     }
 
-    /* Authentic EK-RA8D2 Emerald FR4 PCB */
-    .pcb-board {
-      padding: 10px 12px;
-      background:
-        radial-gradient(circle at 20% 15%, rgba(42, 118, 72, 0.35), transparent 55%),
-        repeating-linear-gradient(
-          90deg,
-          rgba(255, 255, 255, 0.015) 0px,
-          rgba(255, 255, 255, 0.015) 1px,
-          transparent 1px,
-          transparent 14px
-        ),
-        linear-gradient(165deg, #1b4d2e 0%, #123720 65%, #0c2616 100%);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.65);
+    .simulator-stage {
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      overflow-y: auto;
+      flex: 1;
     }
 
-    .pcb-top-silkscreen,
-    .pcb-bottom-silkscreen {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.08em;
-      color: rgba(241, 245, 249, 0.72);
+    /* Apple Simulator Device Frame */
+    .device-bezel {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      padding: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
 
-    .standoff {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #09150d;
-      border: 2px solid #d4af37;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
-    }
-
-    .tft-bezel {
-      background: linear-gradient(180deg, #181a1f 0%, #0d0f13 100%);
-      padding: 7px 9px 9px;
-      border-radius: 7px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .tft-silk {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.58rem;
-      color: #64748b;
-      letter-spacing: 0.05em;
-    }
-
-    .lcd-viewport {
+    .screen-viewport {
       position: relative;
       width: 100%;
-      background: #030508;
-      border: 1px solid #262932;
-      border-radius: 3px;
+      max-height: 480px;
+      background: #000000;
+      border-radius: 8px;
       overflow: hidden;
-      line-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .lcd-canvas {
-      display: block;
+    .screen-canvas {
       width: 100%;
       height: 100%;
+      display: block;
+      image-rendering: pixelated;
       cursor: crosshair;
-      touch-action: none;
     }
 
-    .lcd-standby {
+    .screen-standby {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(9, 14, 24, 0.82), rgba(3, 6, 12, 0.94));
+      background: rgba(18, 18, 20, 0.88);
+      backdrop-filter: blur(4px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-      padding: 12px;
+      gap: 6px;
+      padding: 16px;
       text-align: center;
-      pointer-events: none;
     }
 
-    .standby-ring {
-      width: 18px;
-      height: 18px;
+    .standby-spinner {
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      border: 2px solid rgba(56, 189, 248, 0.45);
-      border-top-color: #38bdf8;
-      animation: spin 2.4s linear infinite;
-      margin-bottom: 2px;
+      border: 2px solid var(--border-subtle);
+      border-top-color: var(--accent-blue);
+      animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    .standby-title {
-      font-size: 0.76rem;
-      font-weight: 600;
-      color: #cbd5e1;
-      line-height: 1.3;
+    .standby-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
     }
 
-    .standby-sub {
-      font-size: 0.66rem;
-      color: #64748b;
-      line-height: 1.3;
+    .standby-hint {
+      font-size: 10px;
+      color: var(--text-secondary);
     }
 
-    .headless-notice {
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px dashed rgba(255, 255, 255, 0.22);
-      border-radius: 6px;
-      font-size: 0.72rem;
-      color: #cbd5e1;
-      text-align: center;
-    }
-
-    .front-panel {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: rgba(6, 18, 11, 0.68);
-      padding: 8px 11px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    .panel-group {
+    .headless-device-card {
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-strong);
+      border-radius: 12px;
+      padding: 24px 16px;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      text-align: center;
       gap: 6px;
     }
-
-    .silk-label {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.58rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: rgba(241, 245, 249, 0.7);
+    .headless-icon {
+      font-size: 24px;
+    }
+    .headless-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .headless-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      max-width: 260px;
     }
 
-    .leds-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .smd-led-slot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .smd-package {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
-      background: #1f2428;
-      border: 1px solid rgba(255, 255, 255, 0.18);
+    /* Docked Hardware Controls */
+    .hardware-dock {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
-    }
-
-    .smd-lens {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #475569, #1e293b);
-      transition: all 0.12s ease;
-    }
-
-    .smd-lens.lit {
-      background: radial-gradient(circle at 35% 35%, #ffffff 5%, var(--led-color, #22c55e) 60%);
-      box-shadow:
-        0 0 8px var(--led-color, #22c55e),
-        0 0 18px var(--led-color, #22c55e);
-    }
-
-    .comp-silk {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.6rem;
-      color: #e2e8f0;
-      white-space: nowrap;
-    }
-
-    .switches-strip {
-      display: flex;
+      gap: 12px;
       flex-wrap: wrap;
+    }
+
+    .dock-section {
+      display: flex;
+      align-items: center;
       gap: 8px;
     }
 
-    .tactile-switch {
+    .dock-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .dock-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border-subtle);
+    }
+
+    .led-array {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .led-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
-      background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
-      border: 1px solid #475569;
-      border-radius: 5px;
-      padding: 4px 10px 3px;
+      gap: 2px;
+    }
+
+    .micro-led {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--bg-well);
+      border: 1px solid var(--border-strong);
+      transition: background 0.12s, box-shadow 0.12s;
+    }
+
+    .micro-led.lit {
+      background: var(--led-color, var(--accent-green));
+      box-shadow: 0 0 8px var(--led-color, var(--accent-green));
+    }
+
+    .led-name {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+
+    .button-array {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tactile-btn {
+      background: var(--bg-well);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 500;
       cursor: pointer;
-      box-shadow: 0 2px 0 #1e293b, 0 3px 6px rgba(0, 0, 0, 0.45);
-      transition: transform 0.08s ease, box-shadow 0.08s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+      transition: transform 0.06s ease, background 0.12s;
     }
-    .tactile-switch .comp-silk {
-      color: #0f172a;
-      font-weight: 700;
+
+    .tactile-btn:active:not(:disabled) {
+      transform: translateY(1px);
+      background: var(--bg-surface-elevated);
     }
-    .tactile-switch:active:not(:disabled) {
-      transform: translateY(2px);
-      box-shadow: 0 0 0 #1e293b;
-    }
-    .tactile-switch:disabled {
-      opacity: 0.4;
+
+    .tactile-btn:disabled {
+      opacity: 0.35;
       cursor: not-allowed;
     }
 
-    .switch-cap {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 30%, #334155, #0f172a);
-      border: 1px solid #020617;
+    .meta-section {
+      margin-left: auto;
     }
 
-    .silk-coords {
-      color: rgba(226, 232, 240, 0.65);
+    .touch-text {
+      font-size: 10px;
+      color: var(--accent-blue);
     }
   `]
 })
@@ -442,7 +376,6 @@ export class VirtualBoardComponent implements AfterViewInit, OnDestroy {
   private renderer: FramebufferRenderer | null = null;
   private pointerDownPos: { x: number; y: number } | null = null;
 
-  // Dynamic EK-RA8D2 default (1024x600 ER-TFT070-6), updated automatically from BoardParts RPC
   public displayWidth = signal<number>(1024);
   public displayHeight = signal<number>(600);
   public fps = signal<number>(0);
@@ -472,8 +405,8 @@ export class VirtualBoardComponent implements AfterViewInit, OnDestroy {
   public leds = computed(() => {
     const states = this.emu.ledStates();
     const parts = this.emu.boardParts();
-    const fallbackNames = ['LED1 BLUE', 'LED2 GREEN', 'LED3 RED'];
-    const fallbackColors = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#06b6d4', '#f97316', '#ec4899'];
+    const fallbackNames = ['LED1 Blue', 'LED2 Green', 'LED3 Red'];
+    const fallbackColors = ['#0a84ff', '#30d158', '#ff453a', '#ffd60a', '#bf5af2', '#64d2ff', '#ff9f0a', '#ff375f'];
 
     const names = parts && parts.ledNames.length > 0 ? parts.ledNames : fallbackNames;
     return names.slice(0, 8).map((name, i) => {
@@ -489,7 +422,6 @@ export class VirtualBoardComponent implements AfterViewInit, OnDestroy {
   });
 
   constructor() {
-    // Dynamically resize framebuffer dimensions whenever boardParts changes (e.g., 1024x600 TFT vs 1072x1448 E-ink)
     effect(() => {
       const parts = this.emu.boardParts();
       if (parts && parts.panelWidth > 0 && parts.panelHeight > 0) {
@@ -563,10 +495,10 @@ export class VirtualBoardComponent implements AfterViewInit, OnDestroy {
 
     const dist = Math.hypot(toX - fromX, toY - fromY);
     if (dist < 8) {
-      this.lastTouchText.set(`TAP (${fromX}, ${fromY})`);
+      this.lastTouchText.set(`Tap (${fromX}, ${fromY})`);
       void this.emu.sendTouch(InputKind.Tap, fromX, fromY);
     } else {
-      this.lastTouchText.set(`SWIPE (${fromX},${fromY})→(${toX},${toY})`);
+      this.lastTouchText.set(`Swipe (${fromX},${fromY})→(${toX},${toY})`);
       void this.emu.sendTouch(InputKind.Swipe, fromX, fromY, toX, toY, 200_000_000n);
     }
   }

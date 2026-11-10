@@ -1,39 +1,192 @@
 <div class="workbench-layout">
-  <!-- Top Navigation & Connection Status -->
+  <!-- Top 44px Xcode Navigation Toolbar -->
   <header class="workbench-header">
     <app-connection-bar></app-connection-bar>
   </header>
 
-  <!-- Execution Controls Bar & Expandable Right-Opening Time-Travel DAG Drawer -->
-  <div class="workbench-controls">
-    <app-execution-controls></app-execution-controls>
-    <app-execution-dag></app-execution-dag>
+  <!-- Halt Notification Banner (Breakpoints, Faults, Stepping) -->
+  <div *ngIf="showHaltBanner()" class="halt-banner">
+    <div class="halt-info">
+      <span class="halt-icon">🛑</span>
+      <span class="halt-title">Halt:</span>
+      <span class="halt-core">{{ lastStopInfo()!.core === Core.Cpu0 ? 'CPU0 (M85)' : 'CPU1 (M33)' }}</span>
+      <span class="halt-sep">•</span>
+      <span class="halt-reason">{{ lastStopReason() }}</span>
+      <span class="halt-sep">•</span>
+      <span class="halt-pc font-mono">PC 0x{{ toHex8(lastStopInfo()!.address) }}</span>
+    </div>
+    <button type="button" class="halt-dismiss-btn" (click)="dismissBanner()" title="Dismiss halt banner">✕</button>
   </div>
 
-  <!-- Main Multi-Pane Workbench Grid -->
-  <main class="workbench-grid">
-    <!-- Left Column: Virtual Hardware Bench & Host/Guest Diagnostics -->
-    <section class="grid-col left-col">
+  <!-- Main Docked IDE Viewport: Zero Window Scroll -->
+  <div class="workbench-body">
+    <!-- Left Stage: Apple Simulator Virtual Hardware Bench -->
+    <aside class="workbench-stage">
       <app-virtual-board></app-virtual-board>
-      <app-metrics-panel></app-metrics-panel>
-    </section>
+    </aside>
 
-    <!-- Center Column: Synchronized Dual-Core Disassembly & Memory Hex Inspector -->
-    <section class="grid-col center-col">
-      <app-disassembly-view></app-disassembly-view>
-      <app-memory-inspector></app-memory-inspector>
-    </section>
+    <!-- Right Workspace: Two-Deck Vertical Split -->
+    <main class="workbench-decks">
+      <!-- Top Deck: Code & Memory Navigation -->
+      <section class="deck top-deck">
+        <div class="deck-tabs-bar">
+          <div class="deck-tabs-group">
+            <button
+              type="button"
+              class="deck-tab-btn"
+              [class.active]="topDeckTab() === 'disasm'"
+              (click)="setTopTab('disasm')"
+            >
+              Disassembly
+            </button>
+            <button
+              type="button"
+              class="deck-tab-btn"
+              [class.active]="topDeckTab() === 'memory'"
+              (click)="setTopTab('memory')"
+            >
+              Memory Hex
+            </button>
+            <button
+              type="button"
+              class="deck-tab-btn"
+              [class.active]="topDeckTab() === 'periph'"
+              (click)="setTopTab('periph')"
+            >
+              Peripherals &amp; Bus
+            </button>
+          </div>
 
-    <!-- Right Column: Dual-Core Registers, Call Stack & Progressive Peripheral Inspector -->
-    <section class="grid-col right-col">
-      <app-register-inspector></app-register-inspector>
-      <app-call-stack></app-call-stack>
-      <app-peripheral-inspector></app-peripheral-inspector>
-    </section>
-  </main>
+          <div class="deck-actions-group">
+            <div class="segmented-control" title="Dual-Core Split vs Single-Core Focus">
+              <button
+                type="button"
+                class="seg-item"
+                [class.active]="inspectionMode() === 'split'"
+                (click)="setMode('split')"
+              >
+                Split M85 | M33
+              </button>
+              <button
+                type="button"
+                class="seg-item"
+                [class.active]="inspectionMode() === 'cpu0'"
+                (click)="setMode('cpu0')"
+              >
+                M85
+              </button>
+              <button
+                type="button"
+                class="seg-item"
+                [class.active]="inspectionMode() === 'cpu1'"
+                [disabled]="!cpu1Attached()"
+                (click)="setMode('cpu1')"
+              >
+                M33
+              </button>
+            </div>
+          </div>
+        </div>
 
-  <!-- Bottom: UART Serial Console -->
-  <footer class="workbench-footer">
-    <app-uart-terminal></app-uart-terminal>
+        <div class="deck-content">
+          <app-disassembly-view *ngIf="topDeckTab() === 'disasm'"></app-disassembly-view>
+          <app-memory-inspector *ngIf="topDeckTab() === 'memory'"></app-memory-inspector>
+          <app-peripheral-inspector *ngIf="topDeckTab() === 'periph'"></app-peripheral-inspector>
+        </div>
+      </section>
+
+      <!-- Bottom Deck: Registers, Call Stack, & Diagnostics -->
+      <section class="deck bottom-deck">
+        <div class="deck-tabs-bar">
+          <div class="deck-tabs-group">
+            <button
+              type="button"
+              class="deck-tab-btn"
+              [class.active]="bottomDeckTab() === 'registers'"
+              (click)="setBottomTab('registers')"
+            >
+              Registers
+            </button>
+            <button
+              type="button"
+              class="deck-tab-btn"
+              [class.active]="bottomDeckTab() === 'stack'"
+              (click)="setBottomTab('stack')"
+            >
+              Call Stack
+            </button>
+            <button
+              type="button"
+              class="deck-tab-btn"
+              [class.active]="bottomDeckTab() === 'metrics'"
+              (click)="setBottomTab('metrics')"
+            >
+              System Diagnostics
+            </button>
+          </div>
+
+          <div class="deck-actions-group">
+            <div class="pacing-control" title="Virtual slice pacing throttle">
+              <span class="pacing-label">Pacing</span>
+              <input
+                type="range"
+                min="0"
+                max="500"
+                step="10"
+                [ngModel]="speed()"
+                (ngModelChange)="onSpeedChange($event)"
+                [disabled]="!isConnected()"
+                class="pacing-slider"
+              />
+              <span class="pacing-text font-mono">{{ speed() === 0 ? 'Max' : speed() + 'ms' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-content">
+          <app-register-inspector *ngIf="bottomDeckTab() === 'registers'"></app-register-inspector>
+          <app-call-stack *ngIf="bottomDeckTab() === 'stack'"></app-call-stack>
+          <app-metrics-panel *ngIf="bottomDeckTab() === 'metrics'"></app-metrics-panel>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Bottom Drawer: Serial Console & Time-Travel DAG -->
+  <footer class="workbench-drawer" [class.collapsed]="drawerCollapsed()">
+    <div class="drawer-header">
+      <div class="drawer-tabs-group">
+        <button
+          type="button"
+          class="drawer-tab-btn"
+          [class.active]="drawerTab() === 'terminal'"
+          (click)="setDrawerTab('terminal')"
+        >
+          Console (SCI8 UART)
+        </button>
+        <button
+          type="button"
+          class="drawer-tab-btn"
+          [class.active]="drawerTab() === 'dag'"
+          (click)="setDrawerTab('dag')"
+        >
+          Time-Travel DAG
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="drawer-collapse-btn"
+        (click)="toggleDrawerCollapse()"
+        [title]="drawerCollapsed() ? 'Expand drawer' : 'Collapse drawer'"
+      >
+        {{ drawerCollapsed() ? '▲ Expand' : '▼ Collapse' }}
+      </button>
+    </div>
+
+    <div class="drawer-content" *ngIf="!drawerCollapsed()">
+      <app-uart-terminal *ngIf="drawerTab() === 'terminal'"></app-uart-terminal>
+      <app-execution-dag *ngIf="drawerTab() === 'dag'"></app-execution-dag>
+    </div>
   </footer>
 </div>
