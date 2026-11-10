@@ -220,7 +220,7 @@ import { FramebufferRenderer, InputKind, DirtyRect } from 'ra8-rpc-client';
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      border: 2px solid var(--border-subtle);
+      border: 2px solid rgba(255, 255, 255, 0.16);
       border-top-color: var(--accent-blue);
       animation: spin 0.8s linear infinite;
     }
@@ -232,12 +232,12 @@ import { FramebufferRenderer, InputKind, DirtyRect } from 'ra8-rpc-client';
     .standby-text {
       font-size: 12px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: #f5f5f7;
     }
 
     .standby-hint {
       font-size: 10px;
-      color: var(--text-secondary);
+      color: #98989d;
     }
 
     .headless-device-card {

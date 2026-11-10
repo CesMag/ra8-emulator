@@ -206,6 +206,7 @@ export class EmulatorService implements OnDestroy {
   private stepCounter = 0n;
 
   // Progressive Peripherals & Console / Activity Streams
+  private periphMeta = new Map<string, { base: number; size: number }>();
   public readonly periphBlocks = signal<string[]>([]);
   public readonly selectedPeriphBlock = signal<string>('');
   public readonly selectedPeriphText = signal<string>('');
@@ -667,16 +668,25 @@ export class EmulatorService implements OnDestroy {
     if (!this.client || this.connectionState() !== 'connected') return;
     try {
       const raw = await this.client.getPeriph(Core.Cpu0, '');
-      const blocks = raw
-        .split('\n')
-        .map((line) => line.trim().split(/\s+/)[0] ?? '')
-        .filter((name) => name.length > 0);
+      this.periphMeta.clear();
+      const blocks: string[] = [];
+      for (const line of raw.split('\n')) {
+        const parts = line.trim().split(/\s+/);
+        const name = parts[0] ?? '';
+        if (!name) continue;
+        const base = parts[1] ? parseInt(parts[1], 16) : NaN;
+        const size = parts[2] ? parseInt(parts[2], 16) : NaN;
+        if (!isNaN(base) && !isNaN(size)) {
+          this.periphMeta.set(name, { base: base >>> 0, size: size >>> 0 });
+        }
+        blocks.push(name);
+      }
       this.periphBlocks.set(blocks);
       if (blocks.some((b) => b.toLowerCase().includes('npu') || b.toLowerCase().includes('ethos'))) {
         this.npuStateLabel.set('IDLE (ETHOS-U55)');
       }
       if (!this.selectedPeriphBlock() && blocks.length > 0) {
-        const preferred = blocks.find((b) => /^(GPIO|SCI|GLCDC|GPT|ICU)/i.test(b)) ?? blocks[0]!;
+        const preferred = blocks.find((b) => /^(RTC|AGT|IWDT|GPIO)/i.test(b)) ?? blocks[0]!;
         await this.selectPeriphBlock(preferred);
       }
     } catch {}
@@ -690,11 +700,34 @@ export class EmulatorService implements OnDestroy {
   public async selectPeriphBlock(block: string): Promise<void> {
     this.selectedPeriphBlock.set(block);
     if (!this.client || this.connectionState() !== 'connected' || !block) return;
+    const meta = this.periphMeta.get(block);
+    const header = meta
+      ? `${block}  •  Base 0x${meta.base.toString(16).toUpperCase().padStart(8, '0')}  •  Size 0x${meta.size.toString(16).toUpperCase()}\n` +
+        '────────────────────────────────────────────────────────\n'
+      : '';
     try {
       const dump = await this.client.getPeriph(Core.Cpu0, block, false);
-      this.selectedPeriphText.set(dump);
+      this.selectedPeriphText.set(header + dump);
     } catch {
-      this.selectedPeriphText.set(`Unable to read peripheral block ${block}`);
+      if (meta) {
+        const sampleLen = Math.min(meta.size, 64);
+        const bytes = await this.readMemory(meta.base, sampleLen);
+        if (bytes && bytes.length >= 4) {
+          const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+          const lines: string[] = [];
+          for (let off = 0; off + 4 <= bytes.length; off += 16) {
+            const addrHex = ((meta.base + off) >>> 0).toString(16).toUpperCase().padStart(8, '0');
+            const words: string[] = [];
+            for (let w = 0; w < 16 && off + w + 4 <= bytes.length; w += 4) {
+              words.push('0x' + view.getUint32(off + w, true).toString(16).toUpperCase().padStart(8, '0'));
+            }
+            lines.push(`0x${addrHex} (+0x${off.toString(16).padStart(2, '0')}):  ${words.join('  ')}`);
+          }
+          this.selectedPeriphText.set(header + lines.join('\n'));
+          return;
+        }
+      }
+      this.selectedPeriphText.set(header + `No paired register table for ${block}`);
     }
   }
 
