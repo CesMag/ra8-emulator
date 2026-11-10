@@ -66,6 +66,13 @@ jobs:
           node test/live_emulator.test.mjs
           node test/raw_tcp_auto_detect.test.mjs
 
+      - name: Angular PWA
+        working-directory: src/interfaces/gui
+        run: |
+          npm ci
+          npm run build
+          npx ng test --watch=false --browsers=ChromeHeadlessNoSandbox
+
       - name: Test logs
         if: always()
         uses: actions/upload-artifact@v4
