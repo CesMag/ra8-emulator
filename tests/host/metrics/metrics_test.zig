@@ -1,23 +1,20 @@
 const std = @import("std");
 const metrics = @import("ra8").host.metrics;
 
-test "process CPU uses elapsed time, normalizes cores and retains peak" {
+test "process CPU uses elapsed time while resident memory and threads refresh" {
     var sampler: metrics.Sampler = .{};
-    sampler.record(.{ .cpu_ns = 1_000_000_000, .cores = 4, .footprint = 300 }, 1_000_000_000);
+    sampler.record(.{ .cpu_ns = 1_000_000_000, .rss = 300, .threads = 2 }, 1_000_000_000);
     try std.testing.expectEqual(@as(f64, 0), sampler.current.?.cpu_percent);
-    sampler.record(.{ .cpu_ns = 2_000_000_000, .cores = 4, .footprint = 100 }, 1_500_000_000);
+    sampler.record(.{ .cpu_ns = 2_000_000_000, .rss = 100, .threads = 3 }, 1_500_000_000);
     const sample = sampler.current.?;
     try std.testing.expectEqual(@as(f64, 200), sample.cpu_percent);
-    try std.testing.expectEqual(@as(f64, 50), sample.cpu_total_percent);
-    try std.testing.expectEqual(@as(u64, 300), sample.peak_footprint);
+    try std.testing.expectEqual(@as(u64, 100), sample.rss);
+    try std.testing.expectEqual(@as(u32, 3), sample.threads);
 }
 
-test "history rolls in chronological order and counter reset is safe" {
+test "counter reset produces a zero CPU sample" {
     var sampler: metrics.Sampler = .{};
-    for (0..metrics.capacity + 5) |i| sampler.record(.{ .cpu_ns = i * 100, .footprint = i }, i * 1000);
-    try std.testing.expectEqual(metrics.capacity, sampler.count);
-    try std.testing.expectEqual(@as(u64, 5), sampler.at(0).footprint);
-    try std.testing.expectEqual(@as(u64, metrics.capacity + 4), sampler.at(metrics.capacity - 1).footprint);
+    sampler.record(.{ .cpu_ns = 10_000 }, 100_000);
     sampler.record(.{ .cpu_ns = 0 }, 200_000);
     try std.testing.expectEqual(@as(f64, 0), sampler.current.?.cpu_percent);
 }
@@ -25,11 +22,11 @@ test "history rolls in chronological order and counter reset is safe" {
 test "live host sampler supplies memory and threads" {
     var sampler: metrics.Sampler = .{};
     sampler.refresh(1_000_000_000);
-    try std.testing.expect(sampler.available);
+    try std.testing.expect(sampler.current != null);
     try std.testing.expect(sampler.current.?.rss > 0);
     try std.testing.expect(sampler.current.?.threads > 0);
     sampler.refresh(1_100_000_000);
-    try std.testing.expectEqual(@as(usize, 1), sampler.count);
+    try std.testing.expectEqual(@as(u64, 1_000_000_000), sampler.previous_ns);
 }
 
 fn processCpu(usage: std.c.rusage) u64 {
@@ -59,6 +56,5 @@ test "Darwin process CPU counter agrees with getrusage across real work" {
     try std.testing.expectApproxEqAbs(@as(f64, @floatFromInt(cpu_ns)), reported_ns, 20_000_000);
     try std.testing.expect(cpu_ns > 0);
     try std.testing.expect(sampler.current.?.rss <= @as(u64, @intCast(usage.maxrss)) + 65536);
-    try std.testing.expect(sampler.current.?.cpu_total_percent <= sampler.current.?.cpu_percent);
     std.debug.print("native CPU evidence: getrusage={d}ns sampled={d:.0}ns RSS={d} peakRSS={d}\n", .{ cpu_ns, reported_ns, sampler.current.?.rss, usage.maxrss });
 }

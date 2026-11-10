@@ -1,11 +1,6 @@
-//! Host tests for the timeline model against a served both-cores run
-//! (RA8EMU-840): the wire trace topic's events feed the model, the same
-//! run's trace is recorded exactly as --trace-rtos-out records it, and
-//! every recorded switch and ISR event lands as a slice edge on the right
-//! core's lane at the same virtual time. Per-lane load agrees with the
-//! tracer's own cpu_load within the RA8EMU-268 tolerance, and zooming down
-//! to one slice keeps the hit test. The image is the Zig-built
-//! threadx_dual pair (no C, no committed binary).
+//! Trace streaming against a served dual-core run (RA8EMU-840): each
+//! core's wire trace must match the events saved by --trace-rtos-out.
+//! The image is the Zig-built threadx_dual pair (no committed binary).
 const std = @import("std");
 const ra8 = @import("ra8");
 const test_paths = @import("test_paths");
@@ -14,10 +9,7 @@ const served = ra8.rpc.session.server;
 const rpc = served.rpc_lib;
 const proto = ra8.rpc.session.rpc;
 const setup = ra8.rpc.served_setup;
-const gui_app = @import("gui_app");
-const timeline_model = gui_app.timeline_model;
-const pane = gui_app.timeline_pane;
-const rtos_load = timeline_model.rtos_load;
+const rtos_trace = ra8.session.rtos.trace;
 
 const Env = proto.Client.Env;
 
@@ -98,17 +90,7 @@ fn accepted(result: Env.Result) !void {
     }
 }
 
-/// The owner one wire event's time went to, in the model's terms.
-fn ownerOf(got: Got) rtos_load.Owner {
-    return switch (got.kind) {
-        .rtos_switch => .{ .kind = .thread, .id = got.thread },
-        .rtos_idle => .{ .kind = .idle },
-        .isr_enter, .isr_leave => .{ .kind = .exception, .id = got.exception },
-        else => unreachable,
-    };
-}
-
-fn eventOf(got: Got) timeline_model.rtos_trace.Event {
+fn eventOf(got: Got) rtos_trace.Event {
     return .{
         .when = got.virtual_ns,
         .core = if (got.core == .cpu0) 0 else 1,
@@ -126,21 +108,20 @@ fn eventOf(got: Got) timeline_model.rtos_trace.Event {
 
 /// The file one core's tracer wrote, read back the way --trace-rtos-out's
 /// reader takes it.
-fn recorded(gpa: std.mem.Allocator, io: std.Io, path: []const u8, core: usize, trace_file: []const u8) ![]const timeline_model.rtos_trace.Event {
-    _ = trace_file;
+fn recorded(gpa: std.mem.Allocator, io: std.Io, path: []const u8, core: usize) ![]const rtos_trace.Event {
     const file = ra8.session.rtos.hook.file;
     var name_buf: [std.fs.max_path_bytes]u8 = undefined;
     const name = try file.nameFor(path, @intCast(core), &name_buf);
     const bytes = try std.Io.Dir.cwd().readFileAlloc(io, name, gpa, .limited(1 << 16));
     defer gpa.free(bytes);
-    const into = try gpa.alloc(timeline_model.rtos_trace.Event, 256);
+    const into = try gpa.alloc(rtos_trace.Event, 256);
     defer gpa.free(into);
     const loaded = try file.read(bytes, into);
     try std.testing.expectEqual(@as(usize, 0), loaded.dropped);
-    return try gpa.dupe(timeline_model.rtos_trace.Event, loaded.events);
+    return try gpa.dupe(rtos_trace.Event, loaded.events);
 }
 
-test "the timeline model matches the recorded both-cores trace" {
+test "wire trace matches every recorded event on both cores" {
     const gpa = std.testing.allocator;
     var opened: setup.Served = undefined;
     try opened.open(gpa, std.testing.io, image0, null, null);
@@ -171,96 +152,34 @@ test "the timeline model matches the recorded both-cores trace" {
     try file.save(std.testing.io, std.Io.Dir.cwd(), path, 0, &t0.trace);
     try file.save(std.testing.io, std.Io.Dir.cwd(), path, 1, &t1.trace);
 
-    // Feed the wire events into the model, then close both cores' runs.
-    var model = timeline_model.Model.init(gpa);
-    defer model.deinit();
-    var last_ns: u64 = 0;
-    for (wire.got.items) |got| {
-        try model.take(eventOf(got));
-        last_ns = @max(last_ns, got.virtual_ns);
-    }
-    try model.finish(last_ns);
-    const window = model.recorded() orelse return error.NoRecord;
-
-    // Every core's recorded file matches that core's wire events, and
-    // every one of them is a slice edge on the right core's lane.
+    // Each core's recorded file must match the wire in order and in all
+    // payload fields, not just the number of trace notifications.
     for (0..2) |core_index| {
-        const core: u1 = @intCast(core_index);
-        const got = try recorded(gpa, std.testing.io, path, core_index, path);
+        const got = try recorded(gpa, std.testing.io, path, core_index);
         defer gpa.free(got);
-        var wire_count: usize = 0;
-        for (wire.got.items) |one| {
-            if ((one.core == .cpu0) == (core_index == 0)) wire_count += 1;
-        }
-        try std.testing.expectEqual(wire_count, got.len);
-        var switches: usize = 0;
-        var enters: usize = 0;
-        var idles: usize = 0;
-        for (got) |one| {
-            switch (one.kind) {
-                .switch_to => switches += 1,
-                .idle => idles += 1,
-                .enter => enters += 1,
-                .leave => {},
-            }
-        }
-        try std.testing.expect(switches > 0);
-        try std.testing.expect(enters > 0);
-        try std.testing.expect(idles > 0);
+        var cursor: usize = 0;
         for (wire.got.items) |one| {
             if ((one.core == .cpu0) != (core_index == 0)) continue;
-            const lane = model.laneIndex(core, ownerOf(one).kind, ownerOf(one).id) orelse {
-                return error.MissingLane;
-            };
-            var edge = false;
-            for (model.slicesOf(lane)) |slice| {
-                if (slice.start_ns == one.virtual_ns or slice.end_ns == one.virtual_ns) edge = true;
-            }
-            try std.testing.expect(edge);
+            try std.testing.expect(cursor < got.len);
+            try std.testing.expectEqualDeep(got[cursor], eventOf(one));
+            cursor += 1;
         }
+        try std.testing.expectEqual(got.len, cursor);
+        try expectActivity(got);
     }
+}
 
-    // Per-lane load agrees with the 269 load module fed the same
-    // board-stamped events, within the RA8EMU-268 tolerance of one
-    // percentage point. The tracer's own load is charged on the borrowed
-    // fine clock (the traced core's retired instructions), so its shares
-    // cover the core's execution rather than the board's virtual span;
-    // the model is a timeline over that span, so the like-for-like oracle
-    // is the same module on the same stamps.
-    var oracle = timeline_model.rtos_load.Load{};
-    for (wire.got.items) |got| oracle.feed(eventOf(got));
-    oracle.finish(last_ns);
-    for (0..2) |core_index| {
-        const core: u1 = @intCast(core_index);
-        for (oracle.rows(core)) |slot| {
-            if (slot.owner.kind == .before) continue;
-            const lane = model.laneIndex(core, slot.owner.kind, slot.owner.id) orelse return error.MissingLane;
-            // Both charged the same board-stamped events, so the lane's
-            // ticks match the slot's exactly.
-            try std.testing.expectEqual(slot.ticks, model.laneTicks(lane, window.from, window.to));
-        }
-    }
-
-    // Zoom the whole run down to one slice: a view so narrow it sits
-    // inside one slice's span still hits that slice.
-    var zoomed: ?usize = null;
-    for (model.lanes.items, 0..) |*row, index| {
-        for (row.slices.items) |slice| {
-            if (slice.end_ns - slice.start_ns < 4) continue;
-            const view = timeline_model.View{
-                .start_ns = slice.start_ns + (slice.end_ns - slice.start_ns) / 4,
-                .span_ns = (slice.end_ns - slice.start_ns) / 2,
-                .width_px = 400,
-            };
-            const area = ra8.render.draw_list.Rect{ .x = 0, .y = 0, .w = 400, .h = pane.ruler_h + pane.header_h + 10 * pane.row_h };
-            const x = pane.col_w + 100;
-            const y = pane.header_h + @as(i32, @intCast(index)) * pane.row_h + 2;
-            const hit = pane.hitAt(area, &model, view, x, y) orelse continue;
-            try std.testing.expectEqual(slice.start_ns, hit.start_ns);
-            zoomed = index;
-            break;
-        }
-        if (zoomed != null) break;
-    }
-    try std.testing.expect(zoomed != null);
+fn expectActivity(events: []const rtos_trace.Event) !void {
+    var switches: usize = 0;
+    var enters: usize = 0;
+    var idles: usize = 0;
+    for (events) |one| switch (one.kind) {
+        .switch_to => switches += 1,
+        .idle => idles += 1,
+        .enter => enters += 1,
+        .leave => {},
+    };
+    try std.testing.expect(switches > 0);
+    try std.testing.expect(enters > 0);
+    try std.testing.expect(idles > 0);
 }

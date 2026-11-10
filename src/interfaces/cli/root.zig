@@ -1,7 +1,6 @@
 //! cli_app: the command line application's own files (ADR 0004 in the
 //! knowledge base, RA8EMU-A-2), as the module that ra8_emulator (main.zig)
-//! and the tests import. It is given every library and nothing from the
-//! GUI, and it never links SDL.
+//! and the tests import. It is given every emulator library.
 pub const cli = @import("cli.zig");
 pub const eink_log = @import("eink_log.zig");
 pub const probe_ctl = @import("probe_ctl.zig");

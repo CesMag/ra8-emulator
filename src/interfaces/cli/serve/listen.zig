@@ -52,6 +52,7 @@ pub fn serve(io: std.Io, spec: Spec, context: *served.Context, buffers: loop.Buf
         .tcp => std.debug.print("serve: listening on tcp:{f}\n", .{server.socket.address}),
     }
     while (!loop.stopping.load(.acquire)) {
+        try buffers.pump(context);
         if (context.session.persistent_recorder) |rec| try rec.maybeCommit(rec.now());
         if (!try ready(io, server.socket.handle)) continue;
         const client = try server.accept(io);
@@ -71,7 +72,7 @@ fn ready(io: std.Io, fd: std.posix.fd_t) !bool {
 /// SIGINT, SIGTERM, SIGHUP and SIGQUIT end the serve cleanly at the next idle
 /// check, so the exit is 0 and a Unix socket path is removed. Windows
 /// has no POSIX signals, so Ctrl+C, Ctrl+Break and console close do it there.
-fn catchStops() void {
+pub fn catchStops() void {
     if (builtin.os.tag == .windows) {
         _ = win32.SetConsoleCtrlHandler(onConsoleStop, .TRUE);
         return;

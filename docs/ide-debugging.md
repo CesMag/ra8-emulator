@@ -1,9 +1,14 @@
 ## Debugging the emulator from your IDE (RA8EMU-1155)
 
-While `ra8_gui` is running it writes a discovery file that lists the RPC
-address, one loopback gdb port per session, and the focus address. `ctl`
-reads that file, so an IDE never spawns the emulator itself: the GUI owns
-the process, gdb attaches to a session the GUI is showing.
+Start the emulator daemon with discovery enabled. It publishes a per-user
+RPC address and a loopback GDB port for its loaded session. `ctl` reads that
+file; the PWA is a separate client and does not own the emulator process.
+The discovery listener is opt-in so independent ordinary `serve` processes
+do not compete for the same per-user socket.
+
+```sh
+ra8_emulator serve --discover --listen tcp:127.0.0.1:4567 firmware.elf
+```
 
 ```sh
 # what is running
@@ -15,7 +20,8 @@ ra8_emulator ctl gdb-address
 ra8_emulator ctl gdb-address threadx_blink
 ```
 
-With no app running both commands print "start ra8_gui first" and exit 1.
+With no discoverable daemon running, both commands ask you to start
+`ra8_emulator serve --discover` and exit 1.
 
 ### VS Code (cortex-debug)
 
@@ -39,8 +45,8 @@ gdb <the session's ELF>
 
 The port serves one client at a time; a second client waits or is
 dropped, and run control (continue, step, interrupts) belongs to the
-client that holds it. The GUI keeps painting while gdb is attached: the
-pump serves gdb a frame at a time, so breakpoints land between frames.
+client that holds it. The daemon pumps GDB and RPC connections together. The browser frontend
+can remain connected while GDB controls the shared session.
 
 ### CLion and Zed
 

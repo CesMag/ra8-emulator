@@ -25,11 +25,11 @@ test "frame-on-settle captures to its own directory with a virtual stability win
     try std.testing.expectEqual(@as(u64, 75_000_000), parsed.frames.settle_window_ns);
 }
 
-test "--gui is not a command-line flag: the window is ra8_gui" {
+test "the retired --gui flag is rejected" {
     try std.testing.expectError(error.UnknownFlag, cli.parse(&.{ "emu", "a.elf", "--gui" }));
 }
 
-test "the window stills flags are ra8_gui's: the command line refuses them" {
+test "retired native window capture flags are rejected" {
     try std.testing.expectError(error.UnknownFlag, cli.parse(&.{ "emu", "a.elf", "--window-stills", "shots" }));
     try std.testing.expectError(error.UnknownFlag, cli.parse(&.{ "emu", "a.elf", "--window-stills-every", "30" }));
 }

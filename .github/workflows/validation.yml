@@ -1,12 +1,14 @@
 name: validation
 
 # Runs the unfiltered test suites on GitHub's runner, so the host suite
-# (ra8_host_tests, 1539 tests) gets a complete single-run PASS that the
+# gets a complete single-run PASS that the
 # 2 vCPU coordinator box cannot finish inside its validation window.
 on:
   workflow_dispatch:
   push:
-    branches: [BSIKAR/time-travel]
+    branches: [BSIKAR/time-travel, dev]
+  pull_request:
+    branches: [dev]
 
 jobs:
   suites:
@@ -32,20 +34,42 @@ jobs:
       - name: Build
         run: zig build -j1
 
-      - name: Build with GUI
-        run: zig build -Dgui -j1
-
       - name: Chip suite
         run: |
-          zig build ra8_tests-exe
-          ./zig-out/bin/ra8_tests
+          zig build ra8_tests-exe -j1
+          bash tools/test_batch.sh zig-out/bin/ra8_tests /tmp/ra8_tests.log
 
       - name: Host suite
         run: |
-          zig build ra8_host_tests-exe
-          ./zig-out/bin/ra8_host_tests
+          zig build ra8_host_tests-exe -j1
+          bash tools/test_batch.sh zig-out/bin/ra8_host_tests /tmp/ra8_host_tests.log
 
-      - name: GUI link suite
+      - name: Consumer smoke
+        run: zig build consumer-smoke -j1
+
+      - name: Batch runner self-test
+        run: bash tests/tools/test_batch_test.sh
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: TypeScript SDK
+        working-directory: src/interfaces/gui/client
         run: |
-          zig build ra8_gui_link_tests-exe
-          ./zig-out/bin/ra8_gui_link_tests
+          npm install --ignore-scripts --package-lock=false
+          npm run typecheck
+          npm run build
+          npm test
+          node test/adversarial.test.js
+          node test/adversarial_stress.test.mjs
+          node test/live_emulator.test.mjs
+          node test/raw_tcp_auto_detect.test.mjs
+
+      - name: Test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suite-logs
+          path: /tmp/ra8*_tests.log
+          if-no-files-found: ignore

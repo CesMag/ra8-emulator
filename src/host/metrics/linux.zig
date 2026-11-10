@@ -1,4 +1,4 @@
-//! /proc counters parsed in fixed buffers. Footprint is resident plus swap.
+//! Process CPU, resident memory and thread counters parsed in fixed buffers.
 const std = @import("std");
 const Raw = @import("metrics.zig").Raw;
 extern "c" fn sysconf(c_int) c_long;
@@ -9,10 +9,7 @@ pub fn read() !Raw {
     const status = try readFile("/proc/self/status", &status_buf);
     const ticks = sysconf(2); // _SC_CLK_TCK
     if (ticks <= 0) return error.Unavailable;
-    var raw = try parse(stat, status, @intCast(ticks));
-    const cores = sysconf(84); // _SC_NPROCESSORS_ONLN
-    raw.cores = @intCast(@max(cores, 1));
-    return raw;
+    return parse(stat, status, @intCast(ticks));
 }
 fn readFile(path: [*:0]const u8, into: []u8) ![]const u8 {
     const fd = std.c.open(path, .{ .CLOEXEC = true }, @as(c_uint, 0));
@@ -25,7 +22,7 @@ pub fn parse(stat: []const u8, status: []const u8, ticks: u64) !Raw {
     if (ticks == 0) return error.Unavailable;
     const end = std.mem.lastIndexOfScalar(u8, stat, ')') orelse return error.InvalidStat;
     var fields = std.mem.tokenizeScalar(u8, stat[end + 1 ..], ' ');
-    var raw: Raw = .{ .swap_available = true };
+    var raw: Raw = .{};
     var index: usize = 3;
     var cpu: u64 = 0;
     while (fields.next()) |field| : (index += 1) {
@@ -40,11 +37,7 @@ pub fn parse(stat: []const u8, status: []const u8, ticks: u64) !Raw {
         const number = words.next() orelse continue;
         const value = std.fmt.parseInt(u64, number, 10) catch continue;
         if (std.mem.eql(u8, name, "VmRSS:")) raw.rss = value *| 1024;
-        if (std.mem.eql(u8, name, "VmHWM:")) raw.peak_footprint = value *| 1024;
-        if (std.mem.eql(u8, name, "VmSize:")) raw.vsz = value *| 1024;
-        if (std.mem.eql(u8, name, "VmSwap:")) raw.swap = value *| 1024;
         if (std.mem.eql(u8, name, "Threads:")) raw.threads = @intCast(value);
     }
-    raw.footprint = raw.rss +| raw.swap;
     return raw;
 }
