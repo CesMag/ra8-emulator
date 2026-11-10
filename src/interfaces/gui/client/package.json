@@ -1,0 +1,40 @@
+{
+  "name": "ra8-rpc-client",
+  "version": "0.1.0",
+  "description": "Typed TypeScript RPC Client for RA8 Emulator WebSocket Transport",
+  "author": "Brighton Sikarskie",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/client.test.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "keywords": [
+    "ra8",
+    "emulator",
+    "rpc",
+    "websocket",
+    "typescript",
+    "cortex-m85",
+    "cortex-m33"
+  ]
+}

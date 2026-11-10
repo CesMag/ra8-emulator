@@ -8,7 +8,7 @@ const builtin = @import("builtin");
 const sock_ready = @import("ra8_host").sock.ready;
 const win32 = @import("ra8_host").win32;
 const served = @import("ra8_rpc").session.server;
-const Connection = @import("ra8_rpc").socket_transport.Connection;
+const Connection = @import("ra8_rpc").ws_transport.Connection;
 const loop = @import("loop.zig");
 
 /// How long the accept loop waits for a client before checking for a stop.

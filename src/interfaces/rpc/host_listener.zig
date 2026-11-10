@@ -14,6 +14,7 @@ const sock_ready = @import("ra8_host").sock.ready;
 pub const served = @import("session/server.zig");
 const proto = @import("session/rpc.zig");
 const socket_transport = @import("socket_transport.zig");
+const ws_transport = @import("ws_transport.zig");
 const session_api = @import("ra8_session").api;
 const host_gdb = @import("host_gdb.zig");
 
@@ -51,7 +52,7 @@ pub const Listener = struct {
     focus_requested: bool = false,
 
     pub const Client = struct {
-        conn: socket_transport.Connection,
+        conn: ws_transport.Connection,
         host: served.Host,
         rx: []u8,
         /// The client's own context: the served hooks, session and transport

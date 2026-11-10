@@ -359,6 +359,7 @@ test {
     _ = @import("interfaces/rpc/session/load_chunks_test.zig");
     _ = @import("interfaces/rpc/session/stack_test.zig");
     _ = @import("interfaces/rpc/session/rtc_test.zig");
+    _ = @import("interfaces/rpc/session/metrics_test.zig");
     _ = @import("interfaces/rpc/session/input_test.zig");
     _ = @import("interfaces/rpc/session/event_feed_test.zig");
     _ = @import("interfaces/rpc/session/backtrace_test.zig");
@@ -394,4 +395,5 @@ test {
     _ = @import("interfaces/rpc/served_nav_feed_test.zig");
     _ = @import("interfaces/rpc/served_rewind_test.zig");
     _ = @import("interfaces/gui/smooth_rewind_gui_test.zig");
+    _ = @import("interfaces/rpc/ws_all_test.zig");
 }

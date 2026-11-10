@@ -37,6 +37,7 @@ const session_nav = @import("nav_handlers.zig");
 const rewind_feed = @import("rewind_feed.zig");
 const session_marker = @import("nav_marker.zig");
 const session_diff = @import("diff.zig");
+pub const session_metrics = @import("metrics.zig");
 
 /// The framing library, for callers that only import the emulator.
 pub const rpc_lib = rpc;
@@ -92,6 +93,7 @@ pub const routes = .{
     .{ @backingInt(M.advance_async), session_advance.advanceQueued },
     .{ @backingInt(M.seek), session_seek.seek },
     .{ @backingInt(M.rcont), session_rcont.rcont },
+    .{ @backingInt(M.metrics), session_metrics.metrics },
     .{ @backingInt(M.snapshot), session_files.snapshot },
     .{ @backingInt(M.restore), session_files.restore },
     .{ @backingInt(M.branch_list), session_branch.branchList },

@@ -8,11 +8,9 @@ pub const protocol_version: u16 = 1;
 /// Bit 12: break by name. Bit 13: board parts.
 /// Bit 14: the locals_at op (RA8EMU-1187), locals at a chosen frame.
 /// Bit 15: the transport topic and advance_async (RA8EMU-1196, slice 14):
-/// a host whose frame loop owns the pump answers advance_async by queueing
-/// and reports the completion on the transport topic.
+/// host answers advance_async by queueing and reports on transport topic.
 pub const capabilities: u32 = 0x0000_7FFF;
-/// Capability bit 15, the transport topic. Hosted servers OR it into the
-/// handshake when the frame loop owns the pump; `serve` does not.
+/// Capability bit 15, the transport topic (ORed in when frame loop pumps).
 pub const transport_cap: u32 = 0x0000_8000;
 pub const max_payload = 1_048_576;
 
@@ -70,6 +68,7 @@ pub const Method = enum(u16) {
     advance_async = 0x012B,
     seek = 0x012C,
     rcont = 0x012D,
+    metrics = 0x012E,
     branch_list = 0x0130,
     branch_switch = 0x0131,
     branch_delete = 0x0132,
@@ -386,8 +385,9 @@ pub const FrameStatusResult = nav_wire.FrameStatusResult;
 pub const diff_wire = @import("diff_wire.zig");
 pub const DiffWire = diff_wire.DiffWire;
 pub const DiffArgs = diff_wire.DiffArgs;
-/// Calls a client can hold unanswered at once; a leaf with more reads than
-/// this sends the rest as answers free slots.
+pub const metrics_wire = @import("metrics_wire.zig");
+pub const MetricsReport = metrics_wire.MetricsReport;
+/// Calls a client can hold unanswered at once before freeing slots.
 pub const pending_slots = 32;
 pub const Client = rpc.Client(pending_slots, max_payload);
 pub const Error = rpc.Error;

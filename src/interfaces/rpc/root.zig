@@ -35,3 +35,6 @@ pub const backtrace_wire = @import("backtrace_wire.zig");
 pub const locals_wire = @import("locals_wire.zig");
 pub const socket_transport = @import("socket_transport.zig");
 pub const stdio_transport = @import("stdio_transport.zig");
+pub const ws_transport = @import("ws_transport.zig");
+pub const ws_handshake = @import("ws_handshake.zig");
+pub const ws_frame = @import("ws_frame.zig");
